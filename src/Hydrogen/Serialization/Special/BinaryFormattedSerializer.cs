@@ -27,24 +27,24 @@ public sealed class BinaryFormattedSerializer<TItem> : ItemSerializer<TItem> {
 
 	public override bool SupportsNull => true;
 
-	public override long CalculateSize(TItem item) {
+	public override long CalculateSize(SerializationContext context, TItem item) {
 		var formatter = new BinaryFormatter();
 		using var memoryStream = new MemoryStream();
 		formatter.Serialize(memoryStream, item);
 		var objectRawBytes = memoryStream.ToArray();
-		return ByteArraySerializer.Instance.CalculateSize(objectRawBytes);
+		return ByteArraySerializer.Instance.CalculateSize(context, objectRawBytes);
 	}
 
-	public override void Serialize(TItem item, EndianBinaryWriter writer) {
+	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
 		var formatter = new BinaryFormatter();
 		using var memoryStream = new MemoryStream();
 		formatter.Serialize(memoryStream, item);
 		var objectRawBytes = memoryStream.ToArray();
-		ByteArraySerializer.Instance.Serialize(objectRawBytes, writer);
+		ByteArraySerializer.Instance.Serialize(objectRawBytes, writer, context);
 	}
 
-	public override TItem Deserialize(EndianBinaryReader reader) {
-		var rawBytes = ByteArraySerializer.Instance.Deserialize(reader);
+	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
+		var rawBytes = ByteArraySerializer.Instance.Deserialize(reader, context);
 		var formatter = new BinaryFormatter();
 		using var memoryStream = new MemoryStream(rawBytes);
 		return (TItem)formatter.Deserialize(memoryStream);

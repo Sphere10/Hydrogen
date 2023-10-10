@@ -18,11 +18,11 @@ internal class PaddedSerializer<TItem> : ConstantSizeItemSerializerBase<TItem> {
 		_dynamicSerializer = dynamicSerializer;
 	}
 
-	public override void Serialize(TItem item, EndianBinaryWriter writer) {
+	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
 		const int StackAllocPaddingThreshold = 2048;
 
 		// Check
-		var expectedSize = _dynamicSerializer.CalculateSize(item);
+		var expectedSize = _dynamicSerializer.CalculateSize(context, item);
 		Guard.Ensure(expectedSize <= ConstantSize, $"Item is too large to fit in {ConstantSize} bytes");
 
 		// Write item
@@ -37,12 +37,12 @@ internal class PaddedSerializer<TItem> : ConstantSizeItemSerializerBase<TItem> {
 		}
 	}
 
-	public override TItem Deserialize(EndianBinaryReader reader) {
+	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		// read size descriptor
 		var pos = reader.BaseStream.Position;
 
 		// read item
-		var item = _dynamicSerializer.Deserialize(reader);
+		var item = _dynamicSerializer.Deserialize(reader, context);
 
 		var bytesRead = reader.BaseStream.Position - pos;
 		Guard.Ensure(bytesRead <= ConstantSize, $"Item was larger than {ConstantSize} bytes");

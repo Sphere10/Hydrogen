@@ -22,10 +22,10 @@ public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
 		_deserializer = deserializer;
 	}
 
-	public void Serialize(T item, EndianBinaryWriter writer) 
+	public void Serialize(T item, EndianBinaryWriter writer, SerializationContext context) 
 		=> _serializer(item, writer);
 
-	public T Deserialize(EndianBinaryReader reader) 
+	public T Deserialize(EndianBinaryReader reader, SerializationContext context) 
 		=> _deserializer(reader);
 
 }

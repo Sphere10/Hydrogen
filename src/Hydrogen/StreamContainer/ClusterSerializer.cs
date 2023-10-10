@@ -29,7 +29,7 @@ public class ClusterSerializer : ConstantSizeItemSerializerBase<Cluster> {
 
 	public int ClusterDataSize { get; }
 
-	public override void Serialize(Cluster item, EndianBinaryWriter writer) {
+	public override void Serialize(Cluster item, EndianBinaryWriter writer, SerializationContext context) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		Guard.ArgumentNotNull(writer, nameof(writer));
 		Guard.Argument(item.Data.Length == ClusterDataSize, nameof(item), "Unexpected cluster data size");
@@ -40,7 +40,7 @@ public class ClusterSerializer : ConstantSizeItemSerializerBase<Cluster> {
 		writer.Write(item.Data);
 	}
 
-	public override Cluster Deserialize(EndianBinaryReader reader) {
+	public override Cluster Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		Guard.ArgumentNotNull(reader, nameof(reader));
 		return new Cluster {
 			Traits = (ClusterTraits)reader.ReadByte(),

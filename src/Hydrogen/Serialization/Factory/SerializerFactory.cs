@@ -319,7 +319,7 @@ public class SerializerFactory {
 			// serializer (before it is assembled) as it may recursively refer to itself. So we activate
 			// a CompositeSerializer with no members (we'll configure it later)
 			var serializer = 
-				(IItemSerializer) typeof(CyclicReferenceAwareSerializer<>)
+				(IItemSerializer) typeof(CompositeSerializer<>)
 				.MakeGenericType(itemType)
 				.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null)
 				.Invoke(null);
@@ -339,22 +339,22 @@ public class SerializerFactory {
 					AssembleRecursively(factory, propertyType);
 
 				// We don't use the member type serializer but instead use a FactorySerializer to ensure cyclic/polymorphic references are handled correctly
-				var memberSerializer = (IItemSerializer) typeof(CyclicReferenceAwareSerializer<>).MakeGenericType(propertyType).ActivateWithCompatibleArgs(factory);
+				var memberSerializer = (IItemSerializer) typeof(CompositeSerializer<>).MakeGenericType(propertyType).ActivateWithCompatibleArgs(factory);
 				memberBindings.Add(new(member, memberSerializer.AsSanitized()));
 			}
 			
 			// Configure the serializer instance (registered already)
 			var itemTypeLocal = itemType;
-			var objectGraphSerializer = 
-				(IItemSerializer) typeof(CompositeSerializer<>)
-					.MakeGenericType(itemType)
-					.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(Func<object>), typeof(MemberSerializationBinding[]) }, null)
-					.Invoke(new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
+			//var objectGraphSerializer = 
+			//	(IItemSerializer) typeof(CompositeSerializer<>)
+			//		.MakeGenericType(itemType)
+			//		.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(Func<object>), typeof(MemberSerializationBinding[]) }, null)
+			//		.Invoke(new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
 
 			serializer
 				.GetType()
-				.GetMethod(nameof(CyclicReferenceAwareSerializer<object>.SetInternalSerializer), BindingFlags.Instance | BindingFlags.NonPublic)
-				.Invoke(serializer, new [] { objectGraphSerializer });
+				.GetMethod(nameof(CompositeSerializer<object>.ConfigureLatebound), BindingFlags.Instance | BindingFlags.NonPublic)
+				.Invoke(serializer, new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
 			
 			return serializer;
 		}

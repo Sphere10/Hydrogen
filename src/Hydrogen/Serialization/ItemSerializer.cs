@@ -20,9 +20,9 @@ public abstract class ItemSerializer<TItem> : ItemSizer<TItem>, IItemSerializer<
 
 	protected SizeDescriptorSerializer SizeSerializer { get; private set; }
 
-	public abstract void Serialize(TItem item, EndianBinaryWriter writer);
+	public abstract void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context);
 
-	public abstract TItem Deserialize(EndianBinaryReader reader);
+	public abstract TItem Deserialize(EndianBinaryReader reader, SerializationContext context);
 
 	public static IItemSerializer<TItem> Default => SerializerFactory.Default.Assemble<TItem>();
 		

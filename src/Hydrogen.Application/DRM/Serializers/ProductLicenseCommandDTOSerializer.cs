@@ -13,24 +13,24 @@ namespace Hydrogen.Application;
 public class ProductLicenseCommandDTOSerializer : ItemSerializer<ProductLicenseCommandDTO> {
 	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.ASCII, SizeDescriptorStrategy.UseUInt32).AsNullable();
 
-	public override long CalculateSize(ProductLicenseCommandDTO item)
-		=> _stringSerializer.CalculateSize(item.ProductKey) +
+	public override long CalculateSize(SerializationContext context, ProductLicenseCommandDTO item)
+		=> _stringSerializer.CalculateSize(context, item.ProductKey) +
 		   1 +
-		   _stringSerializer.CalculateSize(item.NotificationMessage) +
-		   _stringSerializer.CalculateSize(item.BuyNowLink);
+		   _stringSerializer.CalculateSize(context, item.NotificationMessage) +
+		   _stringSerializer.CalculateSize(context, item.BuyNowLink);
 
 
-	public override void Serialize(ProductLicenseCommandDTO item, EndianBinaryWriter writer) {
+	public override void Serialize(ProductLicenseCommandDTO item, EndianBinaryWriter writer, SerializationContext context) {
 		writer.Write((byte)item.Action);
-		_stringSerializer.Serialize(item.NotificationMessage, writer);
-		_stringSerializer.Serialize(item.BuyNowLink, writer);
+		_stringSerializer.Serialize(item.NotificationMessage, writer, context);
+		_stringSerializer.Serialize(item.BuyNowLink, writer, context);
 	}
 
-	public override ProductLicenseCommandDTO Deserialize(EndianBinaryReader reader) => 
+	public override ProductLicenseCommandDTO Deserialize(EndianBinaryReader reader, SerializationContext context) => 
 		new() {
-		ProductKey = _stringSerializer.Deserialize(reader),
+		ProductKey = _stringSerializer.Deserialize(reader, context),
 		Action = (ProductLicenseActionDTO)reader.ReadByte(),
-		NotificationMessage = _stringSerializer.Deserialize(reader),
-		BuyNowLink = _stringSerializer.Deserialize(reader)
+		NotificationMessage = _stringSerializer.Deserialize(reader, context),
+		BuyNowLink = _stringSerializer.Deserialize(reader, context)
 	};
 }

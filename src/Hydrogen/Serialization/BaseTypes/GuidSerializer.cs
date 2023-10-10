@@ -19,10 +19,10 @@ public class GuidSerializer : ConstantSizeItemSerializerBase<Guid> {
 
 	public static GuidSerializer Instance { get; } = new();
 
-	public override void Serialize(Guid item, EndianBinaryWriter writer)
-		=> _byteArraySerializer.Serialize(item.ToByteArray(), writer);
+	public override void Serialize(Guid item, EndianBinaryWriter writer, SerializationContext context)
+		=> _byteArraySerializer.Serialize(item.ToByteArray(), writer, context);
 
-	public override Guid Deserialize(EndianBinaryReader reader)
-		=> new(_byteArraySerializer.Deserialize(reader));
+	public override Guid Deserialize(EndianBinaryReader reader, SerializationContext context)
+		=> new(_byteArraySerializer.Deserialize(reader, context));
 
 }

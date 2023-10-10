@@ -21,11 +21,11 @@ public class ItemSerializerDecorator<TItem, TSerializer> : ItemSizerDecorator<TI
 		: base() {
 	}
 
-	public virtual void Serialize(TItem item, EndianBinaryWriter writer)
-		=> Internal.Serialize(item, writer);
+	public virtual void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context)
+		=> Internal.Serialize(item, writer, context);
 
-	public virtual TItem Deserialize(EndianBinaryReader reader)
-		=> Internal.Deserialize(reader);
+	public virtual TItem Deserialize(EndianBinaryReader reader, SerializationContext context)
+		=> Internal.Deserialize(reader, context);
 
 }
 

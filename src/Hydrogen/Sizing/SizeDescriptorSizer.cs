@@ -20,7 +20,7 @@ public class SizeDescriptorSizer : ItemSizerBase<long> {
 
 	public override long ConstantSize => IsConstantSize ? sizeof(ulong) : throw new InvalidOperationException($"Size is not statically sized for {SizeDescriptorStrategy}");
 
-	public override long CalculateSize(long item) => SizeDescriptorStrategy switch {
+	public override long CalculateSize(SerializationContext context, long item) => SizeDescriptorStrategy switch {
 		SizeDescriptorStrategy.UseVarInt => VarInt.SizeOf(unchecked((ulong)item)),
 		SizeDescriptorStrategy.UseCVarInt => CVarInt.SizeOf(unchecked((ulong)item)),
 		SizeDescriptorStrategy.UseULong => sizeof(ulong),

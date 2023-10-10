@@ -33,12 +33,12 @@ public class CastedSerializer<TItem> : IItemSerializer<TItem> {
 	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) 
 		=> _serializer.CalculateTotalSize(items.Cast<object>(), calculateIndividualItems, out itemSizes);
 
-	public long CalculateSize(TItem item) 
-		=> _serializer.CalculateSize(item);
+	public long CalculateSize(SerializationContext context, TItem item) 
+		=> _serializer.CalculateSize(context, item);
 
-	public void Serialize(TItem item, EndianBinaryWriter writer) 
-		=> _serializer.Serialize(item, writer);
+	public void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) 
+		=> _serializer.Serialize(item, writer, context);
 
-	public TItem Deserialize(EndianBinaryReader reader) 
-		=> (TItem)_serializer.Deserialize(reader);
+	public TItem Deserialize(EndianBinaryReader reader, SerializationContext context) 
+		=> (TItem)_serializer.Deserialize(reader, context);
 }

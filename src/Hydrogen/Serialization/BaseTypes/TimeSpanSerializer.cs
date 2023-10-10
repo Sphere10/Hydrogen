@@ -18,9 +18,9 @@ public class TimeSpanSerializer : ConstantSizeItemSerializerBase<TimeSpan> {
 
 	public static TimeSpanSerializer Instance { get; } = new();
 
-	public override void Serialize(TimeSpan item, EndianBinaryWriter writer)
-		=> _longSerializer.Serialize(item.Ticks, writer);
+	public override void Serialize(TimeSpan item, EndianBinaryWriter writer, SerializationContext context)
+		=> _longSerializer.Serialize(item.Ticks, writer, context);
 
-	public override TimeSpan Deserialize(EndianBinaryReader reader) 
-		=> TimeSpan.FromTicks(_longSerializer.Deserialize(reader));
+	public override TimeSpan Deserialize(EndianBinaryReader reader, SerializationContext context) 
+		=> TimeSpan.FromTicks(_longSerializer.Deserialize(reader, context));
 }

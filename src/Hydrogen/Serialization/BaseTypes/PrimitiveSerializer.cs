@@ -24,10 +24,10 @@ public class PrimitiveSerializer<T> : ConstantSizeItemSerializerBase<T> where T 
 		_readPrimitive = GetPrimitiveReader(typeCode);
 	}
 
-	public override void Serialize(T item, EndianBinaryWriter writer)
+	public override void Serialize(T item, EndianBinaryWriter writer, SerializationContext context)
 		=> _writePrimitive(writer, item);
 
-	public override T Deserialize(EndianBinaryReader reader)
+	public override T Deserialize(EndianBinaryReader reader, SerializationContext context)
 		=> _readPrimitive(reader);
 
 	public static Action<EndianBinaryWriter, T> GetPrimitiveWriter(TypeCode typeCode) => typeCode switch {

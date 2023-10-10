@@ -18,14 +18,14 @@ public class DateTimeOffsetSerializer : ConstantSizeItemSerializerBase<DateTimeO
 
 	public static DateTimeOffsetSerializer Instance { get; } = new();
 
-	public override void Serialize(DateTimeOffset item, EndianBinaryWriter writer) {
-		DateTimeSerializer.Instance.Serialize(item.LocalDateTime, writer);
-		TimeSpanSerializer.Instance.Serialize(item.Offset, writer);
+	public override void Serialize(DateTimeOffset item, EndianBinaryWriter writer, SerializationContext context) {
+		DateTimeSerializer.Instance.Serialize(item.LocalDateTime, writer, context);
+		TimeSpanSerializer.Instance.Serialize(item.Offset, writer, context);
 	}
 
-	public override DateTimeOffset Deserialize(EndianBinaryReader reader) {
-		var datetime = DateTimeSerializer.Instance.Deserialize(reader);
-		var timespan = TimeSpanSerializer.Instance.Deserialize(reader);
+	public override DateTimeOffset Deserialize(EndianBinaryReader reader, SerializationContext context) {
+		var datetime = DateTimeSerializer.Instance.Deserialize(reader, context);
+		var timespan = TimeSpanSerializer.Instance.Deserialize(reader, context);
 		return new DateTimeOffset(datetime, timespan);
 	}
 }

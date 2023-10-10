@@ -29,6 +29,10 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 		: this( () => (TItem)activator(), memberBindings ) {
 	}
 
+	internal void ConfigureLatebound(Func<object> activator, MemberSerializationBinding[] memberBindings)  {
+		throw new NotImplementedException();
+	}
+
 	public override bool SupportsNull => false;
 
 	public override bool IsConstantSize => _isConstantSize;
@@ -58,46 +62,30 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 		return totalSize;
 	}
 
-	public override long CalculateSize(TItem item) {
+	public override long CalculateSize(SerializationContext context, TItem item) {
 		var size = 0L;
-		using var scope = EnterCompositeScope(item, SerializationTask.Sizing , out _);
 		foreach(var binding in _memberBindings) {
 			var memberValue = binding.Member.GetValue(item);
 			var memberSerializer = binding.Serializer;
-			var itemSize = memberSerializer.CalculateSize(memberValue);
+			var itemSize = memberSerializer.CalculateSize(context, memberValue);
 			size += itemSize;
 		}
 		return size;
 	}
 		
-	public override void Serialize(TItem item, EndianBinaryWriter writer) {
-		using var scope = EnterCompositeScope(item, SerializationTask.Serializing, out _);
+	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
 		foreach (var binding in _memberBindings) {
 			var memberValue = binding.Member.GetValue(item);
-			binding.Serializer.Serialize(memberValue, writer);
+			binding.Serializer.Serialize(memberValue, writer, context);
 		}
 	}
 
-	public override TItem Deserialize(EndianBinaryReader reader) {
+	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var item = _activator();
-		NotifyActivated(item);
-		
-		using var scope = EnterCompositeScope(item, SerializationTask.Deserializing, out var index);
-	
+		context.SetDeserializingItem(item);
 		foreach (var binding in _memberBindings) {
-			var memberValue = binding.Serializer.Deserialize(reader);
-			if (memberValue is SerializationScope.PlaceHolder placeHolder) {
-				// Member value was a cyclic reference placeholder, so set it at the end
-				// This means the value it is referencing hasn't finished deserializing yet. 
-				scope.RegisterFinalizationAction(() => binding.Member.SetValue(item, placeHolder.GetValue()));
-			} else {
-				// Member value was deserialized, so set it on the item
-				binding.Member.SetValue(item, memberValue);
-			}
-			
-		}
-		if (index >= 0) {
-			scope.NotifyDeserializedObject(item, index);
+			var memberValue = binding.Serializer.Deserialize(reader, context);
+			binding.Member.SetValue(item, memberValue);
 		}
 		return item;
 	}
@@ -108,32 +96,32 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 	}
 	
 
-	private SerializationScope EnterCompositeScope(TItem item, SerializationTask serializationTask, out long index) {
-		// Due to how the serializer factory works, if this is the root-serializer, we need to initiate
-		// a SerializationScope so that cyclic references to root object can be detected. If it's not
-		// a root-level serializer, then the CyclicReferenceAwareSerializer wrapper will take care of everything.
-		index = -1;
-		var scope = new SerializationScope();
-		if (scope.IsRootScope) {
-			switch(serializationTask) {
-				case SerializationTask.Sizing:
-					scope.NotifySerializingObject(item, true);
-					break;
-				case SerializationTask.Serializing:
-					scope.NotifySerializingObject(item, false);
-					break;
-				case SerializationTask.Deserializing:
-					scope.NotifyDeserializingObject(out index);
-					break;
-			}
-		}
-		return scope;
+	//private SerializationScope EnterCompositeScope(TItem item, SerializationTask serializationTask, out long index) {
+	//	// Due to how the serializer factory works, if this is the root-serializer, we need to initiate
+	//	// a SerializationScope so that cyclic references to root object can be detected. If it's not
+	//	// a root-level serializer, then the CyclicReferenceAwareSerializer wrapper will take care of everything.
+	//	index = -1;
+	//	var scope = new SerializationScope();
+	//	if (scope.IsRootScope) {
+	//		switch(serializationTask) {
+	//			case SerializationTask.Sizing:
+	//				scope.NotifySerializingObject(item, true);
+	//				break;
+	//			case SerializationTask.Serializing:
+	//				scope.NotifySerializingObject(item, false);
+	//				break;
+	//			case SerializationTask.Deserializing:
+	//				scope.NotifyDeserializingObject(out index);
+	//				break;
+	//		}
+	//	}
+	//	return scope;
 
-	}
+	//}
 
-	private enum SerializationTask  {
-		Sizing,
-		Serializing,
-		Deserializing
-	}
+	//private enum SerializationTask  {
+	//	Sizing,
+	//	Serializing,
+	//	Deserializing
+	//}
 }

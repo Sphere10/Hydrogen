@@ -23,14 +23,14 @@ internal sealed class WithNullSubstitutionSerializer<TItem> : ItemSerializerDeco
 
 	public override bool SupportsNull => true;
 
-	public override long CalculateSize(TItem item) 
-		=> base.CalculateSize(item ?? _nullSubstitution);
+	public override long CalculateSize(SerializationContext context, TItem item) 
+		=> base.CalculateSize(context, item ?? _nullSubstitution);
 
-	public override TItem Deserialize(EndianBinaryReader reader) {
-		var item = base.Deserialize(reader);
+	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
+		var item = base.Deserialize(reader, context);
 		return _equalityComparer.Equals(item, _nullSubstitution) ? default : item;
 	}
 
-	public override void Serialize(TItem item, EndianBinaryWriter writer) 
-		=> base.Serialize(item ?? _nullSubstitution, writer);
+	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) 
+		=> base.Serialize(item ?? _nullSubstitution, writer, context);
 }

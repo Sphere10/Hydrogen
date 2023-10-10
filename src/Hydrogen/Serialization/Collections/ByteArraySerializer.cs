@@ -17,15 +17,15 @@ public class ByteArraySerializer : ItemSerializer<byte[]> {
 
 	public static ByteArraySerializer Instance { get; } = new();
 
-	public override long CalculateSize(byte[] item) => item.Length;
+	public override long CalculateSize(SerializationContext context, byte[] item) => item.Length;
 
-	public override void Serialize(byte[] item, EndianBinaryWriter writer) {
-		SizeSerializer.Serialize(item.Length, writer);
+	public override void Serialize(byte[] item, EndianBinaryWriter writer, SerializationContext context) {
+		SizeSerializer.Serialize(item.Length, writer, context);
 		writer.Write(item);
 	}
 
-	public override byte[] Deserialize(EndianBinaryReader reader) {
-		var byteSize = SizeSerializer.Deserialize(reader);
+	public override byte[] Deserialize(EndianBinaryReader reader, SerializationContext context) {
+		var byteSize = SizeSerializer.Deserialize(reader, context);
 		 return reader.ReadBytes(byteSize);
 	}
 

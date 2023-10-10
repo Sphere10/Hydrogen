@@ -28,10 +28,10 @@ public class ActionItemSizer<T> : IItemSizer<T> {
 	public long ConstantSize => -1;
 
 	public long CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes) {
-		var sizes = items.Select(item => CalculateSize(item)).ToArray();
+		var sizes = items.Select(item => { using var context = SerializationContext.New; return CalculateSize(context, item); }).ToArray();
 		itemSizes = calculateIndividualItems ? sizes : null;
 		return sizes.Sum();
 	}
 
-	public long CalculateSize(T item) => _sizer(item);
+	public long CalculateSize(SerializationContext context, T item) => _sizer(item);
 }

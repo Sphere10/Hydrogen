@@ -13,10 +13,10 @@ public abstract class ItemSizerBase<TItem> : IItemSizer<TItem> {
 	public virtual long ConstantSize => throw new InvalidOperationException("Item sizer is not static");
 
 	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
-		var sizes = items.Select(CalculateSize).ToArray();
+		var sizes = items.Select(item => { using var context = SerializationContext.New; return CalculateSize(context, item); }).ToArray();
 		itemSizes = calculateIndividualItems ? sizes : null;
 		return sizes.Sum();
 	}
 
-	public abstract long CalculateSize(TItem item);
+	public abstract long CalculateSize(SerializationContext context, TItem item);
 }

@@ -27,14 +27,14 @@ internal class PackedSerializer : IItemSerializer<object> {
 	public long CalculateTotalSize(IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes) 
 		=> _serializer.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);
 
-	public long CalculateSize(object item) 
-		=> _serializer.CalculateSize(item);
+	public long CalculateSize(SerializationContext context, object item) 
+		=> _serializer.CalculateSize(context, item);
 
-	public void Serialize(object item, EndianBinaryWriter writer) 
-		=> _serializer.Serialize(item, writer);
+	public void Serialize(object item, EndianBinaryWriter writer, SerializationContext context) 
+		=> _serializer.Serialize(item, writer, context);
 
-	public object Deserialize( EndianBinaryReader reader) 
-		=> _serializer.Deserialize(reader);
+	public object Deserialize(EndianBinaryReader reader, SerializationContext context) 
+		=> _serializer.Deserialize(reader, context);
 
 	public static PackedSerializer Pack(IItemSerializer serializer) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));

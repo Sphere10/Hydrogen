@@ -33,5 +33,5 @@ public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where T
 	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes)
 		=> Internal.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);
 
-	public virtual long CalculateSize(TItem item) => Internal.CalculateSize(item);
+	public virtual long CalculateSize(SerializationContext context, TItem item) => Internal.CalculateSize(context, item);
 }

@@ -26,14 +26,14 @@ public class ClusteredStreamDescriptorSerializer : ConstantSizeItemSerializerBas
 		: base(TraitsLength + StartClusterLength + EndClusterLength + SizeLength, false) {
 	}
 
-	public override void Serialize(ClusteredStreamDescriptor item, EndianBinaryWriter writer) {
+	public override void Serialize(ClusteredStreamDescriptor item, EndianBinaryWriter writer, SerializationContext context) {
 		writer.Write((byte)item.Traits);
 		writer.Write((long)item.StartCluster);
 		writer.Write((long)item.EndCluster);
 		writer.Write((long)item.Size);
 	}
 
-	public override ClusteredStreamDescriptor Deserialize(EndianBinaryReader reader) {
+	public override ClusteredStreamDescriptor Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var item = new ClusteredStreamDescriptor {
 			Traits = (ClusteredStreamTraits)reader.ReadByte(),
 			StartCluster = reader.ReadInt64(),

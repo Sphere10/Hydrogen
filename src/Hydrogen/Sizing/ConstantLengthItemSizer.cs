@@ -37,5 +37,5 @@ public class ConstantLengthItemSizer<TItem> : IItemSizer<TItem> {
 		return size;
 	}
 
-	public long CalculateSize(TItem item) => ConstantSize;
+	public long CalculateSize(SerializationContext context, TItem item) => ConstantSize;
 }

@@ -20,18 +20,18 @@ public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageE
 		_payloadSerializer = payloadSerializer;
 	}
 
-	public override long CalculateSize(ProtocolMessageEnvelope item)
-		=> MessageEnvelopeMarker.Length + _payloadSerializer.CalculateSize(item.Message);
+	public override long CalculateSize(SerializationContext context, ProtocolMessageEnvelope item)
+		=> MessageEnvelopeMarker.Length + _payloadSerializer.CalculateSize(context, item.Message);
 
-	public override void Serialize(ProtocolMessageEnvelope item, EndianBinaryWriter writer) {
+	public override void Serialize(ProtocolMessageEnvelope item, EndianBinaryWriter writer, SerializationContext context) {
 		writer.Write(MessageEnvelopeMarker);
 		writer.Write((byte)item.DispatchType);
 		writer.Write(item.RequestID);
 		writer.Write(_payloadSerializer.CalculateSize(item.Message));
-		_payloadSerializer.Serialize(item.Message, writer);
+		_payloadSerializer.Serialize(item.Message, writer, context);
 	}
 
-	public override ProtocolMessageEnvelope Deserialize(EndianBinaryReader reader) {
+	public override ProtocolMessageEnvelope Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		if (reader.BaseStream.Length < MessageEnvelopeLength)
 			throw new ArgumentException("Stream is too short to be a message envelope");
 
@@ -49,7 +49,7 @@ public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageE
 			throw new ArgumentException("Message payload not found");
 
 		// Deserialize message
-		var message = _payloadSerializer.Deserialize(reader);
+		var message = _payloadSerializer.Deserialize(reader, context);
 
 		return new ProtocolMessageEnvelope {
 			DispatchType = dispatchType,

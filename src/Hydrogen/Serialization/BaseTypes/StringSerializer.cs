@@ -37,20 +37,20 @@ public class StringSerializer : ItemSerializer<string> {
 
 	public Encoding TextEncoding { get; }
 
-	public override long CalculateSize(string item) {
+	public override long CalculateSize(SerializationContext context, string item) {
 		var textByteCount = TextEncoding.GetByteCount(item);
-		var sizeCount = SizeSerializer.CalculateSize(textByteCount);
+		var sizeCount = SizeSerializer.CalculateSize(context, textByteCount);
 		return sizeCount + textByteCount;
 	}
 
-	public override void Serialize(string item, EndianBinaryWriter writer) {
-		SizeSerializer.Serialize(TextEncoding.GetByteCount(item), writer);
+	public override void Serialize(string item, EndianBinaryWriter writer, SerializationContext context) {
+		SizeSerializer.Serialize(TextEncoding.GetByteCount(item), writer, context);
 		var bytes = TextEncoding.GetBytes(item);
 		writer.Write(bytes);
 	}
 
-	public override string Deserialize(EndianBinaryReader reader) {
-		var size = SizeSerializer.Deserialize(reader);
+	public override string Deserialize(EndianBinaryReader reader, SerializationContext context) {
+		var size = SizeSerializer.Deserialize(reader, context);
 		var bytes = reader.ReadBytes(size);
 		return TextEncoding.GetString(bytes);
 	}

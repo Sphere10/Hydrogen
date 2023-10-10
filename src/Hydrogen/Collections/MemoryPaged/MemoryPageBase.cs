@@ -108,15 +108,14 @@ public abstract class MemoryPageBase<TItem> : PageBase<TItem>, IMemoryPage<TItem
 	protected virtual long MeasureConsumedSpace(long index, long count, bool fetchIndividualSizes, out long[] sizes) {
 		CheckRange(index, count);
 		if (Sizer.IsConstantSize) {
-			sizes = fetchIndividualSizes ? Tools.Array.Gen<long>(count, Sizer.ConstantSize) : null;
+			sizes = fetchIndividualSizes ? Tools.Array.Gen(count, Sizer.ConstantSize) : null;
 			return Sizer.ConstantSize * count;
-		} else {
-			sizes = MemoryStore.ReadRange(index - StartIndex, count).Select(x => (long)Sizer.CalculateSize(x)).ToArray();
-			var totalSize = sizes.Sum();
-			if (!fetchIndividualSizes)
-				sizes = null;
-			return totalSize;
 		}
+		sizes = MemoryStore.ReadRange(index - StartIndex, count).Select(x => Sizer.CalculateSize(x)).ToArray();
+		var totalSize = sizes.Sum();
+		if (!fetchIndividualSizes)
+			sizes = null;
+		return totalSize;
 	}
 
 	protected abstract void SaveInternal(IExtendedList<TItem> memoryPage, Stream stream);

@@ -17,5 +17,5 @@ public class StringSizer : ItemSizer<string> {
 		Encoding = encoding;
 	}
 
-	public override long CalculateSize(string item) => Encoding.GetByteCount(item);
+	public override long CalculateSize(SerializationContext context, string item) => Encoding.GetByteCount(item);
 }

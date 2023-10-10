@@ -20,11 +20,11 @@ public abstract class ItemSizer<TItem> : IItemSizer<TItem> {
 	public virtual long ConstantSize => -1;
 
 	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
-		var sizes = items.Select(item => CalculateSize(item)).ToArray();
+		var sizes = items.Select(item => { using var context = SerializationContext.New; return CalculateSize(context, item); }).ToArray();
 		itemSizes = calculateIndividualItems ? sizes.ToArray() : null;
 		return sizes.Sum();
 	}
 
-	public abstract long CalculateSize(TItem item);
+	public abstract long CalculateSize(SerializationContext context, TItem item);
 
 }

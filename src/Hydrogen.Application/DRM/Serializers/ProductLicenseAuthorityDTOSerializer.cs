@@ -17,21 +17,21 @@ public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicens
 	private readonly IItemSerializer<byte[]> _byteArraySerializer = new ByteArraySerializer(SizeDescriptorStrategy.UseUInt32);
 	
 
-	public override long CalculateSize(ProductLicenseAuthorityDTO item)
-		=> sizeof(int) + _stringSerializer.CalculateSize(item.Name) +
+	public override long CalculateSize(SerializationContext context, ProductLicenseAuthorityDTO item)
+		=> sizeof(int) + _stringSerializer.CalculateSize(context, item.Name) +
 		   1 +
 		   sizeof(int) + item.LicensePublicKey.Length;
 
-	public override void Serialize(ProductLicenseAuthorityDTO item, EndianBinaryWriter writer) {
-		_stringSerializer.Serialize(item.Name, writer);
+	public override void Serialize(ProductLicenseAuthorityDTO item, EndianBinaryWriter writer, SerializationContext context) {
+		_stringSerializer.Serialize(item.Name, writer, context);
 		writer.Write((byte)item.LicenseDSS);
-		_byteArraySerializer.Serialize(item.LicensePublicKey, writer);
+		_byteArraySerializer.Serialize(item.LicensePublicKey, writer, context);
 	}
 
-	public override ProductLicenseAuthorityDTO Deserialize(EndianBinaryReader reader) 
+	public override ProductLicenseAuthorityDTO Deserialize(EndianBinaryReader reader, SerializationContext context) 
 		=> new() {
-			Name = _stringSerializer.Deserialize(reader),
+			Name = _stringSerializer.Deserialize(reader, context),
 			LicenseDSS = (DSS)reader.ReadByte(),
-			LicensePublicKey = _byteArraySerializer.Deserialize(reader)
+			LicensePublicKey = _byteArraySerializer.Deserialize(reader, context)
 		};
 }

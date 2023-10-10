@@ -18,57 +18,57 @@ public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
 	private readonly NullableStructSerializer<int> _nullableIntSerializer = new(new PrimitiveSerializer<int>());
 	private readonly NullableStructSerializer<DateTime> _nullableDateTimeSerializer = new(new DateTimeSerializer());
 
-	public override long CalculateSize(ProductLicenseDTO item)
-		=> _stringSerializer.CalculateSize(item.Name) +
-		   _stringSerializer.CalculateSize(item.ProductKey) +
+	public override long CalculateSize(SerializationContext context, ProductLicenseDTO item)
+		=> _stringSerializer.CalculateSize(context, item.Name) +
+		   _stringSerializer.CalculateSize(context, item.ProductKey) +
 		   _guidSerializer.ConstantSize +
 		   sizeof(byte) +
 		   sizeof(byte) +
-		   _nullableShortSerializer.CalculateSize(item.MajorVersionApplicable) +
-		   _nullableDateTimeSerializer.CalculateSize(item.ExpirationDate) +
-		   _nullableIntSerializer.CalculateSize(item.ExpirationDays) +
-		   _nullableIntSerializer.CalculateSize(item.ExpirationLoads) +
-		   _nullableIntSerializer.CalculateSize(item.MaxConcurrentInstances) +
-		   _nullableIntSerializer.CalculateSize(item.MaxSeats) +
-		   _nullableIntSerializer.CalculateSize(item.LimitFeatureA) +
-		   _nullableIntSerializer.CalculateSize(item.LimitFeatureB) +
-		   _nullableIntSerializer.CalculateSize(item.LimitFeatureC) +
-		   _nullableIntSerializer.CalculateSize(item.LimitFeatureD);
+		   _nullableShortSerializer.CalculateSize(context, item.MajorVersionApplicable) +
+		   _nullableDateTimeSerializer.CalculateSize(context, item.ExpirationDate) +
+		   _nullableIntSerializer.CalculateSize(context, item.ExpirationDays) +
+		   _nullableIntSerializer.CalculateSize(context, item.ExpirationLoads) +
+		   _nullableIntSerializer.CalculateSize(context, item.MaxConcurrentInstances) +
+		   _nullableIntSerializer.CalculateSize(context, item.MaxSeats) +
+		   _nullableIntSerializer.CalculateSize(context, item.LimitFeatureA) +
+		   _nullableIntSerializer.CalculateSize(context, item.LimitFeatureB) +
+		   _nullableIntSerializer.CalculateSize(context, item.LimitFeatureC) +
+		   _nullableIntSerializer.CalculateSize(context, item.LimitFeatureD);
 
 
-	public override void Serialize(ProductLicenseDTO item, EndianBinaryWriter writer) {
-		_stringSerializer.Serialize(item.Name, writer);
-		_stringSerializer.Serialize(item.ProductKey, writer);
-		_guidSerializer.Serialize(item.ProductCode, writer);
+	public override void Serialize(ProductLicenseDTO item, EndianBinaryWriter writer, SerializationContext context) {
+		_stringSerializer.Serialize(item.Name, writer, context);
+		_stringSerializer.Serialize(item.ProductKey, writer, context);
+		_guidSerializer.Serialize(item.ProductCode, writer, context);
 		writer.Write((byte)item.FeatureLevel);
 		writer.Write((byte)item.ExpirationPolicy);
-		_nullableShortSerializer.Serialize(item.MajorVersionApplicable, writer);
-		_nullableDateTimeSerializer.Serialize(item.ExpirationDate, writer);
-		_nullableIntSerializer.Serialize(item.ExpirationDays, writer);
-		_nullableIntSerializer.Serialize(item.ExpirationLoads, writer);
-		_nullableIntSerializer.Serialize(item.MaxConcurrentInstances, writer);
-		_nullableIntSerializer.Serialize(item.MaxSeats, writer);
-		_nullableIntSerializer.Serialize(item.LimitFeatureA, writer);
-		_nullableIntSerializer.Serialize(item.LimitFeatureB, writer);
-		_nullableIntSerializer.Serialize(item.LimitFeatureC, writer);
-		_nullableIntSerializer.Serialize(item.LimitFeatureD, writer);
+		_nullableShortSerializer.Serialize(item.MajorVersionApplicable, writer, context);
+		_nullableDateTimeSerializer.Serialize(item.ExpirationDate, writer, context);
+		_nullableIntSerializer.Serialize(item.ExpirationDays, writer, context);
+		_nullableIntSerializer.Serialize(item.ExpirationLoads, writer, context);
+		_nullableIntSerializer.Serialize(item.MaxConcurrentInstances, writer, context);
+		_nullableIntSerializer.Serialize(item.MaxSeats, writer, context);
+		_nullableIntSerializer.Serialize(item.LimitFeatureA, writer, context);
+		_nullableIntSerializer.Serialize(item.LimitFeatureB, writer, context);
+		_nullableIntSerializer.Serialize(item.LimitFeatureC, writer, context);
+		_nullableIntSerializer.Serialize(item.LimitFeatureD, writer, context);
 	}
 
-	public override ProductLicenseDTO Deserialize(EndianBinaryReader reader) => new() {
-		Name = _stringSerializer.Deserialize(reader),
-		ProductKey = _stringSerializer.Deserialize(reader),
-		ProductCode = _guidSerializer.Deserialize(reader),
+	public override ProductLicenseDTO Deserialize(EndianBinaryReader reader, SerializationContext context) => new() {
+		Name = _stringSerializer.Deserialize(reader, context),
+		ProductKey = _stringSerializer.Deserialize(reader, context),
+		ProductCode = _guidSerializer.Deserialize(reader, context),
 		FeatureLevel = (ProductLicenseFeatureLevelDTO)reader.ReadByte(),
 		ExpirationPolicy = (ProductLicenseExpirationPolicyDTO)reader.ReadByte(),
-		MajorVersionApplicable = _nullableShortSerializer.Deserialize(reader),
-		ExpirationDate = _nullableDateTimeSerializer.Deserialize(reader),
-		ExpirationDays = _nullableIntSerializer.Deserialize(reader),
-		ExpirationLoads = _nullableIntSerializer.Deserialize(reader),
-		MaxConcurrentInstances = _nullableIntSerializer.Deserialize(reader),
-		MaxSeats = _nullableIntSerializer.Deserialize(reader),
-		LimitFeatureA = _nullableIntSerializer.Deserialize(reader),
-		LimitFeatureB = _nullableIntSerializer.Deserialize(reader),
-		LimitFeatureC = _nullableIntSerializer.Deserialize(reader),
-		LimitFeatureD = _nullableIntSerializer.Deserialize(reader)
+		MajorVersionApplicable = _nullableShortSerializer.Deserialize(reader, context),
+		ExpirationDate = _nullableDateTimeSerializer.Deserialize(reader, context),
+		ExpirationDays = _nullableIntSerializer.Deserialize(reader, context),
+		ExpirationLoads = _nullableIntSerializer.Deserialize(reader, context),
+		MaxConcurrentInstances = _nullableIntSerializer.Deserialize(reader, context),
+		MaxSeats = _nullableIntSerializer.Deserialize(reader, context),
+		LimitFeatureA = _nullableIntSerializer.Deserialize(reader, context),
+		LimitFeatureB = _nullableIntSerializer.Deserialize(reader, context),
+		LimitFeatureC = _nullableIntSerializer.Deserialize(reader, context),
+		LimitFeatureD = _nullableIntSerializer.Deserialize(reader, context)
 	};
 }

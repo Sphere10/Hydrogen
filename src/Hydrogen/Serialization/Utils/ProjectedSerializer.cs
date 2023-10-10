@@ -32,13 +32,13 @@ public class ProjectedSerializer<TFrom, TTo> : IItemSerializer<TTo> {
 	public long CalculateTotalSize(IEnumerable<TTo> items, bool calculateIndividualItems, out long[] itemSizes) 
 		=> _sourceSerializer.CalculateTotalSize(items.Select(_inverseProjection), calculateIndividualItems, out itemSizes);
 
-	public long CalculateSize(TTo item) 
-		=> _sourceSerializer.CalculateSize(_inverseProjection(item));
+	public long CalculateSize(SerializationContext context, TTo item) 
+		=> _sourceSerializer.CalculateSize(context, _inverseProjection(item));
 
-	public void Serialize(TTo item, EndianBinaryWriter writer) 
-		=> _sourceSerializer.Serialize(_inverseProjection(item), writer);
+	public void Serialize(TTo item, EndianBinaryWriter writer, SerializationContext context) 
+		=> _sourceSerializer.Serialize(_inverseProjection(item), writer, context);
 
-	public TTo Deserialize(EndianBinaryReader reader) 
-		=> _projection(_sourceSerializer.Deserialize(reader));
+	public TTo Deserialize(EndianBinaryReader reader, SerializationContext context) 
+		=> _projection(_sourceSerializer.Deserialize(reader, context));
 
 }

@@ -14,31 +14,61 @@ namespace Hydrogen;
 
 public interface IItemSerializer : IItemSizer {
 
-	internal void Serialize(object item, EndianBinaryWriter writer);
+	internal void Serialize(object item, EndianBinaryWriter writer, SerializationContext context);
 
-	internal object Deserialize(EndianBinaryReader reader);
+	internal object Deserialize(EndianBinaryReader reader, SerializationContext context);
 	
 }
 
 public interface IItemSerializer<TItem> : IItemSizer<TItem>, IItemSerializer {
 
-	public new void Serialize(TItem item, EndianBinaryWriter writer);
+	public new void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context);
 
-	public new TItem Deserialize(EndianBinaryReader reader);
+	public new TItem Deserialize(EndianBinaryReader reader, SerializationContext context);
 
-	void IItemSerializer.Serialize(object item, EndianBinaryWriter writer)
-		=> Serialize((TItem)item, writer);
+	void IItemSerializer.Serialize(object item, EndianBinaryWriter writer, SerializationContext context)
+		=> Serialize((TItem)item, writer, context);
 
-	object IItemSerializer.Deserialize(EndianBinaryReader reader)
-		=> Deserialize(reader);
+	object IItemSerializer.Deserialize(EndianBinaryReader reader, SerializationContext context)
+		=> Deserialize(reader, context);
 }
 
 public static class IItemSerializerExtensions {
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void Serialize(this IItemSerializer serializer, object item, EndianBinaryWriter writer) {
+		using var context = SerializationContext.New;
+		serializer.Serialize(item, writer, context);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void Serialize<TItem>(this IItemSerializer<TItem> serializer, TItem item, EndianBinaryWriter writer) {
+		using var context = SerializationContext.New;
+		serializer.Serialize(item, writer, context);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static object Deserialize(this IItemSerializer serializer, EndianBinaryReader reader) {
+		using var context = SerializationContext.New;
+		return serializer.Deserialize(reader, context);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static TItem Deserialize<TItem>(this IItemSerializer<TItem> serializer, EndianBinaryReader reader) {
+		using var context = SerializationContext.New;
+		return serializer.Deserialize(reader, context);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static long SerializeReturnSize(this IItemSerializer serializer, object item, EndianBinaryWriter writer) {
+		using var context = SerializationContext.New;
+		return serializer.SerializeReturnSize(item, writer, context);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static long SerializeReturnSize(this IItemSerializer serializer, object item, EndianBinaryWriter writer, SerializationContext context) {
 		var startPos = writer.BaseStream.Position;
-		serializer.Serialize(item, writer);
+		serializer.Serialize(item, writer, context);
 		return writer.BaseStream.Position - startPos;
 
 		// NOTE: if a malicious serializer writes more than it says, and rewinds stream Position
@@ -56,7 +86,8 @@ public static class IItemSerializerExtensions {
 	public static byte[] SerializeToBytes<TItem>(this IItemSerializer<TItem> serializer, TItem item, Endianness endianness) {
 		using var stream = new MemoryStream();
 		using var writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), stream);
-		serializer.Serialize(item, writer);
+		using var context = SerializationContext.New;
+		serializer.Serialize(item, writer, context);
 		stream.Flush();
 		return stream.ToArray();
 	}
@@ -77,7 +108,8 @@ public static class IItemSerializerExtensions {
 	public static TItem DeserializeBytes<TItem>(this IItemSerializer<TItem> serializer, byte[] bytes, Endianness endianness)  {
 		using var stream = new MemoryStream(bytes);
 		using var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), stream);
-		return serializer.Deserialize(reader);
+		using var context = SerializationContext.New;
+		return serializer.Deserialize(reader, context);
 	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

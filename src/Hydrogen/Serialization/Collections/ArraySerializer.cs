@@ -17,20 +17,20 @@ public class ArraySerializer<T> : ItemSerializer<T[]> {
 		_valueSerializer = valueSerializer;
 	}
 
-	public override long CalculateSize(T[] item)
-		=> SizeSerializer.CalculateSize(item.Length) + _valueSerializer.CalculateTotalSize(item, false, out _);
+	public override long CalculateSize(SerializationContext context, T[] item)
+		=> SizeSerializer.CalculateSize(context, item.Length) + _valueSerializer.CalculateTotalSize(item, false, out _);
 
-	public override void Serialize(T[] item, EndianBinaryWriter writer) {
-		SizeSerializer.Serialize(item.Length, writer);
+	public override void Serialize(T[] item, EndianBinaryWriter writer, SerializationContext context) {
+		SizeSerializer.Serialize(item.Length, writer, context);
 		foreach (var element in item)
-			_valueSerializer.Serialize(element, writer);
+			_valueSerializer.Serialize(element, writer, context);
 	}
 
-	public override T[] Deserialize(EndianBinaryReader reader) {
-		var arraySize = SizeSerializer.Deserialize(reader);
+	public override T[] Deserialize(EndianBinaryReader reader, SerializationContext context) {
+		var arraySize = SizeSerializer.Deserialize(reader, context);
 		var array = new T[arraySize];
 		for (var i = 0; i < arraySize; i++) {
-			array[i] = _valueSerializer.Deserialize(reader);
+			array[i] = _valueSerializer.Deserialize(reader, context);
 		}
 		return array;
 	}

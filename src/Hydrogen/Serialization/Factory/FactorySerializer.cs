@@ -55,21 +55,21 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 		return totalSize;
 	}
 
-	public long CalculateSize(TBase item)  {
+	public long CalculateSize(SerializationContext context, TBase item)  {
 		var serializer = GetItemSerializer(item);
-		return _serializerSerializer.CalculateSize(serializer) + serializer.CalculateSize(item);
+		return _serializerSerializer.CalculateSize(context, serializer) + serializer.CalculateSize(context, item);
 	}
 
-	public void Serialize(TBase item, EndianBinaryWriter writer) {
+	public void Serialize(TBase item, EndianBinaryWriter writer, SerializationContext context) {
 		var serializer = GetItemSerializer(item);
-		_serializerSerializer.Serialize(serializer, writer);
-		serializer.Serialize(item, writer);
+		_serializerSerializer.Serialize(serializer, writer, context);
+		serializer.Serialize(item, writer, context);
 	}
 
-	public TBase Deserialize(EndianBinaryReader reader) {
-		var serializerObj = _serializerSerializer.Deserialize(reader);
+	public TBase Deserialize(EndianBinaryReader reader, SerializationContext context) {
+		var serializerObj = _serializerSerializer.Deserialize(reader, context);
 		var serializer = GetTypedSerializer<TBase>(serializerObj);
-		return serializer.Deserialize(reader);
+		return serializer.Deserialize(reader, context);
 	}
 
 	public IItemSerializer<TSerializerDataType> GetTypedSerializer<TSerializerDataType>(IItemSerializer serializerObj) {

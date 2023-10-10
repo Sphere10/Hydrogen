@@ -32,7 +32,7 @@ public class FastMarshalStructSerializer<T> : ConstantSizeItemSerializerBase<T> 
 		: base(Marshal.SizeOf(typeof(T)), false) {
 	}
 
-	public override void Serialize(T item, EndianBinaryWriter writer) {
+	public override void Serialize(T item, EndianBinaryWriter writer, SerializationContext context) {
 		var bytes = new byte[ConstantSize];
 		var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 		try {
@@ -44,7 +44,7 @@ public class FastMarshalStructSerializer<T> : ConstantSizeItemSerializerBase<T> 
 		}
 	}
 
-	public override T Deserialize(EndianBinaryReader reader) {
+	public override T Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var bytes = reader.ReadBytes(ConstantSize);
 		var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
 		try {

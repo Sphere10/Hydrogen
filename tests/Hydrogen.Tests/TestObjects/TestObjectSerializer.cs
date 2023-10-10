@@ -7,17 +7,17 @@ public class TestObjectSerializer : ItemSerializer<TestObject> {
 
 
 
-	public override long CalculateSize(TestObject item)
-		=> _stringSerializer.CalculateSize(item.A) + sizeof(int) + sizeof(bool);
+	public override long CalculateSize(SerializationContext context, TestObject item)
+		=> _stringSerializer.CalculateSize(context, item.A) + sizeof(int) + sizeof(bool);
 
 
-	public override void Serialize(TestObject item, EndianBinaryWriter writer) {
-		_stringSerializer.Serialize(item.A, writer);
+	public override void Serialize(TestObject item, EndianBinaryWriter writer, SerializationContext context) {
+		_stringSerializer.Serialize(item.A, writer, context);
 		writer.Write(item.B);
 		writer.Write(item.C);
 	}
 
-	public override TestObject Deserialize(EndianBinaryReader reader) 
-		=> new(_stringSerializer.Deserialize(reader), reader.ReadInt32(), reader.ReadBoolean());
+	public override TestObject Deserialize(EndianBinaryReader reader, SerializationContext context) 
+		=> new(_stringSerializer.Deserialize(reader, context), reader.ReadInt32(), reader.ReadBoolean());
 
 }

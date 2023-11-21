@@ -304,7 +304,7 @@ public class SerializerFactory {
 			var members = SerializerBuilder.GetSerializableMembers(itemType);
 			var memberBindings = new List<MemberSerializationBinding>(members.Length);
 			foreach (var member in members) {
-				var propertyType =  member.PropertyType;
+				var propertyType = member.PropertyType;
 				
 				// Ensure we have a serializer for the member type
 				if (propertyType != typeof(object) && !factory.HasSerializer(propertyType))

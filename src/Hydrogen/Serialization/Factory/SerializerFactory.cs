@@ -14,11 +14,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Security.Claims;
-using Hydrogen.FastReflection;
 
 namespace Hydrogen;
 
+[SuppressMessage("ReSharper", "PossibleNullReferenceException")]
 public class SerializerFactory {
 	internal const int RegistrationCodeStart = 10;  // 0 - 9 reserved for special types (i.e. 0 is used to indicate cyclic reference)
 

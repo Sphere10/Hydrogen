@@ -29,8 +29,8 @@ public class ProjectedSerializer<TFrom, TTo> : IItemSerializer<TTo> {
 
 	public long ConstantSize => _sourceSerializer.ConstantSize;
 
-	public long CalculateTotalSize(IEnumerable<TTo> items, bool calculateIndividualItems, out long[] itemSizes) 
-		=> _sourceSerializer.CalculateTotalSize(items.Select(_inverseProjection), calculateIndividualItems, out itemSizes);
+	public long CalculateTotalSize(SerializationContext context, IEnumerable<TTo> items, bool calculateIndividualItems, out long[] itemSizes) 
+		=> _sourceSerializer.CalculateTotalSize(context, items.Select(_inverseProjection), calculateIndividualItems, out itemSizes);
 
 	public long CalculateSize(SerializationContext context, TTo item) 
 		=> _sourceSerializer.CalculateSize(context, _inverseProjection(item));

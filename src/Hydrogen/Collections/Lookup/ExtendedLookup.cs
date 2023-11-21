@@ -42,7 +42,20 @@ public sealed class ExtendedLookup<TKey, TValue> : ILookup<TKey, TValue> {
 				AddRange(group.Key, group);
 	}
 
+	public int Count => _map.Count;
+
 	public IEnumerable<TKey> Keys => _map.Keys;
+
+	public long GetValuesCount(TKey key) {
+		if (!_map.TryGetValue(key, out var valuesCollection)) {
+			return 0;
+		}
+		return valuesCollection.Count;
+	}
+
+	public bool Contains(TKey key) {
+		return _map.ContainsKey(key);
+	}
 
 	public void Add(TKey key) {
 		FetchValuesCollection(key);
@@ -60,7 +73,12 @@ public sealed class ExtendedLookup<TKey, TValue> : ILookup<TKey, TValue> {
 		FetchValuesCollection(key).AddRange(values);
 	}
 
-	public int Count => _map.Count;
+	public void Clear() {
+		_map.Clear();
+	}
+
+	public Dictionary<TKey, TValue[]> ToDictionary() 
+		=> _map.ToDictionary(x => x.Key, x => x.Value.ToArray());
 
 	public IEnumerable<TValue> this[TKey key] {
 		get {
@@ -69,17 +87,6 @@ public sealed class ExtendedLookup<TKey, TValue> : ILookup<TKey, TValue> {
 			}
 			return valuesCollection;
 		}
-	}
-
-	public long GetValuesCount(TKey key) {
-		if (!_map.TryGetValue(key, out var valuesCollection)) {
-			return 0;
-		}
-		return valuesCollection.Count;
-	}
-
-	public bool Contains(TKey key) {
-		return _map.ContainsKey(key);
 	}
 
 	public IEnumerator<IGrouping<TKey, TValue>> GetEnumerator() {
@@ -91,10 +98,6 @@ public sealed class ExtendedLookup<TKey, TValue> : ILookup<TKey, TValue> {
 
 	IEnumerator IEnumerable.GetEnumerator() {
 		return GetEnumerator();
-	}
-
-	public void Clear() {
-		_map.Clear();
 	}
 
 	private IExtendedCollection<TValue> FetchValuesCollection(TKey key) {

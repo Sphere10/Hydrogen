@@ -45,3 +45,11 @@ public interface IUserInterfaceServices {
 	void ExecuteInUIFriendlyContext(Action action, bool executeAsync = false);
 
 }
+
+
+public interface IApplicationUpgradeDialog {
+	
+	ProgressHandler ProgressHandler { get; }
+
+	void Finish(string errorMessage);
+}

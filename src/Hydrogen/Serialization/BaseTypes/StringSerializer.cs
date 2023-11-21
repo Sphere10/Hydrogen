@@ -10,16 +10,17 @@ using System.Text;
 
 namespace Hydrogen;
 
-public class StringSerializer : ItemSerializer<string> {
+public class StringSerializer : ItemSerializerBase<string> {
+	private readonly SizeDescriptorSerializer _sizeSerializer;
 
 	public StringSerializer()
 		: this(Encoding.UTF8) {
 	}
 
-	public StringSerializer(Encoding textEncoding, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) 
-		: base(sizeDescriptorStrategy) {
+	public StringSerializer(Encoding textEncoding, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
 		Guard.ArgumentNotNull(textEncoding, nameof(textEncoding));
 		TextEncoding = textEncoding;
+		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
 	public static StringSerializer UTF8 { get; } = new(Encoding.UTF8);
@@ -39,18 +40,18 @@ public class StringSerializer : ItemSerializer<string> {
 
 	public override long CalculateSize(SerializationContext context, string item) {
 		var textByteCount = TextEncoding.GetByteCount(item);
-		var sizeCount = SizeSerializer.CalculateSize(context, textByteCount);
+		var sizeCount = _sizeSerializer.CalculateSize(context, textByteCount);
 		return sizeCount + textByteCount;
 	}
 
 	public override void Serialize(string item, EndianBinaryWriter writer, SerializationContext context) {
-		SizeSerializer.Serialize(TextEncoding.GetByteCount(item), writer, context);
+		_sizeSerializer.Serialize(TextEncoding.GetByteCount(item), writer, context);
 		var bytes = TextEncoding.GetBytes(item);
 		writer.Write(bytes);
 	}
 
 	public override string Deserialize(EndianBinaryReader reader, SerializationContext context) {
-		var size = SizeSerializer.Deserialize(reader, context);
+		var size = _sizeSerializer.Deserialize(reader, context);
 		var bytes = reader.ReadBytes(size);
 		return TextEncoding.GetString(bytes);
 	}

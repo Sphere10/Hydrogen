@@ -49,7 +49,10 @@ public sealed class BijectiveDictionary<U, V> : DictionaryDecorator<U, V>, IBije
 	public override V this[U key] {
 		get => base[key];
 		set {
+			var isUpdate = base.TryGetValue(key, out var oldValue);
 			base[key] = value;
+			if (isUpdate)
+				_bijection.InternalDictionary.Remove(oldValue);
 			_bijection.InternalDictionary[value] = key;
 		}
 	}

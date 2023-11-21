@@ -43,7 +43,4 @@ public static class HydrogenFrameworkExtensions {
 		System.Windows.Forms.Application.Run(mainForm as Form);
 	}
 
-	public static void EndWinFormsApplication(this HydrogenFramework applicationLifecycle) {
-		applicationLifecycle.EndFramework();
-	}
 }

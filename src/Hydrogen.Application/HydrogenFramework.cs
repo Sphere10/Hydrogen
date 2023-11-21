@@ -8,6 +8,7 @@
 
 using System;
 using System.IO;
+using System.IO.Enumeration;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,8 @@ public class HydrogenFramework {
 	public event EventHandlerEx Initialized;
 	public event EventHandlerEx Finalizing;
 	public event EventHandlerEx Finalized;
+
+	public event EventHandlerEx<ProductInformation, ProductInformation> VersionChangeDetected;
 
 	static HydrogenFramework() {
 		Instance = new HydrogenFramework();
@@ -100,6 +103,12 @@ public class HydrogenFramework {
 			Tools.Exceptions.ExecuteIgnoringException(disposable.Dispose);
 		IsStarted = false;
 		Finalized?.Invoke();
+	}
+
+	public void TerminateApplication(int exitCode) {
+		if (IsStarted)
+			EndFramework();
+		System.Environment.Exit(exitCode);
 	}
 
 	private void InitializeModules(IServiceProvider serviceProvider)

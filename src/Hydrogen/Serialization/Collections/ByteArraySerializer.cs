@@ -8,24 +8,25 @@
 
 namespace Hydrogen;
 
-public class ByteArraySerializer : ItemSerializer<byte[]> {
+public class ByteArraySerializer : ItemSerializerBase<byte[]> {
+	private readonly SizeDescriptorSerializer _sizeSerializer;
 
-
-	public ByteArraySerializer(SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) 
-		: base(sizeDescriptorStrategy) {
+	public ByteArraySerializer(SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
+		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
 	public static ByteArraySerializer Instance { get; } = new();
 
-	public override long CalculateSize(SerializationContext context, byte[] item) => item.Length;
+	public override long CalculateSize(SerializationContext context, byte[] item) 
+		=> _sizeSerializer.CalculateSize(context, item.Length) + item.Length;
 
 	public override void Serialize(byte[] item, EndianBinaryWriter writer, SerializationContext context) {
-		SizeSerializer.Serialize(item.Length, writer, context);
+		_sizeSerializer.Serialize(item.Length, writer, context);
 		writer.Write(item);
 	}
 
 	public override byte[] Deserialize(EndianBinaryReader reader, SerializationContext context) {
-		var byteSize = SizeSerializer.Deserialize(reader, context);
+		var byteSize = _sizeSerializer.Deserialize(reader, context);
 		 return reader.ReadBytes(byteSize);
 	}
 

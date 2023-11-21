@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
-public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
+public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
+	
+	private Func<TItem> _activator;
+	private MemberSerializationBinding[] _memberBindings;
+	private bool _isConstantSize;
+	private long _constantSize;
 
-	public EventHandlerEx<TItem> ItemActivated;
-
-	private readonly Func<TItem> _activator;
-	private readonly MemberSerializationBinding[] _memberBindings;
-	private readonly bool _isConstantSize;
-	private readonly long _constantSize;
-
-	public CompositeSerializer(Func<TItem> activator, MemberSerializationBinding[] memberBindings) 
-		: base(SizeDescriptorStrategy.UseCVarInt) {
+	public CompositeSerializer(Func<TItem> activator, MemberSerializationBinding[] memberBindings) {
 		Guard.ArgumentNotNull(activator, nameof(activator));
 		Guard.ArgumentNotNull(memberBindings, nameof(memberBindings));
 		_activator = activator;
@@ -25,12 +20,15 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
 	}
 
-	internal CompositeSerializer(Func<object> activator, MemberSerializationBinding[] memberBindings) 
-		: this( () => (TItem)activator(), memberBindings ) {
+	internal CompositeSerializer() {
 	}
 
-	internal void ConfigureLatebound(Func<object> activator, MemberSerializationBinding[] memberBindings)  {
-		throw new NotImplementedException();
+	internal void Configure(Func<object> activator, MemberSerializationBinding[] memberBindings)  {
+		// This is used to configure the serializer after it has been created by the serializer builder.
+		_activator = () => (TItem)activator.Invoke();
+		_memberBindings = memberBindings;
+		_isConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
+		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
 	}
 
 	public override bool SupportsNull => false;
@@ -39,7 +37,7 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 
 	public override long ConstantSize => _constantSize;
 
-	public override long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
+	public override long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var itemsArr = items as TItem[] ?? items.ToArray();
 		itemSizes = null;
 		var totalSize = 0L;
@@ -90,38 +88,4 @@ public class CompositeSerializer<TItem> : ItemSerializer<TItem> {
 		return item;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private void NotifyActivated(TItem item) {
-		ItemActivated?.Invoke(item);
-	}
-	
-
-	//private SerializationScope EnterCompositeScope(TItem item, SerializationTask serializationTask, out long index) {
-	//	// Due to how the serializer factory works, if this is the root-serializer, we need to initiate
-	//	// a SerializationScope so that cyclic references to root object can be detected. If it's not
-	//	// a root-level serializer, then the CyclicReferenceAwareSerializer wrapper will take care of everything.
-	//	index = -1;
-	//	var scope = new SerializationScope();
-	//	if (scope.IsRootScope) {
-	//		switch(serializationTask) {
-	//			case SerializationTask.Sizing:
-	//				scope.NotifySerializingObject(item, true);
-	//				break;
-	//			case SerializationTask.Serializing:
-	//				scope.NotifySerializingObject(item, false);
-	//				break;
-	//			case SerializationTask.Deserializing:
-	//				scope.NotifyDeserializingObject(out index);
-	//				break;
-	//		}
-	//	}
-	//	return scope;
-
-	//}
-
-	//private enum SerializationTask  {
-	//	Sizing,
-	//	Serializing,
-	//	Deserializing
-	//}
 }

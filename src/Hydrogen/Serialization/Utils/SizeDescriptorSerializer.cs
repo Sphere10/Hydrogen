@@ -12,7 +12,7 @@ namespace Hydrogen;
 
 public class SizeDescriptorSerializer : SizeDescriptorSizer, IItemSerializer<long> {
 
-	public SizeDescriptorSerializer() : this(SizeDescriptorStrategy.UseVarInt) {
+	public SizeDescriptorSerializer() : this(SizeDescriptorStrategy.UseCVarInt) {
 	}
 
 	public SizeDescriptorSerializer(SizeDescriptorStrategy sizeDescriptorStrategy) : base(sizeDescriptorStrategy) {

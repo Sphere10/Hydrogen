@@ -8,26 +8,27 @@
 
 namespace Hydrogen;
 
-public class ArraySerializer<T> : ItemSerializer<T[]> {
+public class ArraySerializer<T> : ItemSerializerBase<T[]> {
+	private readonly SizeDescriptorSerializer _sizeSerializer;
 	private readonly IItemSerializer<T> _valueSerializer;
 
-	public ArraySerializer(IItemSerializer<T> valueSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt)
-	: base(sizeDescriptorStrategy) {
+	public ArraySerializer(IItemSerializer<T> valueSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
-		_valueSerializer = valueSerializer;
+		_valueSerializer = valueSerializer.AsReferenceSerializer(); // support null values
+		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
 	public override long CalculateSize(SerializationContext context, T[] item)
-		=> SizeSerializer.CalculateSize(context, item.Length) + _valueSerializer.CalculateTotalSize(item, false, out _);
+		=> _sizeSerializer.CalculateSize(context, item.Length) + _valueSerializer.CalculateTotalSize(context, item, false, out _);
 
 	public override void Serialize(T[] item, EndianBinaryWriter writer, SerializationContext context) {
-		SizeSerializer.Serialize(item.Length, writer, context);
+		_sizeSerializer.Serialize(item.Length, writer, context);
 		foreach (var element in item)
 			_valueSerializer.Serialize(element, writer, context);
 	}
 
 	public override T[] Deserialize(EndianBinaryReader reader, SerializationContext context) {
-		var arraySize = SizeSerializer.Deserialize(reader, context);
+		var arraySize = _sizeSerializer.Deserialize(reader, context);
 		var array = new T[arraySize];
 		for (var i = 0; i < arraySize; i++) {
 			array[i] = _valueSerializer.Deserialize(reader, context);

@@ -18,7 +18,7 @@ namespace Hydrogen;
 /// In addition to serializing the value, this serializer also serializes the serializer used to serialize the value. This permits it to ensure
 /// the same serializer is used for deserialization.
 /// </summary>
-/// <remarks>Ensure that the identical factory is used for both Serialization and Deserializatin for consistent results.</remarks>
+/// <remarks>Ensure that the identical factory is used for both Serialization and Deserialization for consistent results.</remarks>
 /// <typeparam name="TBase">The base-types of objects being serialized/deserialized</typeparam>
 public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 	private readonly SerializerFactory _factory;
@@ -41,7 +41,7 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 
 	public long ConstantSize => -1;
 
-	public long CalculateTotalSize(IEnumerable<TBase> items, bool calculateIndividualItems, out long[] itemSizes) {
+	public long CalculateTotalSize(SerializationContext context, IEnumerable<TBase> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var itemSizesL = new List<long>();
 		var totalSize = items.Aggregate(
 			0L,
@@ -68,19 +68,22 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 
 	public TBase Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var serializerObj = _serializerSerializer.Deserialize(reader, context);
-		var serializer = GetTypedSerializer<TBase>(serializerObj);
+		var serializer = ToUsableSerializer<TBase>(serializerObj);
 		return serializer.Deserialize(reader, context);
 	}
 
-	public IItemSerializer<TSerializerDataType> GetTypedSerializer<TSerializerDataType>(IItemSerializer serializerObj) {
+	private IItemSerializer<TSerializerDataType> ToUsableSerializer<TSerializerDataType>(IItemSerializer serializerObj) {
+		// ensure the underlying serializer is not a Reference Serializer
+		serializerObj = serializerObj.AsDereferencedSerializer();  
+
+		// If serializer gives the type we want, use it
 		if (serializerObj is IItemSerializer<TSerializerDataType> serializer)
 			return serializer;
 
+		// Cast the serializer to the type we want
 		var actualDataType = serializerObj.ItemType;
 		Guard.Ensure(actualDataType.FastIsSubTypeOf(typeof(TSerializerDataType)), $"Serializer object is not an {typeof(IItemSerializer<>).ToStringCS()}");
-
 		return new CastedSerializer<TSerializerDataType>(serializerObj);
-
 	}
 
 	private IItemSerializer<TBase> GetItemSerializer(TBase item) {
@@ -91,8 +94,11 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 			itemType = item.GetType();
 		} 
 
-		var serializer = _factory.GetSerializer<TBase>(itemType);
+		var serializer = _factory.GetRegisteredSerializer<TBase>(itemType, false); 
+
+		// A factory serializer is not responsible to storing NULL references, or context references.
+		// To achieve this, wrap this serializer inside a ReferenceSerializer.
+		Guard.Ensure(serializer is not ReferenceSerializer<TBase>, "A FactorySerializer cannot wrap a ReferenceSerializer");
 		return serializer;
 	}
-
 }

@@ -24,8 +24,8 @@ internal class PackedSerializer : IItemSerializer<object> {
 
 	public long ConstantSize => _serializer.ConstantSize;
 
-	public long CalculateTotalSize(IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes) 
-		=> _serializer.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);
+	public long CalculateTotalSize(SerializationContext context, IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes) 
+		=> _serializer.CalculateTotalSize(context, items, calculateIndividualItems, out itemSizes);
 
 	public long CalculateSize(SerializationContext context, object item) 
 		=> _serializer.CalculateSize(context, item);

@@ -11,7 +11,7 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where TObjectSizer : IItemSizer<TItem> {
-	protected TObjectSizer Internal;
+	internal TObjectSizer Internal;
 
 	// This is a special purpose constructor needed for late binding of internal serializer
 	// (needed by SerializerFactory when assembling serializers dynamically)
@@ -30,8 +30,8 @@ public class ItemSizerDecorator<TItem, TObjectSizer> : IItemSizer<TItem> where T
 
 	public virtual long ConstantSize => Internal.ConstantSize;
 
-	public virtual long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes)
-		=> Internal.CalculateTotalSize(items, calculateIndividualItems, out itemSizes);
+	public virtual long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes)
+		=> Internal.CalculateTotalSize(context, items, calculateIndividualItems, out itemSizes);
 
 	public virtual long CalculateSize(SerializationContext context, TItem item) => Internal.CalculateSize(context, item);
 }

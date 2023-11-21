@@ -10,13 +10,12 @@ using System;
 
 namespace Hydrogen.Communications;
 
-public class ProtocolMessageEnvelopeSerializer : ItemSerializer<ProtocolMessageEnvelope> {
+public class ProtocolMessageEnvelopeSerializer : ItemSerializerBase<ProtocolMessageEnvelope> {
 	private readonly IItemSerializer<object> _payloadSerializer;
 	private static readonly byte[] MessageEnvelopeMarker = { 0, 1, 2, 3 };
 	private static readonly int MessageEnvelopeLength = MessageEnvelopeMarker.Length + sizeof(byte) + sizeof(int) + sizeof(int); // magicID + dispatchType + requestID + messageLength + payload 
 
-	public ProtocolMessageEnvelopeSerializer(IItemSerializer<object> payloadSerializer) 
-		: base(SizeDescriptorStrategy.UseCVarInt) {
+	public ProtocolMessageEnvelopeSerializer(IItemSerializer<object> payloadSerializer) {
 		_payloadSerializer = payloadSerializer;
 	}
 

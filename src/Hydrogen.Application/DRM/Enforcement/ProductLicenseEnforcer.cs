@@ -261,7 +261,7 @@ public class ProductLicenseEnforcer : IProductLicenseEnforcer {
 			if (license.MajorVersionApplicable.HasValue) {
 				rights.AppliesToVersion = true;
 				rights.Version = license.MajorVersionApplicable.Value;
-				var runningVersion = ProductInformationProvider.ProductInformation.GetProductMajorVersion();
+				var runningVersion = ProductInformationProvider.ProductInformation.ProductVersion.Major;
 				if (runningVersion != rights.Version) {
 					isExpired = true;
 					messageBuilder.AppendSentence(WrongVersion.FormatWith(rights.Version, runningVersion));

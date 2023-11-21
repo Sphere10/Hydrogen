@@ -24,8 +24,11 @@ public class ProductLicenseProvider : IProductLicenseProvider {
 
 		var authority = defaultLicense.Authority ?? licenseActivation.Authority; // The authority is the default one shipped with product, or the one provided by server if none (protects against MItM attack)		
 
-		if (licenseActivation != null && !ProductLicenseEnforcer.ValidateLicense(licenseActivation, authority))
-			throw new ProductLicenseTamperedException();
+		if (licenseActivation != null && !ProductLicenseEnforcer.ValidateLicense(licenseActivation, authority)) {
+			Storage.RemoveActivatedLicense();
+			licenseActivation = null;
+			//throw new ProductLicenseTamperedException();
+		}
 
 		if (defaultLicense != null && !ProductLicenseEnforcer.ValidateLicense(defaultLicense, authority))
 			throw new ProductLicenseTamperedException();

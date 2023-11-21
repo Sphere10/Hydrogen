@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 
@@ -38,6 +39,17 @@ public class CyclicReferenceTests {
 
 
 	[Test]
+	public void CyclicReference_1_CalculateSize() {
+		// test object
+		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var obj = new SinglePropertyObject();
+		obj.Property = obj;
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
+
+	[Test]
 	public void CyclicReference_2() {
 		// test object
 		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
@@ -52,6 +64,20 @@ public class CyclicReferenceTests {
 		Assert.That(deserialized.Property, Is.Not.SameAs(deserialized));
 		Assert.That(deserialized.Property, Is.TypeOf<SinglePropertyObject>());
 		Assert.That(((SinglePropertyObject)deserialized.Property).Property, Is.SameAs(deserialized));
+	}
+
+	[Test]
+	public void CyclicReference_2_CalculateSize() {
+		// test object
+		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var obj1 = new SinglePropertyObject();
+		var obj2 = new SinglePropertyObject();
+		obj1.Property = obj2;
+		obj2.Property = obj1;
+
+		var size = serializer.CalculateSize(obj1);
+		var serialized = serializer.SerializeBytesLE(obj1);
+		Assert.That(size, Is.EqualTo(serialized.Length));
 	}
 
 	[Test]
@@ -71,6 +97,19 @@ public class CyclicReferenceTests {
 		Assert.That(((SinglePropertyObject)deserialized.Property).Property, Is.SameAs(deserialized.Property));
 	}
 	
+	[Test]
+	public void CyclicReference_3_CalculateSize() {
+		// test object
+		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var obj1 = new SinglePropertyObject();
+		var obj2 = new SinglePropertyObject();
+		obj1.Property = obj2;
+		obj2.Property = obj2;
+
+		var size = serializer.CalculateSize(obj1);
+		var serialized = serializer.SerializeBytesLE(obj1);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
 
 	[Test]
 	public void CyclicReference_4() {
@@ -102,6 +141,23 @@ public class CyclicReferenceTests {
 		Assert.That(d_obj2, Is.SameAs(d_obj3.Property));
 
 	}
+
+	[Test]
+	public void CyclicReference_4_CalculateSize() {
+		// test object
+		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var obj1 = new SinglePropertyObject();
+		var obj2 = new SinglePropertyObject();
+		var obj3 = new SinglePropertyObject();
+
+		obj1.Property = obj2;
+		obj2.Property = obj3;
+		obj3.Property = obj2;
+
+		var size = serializer.CalculateSize(obj1);
+		var serialized = serializer.SerializeBytesLE(obj1);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
 	
 
 	[Test]
@@ -119,6 +175,20 @@ public class CyclicReferenceTests {
 		Assert.That(deserialized.Property, Is.Not.SameAs(deserialized));
 		Assert.That(deserialized.Property, Is.TypeOf<SinglePropertyObject>());
 		Assert.That(((SinglePropertyObject)deserialized.Property).Property, Is.Null);
+	}
+
+	[Test]
+	public void CyclicReference_None_CalculateSize() {
+		// test object
+		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var obj1 = new SinglePropertyObject();
+		var obj2 = new SinglePropertyObject();
+		obj1.Property = obj2;
+		obj2.Property = null;
+
+		var size = serializer.CalculateSize(obj1);
+		var serialized = serializer.SerializeBytesLE(obj1);
+		Assert.That(size, Is.EqualTo(serialized.Length));
 	}
 
 }

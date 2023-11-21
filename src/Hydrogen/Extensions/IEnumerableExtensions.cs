@@ -338,12 +338,12 @@ public static class IEnumerableExtensions {
 		return source.Concat(new[] { element });
 	}
 
-	public static HashSet<T> ToSet<T>(this IEnumerable<T> source, IEqualityComparer<T> comparer = null) {
-		comparer ??= EqualityComparer<T>.Default;
-		var hashSet = new HashSet<T>(comparer);
+	public static SortedSet<T> ToSortedSet<T>(this IEnumerable<T> source, IComparer<T> comparer = null) {
+		comparer ??= Comparer<T>.Default;
+		var sortedSet = new SortedSet<T>(comparer);
 		foreach (var item in source)
-			hashSet.Add(item);
-		return hashSet;
+			sortedSet.Add(item);
+		return sortedSet;
 	}
 
 	public static Dictionary<TKey, TValue> ToDictionary<TKey, TValue>(this IEnumerable<KeyValuePair<TKey, TValue>> items, IEqualityComparer<TKey> keyComparer = null)

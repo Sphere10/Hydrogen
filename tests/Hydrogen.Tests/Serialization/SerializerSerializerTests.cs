@@ -16,12 +16,11 @@ namespace Hydrogen.Tests;
 public class SerializerSerializerTests {
 
 
-
 	[Test]
 	public void IntSerializer() {
 		var factory = new SerializerFactory();
 		factory.Register(PrimitiveSerializer<int>.Instance);
-		var itemSerializer = factory.GetSerializer<int>();
+		var itemSerializer = factory.GetRegisteredSerializer<int>();
 		var serializerSerializer = new SerializerSerializer(factory);
 		var serializedSerializer = serializerSerializer.SerializeBytesLE(itemSerializer);
 		var deserializedSerializer = serializerSerializer.DeserializeBytesLE(serializedSerializer);
@@ -34,7 +33,7 @@ public class SerializerSerializerTests {
 		var factory = new SerializerFactory();
 		factory.Register(PrimitiveSerializer<int>.Instance);
 		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
-		var itemSerializer = factory.GetSerializer<IList<int>>();
+		var itemSerializer = factory.GetRegisteredSerializer<IList<int>>();
 		var serializerSerializer = new SerializerSerializer(factory);
 		var serializedSerializer = serializerSerializer.SerializeBytesLE(itemSerializer);
 		var deserializedSerializer = serializerSerializer.DeserializeBytesLE(serializedSerializer);
@@ -57,7 +56,7 @@ public class SerializerSerializerTests {
 		//			float, 1 
 		//			IList< 2
 		//				int>>>> 0
-		var itemSerializer = factory.GetSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>();
+		var itemSerializer = factory.GetRegisteredSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>();
 		var serializerSerializer = new SerializerSerializer(factory);
 		var serializedSerializer = serializerSerializer.SerializeBytesLE(itemSerializer);
 		var deserializedSerializer = serializerSerializer.DeserializeBytesLE(serializedSerializer);
@@ -100,14 +99,14 @@ public class SerializerSerializerTests {
 		
 		var serializerSerializer = new SerializerSerializer(factory);
 		var firstSerializerBytes = serializerSerializer.SerializeBytesLE(
-			factory.GetSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>()
+			factory.GetRegisteredSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>()
 		);
 		Assert.That(firstSerializerBytes.Length, Is.EqualTo(8));  // there were 8 serializers referenced in the first serializer (stored as 8 cvarints)
 		var firstSerializer = serializerSerializer.DeserializeBytesLE( firstSerializerBytes) as IItemSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>;
 		Assert.That(firstSerializer, Is.Not.Null);
 
 		var secondSerializerBytes = serializerSerializer.SerializeBytesLE(
-			factory.GetSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<int, IList<int>>>>>()
+			factory.GetRegisteredSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<int, IList<int>>>>>()
 		);
 		Assert.That(secondSerializerBytes.Length, Is.EqualTo(1));  // there was 1 serializer referenced in the first serializer 
 		Assert.That( CVarInt.Read(secondSerializerBytes), Is.EqualTo(SerializerFactory.RegistrationCodeStart + 4));  // the serializer was the 4th serializer registered in the factory

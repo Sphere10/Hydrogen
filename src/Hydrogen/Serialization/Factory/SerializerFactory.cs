@@ -7,11 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Hydrogen.FastReflection;
 
@@ -39,13 +41,81 @@ public class SerializerFactory {
 		_registrationsByType = new BijectiveDictionary<Type, long>(new TypeEquivalenceComparer(), EqualityComparer<long>.Default);
 		_getSerializerHierarchyCache = new ActionCache<Type, RecursiveDataType<long>>(GetSerializerHierarchyInternal, keyComparer: TypeEquivalenceComparer.Instance);
 		_fromSerializerHierarchyCache = new ActionCache<RecursiveDataType<long>, IItemSerializer>(FromSerializerHierarchyInternal);
-		_getSerializerCache = new ActionCache<Type, IItemSerializer>(GetSerializerInternal,  keyComparer: TypeEquivalenceComparer.Instance);
+		_getSerializerCache = new ActionCache<Type, IItemSerializer>(GetCachedSerializer_Fetch,  keyComparer: TypeEquivalenceComparer.Instance);
 		_readOnly = false;
 		_nextFactory = null;
 	}
 
 	public SerializerFactory(SerializerFactory baseFactory) : this() {
 		CopyRegistrations(baseFactory);
+	}
+
+	public IEnumerable<Type> RegisteredTypes => _registrationsByType.Keys;
+
+	public static SerializerFactory Default { get; }
+
+	public static void RegisterDefaults(SerializerFactory factory) {
+		// register self-assembling factory for object
+		
+		// fundamental serialization types
+		factory.Register<object, PureObjectSerializer>();
+		factory.Register(typeof(Array), typeof(ArraySerializer<>));  // special general array serializer
+		factory.Register(typeof (Nullable<>), typeof (NullableSerializer<>)); // nullable struct serializer
+
+		// primitive & base .net types
+		factory.Register(PrimitiveSerializer<bool>.Instance);
+		factory.Register(PrimitiveSerializer<sbyte>.Instance);
+		factory.Register(PrimitiveSerializer<byte>.Instance);
+		factory.Register(PrimitiveSerializer<char>.Instance);
+		factory.Register(PrimitiveSerializer<ushort>.Instance);
+		factory.Register(PrimitiveSerializer<short>.Instance);
+		factory.Register(PrimitiveSerializer<uint>.Instance);
+		factory.Register(PrimitiveSerializer<int>.Instance);
+		factory.Register(PrimitiveSerializer<ulong>.Instance);
+		factory.Register(PrimitiveSerializer<long>.Instance);
+		factory.Register(PrimitiveSerializer<float>.Instance);
+		factory.Register(PrimitiveSerializer<double>.Instance);
+		factory.Register(PrimitiveSerializer<decimal>.Instance);
+		factory.Register(DateTimeSerializer.Instance);
+		factory.Register(TimeSpanSerializer.Instance);
+		factory.Register(DateTimeOffsetSerializer.Instance);
+		factory.Register(GuidSerializer.Instance);
+
+		// their nullables
+		factory.Register(NullableSerializer<bool>.Instance);
+		factory.Register(NullableSerializer<byte>.Instance);
+		factory.Register(NullableSerializer<char>.Instance);
+		factory.Register(NullableSerializer<ushort>.Instance);
+		factory.Register(NullableSerializer<short>.Instance);
+		factory.Register(NullableSerializer<uint>.Instance);
+		factory.Register(NullableSerializer<int>.Instance);
+		factory.Register(NullableSerializer<ulong>.Instance);
+		factory.Register(NullableSerializer<long>.Instance);
+		factory.Register(NullableSerializer<float>.Instance);
+		factory.Register(NullableSerializer<double>.Instance);
+		factory.Register(NullableSerializer<decimal>.Instance);
+		factory.Register(new NullableSerializer<DateTime>(DateTimeSerializer.Instance));
+		factory.Register(new NullableSerializer<TimeSpan>(TimeSpanSerializer.Instance));
+		factory.Register(new NullableSerializer<DateTimeOffset>(DateTimeOffsetSerializer.Instance));
+		factory.Register(new NullableSerializer<Guid>(GuidSerializer.Instance));
+
+		// other base .net types
+		factory.Register(new StringSerializer());
+		factory.Register(typeof(KeyValuePair<,>), typeof(KeyValuePairSerializer<,>));
+
+		// general collections
+		factory.Register<ArrayList, ArrayListSerializer>(() => new ArrayListSerializer(factory));
+		factory.Register(ByteArraySerializer.Instance);
+		factory.Register(typeof(IEnumerable<>), typeof(EnumerableSerializer<>));
+		factory.Register(typeof(ICollection<>), typeof(CollectionInterfaceSerializer<>));
+		factory.Register(typeof(Collection<>), typeof(CollectionSerializer<>));
+		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
+		factory.Register(typeof(List<>), typeof(ListSerializer<>));
+		factory.Register(typeof(IDictionary<,>), typeof(DictionaryInterfaceSerializer<,>));
+		factory.Register(typeof(Dictionary<,>), typeof(DictionarySerializer<,>));
+		factory.Register(typeof(ISet<>), typeof(SetInterfaceSerializer<>));
+		factory.Register(typeof(HashSet<>), typeof(HashSetSerializer<>));
+		factory.Register(typeof(SortedSet<>), typeof(SortedSetSerializer<>));
 	}
 
 	public void CopyRegistrations(SerializerFactory factory) {
@@ -65,88 +135,7 @@ public class SerializerFactory {
 		}
 	}
 
-	public IEnumerable<Type> RegisteredTypes => _registrationsByType.Keys;
-
-	public static SerializerFactory Default { get; }
-
-	public static void RegisterDefaults(SerializerFactory factory) {
-		// register self-assembling factory for object
-		
-		// fundamental serialization types
-		factory.Register(typeof(Array), typeof(ArraySerializer<>));  // special general array serializer
-		factory.Register(typeof (Nullable<>), typeof (NullableStructSerializer<>));
-		
-
-		// primitive & base .net types
-		factory.Register(PrimitiveSerializer<bool>.Instance);
-		factory.Register(PrimitiveSerializer<byte>.Instance);
-		factory.Register(PrimitiveSerializer<char>.Instance);
-		factory.Register(PrimitiveSerializer<ushort>.Instance);
-		factory.Register(PrimitiveSerializer<short>.Instance);
-		factory.Register(PrimitiveSerializer<uint>.Instance);
-		factory.Register(PrimitiveSerializer<int>.Instance);
-		factory.Register(PrimitiveSerializer<ulong>.Instance);
-		factory.Register(PrimitiveSerializer<long>.Instance);
-		factory.Register(PrimitiveSerializer<float>.Instance);
-		factory.Register(PrimitiveSerializer<double>.Instance);
-		factory.Register(PrimitiveSerializer<decimal>.Instance);
-		factory.Register(DateTimeSerializer.Instance);
-		factory.Register(TimeSpanSerializer.Instance);
-		factory.Register(DateTimeOffsetSerializer.Instance);
-		factory.Register(GuidSerializer.Instance);
-
-		// their nullables
-		factory.Register(NullableStructSerializer<bool>.Instance);
-		factory.Register(NullableStructSerializer<byte>.Instance);
-		factory.Register(NullableStructSerializer<char>.Instance);
-		factory.Register(NullableStructSerializer<ushort>.Instance);
-		factory.Register(NullableStructSerializer<short>.Instance);
-		factory.Register(NullableStructSerializer<uint>.Instance);
-		factory.Register(NullableStructSerializer<int>.Instance);
-		factory.Register(NullableStructSerializer<ulong>.Instance);
-		factory.Register(NullableStructSerializer<long>.Instance);
-		factory.Register(NullableStructSerializer<float>.Instance);
-		factory.Register(NullableStructSerializer<double>.Instance);
-		factory.Register(NullableStructSerializer<decimal>.Instance);
-		factory.Register(new NullableStructSerializer<DateTime>(DateTimeSerializer.Instance));
-		factory.Register(new NullableStructSerializer<TimeSpan>(TimeSpanSerializer.Instance));
-		factory.Register(new NullableStructSerializer<DateTimeOffset>(DateTimeOffsetSerializer.Instance));
-		factory.Register(new NullableStructSerializer<Guid>(GuidSerializer.Instance));
-
-		// other base .net types
-		factory.Register(new StringSerializer().AsNullable());
-		factory.Register(typeof(KeyValuePair<,>), typeof(KeyValuePairSerializer<,>));
-
-		// general collections
-		factory.Register(ByteArraySerializer.Instance);
-		factory.Register(typeof(IEnumerable<>), typeof(EnumerableSerializer<>));
-		factory.Register(typeof(ICollection<>), typeof(CollectionInterfaceSerializer<>));
-		factory.Register(typeof(Collection<>), typeof(CollectionSerializer<>));
-		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
-		factory.Register(typeof(List<>), typeof(ListSerializer<>));
-		factory.Register(typeof(IDictionary<,>), typeof(DictionaryInterfaceSerializer<,>));
-		factory.Register(typeof(Dictionary<,>), typeof(DictionarySerializer<,>));
-
-	}
-
-	#region Serializer hierarchy methods
-
-	public RecursiveDataType<long> GetSerializerHierarchy(Type dataType) 
-		=> _getSerializerHierarchyCache[dataType];
-
-	public IItemSerializer FromSerializerHierarchy(RecursiveDataType<long> serializerHierarchy) 
-		=> _fromSerializerHierarchyCache[serializerHierarchy];
-
-	public long CountSubSerializers(long typeCode) {
-		if (!_registrations.TryGetValue(typeCode, out var registration))
-			throw new InvalidOperationException($"No serializer registered for type code {typeCode}");
-		return registration.SerializerType.IsGenericTypeDefinition ? registration.SerializerType.GetGenericArguments().Length : 0;
-	}
-
-	#endregion
-
 	#region Register
-
 
 	public void RegisterEnum<TEnum>() where TEnum : struct, Enum 
 		=> RegisterEnum(typeof(TEnum));
@@ -155,29 +144,39 @@ public class SerializerFactory {
 		Guard.ArgumentNotNull(enumType, nameof(enumType));
 		Guard.Argument(enumType.IsEnum, nameof(enumType), $"Type {enumType.Name} is not an enum");
 		var enumSerializer = (IItemSerializer) typeof(EnumSerializer<>).MakeGenericType(enumType).ActivateWithCompatibleArgs();
-		var nullableEnumSerializer = (IItemSerializer) typeof(NullableStructSerializer<>).MakeGenericType(enumType).ActivateWithCompatibleArgs(enumSerializer);
-		Register(GenerateTypeCode(), enumType, enumSerializer.GetType(), enumSerializer, null);
-		Register(GenerateTypeCode(), typeof(Nullable<>).MakeGenericType(enumType), nullableEnumSerializer.GetType(), nullableEnumSerializer, null);
+		var nullableEnumSerializer = (IItemSerializer) typeof(NullableSerializer<>).MakeGenericType(enumType).ActivateWithCompatibleArgs(enumSerializer);
+		RegisterInternal(GenerateTypeCode(), enumType, enumSerializer.GetType(), enumSerializer, null);
+		RegisterInternal(GenerateTypeCode(), typeof(Nullable<>).MakeGenericType(enumType), nullableEnumSerializer.GetType(), nullableEnumSerializer, null);
 	}
 
 	public void Register<TItem>(IItemSerializer<TItem> serializerInstance)
-		=> Register(GenerateTypeCode(), typeof(TItem), serializerInstance.GetType(), serializerInstance, null);
+		=> RegisterInternal(GenerateTypeCode(), typeof(TItem), serializerInstance.GetType(), serializerInstance, null);
 
 	public void Register<TItem, TSerializer>() where TSerializer : IItemSerializer<TItem>, new()
-		=> Register(GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (_,_) => new TSerializer());
+		=> RegisterInternal(GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (_,_) => new TSerializer());
 
-	public void Register<TItem>(Type serializerType) {
-		Register(GenerateTypeCode(), typeof(TItem), serializerType, null, null);
-	}
+	public void Register<TItem, TSerializer>(Func<TSerializer> factory) 
+		=> RegisterInternal(GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (_,_) => (IItemSerializer)factory());
 
-	public void Register(Type dataType, Type serializerType) {
-		Register(GenerateTypeCode(), dataType, serializerType, null, null);
-	}
+	public void Register<TItem>(Type serializerType) 
+		=> RegisterInternal(GenerateTypeCode(), typeof(TItem), serializerType, null, null);
+	
 
-	public void Register(long typeCode, Type dataType, Type serializerType, IItemSerializer serializerInstance, Func<Registration, Type, IItemSerializer> factory) {
+	public void Register(Type dataType, Type serializerType) 
+		=> RegisterInternal(GenerateTypeCode(), dataType, serializerType, null, null);
+
+
+	public void RegisterAutoBuild<T>() 
+		=> RegisterAutoBuild(typeof(T));
+
+	public void RegisterAutoBuild(Type dataType) 
+		=> GetSerializerInternal(dataType, true);
+
+
+	private void RegisterInternal(long typeCode, Type dataType, Type serializerType, IItemSerializer serializerInstance, Func<Registration, Type, IItemSerializer> factory) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		Guard.ArgumentNotNull(serializerType, nameof(serializerType));
-		Guard.Against(dataType == typeof(object), $"Cannot register serializer for {nameof(Object)} type");
+		//Guard.Against(dataType == typeof(object), $"Cannot register serializer for {nameof(Object)} type");
 		Guard.Ensure(!_readOnly, "Factory is read-only and cannot be changed");
 
 		if (dataType == typeof(Array)) {
@@ -224,24 +223,20 @@ public class SerializerFactory {
 				throw new InvalidOperationException($"Serializer instance is not of type {serializerType.Name}");
 
 			Guard.Ensure(factory is null, "Factory must be null if serializer instance is provided");
-			registration.Factory =  (_, _) => serializerInstance;
+			// serializerInstance = serializerInstance.AsReferenceSerializer(); // ensure serializer instance is reference serializer xxxxxxxxxxxxxxxxxxxxx
+			factory =  (_, _) => serializerInstance;
 		} else if (factory is null) {
 			// get all sub-types
-			registration.Factory = (serializerFactory, requested) => CreateSerializerInstance(serializerFactory, requested, dataType, serializerType);
-		}
+			factory = (serializerFactory, requested) => CreateSerializerInstance(serializerFactory, requested, dataType, serializerType);
+		} 
 
+		registration.Factory = factory;
 		_registrations.Add(typeCode, registration);
 		_registrationsByType.Add(dataType, typeCode);
 
 		_getSerializerCache.Flush();
 		_fromSerializerHierarchyCache.Flush();
 	}
-
-	public void RegisterAutoBuild<T>() 
-		=> RegisterAutoBuild(typeof(T));
-
-	public void RegisterAutoBuild(Type dataType) 
-		=> AssembleInternal(dataType, true);
 
 	#endregion
 
@@ -251,48 +246,15 @@ public class SerializerFactory {
 
 	#endregion
 
-	#region Get Serializer
+	#region GetSerializer
 
-	public IItemSerializer<TType> GetSerializer<TType>() 
-		=> GetSerializer<TType>(typeof(TType));
+	public IItemSerializer<T> GetSerializer<T>() 
+		=> (IItemSerializer<T>)GetSerializerInternal(typeof(T), false);
 
-	public IItemSerializer<TBase> GetSerializer<TBase, TConcrete>() where TConcrete : TBase 
-		=> GetSerializer<TBase>(typeof(TConcrete));
-	
-	public IItemSerializer<TSerializerDataType> GetSerializer<TSerializerDataType>(Type dataType) {
-		Guard.ArgumentNotNull(dataType, nameof(dataType));
-		var serializerDataType = typeof(TSerializerDataType);
-		Guard.Argument(dataType.IsAssignableTo(serializerDataType), nameof(dataType), $"{dataType.ToStringCS()} must be assignable to {serializerDataType.ToStringCS()}");
-		var serializerObj = GetSerializer(dataType);
+	public IItemSerializer GetSerializer(Type type) 
+		=> GetSerializerInternal(type, false);
 
-		var serializer = serializerObj as IItemSerializer<TSerializerDataType>;
-		if (serializer is null) {
-			serializer = new CastedSerializer<TSerializerDataType>(serializerObj);
-		}
-
-		return serializer;
-	}
-
-	public IItemSerializer GetSerializer(Type dataType) => _getSerializerCache[dataType];
-
-	// Called by _getSerializerCache to get serializer
-	private IItemSerializer GetSerializerInternal(Type dataType) {
-		Guard.ArgumentNotNull(dataType, nameof(dataType));
-  	    var registration = FindCompatibleSerializer(dataType, out _);
-		return registration.Factory(registration, dataType);
-	}
-
-	#endregion
-
-	#region Assemble
-
-	public IItemSerializer<T> Assemble<T>() 
-		=> (IItemSerializer<T>)AssembleInternal(typeof(T), false);
-
-	public IItemSerializer Assemble(Type type) 
-		=> AssembleInternal(type, false);
-
-	private IItemSerializer AssembleInternal(Type itemType, bool registerTypes) {
+	private IItemSerializer GetSerializerInternal(Type itemType, bool registerTypes) {
 		
 		// During the construction, a factory is required to store generated serializers.
 		var factory = registerTypes ? this : new SerializerFactory(this);
@@ -305,28 +267,39 @@ public class SerializerFactory {
 		IItemSerializer AssembleRecursively(SerializerFactory factory, Type itemType) {
 			//Guard.Ensure(!alreadyProcessed.ContainsKey(itemType), $"A cyclic-type dependency was detected while building a serializer for type {itemType.ToStringCS()}");
 
+			// Ensure serializers for component types are registered
+			// (i.e. resolving a List<UnregisteredType> serializer requires a serializer for UnregisteredType)
+			foreach (var genericType in GetUnregisteredComponentTypes(itemType))
+				AssembleRecursively(factory, genericType);
+
 			// If serializer already exists for this type in factory, use that
 			if (factory.HasSerializer(itemType))
-				return factory.GetSerializer(itemType);
+				return factory.GetCachedSerializer(itemType);
 
 			// Special Case: if we're serializing an enum (or nullable enum), we register it with the factory now and return
 			if (itemType.IsEnum || itemType.IsConstructedGenericTypeOf(typeof(Nullable<>)) && itemType.GenericTypeArguments[0].IsEnum) {
 				factory.RegisterEnum(itemType.IsEnum ? itemType : itemType.GenericTypeArguments[0]);
-				return factory.GetSerializer(itemType);
+				return factory.GetCachedSerializer(itemType);
 			}
 
-			// No serializer registered so we need to assemble one. First, we need to register the
-			// serializer (before it is assembled) as it may recursively refer to itself. So we activate
-			// a CompositeSerializer with no members (we'll configure it later)
-			var serializer = 
+			// No serializer registered so we need to assemble one as a CompositeSerializer. First, we need to 
+			// register the serializer (before it is assembled) as it may recursively refer to itself. So we 
+			// activate a CompositeSerializer with no members (we'll configure it later)
+			var compositeSerializer = 
 				(IItemSerializer) typeof(CompositeSerializer<>)
 				.MakeGenericType(itemType)
 				.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null)
 				.Invoke(null);
 
+			var serializer = 
+				itemType.IsValueType ? 
+				compositeSerializer : 
+				(IItemSerializer)typeof(ReferenceSerializer<>).MakeGenericType(itemType).GetConstructor(BindingFlags.Public | BindingFlags.Instance, null,  new Type[] { typeof(IItemSerializer<>).MakeGenericType(itemType) }, null).Invoke(new object[] { compositeSerializer });
+
+
 			// register serializer instance now as it may be re-used in component serializers (recursive types)
 			if (itemType != typeof(object))
-				factory.Register(factory.GenerateTypeCode(), itemType, serializer.GetType(), serializer, null);
+				factory.RegisterInternal(factory.GenerateTypeCode(), itemType, compositeSerializer.GetType(), compositeSerializer, null);
 
 			// Create the member serializers
 			var members = SerializerBuilder.GetSerializableMembers(itemType);
@@ -339,33 +312,118 @@ public class SerializerFactory {
 					AssembleRecursively(factory, propertyType);
 
 				// We don't use the member type serializer but instead use a FactorySerializer to ensure cyclic/polymorphic references are handled correctly
-				var memberSerializer = (IItemSerializer) typeof(CompositeSerializer<>).MakeGenericType(propertyType).ActivateWithCompatibleArgs(factory);
-				memberBindings.Add(new(member, memberSerializer.AsSanitized()));
+				var memberSerializer = (IItemSerializer) typeof(FactorySerializer<>).MakeGenericType(propertyType).ActivateWithCompatibleArgs(factory);
+				memberBindings.Add(new(member, memberSerializer.AsReferenceSerializer()));
 			}
 			
-			// Configure the serializer instance (registered already)
+			// Configure the composite serializer instance (which is already registered)
 			var itemTypeLocal = itemType;
-			//var objectGraphSerializer = 
-			//	(IItemSerializer) typeof(CompositeSerializer<>)
-			//		.MakeGenericType(itemType)
-			//		.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { typeof(Func<object>), typeof(MemberSerializationBinding[]) }, null)
-			//		.Invoke(new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
-
-			serializer
+			compositeSerializer
 				.GetType()
-				.GetMethod(nameof(CompositeSerializer<object>.ConfigureLatebound), BindingFlags.Instance | BindingFlags.NonPublic)
-				.Invoke(serializer, new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
+				.GetMethod(nameof(CompositeSerializer<object>.Configure), BindingFlags.Instance | BindingFlags.NonPublic)
+				.Invoke(compositeSerializer, new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
 			
 			return serializer;
 		}
 
+		IEnumerable<Type> GetUnregisteredComponentTypes(Type type, HashSet<Type> alreadyVisited = null) {
+			alreadyVisited ??= new HashSet<Type>();
+
+			// List<Type>
+			// Type[]
+			// Type1<Type2, Type3>
+
+			// Avoid recursive loops
+			if (alreadyVisited.Contains(type))
+				yield break; 
+			alreadyVisited.Add(type);
+			
+			// Case 1: There is an explicit serializer for this type, no component types need to be assembled
+			if (factory.HasSerializer(type))
+				yield break; 
+			
+
+			// Case 2: Array element type may need assembling
+			if (type.IsArray) {
+				var elementType = type.GetElementType();
+				if (!factory.HasSerializer(elementType)) {
+					foreach(var elementTypeUnregisteredComponentTypes in GetUnregisteredComponentTypes(elementType, alreadyVisited))
+						yield return elementTypeUnregisteredComponentTypes;
+					yield return elementType;
+				}
+			}
+
+			// Case 4: Serializer for generic type definition exists but not for generic type arguments 
+			// e.g. List<UnregType>, Dictionary<UnregType1, UnregType2>, etc
+			if (type.IsConstructedGenericType && factory.HasSerializer(type.GetGenericTypeDefinition())) {
+				foreach (var genericArgumentType in type.GetGenericArguments().Where(x => !factory.HasSerializer(x))) {
+					foreach(var subType in GetUnregisteredComponentTypes(genericArgumentType, alreadyVisited))
+						yield return subType;
+					yield return genericArgumentType;
+				}
+			}
+		}
 	}
 
 	#endregion
 
+	#region GetRegisteredSerializer
+
+	public IItemSerializer<TType> GetRegisteredSerializer<TType>(bool referenceSupport = true) 
+		=> GetRegisteredSerializer<TType>(typeof(TType));
+
+	public IItemSerializer<TBase> GetRegisteredSerializer<TBase, TConcrete>(bool referenceSupport = true) where TConcrete : TBase 
+		=> GetRegisteredSerializer<TBase>(typeof(TConcrete));
+	
+	public IItemSerializer<TSerializerDataType> GetRegisteredSerializer<TSerializerDataType>(Type dataType, bool referenceSupport = true) {
+		Guard.ArgumentNotNull(dataType, nameof(dataType));
+		var serializerDataType = typeof(TSerializerDataType);
+		Guard.Argument(dataType.IsAssignableTo(serializerDataType), nameof(dataType), $"{dataType.ToStringCS()} must be assignable to {serializerDataType.ToStringCS()}");
+		var serializerObj = GetRegisteredSerializer(dataType, referenceSupport);
+		var serializer = serializerObj as IItemSerializer<TSerializerDataType>;
+		if (serializer is null) {
+			serializer = new CastedSerializer<TSerializerDataType>(serializerObj);
+		}
+		return serializer;
+	}
+
+	public IItemSerializer GetRegisteredSerializer(Type dataType, bool referenceSupport = true) {
+		Guard.ArgumentNotNull(dataType, nameof(dataType));
+		var serializer = GetCachedSerializer(dataType);
+		serializer = referenceSupport ? serializer.AsReferenceSerializer() : serializer.AsDereferencedSerializer();
+		return serializer;
+	}
+
+	#endregion
+
+	#region Serializer hierarchy methods
+
+	public RecursiveDataType<long> GetSerializerHierarchy(Type dataType) 
+		=> _getSerializerHierarchyCache[dataType];
+
+	public IItemSerializer FromSerializerHierarchy(RecursiveDataType<long> serializerHierarchy) 
+		=> _fromSerializerHierarchyCache[serializerHierarchy];
+
+	public long CountSubSerializers(long typeCode) {
+		if (!_registrations.TryGetValue(typeCode, out var registration))
+			throw new InvalidOperationException($"No serializer registered for type code {typeCode}");
+		return registration.SerializerType.IsGenericTypeDefinition ? registration.SerializerType.GetGenericArguments().Length : 0;
+	}
+
+	#endregion
 
 	#region Aux
-	
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private IItemSerializer GetCachedSerializer(Type dataType) => _getSerializerCache[dataType];
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private IItemSerializer GetCachedSerializer_Fetch(Type dataType) {
+		Guard.ArgumentNotNull(dataType, nameof(dataType));
+		var registration = FindCompatibleSerializer(dataType, out _);
+		return registration.Factory(registration, dataType);
+	}
+
 	private bool TryFindCompatibleSerializer(Type dataType, out long typeCode, out Registration registration) {
 		// Try direct lookup
 		if (_registrationsByType.TryGetValue(dataType, out typeCode)) {
@@ -418,7 +476,7 @@ public class SerializerFactory {
 		};
 
 		var subTypeSerializers = requestedDataType switch {
-			_ => subTypes.Select(registration.SerializerFactory.GetSerializer).ToArray()
+			_ => subTypes.Select(registration.SerializerFactory.GetCachedSerializer).ToArray()
 		};
 		var serializerType = registeredSerializerType;
 		if (serializerType.IsGenericTypeDefinition)
@@ -477,7 +535,6 @@ public class SerializerFactory {
 		public Type DataType { get; set; }
 		public Type SerializerType { get; set; }
 		public Func<Registration, Type, IItemSerializer> Factory { get; set; }
-
 		public SerializerFactory SerializerFactory { get; set; }
 	}
 }

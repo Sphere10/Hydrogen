@@ -25,7 +25,7 @@ public interface IEncrypted<TObject> {
 
 public class Encrypted {
 	public static Encrypted<T> For<T>(T item, byte[] secret, IItemSerializer<T> serializer) where T : new()
-		=> new(item, secret, serializer ?? SerializerFactory.Default.Assemble<T>().AsSanitized());
+		=> new(item, secret, serializer ?? SerializerFactory.Default.GetSerializer<T>().AsReferenceSerializer());
 }
 
 

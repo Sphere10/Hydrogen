@@ -24,12 +24,12 @@ namespace Hydrogen;
 ///  - Null keys are not supported by default, but passing a key serializer that supports null will
 ///  - Since keys/values are accessible independently, they use their own context thus cannot share references from previous context. This needs to be addressed later.
 /// </remarks>
-public class KeyValuePairSerializer<TKey, TValue> : ItemSerializer<KeyValuePair<TKey, TValue>> {
-
-	public KeyValuePairSerializer(IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt)
-		: base(sizeDescriptorStrategy) {
+public class KeyValuePairSerializer<TKey, TValue> : ItemSerializerBase<KeyValuePair<TKey, TValue>>, IKeyValuePairSerializer<TKey, TValue> {
+	private readonly SizeDescriptorSerializer _sizeSerializer;
+	public KeyValuePairSerializer(IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
 		KeySerializer = keySerializer ?? ItemSerializer<TKey>.Default;
-		ValueSerializer = (valueSerializer ?? ItemSerializer<TValue>.Default).AsSanitized();
+		ValueSerializer = (valueSerializer ?? ItemSerializer<TValue>.Default).AsReferenceSerializer();
+		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
 	public IItemSerializer<TKey> KeySerializer { get; }
@@ -38,81 +38,58 @@ public class KeyValuePairSerializer<TKey, TValue> : ItemSerializer<KeyValuePair<
 
 	public override long CalculateSize(SerializationContext context, KeyValuePair<TKey, TValue> item) {
 		var keySize = KeySerializer.CalculateSize(context, item.Key);
-		var keySizeDescriptorSize = SizeSerializer.CalculateSize(context, keySize);
+		var keySizeDescriptorSize = _sizeSerializer.CalculateSize(context, keySize);
 		var valueSize = ValueSerializer.CalculateSize(context, item.Value);
-		var valueSizeDescriptorSize = SizeSerializer.CalculateSize(context, valueSize);
+		var valueSizeDescriptorSize = _sizeSerializer.CalculateSize(context, valueSize);
 		return keySizeDescriptorSize + keySize + valueSizeDescriptorSize + valueSize;
 	}
 
 	public override void Serialize(KeyValuePair<TKey, TValue> item, EndianBinaryWriter writer, SerializationContext context) {
-		// NOTE: since keys/values are accessible independently, we must use a fresh context for each
-
-		// key value		
-		using (var keyContext = SerializationContext.New) {
-			var keySize = KeySerializer.CalculateSize(keyContext, item.Key);
-			SizeSerializer.Serialize(keySize, writer, context);
-			KeySerializer.Serialize(item.Key, writer, context);
-		}
-
+		// write key
+		var keySize = KeySerializer.CalculateSize(context, item.Key);
+		_sizeSerializer.Serialize(keySize, writer, context);
+		KeySerializer.Serialize(item.Key, writer, context);
+		
 		// write value
-		using (var valueContext = SerializationContext.New) {
-			var valueSize = ValueSerializer.CalculateSize(valueContext, item.Value);
-			SizeSerializer.Serialize(valueSize, writer, context);
-			ValueSerializer.Serialize(item.Value, writer, context);
-		}
+		var valueSize = ValueSerializer.CalculateSize(context, item.Value);
+		_sizeSerializer.Serialize(valueSize, writer, context);
+		ValueSerializer.Serialize(item.Value, writer, context);
 	}
 
 	public override KeyValuePair<TKey, TValue> Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		// Deserialize key
-		TKey key;
-		TValue value;
-		using (var keyContext = new SerializationContext()) {
-			SizeSerializer.Deserialize(reader, context);
-			key = KeySerializer.Deserialize(reader, context);
-		}
 
-		using (var valueContext = new SerializationContext()) {
-			SizeSerializer.Deserialize(reader, context);
-			value = ValueSerializer.Deserialize(reader, context);
-		}
+		_sizeSerializer.Deserialize(reader, context);
+		var key = KeySerializer.Deserialize(reader, context);
+		
+		_sizeSerializer.Deserialize(reader, context);
+		var value = ValueSerializer.Deserialize(reader, context);
 
 		return new KeyValuePair<TKey, TValue>(key, value);
 	}
 
-	public TKey DeserializeKey(EndianBinaryReader reader) {
-		using var context = new SerializationContext();
-		SizeSerializer.Deserialize(reader, context);
-		return KeySerializer.Deserialize(reader, context);
-	}
-
+	public TKey DeserializeKey(EndianBinaryReader reader)  // NOTE: potential issue since using a new context here
+		=> Deserialize(reader, SerializationContext.New).Key;
 
 	public byte[] ReadKeyBytes(EndianBinaryReader reader) {
 		using var context = new SerializationContext();
-		var keyBytesLength = SizeSerializer.Deserialize(reader, context);
+		var keyBytesLength = _sizeSerializer.Deserialize(reader, context);
 		return reader.ReadBytes(keyBytesLength);
 	}
 
-	public TValue DeserializeValue(EndianBinaryReader reader) {
-		using var context = new SerializationContext();
-
-		// skip key
-		var keyBytesLength = SizeSerializer.Deserialize(reader, context);
-		reader.BaseStream.Seek(keyBytesLength, SeekOrigin.Current);
-
-		// read value 
-		SizeSerializer.Deserialize(reader, context);
-		return ValueSerializer.Deserialize(reader, context);
-	}
+	public TValue DeserializeValue(EndianBinaryReader reader) // NOTE: potential issue since using a new context here
+		=> Deserialize(reader, SerializationContext.New).Value;
 
 	public byte[] ReadValueBytes(EndianBinaryReader reader) {
-		using var context = new SerializationContext();
+		var context = new SerializationContext();
 
 		// skip key
-		var keyBytesLength = SizeSerializer.Deserialize(reader, context);
+		var keyBytesLength = _sizeSerializer.Deserialize(reader, context);
 		reader.BaseStream.Seek(keyBytesLength, SeekOrigin.Current);
 
 		// read value (size inferred from left-over bytes)
-		var valueSize = SizeSerializer.Deserialize(reader, context);
+		var valueSize = _sizeSerializer.Deserialize(reader, context);
 		return reader.ReadBytes(valueSize);
 	}
+
 }

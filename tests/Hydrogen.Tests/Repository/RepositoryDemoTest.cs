@@ -464,7 +464,7 @@
 //}
 
 
-//public class PlayerRecordSerializer : ItemSerializer<PlayerRecord> {
+//public class PlayerRecordSerializer : ItemSerializerBase<PlayerRecord> {
 
 //	private readonly AutoSizedSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8), SizeDescriptorStrategy.UseUInt32);
 //	private readonly PrimitiveSerializer<long> _int64Serializer = new();

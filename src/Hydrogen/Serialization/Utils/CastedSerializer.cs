@@ -30,8 +30,8 @@ public class CastedSerializer<TItem> : IItemSerializer<TItem> {
 
 	public long ConstantSize => _serializer.ConstantSize;
 
-	public long CalculateTotalSize(IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) 
-		=> _serializer.CalculateTotalSize(items.Cast<object>(), calculateIndividualItems, out itemSizes);
+	public long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) 
+		=> _serializer.CalculateTotalSize(context, items.Cast<object>(), calculateIndividualItems, out itemSizes);
 
 	public long CalculateSize(SerializationContext context, TItem item) 
 		=> _serializer.CalculateSize(context, item);

@@ -2,8 +2,8 @@
 
 namespace Hydrogen.Tests;
 
-public class TestObjectSerializer : ItemSerializer<TestObject> {
-	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.UTF8, SizeDescriptorStrategy.UseVarInt).AsNullable();
+public class TestObjectSerializer : ItemSerializerBase<TestObject> {
+	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.UTF8, SizeDescriptorStrategy.UseVarInt).AsReferenceSerializer();
 
 
 

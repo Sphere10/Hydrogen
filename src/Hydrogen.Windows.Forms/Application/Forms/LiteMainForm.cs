@@ -98,7 +98,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 				FireApplicationExitingEvent(cancelArgs);
 				// If no aborts, ask framework to confirm exit
 				if (!cancelArgs.Cancel)
-					HydrogenFramework.Instance.EndWinFormsApplication();
+					HydrogenFramework.Instance.TerminateApplication(0);
 			} else {
 				cancelArgs.Cancel = true;
 			}
@@ -143,6 +143,8 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	#region IUserInterfaceServices Implementation
 
 	protected override void WndProc(ref Message m) {
+		if (ApplicationExiting)
+			return;
 		const int WM_QUERYENDSESSION = 0x11;
 		if (m.Msg == WM_QUERYENDSESSION) {
 			// CloseActions Hide | Minimize will hold up session shutdown, and SystemEvents doesn't get fired!
@@ -153,16 +155,21 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	}
 
 	public virtual void Exit(bool force = false) {
-		if (!this.IsDisposed) {
+		if (!this.IsDisposed && this.IsHandleCreated) {
 			ExecuteInUIFriendlyContext(ExitInternal);
 		} else {
 			ExitInternal();
 		}
 
 		void ExitInternal() {
-			SuppressExitConfirmation = force;
-			var oldAction = this.CloseAction;
+			var oldSuppressExitConfirmation = SuppressExitConfirmation;
+			var oldAction = CloseAction;
 			try {
+				SuppressExitConfirmation = force;
+				//System.Environment.Exit(-1);
+				if (SuppressExitConfirmation) 
+					HydrogenFramework.Instance.TerminateApplication(0);
+
 				CloseAction = FormCloseAction.Close;
 				Close();
 				System.Windows.Forms.Application.Exit();
@@ -170,11 +177,12 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 				try {
 					System.Windows.Forms.Application.Exit();
 				} catch {
-					System.Environment.Exit(-1);
+					HydrogenFramework.Instance.TerminateApplication(0);
 				}
 			} finally {
 				// This runs if close is aborted
 				CloseAction = oldAction;
+				SuppressExitConfirmation = oldSuppressExitConfirmation;
 			}
 		}
 	}

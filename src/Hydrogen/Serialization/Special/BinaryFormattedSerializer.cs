@@ -19,11 +19,7 @@ namespace Hydrogen;
 /// </summary>
 /// <remarks>Due to limitations of <see cref="BinaryFormatter"/> this class performs a serialization on <see cref="CalculateSize"/>.</remarks>
 /// <typeparam name="TItem"></typeparam>
-public sealed class BinaryFormattedSerializer<TItem> : ItemSerializer<TItem> {
-
-	public BinaryFormattedSerializer() 
-		: base(SizeDescriptorStrategy.UseCVarInt) {
-	}
+public sealed class BinaryFormattedSerializer<TItem> : ItemSerializerBase<TItem> {
 
 	public override bool SupportsNull => true;
 

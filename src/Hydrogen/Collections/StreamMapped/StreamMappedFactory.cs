@@ -166,7 +166,7 @@ public static class StreamMappedFactory {
 		valueComparer ??= EqualityComparer<TValue>.Default;
 
 		// ensure it can serialize null's
-		valueSerializer = valueSerializer.AsSanitized();
+		valueSerializer = valueSerializer.AsReferenceSerializer();
 
 		var useCLK = false;
 		switch (implementation) {
@@ -414,7 +414,7 @@ public static class StreamMappedFactory {
 		CreateDictionaryClk(
 			rootStream,
 			clusterSize,
-			new ConstantSizeByteArraySerializer(hasher.DigestLength).AsNullable(true),
+			new ConstantSizeByteArraySerializer(hasher.DigestLength).AsNullableConstantSize(),
 			serializer,
 			new ByteArrayEqualityComparer(),
 			comparer,

@@ -24,7 +24,7 @@ public class StreamMappedDictionaryCLKTests : StreamMappedDictionaryTestsBase {
 		var dict = StreamMappedFactory.CreateDictionaryClk<string, string>(
 			new MemoryStream(),
 			21,
-			new StringSerializer().AsNullable().AsConstantSize(11),
+			new StringSerializer().AsReferenceSerializer().AsConstantSize(11),
 			new StringSerializer(),
 			reservedStreamCount: 33,
 			policy: StreamContainerPolicy.Performance);

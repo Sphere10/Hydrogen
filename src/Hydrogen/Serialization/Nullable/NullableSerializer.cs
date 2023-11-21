@@ -6,30 +6,34 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+
 using System;
 
 namespace Hydrogen;
 
-internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<T>> {
+public class NullableSerializer<T> : ItemSerializerBase<T?> where T : struct  {
 	private readonly byte[] _padding;
 	private readonly IItemSerializer<T> _valueSerializer;
 
-	public BoxedNullableSerializer(IItemSerializer<T> valueSerializer, bool preserveConstantSize = false) : base(SizeDescriptorStrategy.UseCVarInt) {
+	public NullableSerializer(IItemSerializer<T> valueSerializer, bool preserveConstantSize = false) {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
-		Guard.Argument(!valueSerializer.SupportsNull, nameof(valueSerializer), "Serializer already supports null. Boxing it here is inefficient.");
+		Guard.Argument(!valueSerializer.SupportsNull, nameof(valueSerializer), "Serializer already supports null.");
 		_valueSerializer = valueSerializer;
-		IsConstantSize =  _valueSerializer.IsConstantSize && preserveConstantSize;
-		ConstantSize = IsConstantSize ? sizeof(bool) + _valueSerializer.ConstantSize : -1;
-		_padding = IsConstantSize ? new byte[_valueSerializer.ConstantSize] : Array.Empty<byte>();
+		var isConstantSize = _valueSerializer.IsConstantSize && preserveConstantSize;
+		IsConstantSize =  isConstantSize;
+		ConstantSize = isConstantSize ? sizeof(bool) + _valueSerializer.ConstantSize : -1;
+		_padding = isConstantSize ? new byte[_valueSerializer.ConstantSize] : Array.Empty<byte>();
 	}
 
-	public override bool SupportsNull => false; // this doesn't support null values, only BoxedNullable<T>() with a null Value
+	public static NullableSerializer<T> Instance { get; } = new(PrimitiveSerializer<T>.Instance);
+
+	public override bool SupportsNull => true; 
 
 	public override bool IsConstantSize { get; }
 
 	public override long ConstantSize { get; } 
 
-	public override long CalculateSize(SerializationContext context, BoxedNullable<T> item) {
+	public override long CalculateSize(SerializationContext context, T? item) {
 		if (IsConstantSize)
 			return ConstantSize;
 		
@@ -40,7 +44,7 @@ internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<
 		return size;
 	}
 
-	public override void Serialize(BoxedNullable<T> item, EndianBinaryWriter writer, SerializationContext context) {
+	public override void Serialize(T? item, EndianBinaryWriter writer, SerializationContext context) {
 		if (item.HasValue) {
 			writer.Write(true);
 			_valueSerializer.Serialize(item, writer, context);
@@ -51,12 +55,11 @@ internal sealed class BoxedNullableSerializer<T> : ItemSerializer<BoxedNullable<
 		}
 	}
 
-	public override BoxedNullable<T> Deserialize(EndianBinaryReader reader, SerializationContext context) {
+	public override T? Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var hasValue = reader.ReadBoolean();
-		var result = hasValue ? new BoxedNullable<T>(_valueSerializer.Deserialize(reader, context)) : new BoxedNullable<T>();
+		var result = hasValue ? new T?(_valueSerializer.Deserialize(reader, context)) : null;
 		if (IsConstantSize)
 			reader.ReadBytes(_valueSerializer.ConstantSize);
 		return result;
 	}
-
 }

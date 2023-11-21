@@ -11,12 +11,12 @@ using System.Text;
 
 namespace Hydrogen.Application;
 
-public class ProductLicenseDTOSerializer : ItemSerializer<ProductLicenseDTO> {
-	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.ASCII, SizeDescriptorStrategy.UseUInt32).AsNullable();
+public class ProductLicenseDTOSerializer : ItemSerializerBase<ProductLicenseDTO> {
+	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.ASCII, SizeDescriptorStrategy.UseUInt32).AsNullableSerializer();
 	private readonly GuidSerializer _guidSerializer = new();
-	private readonly NullableStructSerializer<short> _nullableShortSerializer = new(new PrimitiveSerializer<short>());
-	private readonly NullableStructSerializer<int> _nullableIntSerializer = new(new PrimitiveSerializer<int>());
-	private readonly NullableStructSerializer<DateTime> _nullableDateTimeSerializer = new(new DateTimeSerializer());
+	private readonly NullableSerializer<short> _nullableShortSerializer = new(new PrimitiveSerializer<short>());
+	private readonly NullableSerializer<int> _nullableIntSerializer = new(new PrimitiveSerializer<int>());
+	private readonly NullableSerializer<DateTime> _nullableDateTimeSerializer = new(new DateTimeSerializer());
 
 	public override long CalculateSize(SerializationContext context, ProductLicenseDTO item)
 		=> _stringSerializer.CalculateSize(context, item.Name) +

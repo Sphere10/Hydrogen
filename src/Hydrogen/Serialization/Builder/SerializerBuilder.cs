@@ -55,7 +55,7 @@ public class SerializerBuilder<TItem> {
 
 
 	public SerializerBuilder<TItem> Serialize<TMember>(Expression<Func<TItem, TMember>> memberExpression, SerializerFactory factory)
-		=> Serialize(memberExpression, factory.GetSerializer<TMember>().AsSanitized());
+		=> Serialize(memberExpression, factory.GetRegisteredSerializer<TMember>(true));
 
 	public SerializerBuilder<TItem> Serialize<TMember>(Expression<Func<TItem, TMember>> memberExpression, IItemSerializer<TMember> serializer) {
 		Guard.ArgumentNotNull(memberExpression, nameof(memberExpression));
@@ -83,10 +83,10 @@ public class SerializerBuilder<TItem> {
 		
 		foreach(var member in SerializerBuilder.GetSerializableMembers(typeof(TItem))) {
 			if (factory.HasSerializer(member.PropertyType)) {
-				_memberBindings.Add(new(member, factory.GetSerializer(member.PropertyType).AsSanitized()));
+				_memberBindings.Add(new(member, factory.GetRegisteredSerializer(member.PropertyType, true)));
 			} else {
 				// No factory serializer available, build one dynamically using this method
-				var memberSerializer = factory.Assemble(member.PropertyType);
+				var memberSerializer = factory.GetSerializer(member.PropertyType);
 				_memberBindings.Add(new(member, memberSerializer));
 			}
 		}
@@ -99,7 +99,7 @@ public class SerializerBuilder<TItem> {
 		Guard.Ensure(_activator is not null, "Activation has not been set");
 		IItemSerializer<TItem> serializer = new CompositeSerializer<TItem>(_activator, _memberBindings.ToArray());
 		if (_allowNull)
-			serializer = serializer.AsNullable();
+			serializer = serializer.AsReferenceSerializer();
 		return serializer;
 	}
 
@@ -124,7 +124,7 @@ public static class SerializerBuilder {
 		=> (IItemSerializer<T>)AutoBuild(typeof(T), factory);
 
 	public static IItemSerializer AutoBuild(Type itemType, SerializerFactory factory) 
-		=> factory.Assemble(itemType);
+		=> factory.GetSerializer(itemType);
 	
 
 	public static Member[] GetSerializableMembers(Type type)

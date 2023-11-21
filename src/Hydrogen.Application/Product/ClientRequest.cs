@@ -26,11 +26,10 @@ public abstract class ClientRequest {
 				DefaultProductLicense = null,
 				ProductCode = Guid.Empty,
 				ProductDescription = string.Empty,
-				ProductLongVersion = string.Empty,
+				ProductVersion = null,
 				ProductName = string.Empty,
 				ProductPurchaseUrl = string.Empty,
 				ProductUrl = string.Empty,
-				ProductVersion = string.Empty
 			},
 			string.Empty
 		) {

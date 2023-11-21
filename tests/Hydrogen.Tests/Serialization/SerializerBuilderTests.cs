@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using FastSerialization;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -37,7 +38,7 @@ public class SerializerBuilderTests {
 		// test object
 		var serializer = SerializerBuilder
 			.For<TestObject>()
-			.Serialize(x => x.A, StringSerializer.UTF8.AsNullable())
+			.Serialize(x => x.A, StringSerializer.UTF8.AsReferenceSerializer())
 			.Serialize(x => x.B, PrimitiveSerializer<int>.Instance)
 			.Serialize(x => x.C, PrimitiveSerializer<bool>.Instance)
 			.Build();
@@ -52,11 +53,27 @@ public class SerializerBuilderTests {
 	}
 
 	[Test]
+	public void TestObject_1_CalculateSize() {
+		// test object
+		var serializer = SerializerBuilder
+			.For<TestObject>()
+			.Serialize(x => x.A, StringSerializer.UTF8.AsReferenceSerializer())
+			.Serialize(x => x.B, PrimitiveSerializer<int>.Instance)
+			.Serialize(x => x.C, PrimitiveSerializer<bool>.Instance)
+			.Build();
+		
+		var testObj = new TestObject("Hello", 123, true);
+		var size = serializer.CalculateSize(testObj);
+		var serialized = serializer.SerializeBytesLE(testObj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
+
+	[Test]
 	public void AutoBuildConsistency_Simple() {
 		// test object
 		var serializer1 = SerializerBuilder
 			.For<TestObject>()
-			.Serialize(x => x.A, StringSerializer.UTF8.AsNullable())
+			.Serialize(x => x.A, StringSerializer.UTF8.AsReferenceSerializer())
 			.Serialize(x => x.B, PrimitiveSerializer<int>.Instance)
 			.Serialize(x => x.C, PrimitiveSerializer<bool>.Instance)
 			.Build();
@@ -103,6 +120,20 @@ public class SerializerBuilderTests {
 		Assert.That(deserialized, Is.EqualTo(obj).Using(comparer));
 	}
 
+	[Test]
+	public void AutoBuildComplex_CalculateSize() {
+		var serializer = SerializerBuilder.AutoBuild<ComplexObject>();
+		var obj = new ComplexObject {
+			TestProperty = new TestObject("Hello", 123, true),
+			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", new TestObject("Hello", 123, true)),
+			NullableEnumProperty = CrudAction.Create,
+			ManyRecursiveProperty = null
+		};
+
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
 
 	[Test]
 	public void AutoBuildComplex_2() {
@@ -126,6 +157,24 @@ public class SerializerBuilderTests {
 				.AsProjection<KeyValuePair<string, TestObject>, object>(x => x, x => (KeyValuePair<string, TestObject>)x)
 		);
 		Assert.That(deserialized, Is.EqualTo(obj).Using(comparer));
+	}
+
+	[Test]
+	public void AutoBuildComplex_2_CalculateSize() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TestObject>();
+
+		var serializer = SerializerBuilder.AutoBuild<ComplexObject>(factory);
+		var obj = new ComplexObject {
+			TestProperty = null,
+			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", new TestObject(null, 123, true)),
+			NullableEnumProperty = null,
+			ManyRecursiveProperty = null
+		};
+
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
 	}
 
 	[Test]
@@ -155,10 +204,59 @@ public class SerializerBuilderTests {
 	}
 
 	[Test]
-	public void BugCase_Cyclic() {
+	public void AutoBuildComplex_Cyclic_CalculateSize() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TestObject>();
+
+		var serializer = SerializerBuilder.AutoBuild<ComplexObject>(factory);
+		var testObj = new TestObject(null, 123, true);
+		var obj = new ComplexObject {
+			TestProperty = testObj,
+			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", testObj),
+			NullableEnumProperty = null,
+			ManyRecursiveProperty = null
+		};
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
+
+	[Test]
+	public void BugCase_Cyclic1() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory);
+		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var obj = new TwoPropertyObject {
+			Prop1 = "Hello"
+		};
+		obj.Prop2 = obj;
+		var serialized = serializer.SerializeBytesLE(obj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+		Assert.That(deserialized.Prop1, Is.EqualTo("Hello"));
+		Assert.That(deserialized.Prop2, Is.SameAs(deserialized));
+	}
+
+	
+	[Test]
+	public void BugCase_Cyclic1_CalculateSize() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var obj = new TwoPropertyObject {
+			Prop1 = "Hello"
+		};
+		obj.Prop2 = obj;
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
+
+
+	[Test]
+	public void BugCase_Cyclic_2() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
 		var obj = new TwoPropertyObject {
 			Prop1 = "Hello",
 			Prop2 = new TwoPropertyObject {
@@ -178,9 +276,92 @@ public class SerializerBuilderTests {
 		Assert.That(deserialized2.Prop1, Is.Not.SameAs(obj.Prop1));
 		var deserialized3 = (List<string>)deserialized2.Prop2;
 		Assert.That(deserialized3, Is.EqualTo(new List<string> { "Test1", "test2" }));
-		
 	}
 
+	[Test]
+	public void BugCase_Cyclic_2_CalculateSize() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var obj = new TwoPropertyObject {
+			Prop1 = "Hello",
+			Prop2 = new TwoPropertyObject {
+				Prop1 = "Hello",
+				Prop2 = new List<string> { "Test1", "test2" }
+			}
+		};
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
+
+	[Test]
+	public void BugCase_Cyclic_2_CalculateSize_2() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var obj = new TwoPropertyObject {
+			Prop1 = "Hello",
+			Prop2 = new TwoPropertyObject {
+				Prop1 = "Hello",
+			}
+		};
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
+
+	[Test]
+	public void BugCase_Cyclic_2_CalculateSize_3() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = SerializerBuilder.AutoBuild<List<string>>(factory).AsReferenceSerializer();
+		var obj = new List<string> { "4" };
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
+
+	[Test]
+	public void BugCase() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = factory.GetSerializer<List<string>>();
+		var obj = new List<string> { "4" };
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
+
+
+	[Test]
+	public void BugCase_Cyclic_3() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var obj = new TwoPropertyObject {
+			Prop1 = "Hello",
+			Prop2 = "Hello"
+		};
+		var serialized = serializer.SerializeBytesLE(obj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+		Assert.That(deserialized.Prop1, Is.EqualTo("Hello"));
+		Assert.That(deserialized.Prop2, Is.EqualTo("Hello"));
+	}
+
+	[Test]
+	public void BugCase_Cyclic_3_CalculateSize() {
+		var factory = new SerializerFactory(SerializerFactory.Default);
+		factory.RegisterAutoBuild<TwoPropertyObject>();
+		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var obj = new TwoPropertyObject {
+			Prop1 = "Hello",
+			Prop2 = "Hello"
+		};
+		var size = serializer.CalculateSize(obj);
+		var serialized = serializer.SerializeBytesLE(obj);
+		Assert.That(size, Is.EqualTo(serialized.Length));
+	}
 
 	[Test]
 	public void BugCase_1() {
@@ -299,7 +480,7 @@ public class SerializerBuilderTests {
 		// Test with null string field
 		var serializer = SerializerBuilder
 			.For<TestObject>()
-			.Serialize(x => x.A, StringSerializer.UTF8.AsNullable())
+			.Serialize(x => x.A, StringSerializer.UTF8.AsReferenceSerializer())
 			.Serialize(x => x.B, PrimitiveSerializer<int>.Instance)
 			.Serialize(x => x.C, PrimitiveSerializer<bool>.Instance)
 			.Build();
@@ -319,7 +500,7 @@ public class SerializerBuilderTests {
 		// Test with empty string field
 		var serializer = SerializerBuilder
 			.For<TestObject>()
-			.Serialize(x => x.A, StringSerializer.UTF8.AsNullable())
+			.Serialize(x => x.A, StringSerializer.UTF8.AsReferenceSerializer())
 			.Serialize(x => x.B, PrimitiveSerializer<int>.Instance)
 			.Serialize(x => x.C, PrimitiveSerializer<bool>.Instance)
 			.Build();
@@ -339,7 +520,7 @@ public class SerializerBuilderTests {
 		// Test with empty string field
 		var serializer = SerializerBuilder
 			.For<TestObject>()
-			.Serialize(x => x.A, StringSerializer.UTF8.AsNullable())
+			.Serialize(x => x.A, StringSerializer.UTF8.AsReferenceSerializer())
 			.Serialize(x => x.B, PrimitiveSerializer<int>.Instance)
 			.Serialize(x => x.C, PrimitiveSerializer<bool>.Instance)
 			.Build();
@@ -354,7 +535,7 @@ public class SerializerBuilderTests {
 		var serializer = SerializerBuilder
 			.For<TestObject>()
 			.AllowNull()
-			.Serialize(x => x.A, StringSerializer.UTF8.AsNullable())
+			.Serialize(x => x.A, StringSerializer.UTF8.AsReferenceSerializer())
 			.Serialize(x => x.B, PrimitiveSerializer<int>.Instance)
 			.Serialize(x => x.C, PrimitiveSerializer<bool>.Instance)
 			.Build();
@@ -367,10 +548,5 @@ public class SerializerBuilderTests {
 		Assert.That(deserialized, Is.Null);
 			
 	}
-
-	public class SinglePropertyObject {
-		public object Property { get; set; }
-	}
-
 
 }

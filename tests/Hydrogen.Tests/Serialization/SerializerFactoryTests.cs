@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -17,10 +18,22 @@ namespace Hydrogen.Tests;
 public class SerializerFactoryTests {
 
 	[Test]
+	public void DoesReturnReferenceSerializer_1() {
+		var serializer = SerializerFactory.Default.GetRegisteredSerializer<string>();
+		Assert.That(serializer, Is.TypeOf<ReferenceSerializer<string>>());
+	}
+
+	[Test]
+	public void DoesReturnReferenceSerializer_2() {
+		var serializer = SerializerFactory.Default.GetRegisteredSerializer<IList<string>>();
+		Assert.That(serializer, Is.TypeOf<ReferenceSerializer<IList<string>>>());
+	}
+
+	[Test]
 	public void Primitive() {
 		var factory = new SerializerFactory();
 		factory.Register(PrimitiveSerializer<int>.Instance);
-		Assert.That(factory.GetSerializer<int>(), Is.SameAs(PrimitiveSerializer<int>.Instance));
+		Assert.That(factory.GetRegisteredSerializer<int>(), Is.SameAs(PrimitiveSerializer<int>.Instance));
 	}
 
 	[Test]
@@ -28,7 +41,7 @@ public class SerializerFactoryTests {
 		var factory = new SerializerFactory();
 		factory.Register(PrimitiveSerializer<int>.Instance);
 		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
-		Assert.That(factory.GetSerializer<IList<int>>(), Is.TypeOf<ListInterfaceSerializer<int>>());
+		Assert.That(factory.GetRegisteredSerializer<IList<int>>().AsDereferencedSerializer(), Is.TypeOf<ListInterfaceSerializer<int>>());
 	}
 
 	[Test]
@@ -38,7 +51,7 @@ public class SerializerFactoryTests {
 		factory.Register(PrimitiveSerializer<float>.Instance);
 		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
 		factory.Register(typeof(KeyValuePair<,>), typeof(KeyValuePairSerializer<,>));
-		Assert.That(factory.GetSerializer<IList<KeyValuePair<int, float>>>(), Is.TypeOf<ListInterfaceSerializer<KeyValuePair<int, float>>>());
+		Assert.That(factory.GetRegisteredSerializer<IList<KeyValuePair<int, float>>>().AsDereferencedSerializer(), Is.TypeOf<ListInterfaceSerializer<KeyValuePair<int, float>>>());
 	}
 
 	[Test]
@@ -46,7 +59,7 @@ public class SerializerFactoryTests {
 		var factory = new SerializerFactory();
 		factory.Register(PrimitiveSerializer<int>.Instance);
 		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
-		Assert.That(factory.GetSerializer<IList<IList<int>>>, Is.TypeOf<ListInterfaceSerializer<IList<int>>>());
+		Assert.That(factory.GetRegisteredSerializer<IList<IList<int>>>().AsDereferencedSerializer(), Is.TypeOf<ListInterfaceSerializer<IList<int>>>());
 	}
 
 	[Test]
@@ -56,7 +69,7 @@ public class SerializerFactoryTests {
 		factory.Register(PrimitiveSerializer<float>.Instance);
 		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
 		factory.Register(typeof(KeyValuePair<,>), typeof(KeyValuePairSerializer<,>));
-		Assert.That(factory.GetSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>(), Is.TypeOf<ListInterfaceSerializer<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>());
+		Assert.That(factory.GetRegisteredSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>().AsDereferencedSerializer(), Is.TypeOf<ListInterfaceSerializer<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>());
 	}
 
 	[Test]
@@ -115,7 +128,7 @@ public class SerializerFactoryTests {
 		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));  // 0
 		factory.Register(PrimitiveSerializer<int>.Instance);  // 1
 		var serializerHierarchy = factory.GetSerializerHierarchy(typeof(IList<int>));
-		var serializer = factory.FromSerializerHierarchy(serializerHierarchy);
+		var serializer = factory.FromSerializerHierarchy(serializerHierarchy).AsDereferencedSerializer();
 		Assert.That(serializer, Is.TypeOf<ListInterfaceSerializer<int>>());
 	}
 
@@ -135,7 +148,7 @@ public class SerializerFactoryTests {
 		//			IList< 2
 		//				int>>>> 0
 		var serializerHierarchy = factory.GetSerializerHierarchy(typeof(IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>));
-		var serializer = factory.FromSerializerHierarchy(serializerHierarchy);
+		var serializer = factory.FromSerializerHierarchy(serializerHierarchy).AsDereferencedSerializer();;
 		Assert.That(serializer, Is.TypeOf<ListInterfaceSerializer<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>());
 	}
 
@@ -196,8 +209,16 @@ public class SerializerFactoryTests {
 		factory.Register(PrimitiveSerializer<int>.Instance);
 		var hierarchy = factory.GetSerializerHierarchy(typeof(int[]));
 		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { SerializerFactory.RegistrationCodeStart + 0, SerializerFactory.RegistrationCodeStart +1 }));
-		var serializer = factory.FromSerializerHierarchy(hierarchy);
+		var serializer = factory.FromSerializerHierarchy(hierarchy).AsDereferencedSerializer();
 		Assert.That(serializer, Is.TypeOf<ArraySerializer<int>>());
+	}
+
+	[Test]
+	public void Register_ArrayList() {
+		var factory = new SerializerFactory();
+		factory.Register<ArrayList, ArrayListSerializer>(() => new ArrayListSerializer(SerializerFactory.Default));
+		var serializer = factory.GetSerializer<ArrayList>();
+		Assert.That(serializer, Is.TypeOf<ArrayListSerializer>());
 	}
 
 	[Test]
@@ -208,7 +229,7 @@ public class SerializerFactoryTests {
 		factory.Register(ByteArraySerializer.Instance); // 2 (special for byte[])
 		var hierarchy = factory.GetSerializerHierarchy(typeof(int[]));
 		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { SerializerFactory.RegistrationCodeStart + 0, SerializerFactory.RegistrationCodeStart + 1 }));
-		var serializer = factory.FromSerializerHierarchy(hierarchy);
+		var serializer = factory.FromSerializerHierarchy(hierarchy).AsDereferencedSerializer();
 		Assert.That(serializer, Is.TypeOf<ArraySerializer<int>>());
 	}
 
@@ -220,9 +241,115 @@ public class SerializerFactoryTests {
 		factory.Register(ByteArraySerializer.Instance); // 2 (special for byte[])
 		var hierarchy = factory.GetSerializerHierarchy(typeof(byte[]));
 		Assert.That(hierarchy.Flatten(), Is.EqualTo(new[] { SerializerFactory.RegistrationCodeStart + 2 }));
-		var serializer = factory.FromSerializerHierarchy(hierarchy);
+		var serializer = factory.FromSerializerHierarchy(hierarchy).AsDereferencedSerializer();
 		Assert.That(serializer, Is.TypeOf<ByteArraySerializer>());
 	}
 
 
+	[Test]
+	public void ArrayList_References() {
+		var factory = SerializerFactory.Default;  //new SerializerFactory();
+		var serializer = factory.GetSerializer<ArrayList>();
+
+		var item = new ArrayList();
+		item.Add("hello");
+		item.Add(111);
+		item.Add("world");
+
+		var bytes = serializer.SerializeBytesLE(item);
+		var item2 = serializer.DeserializeBytesLE(bytes);
+
+		Assert.That(item2, Is.TypeOf<ArrayList>());
+		Assert.That(item2.Count, Is.EqualTo(3));
+		Assert.That(item2[0], Is.EqualTo("hello"));
+		Assert.That(item2[1], Is.EqualTo(111));
+		Assert.That(item2[2], Is.EqualTo("world"));
+	}
+
+
+	[Test]
+	public void ArrayList_References_Shared() {
+		var factory = SerializerFactory.Default;  //new SerializerFactory();
+		var serializer = factory.GetSerializer<ArrayList>();
+
+		var item = new ArrayList();
+		var obj = new object();
+		item.Add(obj);
+		item.Add(111);
+		item.Add(obj);
+
+		var bytes = serializer.SerializeBytesLE(item);
+		var item2 = serializer.DeserializeBytesLE(bytes);
+
+		Assert.That(item2, Is.TypeOf<ArrayList>());
+		Assert.That(item2.Count, Is.EqualTo(3));
+		Assert.That(item2[1], Is.EqualTo(111));
+		Assert.That(item2[2], Is.SameAs(item2[0]));
+	}
+
+
+	[Test]
+	public void Dictionary_References_Shared() {
+		var factory = SerializerFactory.Default;  //new SerializerFactory();
+		var serializer = factory.GetSerializer<Dictionary<int, string>>();
+
+		var item = new Dictionary<int, string>();
+		item.Add(1, "hello");
+		item.Add(2, "world");
+		item.Add(3, "hello");
+
+		var bytes = serializer.SerializeBytesLE(item);
+		var item2 = serializer.DeserializeBytesLE(bytes);
+
+		Assert.That(item2, Is.TypeOf<Dictionary<int, string>>());
+		Assert.That(item2.Count, Is.EqualTo(3));
+		Assert.That(item2[1], Is.EqualTo("hello"));
+		Assert.That(item2[2], Is.EqualTo("world"));
+		Assert.That(item2[3], Is.EqualTo("hello"));
+		Assert.That(item2[1], Is.SameAs(item2[3]));
+	}
+
+
+	[Test]
+	public void Dictionary_References_Shared_Complex() {
+		var factory = SerializerFactory.Default;  //new SerializerFactory();
+		var serializer = factory.GetSerializer<Dictionary<int, PrimitiveTestObject>>();
+
+		var item = new Dictionary<int, PrimitiveTestObject>();
+		item.Add(1, new PrimitiveTestObject { A = "hello" });
+		item.Add(2, new PrimitiveTestObject { A = "world" });
+		item.Add(3, item[1]);
+
+		var bytes = serializer.SerializeBytesLE(item);
+		var item2 = serializer.DeserializeBytesLE(bytes);
+
+		Assert.That(item2, Is.TypeOf<Dictionary<int, PrimitiveTestObject>>());
+		Assert.That(item2.Count, Is.EqualTo(3));
+		Assert.That(item2[1].A, Is.EqualTo("hello"));
+		Assert.That(item2[2].A, Is.EqualTo("world"));
+		Assert.That(item2[3].A, Is.EqualTo("hello"));
+		Assert.That(item2[1], Is.SameAs(item2[3]));
+	}
+
+
+	[Test]
+	public void Array_References_Shared_Complex() {
+		var factory = SerializerFactory.Default;  //new SerializerFactory();
+		var serializer = factory.GetSerializer<PrimitiveTestObject[]>();
+
+		var item = new PrimitiveTestObject[3];
+		item[0] = new PrimitiveTestObject { A = "hello" };
+		item[1] = new PrimitiveTestObject { A = "world" };
+		item[2] = item[0];
+
+		var bytes = serializer.SerializeBytesLE(item);
+		var item2 = serializer.DeserializeBytesLE(bytes);
+
+		Assert.That(item2, Is.TypeOf<PrimitiveTestObject[]>());
+		Assert.That(item2.Count, Is.EqualTo(3));
+		Assert.That(item2[0].A, Is.EqualTo("hello"));
+		Assert.That(item2[1].A, Is.EqualTo("world"));
+		Assert.That(item2[2].A, Is.EqualTo("hello"));
+		Assert.That(item2[0], Is.SameAs(item2[2]));
+	}
 }

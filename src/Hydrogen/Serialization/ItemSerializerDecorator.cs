@@ -10,7 +10,11 @@ using System;
 
 namespace Hydrogen;
 
-public class ItemSerializerDecorator<TItem, TSerializer> : ItemSizerDecorator<TItem, TSerializer>, IItemSerializer<TItem>
+public interface IItemSerializerDecorator {
+	internal IItemSerializer InternalSerializer { get; }
+}
+
+public class ItemSerializerDecorator<TItem, TSerializer> : ItemSizerDecorator<TItem, TSerializer>, IItemSerializer<TItem>, IItemSerializerDecorator
 	where TSerializer : IItemSerializer<TItem> {
 
 	public ItemSerializerDecorator(TSerializer internalSerializer)
@@ -27,6 +31,7 @@ public class ItemSerializerDecorator<TItem, TSerializer> : ItemSizerDecorator<TI
 	public virtual TItem Deserialize(EndianBinaryReader reader, SerializationContext context)
 		=> Internal.Deserialize(reader, context);
 
+	public IItemSerializer InternalSerializer => base.Internal;
 }
 
 public class ItemSerializerDecorator<TItem> : ItemSerializerDecorator<TItem, IItemSerializer<TItem>> {

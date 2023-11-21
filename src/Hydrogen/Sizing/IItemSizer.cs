@@ -23,7 +23,7 @@ public interface IItemSizer {
 
 	long ConstantSize { get; }
 
-	long CalculateTotalSize(IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes);
+	long CalculateTotalSize(SerializationContext context, IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes);
 
 	long CalculateSize(SerializationContext context, object item);
 }
@@ -32,12 +32,12 @@ public interface IItemSizer<in T> : IItemSizer  {
 
 	Type IItemSizer.ItemType => typeof(T);
 	
-	long CalculateTotalSize(IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes);
+	long CalculateTotalSize(SerializationContext context, IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes);
 
 	long CalculateSize(SerializationContext context, T item);
 
-	long IItemSizer.CalculateTotalSize(IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes)
-		=> CalculateTotalSize(items.Cast<T>(), calculateIndividualItems, out itemSizes);
+	long IItemSizer.CalculateTotalSize(SerializationContext context, IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes)
+		=> CalculateTotalSize(context, items.Cast<T>(), calculateIndividualItems, out itemSizes);
 
 	long IItemSizer.CalculateSize(SerializationContext context, object item)
 		=> CalculateSize(context, (T)item);
@@ -45,6 +45,11 @@ public interface IItemSizer<in T> : IItemSizer  {
 
 
 public static class IItemSizerExtensions {
+
+	public static long CalculateTotalSize<T>(this IItemSizer<T> sizer, IEnumerable<T> items, bool calculateIndividualItems, out long[] itemSizes) {
+		using var context = SerializationContext.New;
+		return sizer.CalculateTotalSize(context, items, calculateIndividualItems, out itemSizes);
+	}
 
 	public static long CalculateSize(this IItemSizer sizer, object item) {
 		using var context = SerializationContext.New;

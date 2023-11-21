@@ -75,10 +75,17 @@ public class BijectiveDictionaryTests {
 			["four"] = 4,
 			["five"] = 5,
 		}.AsBijection();
-
-		
-
 		Assert.That(dictionary, Is.SameAs(dictionary.Bijection.Bijection));
+	}
 
+	[Test]
+	public void TestUpdateViaBijection() {
+		var dictionary = new BijectiveDictionary<string, int>();
+		dictionary["one"] = 1;
+		dictionary.Bijection[1] = "one updated";
+
+		Assert.That(dictionary.Count, Is.EqualTo(1));
+		CollectionAssert.AreEqual(dictionary.Keys, new [] { "one updated" });
+		CollectionAssert.AreEqual(dictionary.Values, new [] { 1 });
 	}
 }

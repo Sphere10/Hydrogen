@@ -142,7 +142,7 @@ public abstract class StreamMappedDictionaryTestsBase : StreamPersistedCollectio
 			estimatedMaxByteSize,
 			storageType,
 			policy,
-			new StringSerializer(Encoding.UTF8).AsNullable(),
+			new StringSerializer(Encoding.UTF8).AsReferenceSerializer(),
 			new TestObjectSerializer(),
 			EqualityComparer<string>.Default,
 			new TestObjectEqualityComparer(),

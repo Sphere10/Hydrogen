@@ -61,7 +61,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
-		<PackageReference Include="System.ServiceProcess.ServiceController" Version="7.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>

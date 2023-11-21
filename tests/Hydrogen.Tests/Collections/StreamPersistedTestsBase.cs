@@ -93,7 +93,7 @@
 
 //        }
 
-//        public class TestObjectSerializer : ItemSerializer<TestObject> {
+//        public class TestObjectSerializer : ItemSerializerBase<TestObject> {
 //			private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.UTF8);
 
 //			public override int CalculateSize(TestObject item) 

@@ -11,7 +11,7 @@ using System.Text;
 
 namespace Hydrogen.Application;
 
-public class ProductLicenseAuthorityDTOSerializer : ItemSerializer<ProductLicenseAuthorityDTO> {
+public class ProductLicenseAuthorityDTOSerializer : ItemSerializerBase<ProductLicenseAuthorityDTO> {
 
 	private readonly IItemSerializer<string> _stringSerializer = new StringSerializer(Encoding.ASCII, SizeDescriptorStrategy.UseUInt32);
 	private readonly IItemSerializer<byte[]> _byteArraySerializer = new ByteArraySerializer(SizeDescriptorStrategy.UseUInt32);

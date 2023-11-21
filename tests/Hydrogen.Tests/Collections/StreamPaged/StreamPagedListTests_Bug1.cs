@@ -18,7 +18,7 @@
 
 //	[Test]
 //	public void ThrowsWhenItemSerializerSerializesIncorrectAmount() {
-//		// Tests for a bug found in initial impl of ClusteredDictionary caused by a broken ItemSerializer
+//		// Tests for a bug found in initial impl of ClusteredDictionary caused by a broken ItemSerializerBase
 //		using var stream = new MemoryStream();
 //		var list = new StreamPagedList<TestStruct>(new ItemRecordSerializer(true), stream) { IncludeListHeader = true };
 //		Assert.That(() => list.Add(default), Throws.Exception);
@@ -27,7 +27,7 @@
 
 //	[Test]
 //	public void DoesNotThrowWhenItemSerializerSerializesCorrectAmount() {
-//		// Tests for a bug found in initial impl of ClusteredDictionary caused by a broken ItemSerializer
+//		// Tests for a bug found in initial impl of ClusteredDictionary caused by a broken ItemSerializerBase
 //		using var stream = new MemoryStream();
 //		var list = new StreamPagedList<TestStruct>(new ItemRecordSerializer(false), stream) { IncludeListHeader = true };
 //		Assert.That(() => list.Add(default), Throws.Nothing);

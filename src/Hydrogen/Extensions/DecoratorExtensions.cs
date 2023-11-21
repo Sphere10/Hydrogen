@@ -1,3 +1,4 @@
+using Hydrogen.Mapping;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -276,17 +277,28 @@ public static partial class DecoratorExtensions {
 
 	#region Serializer
 
-	public static IItemSerializer<T> AsNullable<T>(this IItemSerializer<T> serializer, bool preserveConstantLength = false)
-		=> serializer.SupportsNull ? serializer : new NullableObjectSerializer<T>(serializer, preserveConstantLength);
+	public static IItemSerializer<T> AsNullableSerializer<T>(this IItemSerializer<T> serializer)
+		=> (typeof(T).IsValueType || serializer.SupportsNull) ? serializer : new ReferenceSerializer<T>(serializer, ReferenceSerializerMode.SupportNull);
 
-	public static IItemSerializer AsNullable(this IItemSerializer serializer, bool preserveConstantLength = false)
-		=> serializer.SupportsNull ? serializer : (IItemSerializer)typeof(NullableObjectSerializer<>).MakeGenericType(serializer.ItemType).ActivateWithCompatibleArgs(serializer, preserveConstantLength);
+	public static IItemSerializer AsReferenceSerializer(this IItemSerializer serializer)
+		=> (serializer.ItemType.IsValueType || serializer.SupportsNull) ? serializer : (IItemSerializer)typeof(ReferenceSerializer<>).MakeGenericType(serializer.ItemType).ActivateWithCompatibleArgs(serializer);
+	
+	public static IItemSerializer<T> AsReferenceSerializer<T>(this IItemSerializer<T> serializer)
+		=> (typeof(T).IsValueType || serializer.SupportsNull) ? serializer : new ReferenceSerializer<T>(serializer);
 
-	public static IItemSerializer<TMember> AsSanitized<TMember>(this IItemSerializer<TMember> serializer) 
-		=> typeof(TMember).IsValueType ? serializer : serializer.AsNullable();
+	public static IItemSerializer AsDereferencedSerializer(this IItemSerializer serializer)
+		=> serializer.GetType().IsSubtypeOfGenericType(typeof(ReferenceSerializer<>)) ? ((IItemSerializerDecorator)serializer).InternalSerializer : serializer;
 
-	public static IItemSerializer AsSanitized(this IItemSerializer serializer) 
-		=> serializer.ItemType.IsValueType ? serializer : serializer.AsNullable();
+	public static IItemSerializer<T> AsDereferencedSerializer<T>(this IItemSerializer<T> serializer)
+		=> (serializer is ReferenceSerializer<T> referenceSerializer) ? referenceSerializer.Internal : serializer;
+
+	public static IItemSerializer<T> AsNullableConstantSize<T>(this IItemSerializer<T> serializer) {
+		if (serializer is ConstantSizeReferenceTypeSerializer<T>)
+			return serializer;
+
+		var referenceTypeSerializer = serializer is ReferenceSerializer<T> rts ? rts : new ReferenceSerializer<T>(serializer);
+		return new ConstantSizeReferenceTypeSerializer<T>(referenceTypeSerializer);
+	}
 
 	public static IItemSerializer<T> WithNullSubstitution<T>(this IItemSerializer<T> serializer, T nullSubstitution, IEqualityComparer<T> comparer = null)
 		=> new WithNullSubstitutionSerializer<T>(serializer, nullSubstitution, comparer);

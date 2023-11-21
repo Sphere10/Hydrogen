@@ -30,18 +30,8 @@ public class AssemblyAttributesProductInformationProvider : IProductInformationP
 
 	protected ProductInformation GetProductInformation() {
 
-		var releaseType = HydrogenAssemblyAttributesHelper.GetAssemblyProductDistribution() ?? ProductDistribution.ReleaseCandidate;
-		var longVersion = HydrogenAssemblyAttributesHelper.GetAssemblyVersion();
-		var shortVersion = longVersion;
-		var versions = longVersion.Split('.');
-		if (versions.Length >= 2) {
-			shortVersion = $"{versions[0]}.{versions[1]}";
-		}
-
-		var releaseTypeCode = releaseType switch {
-			ProductDistribution.ReleaseCandidate => string.Empty,
-			_ => $" ({Tools.Enums.GetSerializableOrientedName(releaseType)})"
-		};
+		var version = ApplicationVersion.Parse(HydrogenAssemblyAttributesHelper.GetAssemblyVersion());
+		version.Distribution = HydrogenAssemblyAttributesHelper.GetAssemblyProductDistribution() ?? ProductDistribution.ReleaseCandidate;
 
 		return new ProductInformation {
 			CompanyName = HydrogenAssemblyAttributesHelper.GetAssemblyCompany() ?? string.Empty,
@@ -52,13 +42,12 @@ public class AssemblyAttributesProductInformationProvider : IProductInformationP
 			ProductDrmApiUrl = HydrogenAssemblyAttributesHelper.GetProductDrmApi() ?? string.Empty,
 			ProductCode = HydrogenAssemblyAttributesHelper.GetAssemblyProductCode() ?? Guid.Empty,
 			ProductDescription = HydrogenAssemblyAttributesHelper.GetAssemblyDescription() ?? string.Empty,
-			ProductLongVersion = longVersion,
 			ProductName = HydrogenAssemblyAttributesHelper.GetAssemblyProduct() ?? string.Empty,
 			ProductPurchaseUrl = HydrogenAssemblyAttributesHelper.GetAssemblyProductPurchaseLink() ?? string.Empty,
 			ProductUrl = HydrogenAssemblyAttributesHelper.GetAssemblyProductLink() ?? string.Empty,
 			AuthorName = HydrogenAssemblyAttributesHelper.GetAssemblyAuthorName() ?? string.Empty,
 			AuthorEmail = HydrogenAssemblyAttributesHelper.GetAssemblyAuthorEmail() ?? string.Empty,
-			ProductVersion = ($"{shortVersion}{releaseTypeCode}").Trim(),
+			ProductVersion = version,
 			HelpResources = HydrogenAssemblyAttributesHelper.GetAssemblyProductHelpResources()
 		};
 	}

@@ -264,7 +264,6 @@ public class SerializerFactory {
 
 		// TODO: support nested-types by intelligently tracking parent 
 		IItemSerializer AssembleRecursively(SerializerFactory factory, Type itemType) {
-			//Guard.Ensure(!alreadyProcessed.ContainsKey(itemType), $"A cyclic-type dependency was detected while building a serializer for type {itemType.ToStringCS()}");
 
 			// Ensure serializers for component types are registered
 			// (i.e. resolving a List<UnregisteredType> serializer requires a serializer for UnregisteredType)

@@ -51,7 +51,7 @@ public partial class WizardDialog<T> : FormEx {
 		base.OnFormClosing(e);
 		if (!Closing) {
 			var closeValidation = WizardManager.CancelRequested();
-			e.Cancel = closeValidation.Failure;
+			e.Cancel = closeValidation.IsFailure;
 			if (e.Cancel) {
 				DialogEx.Show(this, SystemIconType.Error, closeValidation.ErrorMessages.ToParagraphCase(true), "Error");
 			}

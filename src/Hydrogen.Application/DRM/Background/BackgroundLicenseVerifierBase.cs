@@ -51,7 +51,7 @@ public abstract class BackgroundLicenseVerifierBase : IBackgroundLicenseVerifier
 				Environment.MachineName,
 				Tools.Network.GetMacAddresses().ToArray()
 			);
-			if (commandResult.Failure)
+			if (commandResult.IsFailure)
 				throw new InvalidOperationException(commandResult.ErrorMessages.ToParagraphCase());
 			LicenseEnforcer.ClearDrmServerErrors();
 

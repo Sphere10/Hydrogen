@@ -50,7 +50,7 @@ public class ProtocolBuilder : IProtocolBuilderMain {
 	public Protocol Build() {
 		// Convention: Handshake uses Mode 0 serializers (App)
 		var result = _protocol.Validate();
-		if (result.Failure)
+		if (result.IsFailure)
 			throw new ProtocolBuilderException(result.ErrorMessages.ToDelimittedString(Environment.NewLine));
 		return _protocol;
 	}

@@ -52,7 +52,7 @@ public class Protocol {
 		// Validate all protocol modes are correct
 		foreach (var mode in Modes) {
 			var modeValidation = mode.Validate();
-			if (modeValidation.Failure)
+			if (modeValidation.IsFailure)
 				result.Merge(modeValidation);
 		}
 

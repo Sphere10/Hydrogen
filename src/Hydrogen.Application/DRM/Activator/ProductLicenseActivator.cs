@@ -29,7 +29,7 @@ public class ProductLicenseActivator : IProductLicenseActivator {
 
 	public async Task ActivateLicense(string productKey) {
 		var licenseResult = await ProductLicenseClient.ActivateLicenseAsync(ProductInformationProvider.ProductInformation.ProductCode, productKey, Environment.MachineName, Tools.Network.GetMacAddresses().ToArray());
-		if (licenseResult.Failure)
+		if (licenseResult.IsFailure)
 			throw new InvalidOperationException(licenseResult.ErrorMessages.ToParagraphCase());
 		await ApplyLicense(licenseResult.Value);
 	}

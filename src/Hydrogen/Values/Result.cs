@@ -35,9 +35,9 @@ public class Result : IEquatable<Result> {
 		ResultCodes
 			.Where(x => x.Type == ResultCodeType.Enum);
 
-	[XmlIgnore] [IgnoreDataMember] public bool IsSuccess => !Failure;
+	[XmlIgnore] [IgnoreDataMember] public bool IsSuccess => !IsFailure;
 
-	[XmlIgnore] [IgnoreDataMember] public bool Failure => ResultCodes.Any(x => x.Severity == LogLevel.Error);
+	[XmlIgnore] [IgnoreDataMember] public bool IsFailure => ResultCodes.Any(x => x.Severity == LogLevel.Error);
 
 	[XmlIgnore] [IgnoreDataMember] public bool HasInformation => ResultCodes.Any() && ResultCodes.All(x => x.Severity != LogLevel.Error);
 
@@ -91,7 +91,7 @@ public class Result : IEquatable<Result> {
 		=> new() { ResultCodes = results.SelectMany(x => x.ResultCodes).ToList() };
 
 	public void ThrowOnFailure() {
-		if (Failure)
+		if (IsFailure)
 			throw new InvalidOperationException(ErrorMessages.ToParagraphCase());
 	}
 

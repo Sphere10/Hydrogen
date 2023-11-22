@@ -36,7 +36,7 @@ public abstract class SettingsObject : ObjectWithDefaultValues {
 		Provider.DeleteSetting(this);
 	}
 
-	public virtual Result Validate() => Result.Valid;
+	public virtual Result Validate() => Result.Success;
 
 	private void CheckProvider() {
 		if (Provider == null)

@@ -44,11 +44,11 @@ public class TestBlock : ApplicationBlock {
 											"Result",
 											$"Name: {model.Name}, Age: {model.Age}",
 											"OK");
-										return Result.Valid;
+										return Result.Success;
 									},
 									(model) => {
 										// cancel func
-										return Result.Valid;
+										return Result.Success;
 									}
 								);
 								await wiz.Start(BlockMainForm.ActiveForm);

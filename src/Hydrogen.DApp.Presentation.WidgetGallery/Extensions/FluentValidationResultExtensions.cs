@@ -14,7 +14,7 @@ public static class FluentValidationResultExtensions {
 
 	public static Result ToResult(this ValidationResult validationResult) {
 		if (validationResult.IsValid) {
-			return Result.Valid;
+			return Result.Success;
 		} else {
 			var result = new Result();
 			foreach (var error in validationResult.Errors) {

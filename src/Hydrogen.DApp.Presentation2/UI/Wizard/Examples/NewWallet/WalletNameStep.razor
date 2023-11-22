@@ -20,8 +20,8 @@
 @code {
     public override string Title { get; } = "Wallet Name";
 
-    public override Task<Result> OnNextAsync() => Task.FromResult(string.IsNullOrEmpty(Model.Name) ? Result.Error("Name is required") : Result.Valid);
+    public override Task<Result> OnNextAsync() => Task.FromResult(string.IsNullOrEmpty(Model.Name) ? Result.Error("Name is required") : Result.Success);
 
-    public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Valid);
+    public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Success);
 
 }

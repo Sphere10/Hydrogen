@@ -23,7 +23,7 @@
         if (string.IsNullOrEmpty(Model.Seed)) {
             return Task.FromResult(Result.Error("Seed is required."));
         } else {
-            return Task.FromResult(Result.Valid);
+            return Task.FromResult(Result.Success);
         }
     }
 }

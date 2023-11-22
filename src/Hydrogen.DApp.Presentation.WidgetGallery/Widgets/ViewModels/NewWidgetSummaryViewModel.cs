@@ -15,11 +15,11 @@ namespace Hydrogen.DApp.Presentation.WidgetGallery.Widgets.ViewModels;
 public class NewWidgetSummaryViewModel : WizardStepViewModelBase<NewWidgetModel> {
 	/// <inheritdoc />
 	public override Task<Result> OnNextAsync() {
-		return Task.FromResult(Result.Valid);
+		return Task.FromResult(Result.Success);
 	}
 
 	/// <inheritdoc />
 	public override Task<Result> OnPreviousAsync() {
-		return Task.FromResult(Result.Valid);
+		return Task.FromResult(Result.Success);
 	}
 }

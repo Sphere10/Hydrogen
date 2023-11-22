@@ -55,9 +55,9 @@
             });
         }
 
-        return Task.FromResult(Result.Valid);
+        return Task.FromResult(Result.Success);
     }
 
-    public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Valid);
+    public override Task<Result> OnPreviousAsync() => Task.FromResult(Result.Success);
 
 }

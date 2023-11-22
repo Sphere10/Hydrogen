@@ -19,6 +19,6 @@ public partial class EnterAgeScreen : DemoWizardScreenBase {
 	}
 
 	public override async Task<Result> Validate() {
-		return Result.Valid;
+		return Result.Success;
 	}
 }

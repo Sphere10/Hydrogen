@@ -56,13 +56,13 @@ namespace Hydrogen.DApp.Presentation2.UI.Wizard {
 		/// the wizard to progress.
 		/// </summary>
 		/// <returns> whether or not the step is finished and to move next</returns>
-		public virtual Task<Result> OnNextAsync() => Task.FromResult(Result.Valid);
+		public virtual Task<Result> OnNextAsync() => Task.FromResult(Result.Success);
 
 		/// <summary>
 		/// Called when the wizard requests the prev step. Returning true will allow
 		/// the wizard to progress.
 		/// </summary>
 		/// <returns> whether or not the step is finished and to move prev</returns>
-		public virtual Task<Result> OnPreviousAsync() => Task.FromResult(Result.Valid);
+		public virtual Task<Result> OnPreviousAsync() => Task.FromResult(Result.Success);
 	}
 }

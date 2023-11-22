@@ -97,7 +97,7 @@ public class Result : IEquatable<Result> {
 
 	public static Result Default => new Result();
 
-	public static Result Valid => Default;
+	public static Result Success => Default;
 
 	public static Result Error(params string[] errorMessages) {
 		var result = new Result();
@@ -239,7 +239,7 @@ public sealed class Result<TValue> : Result, IEquatable<Result<TValue>> {
 
 	public static Result<TValue> From(TValue val) => new Result<TValue>(val);
 
-	public new static Result<TValue> Valid(TValue value) => From(value);
+	public new static Result<TValue> Success(TValue value) => From(value);
 
 	public new static Result<TValue> Error(params string[] errorMessages)
 		=> Error((IEnumerable<string>)errorMessages);

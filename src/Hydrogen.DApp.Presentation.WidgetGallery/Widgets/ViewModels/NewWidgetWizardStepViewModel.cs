@@ -39,6 +39,6 @@ public class NewWidgetWizardStepViewModel : WizardStepViewModelBase<NewWidgetMod
 
 	/// <inheritdoc />
 	public override Task<Result> OnPreviousAsync() {
-		return Task.FromResult(Result.Valid);
+		return Task.FromResult(Result.Success);
 	}
 }

@@ -55,7 +55,7 @@ public class ProcessingQueue<T> {
 	}
 
 	public ProcessingQueue(SynchronizedQueue<T> queue, Func<T, bool> processor, int maxMessages = DefaultMaxMessages)
-		: this(queue, (item) => processor(item) ? Result.Valid : Result.Error($"Failed to process item: {item?.ToString() ?? "<null>"}"), maxMessages) {
+		: this(queue, (item) => processor(item) ? Result.Success : Result.Error($"Failed to process item: {item?.ToString() ?? "<null>"}"), maxMessages) {
 	}
 
 	public ProcessingQueue(Func<T, Result> processor, int maxMessages = DefaultMaxMessages)

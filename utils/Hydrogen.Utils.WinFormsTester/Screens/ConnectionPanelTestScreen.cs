@@ -24,10 +24,10 @@ public partial class ConnectionPanelTestScreen : ApplicationScreen {
 			var result = await _databaseConnectionPanel.TestConnection();
 			_loadingCircle.StopAnimating();
 			MessageBox.Show(this,
-				result.Success ? "Success" : result.ErrorMessages.ToParagraphCase(),
+				result.IsSuccess ? "Success" : result.ErrorMessages.ToParagraphCase(),
 				"Connection Test",
 				MessageBoxButtons.OK,
-				result.Success ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+				result.IsSuccess ? MessageBoxIcon.Information : MessageBoxIcon.Error);
 		}
 	}
 }

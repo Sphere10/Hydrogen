@@ -35,7 +35,7 @@ public class Result : IEquatable<Result> {
 		ResultCodes
 			.Where(x => x.Type == ResultCodeType.Enum);
 
-	[XmlIgnore] [IgnoreDataMember] public bool Success => !Failure;
+	[XmlIgnore] [IgnoreDataMember] public bool IsSuccess => !Failure;
 
 	[XmlIgnore] [IgnoreDataMember] public bool Failure => ResultCodes.Any(x => x.Severity == LogLevel.Error);
 

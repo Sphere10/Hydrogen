@@ -86,7 +86,7 @@ namespace Hydrogen.DApp.Presentation2.UI.Wizard {
 			Result result = await CurrentStepInstance!.OnNextAsync();
 			ErrorMessages.Clear();
 
-			if (result.Success) {
+			if (result.IsSuccess) {
 				if (Wizard.HasNext && Wizard.Next()) {
 					CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
 				} else if (await Wizard.FinishAsync()) {
@@ -123,10 +123,10 @@ namespace Hydrogen.DApp.Presentation2.UI.Wizard {
 			ErrorMessages.Clear();
 			Result stepResult = await CurrentStepInstance!.OnNextAsync();
 
-			if (stepResult.Success) {
+			if (stepResult.IsSuccess) {
 				Result result = await Wizard.FinishAsync();
 
-				if (result.Success) {
+				if (result.IsSuccess) {
 					await OnFinished.InvokeAsync();
 				} else {
 					ErrorMessages.AddRange(result.ErrorMessages);
@@ -144,7 +144,7 @@ namespace Hydrogen.DApp.Presentation2.UI.Wizard {
 			Result result = await Wizard.CancelAsync();
 			ErrorMessages.Clear();
 
-			if (result.Success) {
+			if (result.IsSuccess) {
 				await OnCancelled.InvokeAsync();
 			} else {
 				ErrorMessages.AddRange(result.ErrorMessages);

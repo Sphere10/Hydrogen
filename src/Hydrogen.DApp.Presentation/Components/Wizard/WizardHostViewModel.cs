@@ -76,7 +76,7 @@ public class WizardHostViewModel : ComponentViewModelBase {
 		Result result = await _currentStepInstance!.OnNextAsync();
 		ErrorMessages.Clear();
 
-		if (result.Success) {
+		if (result.IsSuccess) {
 			if (Wizard.Next()) {
 				CurrentStep = CreateStepBaseFragment(Wizard.CurrentStep);
 			}
@@ -111,7 +111,7 @@ public class WizardHostViewModel : ComponentViewModelBase {
 		Result result = await Wizard.FinishAsync();
 		ErrorMessages.Clear();
 
-		if (result.Success) {
+		if (result.IsSuccess) {
 			await OnFinished.InvokeAsync();
 		} else {
 			ErrorMessages.AddRange(result.ErrorMessages);
@@ -126,7 +126,7 @@ public class WizardHostViewModel : ComponentViewModelBase {
 		Result result = await Wizard.CancelAsync();
 		ErrorMessages.Clear();
 
-		if (result.Success) {
+		if (result.IsSuccess) {
 			await OnCancelled.InvokeAsync();
 		} else {
 			ErrorMessages.AddRange(result.ErrorMessages);

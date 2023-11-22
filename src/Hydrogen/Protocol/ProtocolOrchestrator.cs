@@ -38,7 +38,7 @@ public class ProtocolOrchestrator {
 		Guard.ArgumentNotNull(channel, nameof(channel));
 		Guard.ArgumentNotNull(protocol, nameof(protocol));
 		var result = protocol.Validate();
-		Guard.Argument(result.Success, nameof(protocol), result.ErrorMessages.ToParagraphCase());
+		Guard.Argument(result.IsSuccess, nameof(protocol), result.ErrorMessages.ToParagraphCase());
 		_unfulfilledRequests = new SynchronizedDictionary<int, object>();
 		Channel = channel;
 		Protocol = protocol;

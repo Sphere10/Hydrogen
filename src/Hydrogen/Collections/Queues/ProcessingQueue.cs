@@ -124,7 +124,7 @@ public class ProcessingQueue<T> {
 			foreach (var item in toProcess) {
 				try {
 					var result = _processor(item);
-					if (result.Success)
+					if (result.IsSuccess)
 						Succeeded?.InvokeAsync(item);
 					else
 						Failed?.InvokeAsync(item);

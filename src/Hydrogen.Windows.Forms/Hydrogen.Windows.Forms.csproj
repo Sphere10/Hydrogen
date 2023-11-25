@@ -262,8 +262,8 @@
 		<Compile Update="Controls\ValidationIndicator.Designer.cs">
 			<DependentUpon>ValidationIndicator.cs</DependentUpon>
 		</Compile>
-		<Compile Update="Forms\DialogEx.cs" />
-		<Compile Update="Forms\DialogEx.designer.cs">
+		<Compile Update="Dialogs\DialogEx.cs" />
+		<Compile Update="Dialogs\DialogEx.designer.cs">
 			<DependentUpon>DialogEx.cs</DependentUpon>
 		</Compile>
 		<Compile Update="Dialogs\EnterTextDialog.cs" />
@@ -452,7 +452,7 @@
 		<EmbeddedResource Update="Controls\ValidationIndicator.resx">
 			<DependentUpon>ValidationIndicator.cs</DependentUpon>
 		</EmbeddedResource>
-		<EmbeddedResource Update="Forms\DialogEx.resx">
+		<EmbeddedResource Update="Dialogs\DialogEx.resx">
 			<SubType>Designer</SubType>
 			<DependentUpon>DialogEx.cs</DependentUpon>
 		</EmbeddedResource>

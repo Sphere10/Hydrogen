@@ -258,12 +258,3 @@ public partial class DialogEx : FormEx {
 		AlwaysFlag = _alwaysCheckBox.Checked;
 	}
 }
-
-
-public enum DialogExResult {
-	Button1,
-	Button2,
-	Button3,
-	Button4,
-	Button5
-}

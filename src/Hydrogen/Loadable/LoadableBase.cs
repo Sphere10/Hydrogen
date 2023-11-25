@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -43,6 +44,11 @@ public abstract class LoadableBase : ILoadable {
 	protected virtual Task OnLoadingAsync() => Task.CompletedTask;
 
 	protected virtual Task OnLoadedAsync() => Task.CompletedTask;
+
+	protected virtual void CheckLoaded() {
+		if (RequiresLoad)
+			throw new InvalidOperationException($"Instance has not been loaded");
+	}
 
 	protected void NotifyLoading() {
 		if (SuppressNotifications)

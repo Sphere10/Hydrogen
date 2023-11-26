@@ -14,7 +14,7 @@ namespace Hydrogen.Windows.Forms;
 public partial class DialogEx : FormEx {
 
 	public const int MaxTextLength = 5000;
-
+	
 	public DialogEx()
 		: this(SystemIconType.None, string.Empty, "OK", true) {
 	}
@@ -133,7 +133,6 @@ public partial class DialogEx : FormEx {
 		dialog.StartPosition = FormStartPosition.CenterParent;
 		dialog.ShowDialog(owner);
 		return dialog.DialogResult;
-
 	}
 
 	public new DialogExResult DialogResult { get; private set; }

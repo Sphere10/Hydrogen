@@ -93,7 +93,7 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 				ApplicationExiting = true;
 
 			// Ask user to confirm exit
-			if (SuppressExitConfirmation || this.AskYN("Are you sure you want to exit?")) {
+			if (SuppressExitConfirmation || AskYN("Are you sure you want to exit?")) {
 				// Now ask form observers to confirm exit
 				FireApplicationExitingEvent(cancelArgs);
 				// If no aborts, ask framework to confirm exit
@@ -143,8 +143,6 @@ public partial class LiteMainForm : ApplicationForm, IMainForm {
 	#region IUserInterfaceServices Implementation
 
 	protected override void WndProc(ref Message m) {
-		if (ApplicationExiting)
-			return;
 		const int WM_QUERYENDSESSION = 0x11;
 		if (m.Msg == WM_QUERYENDSESSION) {
 			// CloseActions Hide | Minimize will hold up session shutdown, and SystemEvents doesn't get fired!

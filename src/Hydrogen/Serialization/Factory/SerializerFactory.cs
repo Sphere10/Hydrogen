@@ -19,7 +19,8 @@ namespace Hydrogen;
 
 [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
 public class SerializerFactory {
-	internal const int RegistrationCodeStart = 10;  // 0 - 9 reserved for special types (i.e. 0 is used to indicate cyclic reference)
+	internal const int PermanentTypeCodeStartDefault = 10; 
+	internal const int EphemeralTypeCodeStartDefault = 65536; // Type codes for ephemerally registered types start here. This allows you to update your core serializer registrations over time without affecting previous serialized objects.
 
 	private IDictionary<long, Registration> _registrations;
 	private BijectiveDictionary<Type, long> _registrationsByType;
@@ -52,6 +53,8 @@ public class SerializerFactory {
 	public IEnumerable<Type> RegisteredTypes => _registrationsByType.Keys;
 
 	public static SerializerFactory Default { get; }
+
+	private long MinimumGeneratedTypeCode { get; init; } = PermanentTypeCodeStartDefault;
 
 	public static void RegisterDefaults(SerializerFactory factory) {
 		// register self-assembling factory for object
@@ -159,18 +162,15 @@ public class SerializerFactory {
 
 	public void Register<TItem>(Type serializerType) 
 		=> RegisterInternal(GenerateTypeCode(), typeof(TItem), serializerType, null, null);
-	
 
 	public void Register(Type dataType, Type serializerType) 
 		=> RegisterInternal(GenerateTypeCode(), dataType, serializerType, null, null);
-
 
 	public void RegisterAutoBuild<T>() 
 		=> RegisterAutoBuild(typeof(T));
 
 	public void RegisterAutoBuild(Type dataType) 
-		=> GetSerializerInternal(dataType, true);
-
+		=> AssembleSerializer(this, dataType, true, MinimumGeneratedTypeCode);
 
 	private void RegisterInternal(long typeCode, Type dataType, Type serializerType, IItemSerializer serializerInstance, Func<Registration, Type, IItemSerializer> factory) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
@@ -248,120 +248,16 @@ public class SerializerFactory {
 	#region GetSerializer
 
 	public IItemSerializer<T> GetSerializer<T>() 
-		=> (IItemSerializer<T>)GetSerializerInternal(typeof(T), false);
+		=> GetSerializer<T>(EphemeralTypeCodeStartDefault);
+
+	public IItemSerializer<T> GetSerializer<T>(long typeCodeStart) 
+		=> (IItemSerializer<T>)AssembleSerializer(this, typeof(T), false, typeCodeStart);
 
 	public IItemSerializer GetSerializer(Type type) 
-		=> GetSerializerInternal(type, false);
+		=> GetSerializer(type, EphemeralTypeCodeStartDefault);
 
-	private IItemSerializer GetSerializerInternal(Type itemType, bool registerTypes) {
-		
-		// During the construction, a factory is required to store generated serializers.
-		var factory = registerTypes ? this : new SerializerFactory(this);
-
-		var assembledSerializer = AssembleRecursively(factory, itemType);
-
-		return assembledSerializer;
-
-		// TODO: support nested-types by intelligently tracking parent 
-		IItemSerializer AssembleRecursively(SerializerFactory factory, Type itemType) {
-
-			// Ensure serializers for component types are registered
-			// (i.e. resolving a List<UnregisteredType> serializer requires a serializer for UnregisteredType)
-			foreach (var genericType in GetUnregisteredComponentTypes(itemType))
-				AssembleRecursively(factory, genericType);
-
-			// If serializer already exists for this type in factory, use that
-			if (factory.HasSerializer(itemType))
-				return factory.GetCachedSerializer(itemType);
-
-			// Special Case: if we're serializing an enum (or nullable enum), we register it with the factory now and return
-			if (itemType.IsEnum || itemType.IsConstructedGenericTypeOf(typeof(Nullable<>)) && itemType.GenericTypeArguments[0].IsEnum) {
-				factory.RegisterEnum(itemType.IsEnum ? itemType : itemType.GenericTypeArguments[0]);
-				return factory.GetCachedSerializer(itemType);
-			}
-
-			// No serializer registered so we need to assemble one as a CompositeSerializer. First, we need to 
-			// register the serializer (before it is assembled) as it may recursively refer to itself. So we 
-			// activate a CompositeSerializer with no members (we'll configure it later)
-			var compositeSerializer = 
-				(IItemSerializer) typeof(CompositeSerializer<>)
-				.MakeGenericType(itemType)
-				.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null)
-				.Invoke(null);
-
-			var serializer = 
-				itemType.IsValueType ? 
-				compositeSerializer : 
-				(IItemSerializer)typeof(ReferenceSerializer<>).MakeGenericType(itemType).GetConstructor(BindingFlags.Public | BindingFlags.Instance, null,  new Type[] { typeof(IItemSerializer<>).MakeGenericType(itemType) }, null).Invoke(new object[] { compositeSerializer });
-
-
-			// register serializer instance now as it may be re-used in component serializers (recursive types)
-			if (itemType != typeof(object))
-				factory.RegisterInternal(factory.GenerateTypeCode(), itemType, compositeSerializer.GetType(), compositeSerializer, null);
-
-			// Create the member serializers
-			var members = SerializerBuilder.GetSerializableMembers(itemType);
-			var memberBindings = new List<MemberSerializationBinding>(members.Length);
-			foreach (var member in members) {
-				var propertyType = member.PropertyType;
-				
-				// Ensure we have a serializer for the member type
-				if (propertyType != typeof(object) && !factory.HasSerializer(propertyType))
-					AssembleRecursively(factory, propertyType);
-
-				// We don't use the member type serializer but instead use a FactorySerializer to ensure cyclic/polymorphic references are handled correctly
-				var memberSerializer = (IItemSerializer) typeof(FactorySerializer<>).MakeGenericType(propertyType).ActivateWithCompatibleArgs(factory);
-				memberBindings.Add(new(member, memberSerializer.AsReferenceSerializer()));
-			}
-			
-			// Configure the composite serializer instance (which is already registered)
-			var itemTypeLocal = itemType;
-			compositeSerializer
-				.GetType()
-				.GetMethod(nameof(CompositeSerializer<object>.Configure), BindingFlags.Instance | BindingFlags.NonPublic)
-				.Invoke(compositeSerializer, new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
-			
-			return serializer;
-		}
-
-		IEnumerable<Type> GetUnregisteredComponentTypes(Type type, HashSet<Type> alreadyVisited = null) {
-			alreadyVisited ??= new HashSet<Type>();
-
-			// List<Type>
-			// Type[]
-			// Type1<Type2, Type3>
-
-			// Avoid recursive loops
-			if (alreadyVisited.Contains(type))
-				yield break; 
-			alreadyVisited.Add(type);
-			
-			// Case 1: There is an explicit serializer for this type, no component types need to be assembled
-			if (factory.HasSerializer(type))
-				yield break; 
-			
-
-			// Case 2: Array element type may need assembling
-			if (type.IsArray) {
-				var elementType = type.GetElementType();
-				if (!factory.HasSerializer(elementType)) {
-					foreach(var elementTypeUnregisteredComponentTypes in GetUnregisteredComponentTypes(elementType, alreadyVisited))
-						yield return elementTypeUnregisteredComponentTypes;
-					yield return elementType;
-				}
-			}
-
-			// Case 4: Serializer for generic type definition exists but not for generic type arguments 
-			// e.g. List<UnregType>, Dictionary<UnregType1, UnregType2>, etc
-			if (type.IsConstructedGenericType && factory.HasSerializer(type.GetGenericTypeDefinition())) {
-				foreach (var genericArgumentType in type.GetGenericArguments().Where(x => !factory.HasSerializer(x))) {
-					foreach(var subType in GetUnregisteredComponentTypes(genericArgumentType, alreadyVisited))
-						yield return subType;
-					yield return genericArgumentType;
-				}
-			}
-		}
-	}
+	public IItemSerializer GetSerializer(Type type, long typeCodeStart) 
+		=> AssembleSerializer(this, type, false, typeCodeStart);
 
 	#endregion
 
@@ -409,6 +305,7 @@ public class SerializerFactory {
 	}
 
 	#endregion
+
 
 	#region Aux
 
@@ -461,7 +358,7 @@ public class SerializerFactory {
 		return registration;
 	}
 
-	private long GenerateTypeCode() => _registrations.Count > 0 ? _registrations.Keys.Max() + 1 : RegistrationCodeStart;
+	private long GenerateTypeCode() => Tools.Values.Max( _registrations.Count > 0 ? _registrations.Keys.Max() + 1 : MinimumGeneratedTypeCode, MinimumGeneratedTypeCode);
 
 	private static IItemSerializer CreateSerializerInstance(Registration registration, Type requestedDataType, Type registeredDataType, Type registeredSerializerType) {
 		Guard.Argument(!requestedDataType.IsGenericTypeDefinition, nameof(requestedDataType), $"Requested data type {requestedDataType.Name} cannot be a generic type definition");
@@ -525,6 +422,117 @@ public class SerializerFactory {
 		var type = ConstructType(serializerHierarchy);
 		return registration.Factory(registration, type);
 	}
+
+	private static IItemSerializer AssembleSerializer(SerializerFactory serializerFactory, Type itemType, bool retainRegisteredTypesInFactory, long typeCodeStart) {
+		
+		// During the construction, a factory is required to store generated serializers.
+		var factoryToUse = retainRegisteredTypesInFactory ? serializerFactory : new SerializerFactory(serializerFactory) { MinimumGeneratedTypeCode = typeCodeStart };
+
+		var assembledSerializer = AssembleRecursively(factoryToUse, itemType);
+
+		return assembledSerializer;
+
+		// TODO: support nested-types by intelligently tracking parent 
+		IItemSerializer AssembleRecursively(SerializerFactory factory, Type itemType) {
+
+			// Ensure serializers for component types are registered
+			// (i.e. resolving serializer for List<UnregisteredType> serializer requires a serializer for UnregisteredType)
+			foreach (var genericType in GetUnregisteredComponentTypes(factory, itemType))
+				AssembleRecursively(factory, genericType);
+
+			// If serializer already exists for this type in factory, use that
+			if (factory.HasSerializer(itemType))
+				return factory.GetCachedSerializer(itemType);
+
+			// Special Case: if we're serializing an enum (or nullable enum), we register it with the factory now and return
+			if (itemType.IsEnum || itemType.IsConstructedGenericTypeOf(typeof(Nullable<>)) && itemType.GenericTypeArguments[0].IsEnum) {
+				factory.RegisterEnum(itemType.IsEnum ? itemType : itemType.GenericTypeArguments[0]);
+				return factory.GetCachedSerializer(itemType);
+			}
+
+			// No serializer registered so we need to assemble one as a CompositeSerializer. First, we need to 
+			// register the serializer (before it is assembled) as it may recursively refer to itself. So we 
+			// activate a CompositeSerializer with no members (we'll configure it later)
+			var compositeSerializer = 
+				(IItemSerializer) typeof(CompositeSerializer<>)
+				.MakeGenericType(itemType)
+				.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null)
+				.Invoke(null);
+
+			var serializer = 
+				itemType.IsValueType ? 
+				compositeSerializer : 
+				(IItemSerializer)typeof(ReferenceSerializer<>).MakeGenericType(itemType).GetConstructor(BindingFlags.Public | BindingFlags.Instance, null,  new Type[] { typeof(IItemSerializer<>).MakeGenericType(itemType) }, null).Invoke(new object[] { compositeSerializer });
+
+
+			// register serializer instance now as it may be re-used in component serializers (recursive types)
+			if (itemType != typeof(object))
+				factory.RegisterInternal(factory.GenerateTypeCode(), itemType, compositeSerializer.GetType(), compositeSerializer, null);
+
+			// Create the member serializers
+			var members = SerializerBuilder.GetSerializableMembers(itemType);
+			var memberBindings = new List<MemberSerializationBinding>(members.Length);
+			foreach (var member in members) {
+				var propertyType = member.PropertyType;
+				
+				// Ensure we have a serializer for the member type
+				if (propertyType != typeof(object) && !factory.HasSerializer(propertyType))
+					AssembleRecursively(factory, propertyType);
+
+				// We don't use the member type serializer but instead use a FactorySerializer to ensure cyclic/polymorphic references are handled correctly
+				var memberSerializer = (IItemSerializer) typeof(FactorySerializer<>).MakeGenericType(propertyType).ActivateWithCompatibleArgs(factory);
+				memberBindings.Add(new(member, memberSerializer.AsReferenceSerializer()));
+			}
+			
+			// Configure the composite serializer instance (which is already registered)
+			var itemTypeLocal = itemType;
+			compositeSerializer
+				.GetType()
+				.GetMethod(nameof(CompositeSerializer<object>.Configure), BindingFlags.Instance | BindingFlags.NonPublic)
+				.Invoke(compositeSerializer, new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
+			
+			return serializer;
+		}
+
+		IEnumerable<Type> GetUnregisteredComponentTypes(SerializerFactory factory, Type type, HashSet<Type> alreadyVisited = null) {
+			alreadyVisited ??= new HashSet<Type>();
+
+			// List<Type>
+			// Type[]
+			// Type1<Type2, Type3>
+
+			// Avoid recursive loops
+			if (alreadyVisited.Contains(type))
+				yield break; 
+			alreadyVisited.Add(type);
+			
+			// Case 1: There is an explicit serializer for this type, no component types need to be assembled
+			if (factory.HasSerializer(type))
+				yield break; 
+			
+
+			// Case 2: Array element type may need assembling
+			if (type.IsArray) {
+				var elementType = type.GetElementType();
+				if (!factory.HasSerializer(elementType)) {
+					foreach(var elementTypeUnregisteredComponentTypes in GetUnregisteredComponentTypes(factory, elementType, alreadyVisited))
+						yield return elementTypeUnregisteredComponentTypes;
+					yield return elementType;
+				}
+			}
+
+			// Case 4: Serializer for generic type definition exists but not for generic type arguments 
+			// e.g. List<UnregType>, Dictionary<UnregType1, UnregType2>, etc
+			if (type.IsConstructedGenericType && factory.HasSerializer(type.GetGenericTypeDefinition())) {
+				foreach (var genericArgumentType in type.GetGenericArguments().Where(x => !factory.HasSerializer(x))) {
+					foreach(var subType in GetUnregisteredComponentTypes(factory, genericArgumentType, alreadyVisited))
+						yield return subType;
+					yield return genericArgumentType;
+				}
+			}
+		}
+	}
+
 
 	#endregion
 

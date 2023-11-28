@@ -109,7 +109,7 @@ public class SerializerSerializerTests {
 			factory.GetRegisteredSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<int, IList<int>>>>>()
 		);
 		Assert.That(secondSerializerBytes.Length, Is.EqualTo(1));  // there was 1 serializer referenced in the first serializer 
-		Assert.That( CVarInt.Read(secondSerializerBytes), Is.EqualTo(SerializerFactory.RegistrationCodeStart + 4));  // the serializer was the 4th serializer registered in the factory
+		Assert.That( CVarInt.Read(secondSerializerBytes), Is.EqualTo(SerializerFactory.PermanentTypeCodeStartDefault + 4));  // the serializer was the 4th serializer registered in the factory
 		var secondSerializer = serializerSerializer.DeserializeBytesLE( secondSerializerBytes) as IItemSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<int, IList<int>>>>>;
 		Assert.That(secondSerializer, Is.Not.Null);
 	}	

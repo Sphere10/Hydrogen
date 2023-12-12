@@ -25,7 +25,7 @@
 		<ProjectReference Include="..\..\src\Hydrogen.Data.Sqlite\Hydrogen.Data.Sqlite.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Data\Hydrogen.Data.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Drawing\Hydrogen.Drawing.csproj" />
-		<ProjectReference Include="..\..\src\Hydrogen.NETCore\Hydrogen.NET.csproj" />
+		<ProjectReference Include="..\..\src\Hydrogen.NET\Hydrogen.NET.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Windows.Forms.Firebird\Hydrogen.Windows.Forms.Firebird.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Windows.Forms.MSSQL\Hydrogen.Windows.Forms.MSSQL.csproj" />
 		<ProjectReference Include="..\..\src\Hydrogen.Windows.Forms.Sqlite\Hydrogen.Windows.Forms.Sqlite.csproj" />
@@ -40,6 +40,9 @@
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>
 			<DependentUpon>Resources.resx</DependentUpon>
+		</Compile>
+		<Compile Update="Screens\ObjectSpaceScreen.cs">
+		  <SubType>UserControl</SubType>
 		</Compile>
 		<Compile Update="Screens\TransactionalCollectionScreen.cs" />
 		<Compile Update="Screens\WAMSTestScreen.cs" />

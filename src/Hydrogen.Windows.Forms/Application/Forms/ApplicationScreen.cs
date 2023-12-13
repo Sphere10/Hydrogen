@@ -60,11 +60,6 @@ public class ApplicationScreen : ApplicationControl, IHelpableObject {
 
 	[Browsable(false)] public IApplicationBlock ApplicationBlock { get; set; }
 
-	//[Category("Behavior")]
-	//[DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
-	//[DefaultValue(true)]
-	//public bool AutoSave { get; set; }
-
 	/// <summary>
 	/// The menu items associated with this screen.
 	/// </summary>

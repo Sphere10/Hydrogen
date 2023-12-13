@@ -18,21 +18,14 @@ namespace Hydrogen.Windows.Forms;
 /// </summary>
 public partial class ApplicationControl : UserControlEx {
 
-	//private readonly IFuture<IWinFormsApplicationProvider> _winFormsApplicationServices;
-
 	private readonly IFuture<IUserInterfaceServices> _userInterfaceServices;
 
 	public ApplicationControl() {
-		//_winFormsApplicationServices = Tools.Values.Future.LazyLoad( () => HydrogenFramework.Instance.ServiceProvider.GetService<IWinFormsApplicationProvider>());
 		if (!Tools.Runtime.IsDesignMode) {
 			SettingsServices = HydrogenFramework.Instance.ServiceProvider.GetService<ISettingsServices>();
 			_userInterfaceServices = Tools.Values.Future.LazyLoad(() => HydrogenFramework.Instance.ServiceProvider.GetService<IUserInterfaceServices>());
 		}
 	}
-
-	//[Browsable(false)]
-	//[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	//protected IWinFormsApplicationProvider ApplicationProvider => _winFormsApplicationServices.Value;
 
 	[Browsable(false)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]

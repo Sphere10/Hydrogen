@@ -13,6 +13,7 @@
 
 using Hydrogen.Utils.WinFormsTester.Wizard;
 using Hydrogen.Windows.Forms;
+using HydrogenTester.WinForms.Screens;
 using Menu = Hydrogen.Windows.Forms.Menu;
 
 namespace Hydrogen.Utils.WinFormsTester;
@@ -61,6 +62,7 @@ public class TestBlock : ApplicationBlock {
 					"Tests",
 					null,
 					new IMenuItem[] {
+						new ScreenMenuItem("Emailer", typeof(EmailTestScreen), null),
 						new ScreenMenuItem("TransactionalList Test", typeof(TransactionalCollectionScreen), null),
 						new ScreenMenuItem("WebSockets Test", typeof(CommunicationsTestScreen), null),
 						new ScreenMenuItem("Merkle Tree", typeof(MerkleTreeTestScreen), null),

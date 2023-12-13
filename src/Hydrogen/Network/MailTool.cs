@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -222,4 +223,7 @@ public static class Mail {
 
 		return smtpClient.SendMailAsync(mailMessage);
 	}
+
+	public static IEnumerable<string> ParseEmailsFromCommaSeparatedList(string emails) 
+		=> string.IsNullOrWhiteSpace(emails) ? Enumerable.Empty<string>() : emails.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim());
 }

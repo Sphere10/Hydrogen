@@ -63,6 +63,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	public event EventHandlerEx<long, long> StreamLengthChanged;
 	public event EventHandlerEx<long> StreamRemoved;
 	public event EventHandlerEx Cleared;
+	public event EventHandlerEx Clearing;
 
 	private StreamMappedClusterMap _clusters;
 	private ClusteredStreamFragmentProvider _streamDescriptorsFragmentProvider;
@@ -300,6 +301,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public void Clear() {
 		CheckInitialized();
+		NotifyClearing(); // notify before checking opened streams to allow them to be closed
 		using var accessScope = EnterAccessScope();
 		CheckNoOpenedStreams(false);
 		SuppressEvents = true;
@@ -698,6 +700,9 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	protected virtual void OnStreamRemoved(long index) {
 	}
 
+	protected virtual void OnClearing() {
+	}
+
 	protected virtual void OnCleared() {
 	}
 
@@ -754,6 +759,15 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		OnStreamRemoved(index);
 		StreamRemoved?.Invoke(index);
 	}
+
+	private void NotifyClearing() {
+		if (_suppressEvents)
+			return;
+
+		OnClearing();
+		Clearing?.Invoke();
+	}
+
 
 	private void NotifyCleared() {
 		if (_suppressEvents)

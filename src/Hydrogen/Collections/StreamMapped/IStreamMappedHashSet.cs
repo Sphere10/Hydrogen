@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 

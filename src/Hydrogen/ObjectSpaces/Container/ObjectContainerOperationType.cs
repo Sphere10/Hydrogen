@@ -6,18 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using Hydrogen.ObjectSpaces;
+namespace Hydrogen.ObjectSpaces;
 
-namespace Hydrogen;
-
-public interface IStreamMappedRecyclableList<TItem> : IRecyclableList<TItem>, ILoadable, IDisposable {
-
-	ObjectContainer<TItem> ObjectContainer { get; }
-
-	IItemSerializer<TItem> ItemSerializer { get; }
-
-	IEqualityComparer<TItem> ItemComparer { get; }
-
+public enum ObjectContainerOperationType {
+	Read,
+	Add,
+	Insert,
+	Update,
+	Remove,
+	Reap
 }

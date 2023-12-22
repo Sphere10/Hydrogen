@@ -4,23 +4,23 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public class ListEqualityComparer<T> : IEqualityComparer<IList<T>> {
+public class ExtendedListEqualityComparer<T> : IEqualityComparer<IExtendedList<T>> {
 	private readonly IEqualityComparer<T> _itemComparer;
 
-	public ListEqualityComparer() : this(EqualityComparer<T>.Default) { }
+	public ExtendedListEqualityComparer() : this(EqualityComparer<T>.Default) { }
 
-	public ListEqualityComparer(IEqualityComparer<T> itemComparer) {
+	public ExtendedListEqualityComparer(IEqualityComparer<T> itemComparer) {
 		_itemComparer = itemComparer ?? EqualityComparer<T>.Default;
 	}
 
-	public bool Equals(IList<T> x, IList<T> y) {
+	public bool Equals(IExtendedList<T> x, IExtendedList<T> y) {
 		if (ReferenceEquals(x, y)) return true;
 		if (x == null || y == null) return false;
 		if (x.Count != y.Count) return false;
 		return x.SequenceEqual(y, _itemComparer);
 	}
 
-	public int GetHashCode(IList<T> obj) 
+	public int GetHashCode(IExtendedList<T> obj) 
 		=> obj.Select(x => HashCode.Combine(x)).Aggregate(HashCode.Combine(obj), HashCode.Combine);
 
 }

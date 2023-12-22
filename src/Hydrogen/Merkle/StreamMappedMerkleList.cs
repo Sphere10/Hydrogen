@@ -13,6 +13,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
@@ -21,7 +22,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 	public event EventHandlerEx<object> Loading { add => InternalCollection.Loading += value; remove => InternalCollection.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => InternalCollection.Loaded += value; remove => InternalCollection.Loaded -= value; }
 
-	private readonly ObjectContainerMerkleTree _merkleTreeIndex; 
+	private readonly MerkleTreeIndex _merkleTreeIndex; 
 
 	public StreamMappedMerkleList(
 		Stream rootStream,
@@ -59,7 +60,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 
 	internal StreamMappedMerkleList(
 		IStreamMappedList<TItem> streamMappedList,
-		ObjectContainerMerkleTree merkleTreeIndex,
+		MerkleTreeIndex merkleTreeIndex,
 		bool autoLoad = false
 	) : base(streamMappedList) {
 		Guard.ArgumentNotNull(merkleTreeIndex, nameof(merkleTreeIndex));
@@ -99,7 +100,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 		long merkleTreeStreamIndex,
 		long checksumIndexStreamIndex,
 		Endianness endianness, 
-		out ObjectContainerMerkleTree merkleTreeIndex
+		out MerkleTreeIndex merkleTreeIndex
 	) {
 		var streamMappedList =  StreamMappedFactory.CreateList(
 			rootStream,
@@ -114,14 +115,13 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 			false
 		);
 
-		merkleTreeIndex = new ObjectContainerMerkleTree(
+		merkleTreeIndex = new MerkleTreeIndex(
 			streamMappedList.ObjectContainer,
 			x => DigestItem(streamMappedList.ObjectContainer, x, hashAlgorithm),
 			hashAlgorithm,
-			merkleTreeStreamIndex,
-			0
+			merkleTreeStreamIndex
 		);
-		streamMappedList.ObjectContainer.RegisterMetaDataProvider(merkleTreeIndex);
+		streamMappedList.ObjectContainer.RegisterAttachment(merkleTreeIndex);
 
 		return streamMappedList;
 	}

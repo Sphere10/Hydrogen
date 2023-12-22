@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
@@ -32,24 +33,27 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
 	private readonly IEqualityComparer<TValue> _valueComparer;
-	private readonly ObjectContainerKeyStore<TKey> _keyStore;
-	private readonly ObjectContainerFreeIndexStore _freeIndexStore;
+	private readonly UniqueKeyStore<TKey> _keyStore;
+	private readonly RecyclableIndexIndex _recyclableIndexIndex;
 
 	internal StreamMappedDictionaryCLK(
 		ObjectContainer objectContainer,
-		ObjectContainerFreeIndexStore freeIndexStore,
-		ObjectContainerKeyStore<TKey> keyStore,
+		RecyclableIndexIndex recyclableIndexIndex,
+		UniqueKeyStore<TKey> keyStore,
 		IEqualityComparer<TValue> valueComparer = null,
 		bool autoLoad = false
 	) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
-		Guard.ArgumentNotNull(freeIndexStore, nameof(freeIndexStore));
+		Guard.ArgumentNotNull(recyclableIndexIndex, nameof(recyclableIndexIndex));
 		Guard.ArgumentNotNull(keyStore, nameof(keyStore));
 		ObjectContainer = (ObjectContainer<TValue>)objectContainer;
-		_freeIndexStore = freeIndexStore;
+		_recyclableIndexIndex = recyclableIndexIndex;
 		_keyStore = keyStore;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
-
+		
+		// This ensures _keyStore is attached/detached as required by container operations
+		ObjectContainer.RegisterAttachment(_keyStore);
+		
 		if (autoLoad && RequiresLoad)
 			Load();
 	}
@@ -65,7 +69,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public override long Count {
 		get {
 			CheckLoaded();
-			return ObjectContainer.Count - _freeIndexStore.Stack.Count;
+			return ObjectContainer.Count - _recyclableIndexIndex.Stack.Count;
 		}
 	}
 
@@ -88,7 +92,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			return _keyStore.Store.Read(index);
+			return _keyStore.Read(index);
 		}
 	}
 
@@ -98,7 +102,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			return _keyStore.Store.ReadBytes(index);
+			return _keyStore.ReadBytes(index);
 		}
 	}
 
@@ -249,7 +253,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		CheckLoaded();
 		// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
 		using (ObjectContainer.EnterAccessScope()) {
-			_keyStore.Store.Reap(index);
+			_keyStore.Reap(index);
 			ObjectContainer.ReapItem(index);
 			UpdateVersion();
 		}
@@ -274,11 +278,11 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		// possible optimization: a connected neighbourhood of unused records can be deleted 
 		CheckLoaded();
 		var sortedList = new SortedList<long>(SortDirection.Descending);
-		_freeIndexStore.Stack.ForEach(sortedList.Add);
+		_recyclableIndexIndex.Stack.ForEach(sortedList.Add);
 		foreach (var freeIndex in sortedList) {
 			ObjectContainer.RemoveItem(freeIndex);
 		}
-		_freeIndexStore.Stack.Clear();
+		_recyclableIndexIndex.Stack.Clear();
 		UpdateVersion();
 	}
 
@@ -320,13 +324,13 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	private void AddInternal(TKey key, TValue value) {
 		long index;
-		if (_freeIndexStore.Stack.Any()) {
-			index = _freeIndexStore.Stack.Pop();
-			_keyStore.Store.Update(index, key);
+		if (_recyclableIndexIndex.Stack.Any()) {
+			index = _recyclableIndexIndex.Stack.Pop();
+			_keyStore.Update(index, key);
 			ObjectContainer.SaveItem(index, value, ObjectContainerOperationType.Update);
 		} else {
 			index = Count;
-			_keyStore.Store.Add(index, key);
+			_keyStore.Add(index, key);
 			ObjectContainer.SaveItem(index, value, ObjectContainerOperationType.Add);
 		}
 		UpdateVersion();
@@ -334,7 +338,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	private void UpdateInternal(long index, TKey key, TValue value) {
 		// Updating value only, records (and checksum) don't change  when updating
-		_keyStore.Store.Update(index, key);
+		_keyStore.Update(index, key);
 		ObjectContainer.SaveItem(index, value, ObjectContainerOperationType.Update);
 		UpdateVersion();
 	}

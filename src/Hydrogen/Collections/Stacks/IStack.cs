@@ -11,6 +11,7 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+
 public interface IStack<T> : ICollection<T> {
 
 	public bool TryPeek(out T value);

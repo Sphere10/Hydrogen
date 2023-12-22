@@ -13,6 +13,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
@@ -21,7 +22,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 	public event EventHandlerEx<object> Loading { add => InternalCollection.Loading += value; remove => InternalCollection.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => InternalCollection.Loaded += value; remove => InternalCollection.Loaded -= value; }
 
-	private readonly ObjectContainerMerkleTree _merkleTreeIndex;
+	private readonly MerkleTreeIndex _merkleTreeIndex;
 
 	public StreamMappedMerkleRecyclableList(
 		Stream rootStream,
@@ -60,7 +61,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 	
 	internal StreamMappedMerkleRecyclableList(
 		IStreamMappedRecyclableList<TItem> streamMappedList,
-		ObjectContainerMerkleTree merkleTreeIndex,
+		MerkleTreeIndex merkleTreeIndex,
 		bool autoLoad = false
 	) : base(streamMappedList) {
 		Guard.ArgumentNotNull(merkleTreeIndex, nameof(merkleTreeIndex));
@@ -101,7 +102,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 		long checksumIndexStreamIndex,
 		long merkleTreeIndexStreamIndex,
 		Endianness endianness,
-		out ObjectContainerMerkleTree merkleTreeIndex
+		out MerkleTreeIndex merkleTreeIndex
 	) {
 		var streamMappedList = StreamMappedFactory.CreateRecyclableList(
 			rootStream,
@@ -117,14 +118,13 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 			false
 		);
 
-		merkleTreeIndex = new ObjectContainerMerkleTree(
+		merkleTreeIndex = new MerkleTreeIndex(
 			streamMappedList.ObjectContainer,
 			x => DigestItem(streamMappedList.ObjectContainer, x, hashAlgorithm),
 			hashAlgorithm,
-			merkleTreeIndexStreamIndex,
-			0
+			merkleTreeIndexStreamIndex
 		);
-		streamMappedList.ObjectContainer.RegisterMetaDataProvider(merkleTreeIndex);
+		streamMappedList.ObjectContainer.RegisterAttachment(merkleTreeIndex);
 
 		return streamMappedList;
 	}

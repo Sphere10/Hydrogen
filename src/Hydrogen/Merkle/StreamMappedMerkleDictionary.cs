@@ -13,6 +13,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
@@ -24,7 +25,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	public event EventHandlerEx<object> Loading { add => InternalDictionary.Loading += value; remove => InternalDictionary.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => InternalDictionary.Loaded += value; remove => InternalDictionary.Loaded -= value; }
 
-	private readonly ObjectContainerMerkleTree _merkleTreeIndex;
+	private readonly MerkleTreeIndex _merkleTreeIndex;
 
 	public StreamMappedMerkleDictionary(
 		Stream rootStream,
@@ -69,7 +70,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 
 	internal StreamMappedMerkleDictionary(
 		IStreamMappedDictionary<TKey, TValue> innerDictionary,
-		ObjectContainerMerkleTree merkleTreeIndex,
+		MerkleTreeIndex merkleTreeIndex,
 		bool autoLoad = false
 	) : base(innerDictionary) {
 		Guard.ArgumentNotNull(merkleTreeIndex, nameof(merkleTreeIndex));
@@ -123,7 +124,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		Endianness endianness,
 		bool readOnly,
 		StreamMappedDictionaryImplementation implementation,
-		out ObjectContainerMerkleTree merkleTreeIndex
+		out MerkleTreeIndex merkleTreeIndex
 	) {
 		var smDict = StreamMappedFactory.CreateDictionary(
 			stream,
@@ -143,14 +144,13 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 			implementation
 		);
 
-		merkleTreeIndex = new ObjectContainerMerkleTree(
+		merkleTreeIndex = new MerkleTreeIndex(
 			smDict.ObjectContainer,
 			x => DigestItem(smDict, x, hashAlgorithm),
 			hashAlgorithm,
-			merkleTreeIndexStreamIndex,
-			0
+			merkleTreeIndexStreamIndex
 		);
-		smDict.ObjectContainer.RegisterMetaDataProvider(merkleTreeIndex);
+		smDict.ObjectContainer.RegisterAttachment(merkleTreeIndex);
 
 		return smDict;
 	}

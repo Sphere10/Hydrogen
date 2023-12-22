@@ -6,18 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-using System.Collections.Generic;
-using Hydrogen.ObjectSpaces;
+namespace Hydrogen.ObjectSpaces;
 
-namespace Hydrogen;
+public abstract class MetaDataObserverBase<TItem> : MetaDataObserverBase {
+	
+	protected MetaDataObserverBase(ObjectContainer<TItem> objectContainer, long reservedStreamIndex) 
+		: base(objectContainer, reservedStreamIndex) {
+	}
 
-public interface IStreamMappedRecyclableList<TItem> : IRecyclableList<TItem>, ILoadable, IDisposable {
-
-	ObjectContainer<TItem> ObjectContainer { get; }
-
-	IItemSerializer<TItem> ItemSerializer { get; }
-
-	IEqualityComparer<TItem> ItemComparer { get; }
-
+	protected new ObjectContainer<TItem> Container => (ObjectContainer<TItem>)base.Container;
 }

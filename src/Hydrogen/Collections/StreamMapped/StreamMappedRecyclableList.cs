@@ -6,24 +6,24 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Hydrogen;
+using Hydrogen.ObjectSpaces;
+
 
 public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, IStreamMappedRecyclableList<TItem> {
 	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
-	private readonly ObjectContainerFreeIndexStore _freeIndexStore;
-	private readonly ObjectContainerIndex<TItem, int> _checksumIndex;
-	private IDisposable _accessScope;
+	private readonly RecyclableIndexIndex _freeIndexStore;
+	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
 
 	internal StreamMappedRecyclableList(
 		ObjectContainer<TItem> container, 
-		ObjectContainerFreeIndexStore freeIndexStore, 
-		ObjectContainerIndex<TItem, int> checksumIndex,
+		RecyclableIndexIndex freeIndexStore, 
+		KeyIndex<TItem, int> checksumKeyIndex,
 		IEqualityComparer<TItem> itemComparer = null,
 		bool autoLoad = false
 	) {
@@ -31,7 +31,7 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 		Guard.ArgumentNotNull(freeIndexStore, nameof(freeIndexStore));
 		ObjectContainer = container;
 		_freeIndexStore = freeIndexStore;
-		_checksumIndex = checksumIndex;
+		_checksumKeyIndex = checksumKeyIndex;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 
 		if (autoLoad && RequiresLoad)
@@ -113,8 +113,8 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 
 	protected override long IndexOfInternal(TItem item)  {
 		var indicesToCheck =
-			_checksumIndex != null ?
-				_checksumIndex.Lookup[_checksumIndex.CalculateKey(item)] :
+			_checksumKeyIndex != null ?
+				_checksumKeyIndex.Lookup[_checksumKeyIndex.CalculateKey(item)] :
 				Tools.Collection.RangeL(0L, ListCount);
 
 		foreach (var index in indicesToCheck) {

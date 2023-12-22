@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
@@ -31,24 +32,24 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
-	private readonly ObjectContainerIndex<KeyValuePair<TKey, TValue>, int> _keyChecksumIndex;
-	private readonly ObjectContainerFreeIndexStore _freeIndexStore;
+	private readonly KeyIndex<KeyValuePair<TKey, TValue>, int> _keyChecksumKeyIndex;
+	private readonly RecyclableIndexIndex _freeIndexStore;
 
 	internal StreamMappedDictionary(
 		ObjectContainer objectContainer,
-		ObjectContainerFreeIndexStore freeIndexStore,
-		ObjectContainerIndex<KeyValuePair<TKey, TValue>, int> keyChecksumIndex,
+		RecyclableIndexIndex freeIndexStore,
+		KeyIndex<KeyValuePair<TKey, TValue>, int> keyChecksumKeyIndex,
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
 		bool autoLoad = false
 	) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		Guard.ArgumentNotNull(freeIndexStore, nameof(freeIndexStore));
-		Guard.ArgumentNotNull(keyChecksumIndex, nameof(keyChecksumIndex));
+		Guard.ArgumentNotNull(keyChecksumKeyIndex, nameof(keyChecksumKeyIndex));
 		Guard.ArgumentIsAssignable<ObjectContainer<KeyValuePair<TKey, TValue>>>(objectContainer, nameof(objectContainer));
 		ObjectContainer = (ObjectContainer<KeyValuePair<TKey, TValue>>)objectContainer;
 		_freeIndexStore = freeIndexStore;
-		_keyChecksumIndex = keyChecksumIndex;
+		_keyChecksumKeyIndex = keyChecksumKeyIndex;
 		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
@@ -189,7 +190,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		CheckLoaded();
 		using (ObjectContainer.EnterAccessScope()) {
 			return
-				_keyChecksumIndex.Lookup[CalculateKeyChecksum(key)]
+				_keyChecksumKeyIndex.Lookup[CalculateKeyChecksum(key)]
 				.Select(ReadKey)
 				.Any(item => _keyComparer.Equals(item, key));
 		}
@@ -218,7 +219,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public bool TryFindKey(TKey key, out long index) {
 		Debug.Assert(key != null);
 		using (ObjectContainer.EnterAccessScope()) {
-			foreach (var i in _keyChecksumIndex.Lookup[CalculateKeyChecksum(key)]) {
+			foreach (var i in _keyChecksumKeyIndex.Lookup[CalculateKeyChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
@@ -233,7 +234,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public bool TryFindValue(TKey key, out long index, out TValue value) {
 		Debug.Assert(key != null);
 		using (ObjectContainer.EnterAccessScope()) {
-			foreach (var i in _keyChecksumIndex.Lookup[CalculateKeyChecksum(key)]) {
+			foreach (var i in _keyChecksumKeyIndex.Lookup[CalculateKeyChecksum(key)]) {
 				var candidateKey = ReadKey(i);
 				if (_keyComparer.Equals(candidateKey, key)) {
 					index = i;
@@ -371,7 +372,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private int CalculateKeyChecksum(TKey key) 
-		=> _keyChecksumIndex.CalculateKey(new KeyValuePair<TKey, TValue>(key, default));
+		=> _keyChecksumKeyIndex.CalculateKey(new KeyValuePair<TKey, TValue>(key, default));
 
 
 }

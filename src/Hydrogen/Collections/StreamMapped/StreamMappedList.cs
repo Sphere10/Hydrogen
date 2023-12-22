@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
@@ -20,18 +21,18 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
-	private readonly ObjectContainerIndex<TItem, int> _checksumIndex;
+	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
 
 	internal StreamMappedList(
 		ObjectContainer<TItem> objectContainer,
-		ObjectContainerIndex<TItem, int> checksumIndex,
+		KeyIndex<TItem, int> checksumKeyIndex,
 		IEqualityComparer<TItem> itemComparer = null,
 		bool autoLoad = false
 	) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		ObjectContainer = objectContainer;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
-		_checksumIndex = checksumIndex;
+		_checksumKeyIndex = checksumKeyIndex;
 		
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -65,8 +66,8 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public override long IndexOfL(TItem item) {
 		var indicesToCheck =
-			_checksumIndex != null ?
-			_checksumIndex.Lookup[_checksumIndex.CalculateKey(item)] :
+			_checksumKeyIndex != null ?
+			_checksumKeyIndex.Lookup[_checksumKeyIndex.CalculateKey(item)] :
 			Tools.Collection.RangeL(0L, Count);
 
 		foreach (var index in indicesToCheck) {

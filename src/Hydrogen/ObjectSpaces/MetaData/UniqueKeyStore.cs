@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Hydrogen.ObjectSpaces;
 
@@ -32,5 +31,11 @@ internal class UniqueKeyStore<TKey> : MetaDataStoreDecorator<TKey> {
 		) {
 	}
 
-	public IReadOnlyDictionary<TKey, long> Dictionary => ((MemoryCachedMetaDataDictionary<TKey>)InnerStore).Dictionary;
+	public IReadOnlyDictionary<TKey, long> Dictionary {
+		get {
+			var store = ((MemoryCachedMetaDataDictionary<TKey>)InnerStore);
+			Guard.Ensure(store.IsAttached, "Key store is not attached");
+			return store.Dictionary;
+		}
+	}
 }

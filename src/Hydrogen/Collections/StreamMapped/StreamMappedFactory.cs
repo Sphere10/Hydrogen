@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
@@ -510,7 +511,8 @@ public static class StreamMappedFactory {
 			keyComparer,
 			constantLengthKeySerializer
 		);
-		// Note: keyStore is not an IMetaDataObserver and is thus not registered
+		container.RegisterAttachment(keyStore);
+		
 		
 		return container;
 	}

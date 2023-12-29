@@ -6,8 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.ComponentModel;
-
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
@@ -22,11 +20,17 @@ internal class ListBasedMetaDataStore<TData> : MetaDataStoreBase<TData> {
 	private StreamPagedList<TData> _inStreamIndex;
 	
 	public ListBasedMetaDataStore(ObjectContainer container, long reservedStreamIndex, IItemSerializer<TData> datumSerializer) 
-		: base(container, reservedStreamIndex, datumSerializer) {
+		: base(container, reservedStreamIndex) {
+		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Datum serializer must be a constant-length serializer.");
+		DatumSerializer = datumSerializer;
 	}
 
 	public override long Count => _inStreamIndex.Count;
+
+	public IExtendedList<TData> List => _inStreamIndex;
+
+	protected IItemSerializer<TData> DatumSerializer { get; }
 
 	protected override void AttachInternal () {
 		_inStreamIndex = new StreamPagedList<TData>(

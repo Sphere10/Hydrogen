@@ -19,12 +19,12 @@ internal abstract class MetaDataStoreDecorator<TData, TInner> : IMetaDataStore<T
 	public virtual ObjectContainer Container => InnerStore.Container;
 
 	public virtual long ReservedStreamIndex => InnerStore.ReservedStreamIndex;
+	
+	public virtual bool IsAttached => InnerStore.IsAttached;
 
 	public virtual void Attach() => InnerStore.Attach();
 
 	public virtual void Detach() => InnerStore.Detach();
-
-	public virtual IItemSerializer<TData> DatumSerializer => InnerStore.DatumSerializer;
 
 	public virtual long Count => InnerStore.Count;
 

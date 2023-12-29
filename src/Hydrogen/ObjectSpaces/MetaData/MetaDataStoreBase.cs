@@ -6,8 +6,6 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System;
-
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
@@ -16,13 +14,10 @@ namespace Hydrogen.ObjectSpaces;
 /// <typeparam name="TData">The type of meta-data being stored</typeparam>
 internal abstract class MetaDataStoreBase<TData> : ObjectContainerAttachmentBase,  IMetaDataStore<TData> {
 
-	protected MetaDataStoreBase(ObjectContainer container, long reservedStreamIndex, IItemSerializer<TData> datumSerializer)
+	protected MetaDataStoreBase(ObjectContainer container, long reservedStreamIndex)
 		: base(container, reservedStreamIndex) {
-		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
-		DatumSerializer = datumSerializer;
-	}
 
-	public IItemSerializer<TData> DatumSerializer { get; }
+	}
 
 	public abstract long Count { get; }
 

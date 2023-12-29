@@ -6,18 +6,20 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Hydrogen.ObjectSpaces;
 
 /// <inheritdoc />
 internal class MerkleTreeIndex<TItem> : MerkleTreeIndex {
-	public MerkleTreeIndex(ObjectContainer<TItem> objectContainer, CHF hashAlgorithm, long reservedStreamIndex)
+	public MerkleTreeIndex(ObjectContainer<TItem> objectContainer, Func<TItem, long, byte[]> digestor, CHF hashAlgorithm, long reservedStreamIndex)
 		: base(
 			objectContainer,
-			objectContainer.StreamContainer.ReadAll,
-			hashAlgorithm,
-			reservedStreamIndex
+			reservedStreamIndex,
+			index => digestor(objectContainer.LoadItem(index), index),
+			hashAlgorithm
 		) {
 	}
 
-	protected new ObjectContainer<TItem> Container => (ObjectContainer<TItem>)base.Container;
+	protected new ObjectContainer<TItem> Container => (ObjectContainer<TItem>)((IObjectContainerAttachment)this).Container;
 }

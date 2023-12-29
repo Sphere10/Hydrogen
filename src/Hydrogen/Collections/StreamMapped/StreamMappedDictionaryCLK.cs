@@ -51,9 +51,6 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		_keyStore = keyStore;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
-		// This ensures _keyStore is attached/detached as required by container operations
-		ObjectContainer.RegisterAttachment(_keyStore);
-		
 		if (autoLoad && RequiresLoad)
 			Load();
 	}
@@ -184,7 +181,10 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public override void Clear() {
 		// Load not required
 		using (ObjectContainer.EnterAccessScope()) {
+			_keyStore.Clear();
+			_keyStore.Detach();
 			ObjectContainer.Clear();
+			_keyStore.Attach();
 			UpdateVersion();
 		}
 	}

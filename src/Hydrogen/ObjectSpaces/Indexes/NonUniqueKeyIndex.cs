@@ -12,51 +12,21 @@ using System.Linq;
 
 namespace Hydrogen.ObjectSpaces;
 
-internal class NonUniqueKeyIndex<TItem, TKey> : IndexBase<TItem, TKey> {
-	private readonly NonUniqueKeyStore<TKey> _keyStore;
+internal class NonUniqueKeyIndex<TItem, TKey> : IndexBase<TItem, TKey, NonUniqueKeyStore<TKey>> {
 
 	public NonUniqueKeyIndex(ObjectContainer<TItem> container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
 		: base(
 			container,
-			reservedStreamIndex,
-			projection
+			projection,
+			new NonUniqueKeyStore<TKey>(container, reservedStreamIndex, keyComparer, keySerializer)
 		) {
-		_keyStore = new NonUniqueKeyStore<TKey>(container, reservedStreamIndex, keyComparer, keySerializer);
 	}
 
 	public ILookup<TKey, long> Lookup {
 		get {
 			CheckAttached();
-			return _keyStore.Lookup;
+			return KeyStore.Lookup;
 		}
-	}
-	
-	protected override void AttachInternal() {
-		_keyStore.Attach();
-	}
-
-	protected override void DetachInternal() {
-		_keyStore.Attach();
-	}
-
-	protected override void OnAdded(TItem item, long index, TKey key) {
-		_keyStore.Add(index, key);
-	}
-
-	protected override void OnInserted(TItem item, long index, TKey key) {
-		_keyStore.Insert(index, key);
-	}
-
-	protected override void OnUpdated(TItem item, long index, TKey key) {
-		_keyStore.Update(index, key);
-	}
-
-	protected override void OnRemoved(long index) {
-		_keyStore.Remove(index);
-	}
-
-	protected override void OnReaped(long index) {
-		_keyStore.Reap(index);
 	}
 
 }

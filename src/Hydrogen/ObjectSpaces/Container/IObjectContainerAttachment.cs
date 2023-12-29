@@ -5,6 +5,8 @@ public interface IObjectContainerAttachment {
 
 	long ReservedStreamIndex { get; }
 
+	bool IsAttached { get; }
+
 	void Attach();
 
 	void Detach();

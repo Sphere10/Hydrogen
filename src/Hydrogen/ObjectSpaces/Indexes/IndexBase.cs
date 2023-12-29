@@ -16,83 +16,59 @@ namespace Hydrogen.ObjectSpaces;
 /// </summary>
 /// <typeparam name="TItem">Type of item being stored in <see cref="ObjectContainer{T}"/></typeparam>
 /// <typeparam name="TKey">Type of property in <see cref="TItem"/> that is the key</typeparam>
-public abstract class IndexBase<TItem, TKey> : MetaDataObserverBase<TItem> {
-	private readonly Func<TItem, TKey> _projection;
+public abstract class IndexBase<TData, TStore> : ContainerObserverBase, IObjectContainerAttachment where TStore : IMetaDataStore<TData> {
 
-	protected IndexBase(ObjectContainer<TItem> container, long reservedStreamIndex, Func<TItem, TKey> projection)
-		: base(container, reservedStreamIndex) {
+	protected IndexBase(ObjectContainer container, TStore keyStore)
+		: base(container) {
 		Guard.ArgumentNotNull(container, nameof(container));
-		Guard.ArgumentNotNull(projection, nameof(projection));
-		_projection = projection;
+		KeyStore = keyStore;
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public TKey CalculateKey(TItem item) => _projection.Invoke(item);
+	public TStore KeyStore { get; }
 
-	protected sealed override void OnAdding(object item, long index) {
-		base.OnAdding(item, index);
-		var itemT = (TItem)item;
-		OnAdding(itemT, index, CalculateKey(itemT));
+	protected override void OnRemoved(long index) {
+		CheckAttached();
+		KeyStore.Remove(index);
 	}
 
-	protected sealed override void OnAdded(object item, long index) {
-		base.OnAdded(item, index);
-		var itemT = (TItem)item;
-		OnAdded(itemT, index, CalculateKey(itemT));
-	}
-
-	protected sealed override void OnInserting(object item, long index) {
-		base.OnInserting(item, index);
-		var itemT = (TItem)item;
-		OnInserting(itemT, index, CalculateKey(itemT));
-	}
-
-	protected sealed override void OnInserted(object item, long index) {
-		base.OnInserted(item, index);
-		var itemT = (TItem)item;
-		OnInserted(itemT, index, CalculateKey(itemT));
-	}
-
-	protected sealed override void OnUpdating(object item, long index) {
-		base.OnUpdating(item, index);
-		var itemT = (TItem)item;
-		OnUpdating(itemT, index, CalculateKey(itemT));
-	}
-
-	protected sealed override void OnUpdated(object item, long index) {
-		base.OnUpdated(item, index);
-		var itemT = (TItem)item;
-		OnUpdated(itemT, index, CalculateKey(itemT));
-	}
-
-	protected virtual void OnAdding(TItem item, long index, TKey key) {
-	}
-
-	protected virtual void OnAdded(TItem item, long index, TKey key) {
-	}
-
-	protected virtual void OnInserting(TItem item, long index, TKey key) {
-	}
-
-	protected virtual void OnInserted(TItem item, long index, TKey key) {
-	}
-
-	protected virtual void OnUpdating(TItem item, long index, TKey key) {
-	}
-
-	protected virtual void OnUpdated(TItem item, long index, TKey key) {
+	protected override void OnReaped(long index) {
+		CheckAttached();
+		KeyStore.Reap(index);
 	}
 
 	protected override void OnContainerClearing() {
 		// When the container about to be cleared, we detach the observer
 		CheckAttached();
-		Detach();
+		KeyStore.Detach();
 	}
 
 	protected override void OnContainerCleared() {
 		// After container was cleared, we reboot the index
-		CheckNotAttached();
-		Attach();
+		CheckDetached();
+		KeyStore.Attach();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	protected void CheckAttached()
+		=> Guard.Ensure(KeyStore.IsAttached, "Index is not attached");
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	protected void CheckDetached()
+		=> Guard.Ensure(!KeyStore.IsAttached, "Index is attached");
+
+	#region IObjectContainerAttachment Implementation
+
+	// NOTE: use of backing field _keyStore to avoid attached check
+
+	ObjectContainer IObjectContainerAttachment.Container => KeyStore.Container;
+
+	long IObjectContainerAttachment.ReservedStreamIndex => KeyStore.ReservedStreamIndex; 
+
+	bool IObjectContainerAttachment.IsAttached => KeyStore.IsAttached;
+
+	void IObjectContainerAttachment.Attach() => KeyStore.Attach();
+
+	void IObjectContainerAttachment.Detach() => KeyStore.Detach();
+
+	#endregion
 }

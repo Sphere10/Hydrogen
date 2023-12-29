@@ -32,5 +32,11 @@ internal class NonUniqueKeyStore<TKey> : MetaDataStoreDecorator<TKey> {
 		) {
 	}
 
-	public ILookup<TKey, long> Lookup => ((MemoryCachedMetaDataLookup<TKey>)InnerStore).Lookup;
+	public ILookup<TKey, long> Lookup {
+		get {
+			var store = ((MemoryCachedMetaDataLookup<TKey>)InnerStore);
+			Guard.Ensure(store.IsAttached, "Key store is not attached");
+			return store.Lookup;
+		}
+	}
 }

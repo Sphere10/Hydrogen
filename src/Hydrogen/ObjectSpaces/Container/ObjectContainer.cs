@@ -27,11 +27,9 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	public event EventHandlerEx Clearing { add => StreamContainer.Clearing += value; remove => StreamContainer.Clearing -= value; }
 	public event EventHandlerEx Cleared { add => StreamContainer.Cleared += value; remove => StreamContainer.Cleared -= value; }
 
-
 	private readonly bool _preAllocateOptimization;
 	private readonly Type _objectType;
 	private readonly IDictionary<long, IObjectContainerAttachment> _attachments;
-	
 
 	public ObjectContainer(Type objectType, StreamContainer streamContainer, IItemSerializer packedPackedSerializer, bool preAllocateOptimization) {
 		Guard.ArgumentNotNull(objectType, nameof(objectType));
@@ -70,15 +68,16 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		if (StreamContainer.RequiresLoad)
 			StreamContainer.Load();
 
-		foreach(var attachment in Attachments)
+		foreach(var attachment in Attachments.Where(x => !x.IsAttached))
 			attachment.Attach();
 	}
 
 	public IDisposable EnterAccessScope() => StreamContainer.EnterAccessScope();
 
 	public void Dispose() {
-		foreach(var attachment in _attachments.Values)
+		foreach(var attachment in _attachments.Values.Where(x => x.IsAttached))
 			attachment.Detach();
+
 		_attachments.Clear();
 
 		if (OwnsStreamContainer)
@@ -134,11 +133,7 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		NotifyPostItemOperation(index, null, ObjectContainerOperationType.Reap);
 	}
 
-	public void Clear() {
-		_attachments.Values.ForEach(x => x.Detach());
-		StreamContainer.Clear();
-		_attachments.Values.ForEach(x => x.Attach());
-	}
+	public void Clear() => StreamContainer.Clear();
 
 	internal ClusteredStream SaveItemAndReturnStream(long index, object item, ObjectContainerOperationType operationType) {
 		Guard.ArgumentGTE(index, 0, nameof(index));

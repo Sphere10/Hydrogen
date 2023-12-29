@@ -120,9 +120,9 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 
 		merkleTreeIndex = new MerkleTreeIndex(
 			streamMappedList.ObjectContainer,
+			merkleTreeIndexStreamIndex,
 			x => DigestItem(streamMappedList.ObjectContainer, x, hashAlgorithm),
-			hashAlgorithm,
-			merkleTreeIndexStreamIndex
+			hashAlgorithm
 		);
 		streamMappedList.ObjectContainer.RegisterAttachment(merkleTreeIndex);
 

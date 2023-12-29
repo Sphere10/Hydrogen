@@ -10,10 +10,9 @@ using System;
 
 namespace Hydrogen.ObjectSpaces;
 
-public abstract class MetaDataObserverBase : ObjectContainerAttachmentBase {
+public abstract class ContainerObserverBase  {
 
-	protected MetaDataObserverBase(ObjectContainer objectContainer, long reservedStreamIndex) 
-		: base(objectContainer, reservedStreamIndex) {
+	protected ContainerObserverBase(ObjectContainer objectContainer) {
 		objectContainer.PreItemOperation += OnPreItemOperation;
 		objectContainer.PostItemOperation += OnPostItemOperation;
 		objectContainer.Clearing += OnContainerClearing;

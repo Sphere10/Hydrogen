@@ -6,41 +6,28 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
 /// Tracks and maintains a list of of spare indices in an <see cref="ObjectContainer"/> so they can be re-used in
 /// subsequent operations. This is needed by a <see cref="StreamMappedRecyclableList{TItem}"/>
 /// </summary>
-internal class RecyclableIndexIndex : MetaDataObserverBase {
-	
-	private IStack<long> _freeIndexStack;
+internal class RecyclableIndexIndex : IndexBase<long, StackBasedMetaDataStore<long>> {
 
 	public RecyclableIndexIndex(ObjectContainer objectContainer, long reservedStreamIndex) 
-		: base(objectContainer, reservedStreamIndex) {
-		_freeIndexStack = null;
+		: base(objectContainer, new StackBasedMetaDataStore<long>(objectContainer, reservedStreamIndex, PrimitiveSerializer<long>.Instance)) {
 	}
 
-	public IStack<long> Stack { 
-		get {
-			CheckAttached();
-			return _freeIndexStack;
-		}
+	public IStack<long> Stack => KeyStore.Stack;
+
+	protected override void OnInserted(object item, long index) {
+		throw new InvalidOperationException($"A {typeof(RecyclableIndexIndex).ToStringCS()} cannot be used on a container which inserts items. Items can only be reaped when using this index");
 	}
 
-	protected override void AttachInternal() {
-		// the free index stack is an in-stream stack at all times (no memory overhead)
-		_freeIndexStack = new StreamPagedList<long>(
-			PrimitiveSerializer<long>.Instance,
-			Stream,
-			Endianness.LittleEndian,
-			false,
-			true
-		).AsStack();
-	}
-
-	protected override void DetachInternal() {
-		_freeIndexStack = null;
+	protected override void OnRemoved(long index) {
+		throw new InvalidOperationException($"A {typeof(RecyclableIndexIndex).ToStringCS()} cannot be used on a container which removes items. Items can only be reaped when using this index");
 	}
 
 	protected override void OnReaped(long index) {

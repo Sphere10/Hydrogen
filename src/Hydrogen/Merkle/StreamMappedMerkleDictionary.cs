@@ -146,9 +146,9 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 
 		merkleTreeIndex = new MerkleTreeIndex(
 			smDict.ObjectContainer,
+			merkleTreeIndexStreamIndex,
 			x => DigestItem(smDict, x, hashAlgorithm),
-			hashAlgorithm,
-			merkleTreeIndexStreamIndex
+			hashAlgorithm
 		);
 		smDict.ObjectContainer.RegisterAttachment(merkleTreeIndex);
 

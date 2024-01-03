@@ -25,7 +25,6 @@ public abstract class IndexBase<TItem, TKey, TStore> : IndexBase<TKey, TStore> w
 		_projection = projection;
 	}
 
-
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public TKey CalculateKey(TItem item) => _projection.Invoke(item);
 
@@ -73,7 +72,6 @@ public abstract class IndexBase<TItem, TKey, TStore> : IndexBase<TKey, TStore> w
 		KeyStore.Add(index, _projection(item));
 	}
 
-
 	protected virtual void OnInserting(TItem item, long index, TKey key) {
 	}
 
@@ -89,7 +87,6 @@ public abstract class IndexBase<TItem, TKey, TStore> : IndexBase<TKey, TStore> w
 		CheckAttached();
 		KeyStore.Update(index, _projection(item));
 	}
-
 
 	protected override void OnContainerClearing() {
 		// When the container about to be cleared, we detach the observer

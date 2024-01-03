@@ -21,11 +21,11 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
-	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
+	private readonly NonUniqueKeyIndex<TItem, int> _checksumKeyIndex;
 
 	internal StreamMappedList(
 		ObjectContainer<TItem> objectContainer,
-		KeyIndex<TItem, int> checksumKeyIndex,
+		NonUniqueKeyIndex<TItem, int> checksumKeyIndex,
 		IEqualityComparer<TItem> itemComparer = null,
 		bool autoLoad = false
 	) {

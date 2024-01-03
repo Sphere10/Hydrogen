@@ -27,6 +27,8 @@ public class ObjectSpaceDefinition {
 
 		public Member KeyMember { get; set; }
 
+		public int MaxLength { get; set; }
+
 	}
 
 	public class UniqueKey : IndexDefinition {

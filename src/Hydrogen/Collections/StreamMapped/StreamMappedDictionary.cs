@@ -32,24 +32,24 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
-	private readonly KeyIndex<KeyValuePair<TKey, TValue>, int> _keyChecksumKeyIndex;
+	private readonly NonUniqueKeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _keyChecksumIndex;
 	private readonly RecyclableIndexIndex _freeIndexStore;
 
 	internal StreamMappedDictionary(
 		ObjectContainer objectContainer,
 		RecyclableIndexIndex freeIndexStore,
-		KeyIndex<KeyValuePair<TKey, TValue>, int> keyChecksumKeyIndex,
+		NonUniqueKeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> keyChecksumIndex,
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
 		bool autoLoad = false
 	) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		Guard.ArgumentNotNull(freeIndexStore, nameof(freeIndexStore));
-		Guard.ArgumentNotNull(keyChecksumKeyIndex, nameof(keyChecksumKeyIndex));
+		Guard.ArgumentNotNull(keyChecksumIndex, nameof(keyChecksumIndex));
 		Guard.ArgumentIsAssignable<ObjectContainer<KeyValuePair<TKey, TValue>>>(objectContainer, nameof(objectContainer));
 		ObjectContainer = (ObjectContainer<KeyValuePair<TKey, TValue>>)objectContainer;
 		_freeIndexStore = freeIndexStore;
-		_keyChecksumKeyIndex = keyChecksumKeyIndex;
+		_keyChecksumIndex = keyChecksumIndex;
 		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
@@ -189,10 +189,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
 		using (ObjectContainer.EnterAccessScope()) {
-			return
-				_keyChecksumKeyIndex.Lookup[CalculateKeyChecksum(key)]
-				.Select(ReadKey)
-				.Any(item => _keyComparer.Equals(item, key));
+			return _keyChecksumIndex.Lookup[key].Any();
 		}
 	}
 
@@ -219,32 +216,30 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public bool TryFindKey(TKey key, out long index) {
 		Debug.Assert(key != null);
 		using (ObjectContainer.EnterAccessScope()) {
-			foreach (var i in _keyChecksumKeyIndex.Lookup[CalculateKeyChecksum(key)]) {
-				var candidateKey = ReadKey(i);
-				if (_keyComparer.Equals(candidateKey, key)) {
-					index = i;
-					return true;
-				}
+			var matches = _keyChecksumIndex.Lookup[key].ToArray();
+			if (matches.Length == 0) {
+				index = -1;
+				return false;
 			}
-			index = -1;
-			return false;
+			Guard.Ensure(matches.Length == 1, "Duplicate keys encountered in storage (data corrupt)"); 
+			index = matches[0];
+			return true;
 		}
 	}
 
 	public bool TryFindValue(TKey key, out long index, out TValue value) {
 		Debug.Assert(key != null);
 		using (ObjectContainer.EnterAccessScope()) {
-			foreach (var i in _keyChecksumKeyIndex.Lookup[CalculateKeyChecksum(key)]) {
-				var candidateKey = ReadKey(i);
-				if (_keyComparer.Equals(candidateKey, key)) {
-					index = i;
-					value = ReadValue(index);
-					return true;
-				}
+			var matches = _keyChecksumIndex.Lookup[key].ToArray();
+			if (matches.Length == 0) {
+				index = -1;
+				value = default;
+				return false;
 			}
-			index = -1;
-			value = default;
-			return false;
+			Guard.Ensure(matches.Length == 1, "Duplicate keys encountered in storage (data corrupt)"); 
+			index = matches[0];
+			value = ReadValue(index);
+			return true;
 		}
 	}
 
@@ -370,9 +365,9 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	}
 
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private int CalculateKeyChecksum(TKey key) 
-		=> _keyChecksumKeyIndex.CalculateKey(new KeyValuePair<TKey, TValue>(key, default));
+	//[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	//private int CalculateKeyChecksum(TKey key) 
+	//	=> _keyChecksumKeyIndex.CalculateKey(new KeyValuePair<TKey, TValue>(key, default));
 
 
 }

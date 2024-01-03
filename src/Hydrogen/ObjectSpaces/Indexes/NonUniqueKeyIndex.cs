@@ -22,7 +22,7 @@ internal class NonUniqueKeyIndex<TItem, TKey> : IndexBase<TItem, TKey, NonUnique
 		) {
 	}
 
-	public ILookup<TKey, long> Lookup {
+	public virtual ILookup<TKey, long> Lookup {
 		get {
 			CheckAttached();
 			return KeyStore.Lookup;

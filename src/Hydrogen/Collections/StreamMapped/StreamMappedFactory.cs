@@ -288,6 +288,7 @@ public static class StreamMappedFactory {
 				keySerializer ?? ItemSerializer<TKey>.Default,
 				valueSerializer ?? ItemSerializer<TValue>.Default,
 				keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, streamContainer.Endianness),
+				keyComparer ?? EqualityComparer<TKey>.Default,
 				freeIndexStoreStreamIndex,
 				keyChecksumIndexStreamIndex,
 				out var freeIndexStore,
@@ -436,10 +437,11 @@ public static class StreamMappedFactory {
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IItemChecksummer<TKey> keyChecksummer,
+		IEqualityComparer<TKey> keyComparer,
 		long freeIndexStoreStreamIndex,
 		long keyChecksumIndexStreamIndex,
 		out RecyclableIndexIndex recyclableIndexIndex,
-		out KeyIndex<KeyValuePair<TKey, TValue>, int> keyChecksumKeyIndex
+		out NonUniqueKeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> keyChecksumKeyIndex
 	) {
 		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
@@ -465,16 +467,30 @@ public static class StreamMappedFactory {
 
 		// Create key checksum index (for fast key lookups)
 		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, container.StreamContainer.Endianness);
-		keyChecksumKeyIndex = new KeyIndex<KeyValuePair<TKey, TValue>, int>(
+		keyChecksumKeyIndex = new NonUniqueKeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>(
 			container,
 			keyChecksumIndexStreamIndex,
-			kvp => keyChecksummer.CalculateChecksum(kvp.Key),
-			EqualityComparer<int>.Default,
-			PrimitiveSerializer<int>.Instance
+			kvp => kvp.Key,
+			keyChecksummer,
+			ReadKey,
+			keyComparer
 		);
 		container.RegisterAttachment(keyChecksumKeyIndex);
 
 		return container;
+
+		TKey ReadKey(long index) {
+			using (container.EnterAccessScope()) {
+				var traits = container.GetItemDescriptor(index).Traits;
+				if (traits.HasFlag(ClusteredStreamTraits.Reaped))
+					throw new InvalidOperationException($"Object {index} has been reaped");
+
+				using var stream = container.StreamContainer.OpenRead(container.StreamContainer.Header.ReservedStreams + index);
+				var reader = new EndianBinaryReader(EndianBitConverter.For(container.StreamContainer.Endianness), stream);
+				return ((KeyValuePairSerializer<TKey, TValue>)container.ItemSerializer).DeserializeKey(reader);
+			}
+		}
+
 	}
 
 	internal static ObjectContainer<TValue> CreateClkContainer<TKey, TValue>(
@@ -522,7 +538,7 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
 		long checksumIndexStreamIndex,
-		out KeyIndex<TItem, int> checksumKeyIndex
+		out NonUniqueKeyIndex<TItem, int> checksumKeyIndex
 	) {
 		var container = new ObjectContainer<TItem>(
 			streamContainer, 
@@ -531,7 +547,7 @@ public static class StreamMappedFactory {
 		);
 
 		if (itemChecksummer is not null) {
-			checksumKeyIndex = new KeyIndex<TItem, int>(
+			checksumKeyIndex = new NonUniqueKeyIndex<TItem, int>(
 				container,
 				checksumIndexStreamIndex,
 				itemChecksummer.CalculateChecksum,
@@ -553,7 +569,7 @@ public static class StreamMappedFactory {
 		long freeIndexStoreStreamIndex,
 		long checksumIndexStreamIndex,
 		out RecyclableIndexIndex recyclableIndexIndex,
-		out KeyIndex<TItem, int> checksumKeyIndex
+		out NonUniqueKeyIndex<TItem, int> checksumKeyIndex
 	) {
 		var container = new ObjectContainer<TItem>(
 			streamContainer, 
@@ -570,7 +586,7 @@ public static class StreamMappedFactory {
 
 		// Create item checksum index (if applicable)
 		if (itemChecksummer is not null) {
-			checksumKeyIndex = new KeyIndex<TItem, int>(
+			checksumKeyIndex = new NonUniqueKeyIndex<TItem, int>(
 				container,
 				checksumIndexStreamIndex,
 				itemChecksummer.CalculateChecksum,

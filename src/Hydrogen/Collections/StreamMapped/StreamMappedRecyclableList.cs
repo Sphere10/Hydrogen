@@ -18,12 +18,12 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
 	private readonly RecyclableIndexIndex _freeIndexStore;
-	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
+	private readonly NonUniqueKeyIndex<TItem, int> _checksumKeyIndex;
 
 	internal StreamMappedRecyclableList(
 		ObjectContainer<TItem> container, 
 		RecyclableIndexIndex freeIndexStore, 
-		KeyIndex<TItem, int> checksumKeyIndex,
+		NonUniqueKeyIndex<TItem, int> checksumKeyIndex,
 		IEqualityComparer<TItem> itemComparer = null,
 		bool autoLoad = false
 	) {

@@ -157,7 +157,7 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 		}
 
 		IObjectContainerAttachment BuildIndex(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
-			var dataProviderType = typeof(NonUniqueKeyIndex<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
+			var dataProviderType = typeof(KeyIndex<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
 			//var projectionType = typeof(Func<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
 			var projection = Tools.Lambda.ConvertFunc(indexDefinition.KeyMember.GetValue, containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
 			var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);

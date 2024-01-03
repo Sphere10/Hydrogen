@@ -32,13 +32,13 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
-	private readonly NonUniqueKeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _keyChecksumIndex;
+	private readonly KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _keyChecksumIndex;
 	private readonly RecyclableIndexIndex _freeIndexStore;
 
 	internal StreamMappedDictionary(
 		ObjectContainer objectContainer,
 		RecyclableIndexIndex freeIndexStore,
-		NonUniqueKeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> keyChecksumIndex,
+		KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> keyChecksumIndex,
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
 		bool autoLoad = false

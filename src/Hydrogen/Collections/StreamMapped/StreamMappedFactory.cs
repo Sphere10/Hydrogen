@@ -441,7 +441,7 @@ public static class StreamMappedFactory {
 		long freeIndexStoreStreamIndex,
 		long keyChecksumIndexStreamIndex,
 		out RecyclableIndexIndex recyclableIndexIndex,
-		out NonUniqueKeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> keyChecksumKeyIndex
+		out KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> keyChecksumKeyIndex
 	) {
 		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
@@ -467,7 +467,7 @@ public static class StreamMappedFactory {
 
 		// Create key checksum index (for fast key lookups)
 		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, container.StreamContainer.Endianness);
-		keyChecksumKeyIndex = new NonUniqueKeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>(
+		keyChecksumKeyIndex = new KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>(
 			container,
 			keyChecksumIndexStreamIndex,
 			kvp => kvp.Key,
@@ -538,7 +538,7 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
 		long checksumIndexStreamIndex,
-		out NonUniqueKeyIndex<TItem, int> checksumKeyIndex
+		out KeyIndex<TItem, int> checksumKeyIndex
 	) {
 		var container = new ObjectContainer<TItem>(
 			streamContainer, 
@@ -547,7 +547,7 @@ public static class StreamMappedFactory {
 		);
 
 		if (itemChecksummer is not null) {
-			checksumKeyIndex = new NonUniqueKeyIndex<TItem, int>(
+			checksumKeyIndex = new KeyIndex<TItem, int>(
 				container,
 				checksumIndexStreamIndex,
 				itemChecksummer.CalculateChecksum,
@@ -569,7 +569,7 @@ public static class StreamMappedFactory {
 		long freeIndexStoreStreamIndex,
 		long checksumIndexStreamIndex,
 		out RecyclableIndexIndex recyclableIndexIndex,
-		out NonUniqueKeyIndex<TItem, int> checksumKeyIndex
+		out KeyIndex<TItem, int> checksumKeyIndex
 	) {
 		var container = new ObjectContainer<TItem>(
 			streamContainer, 
@@ -586,7 +586,7 @@ public static class StreamMappedFactory {
 
 		// Create item checksum index (if applicable)
 		if (itemChecksummer is not null) {
-			checksumKeyIndex = new NonUniqueKeyIndex<TItem, int>(
+			checksumKeyIndex = new KeyIndex<TItem, int>(
 				container,
 				checksumIndexStreamIndex,
 				itemChecksummer.CalculateChecksum,

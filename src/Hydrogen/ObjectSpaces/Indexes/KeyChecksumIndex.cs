@@ -18,13 +18,13 @@ namespace Hydrogen.ObjectSpaces;
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 /// <typeparam name="TKey"></typeparam>
-internal class NonUniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKeyStore<int>> {
+internal class KeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKeyStore<int>> {
 	private readonly IItemChecksummer<TKey> _keyChecksummer;
 	private readonly Func<long, TKey> _keyFetcher;
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly ChecksumKeyLookup _checksummedKeyLookup;
 
-	public NonUniqueKeyChecksumIndex(ObjectContainer<TItem> container, long reservedStreamIndex, Func<TItem, TKey> projection, IItemChecksummer<TKey> keyChecksummer, Func<long, TKey> keyFetcher, IEqualityComparer<TKey> keyComparer)
+	public KeyChecksumIndex(ObjectContainer<TItem> container, long reservedStreamIndex, Func<TItem, TKey> projection, IItemChecksummer<TKey> keyChecksummer, Func<long, TKey> keyFetcher, IEqualityComparer<TKey> keyComparer)
 		: base(
 			container,
 			x => keyChecksummer.CalculateChecksum(projection.Invoke(x)),
@@ -44,9 +44,9 @@ internal class NonUniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, No
 	}
 
 	private class ChecksumKeyLookup : ILookup<TKey, long> {
-		private readonly NonUniqueKeyChecksumIndex<TItem, TKey> _parent;
+		private readonly KeyChecksumIndex<TItem, TKey> _parent;
 		
-		public ChecksumKeyLookup(NonUniqueKeyChecksumIndex<TItem, TKey> parent) {
+		public ChecksumKeyLookup(KeyChecksumIndex<TItem, TKey> parent) {
 			_parent = parent;
 		}
 

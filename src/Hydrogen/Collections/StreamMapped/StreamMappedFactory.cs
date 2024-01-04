@@ -466,7 +466,7 @@ public static class StreamMappedFactory {
 		container.RegisterAttachment(recyclableIndexIndex);
 
 		// Create key checksum index (for fast key lookups)
-		keyChecksumKeyIndex = container.AddChecksumKeyIndex(kvp => kvp.Key, keyChecksummer, keySerializer, ReadKey, keyComparer, keyChecksumIndexStreamIndex);
+		keyChecksumKeyIndex = container.AddChecksumKeyIndex(kvp => kvp.Key, keyChecksumIndexStreamIndex, keySerializer, keyChecksummer, ReadKey, keyComparer);
 
 		return container;
 

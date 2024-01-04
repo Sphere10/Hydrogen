@@ -1,4 +1,12 @@
-﻿using System;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -157,7 +165,7 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 		}
 
 		IObjectContainerAttachment BuildIndex(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
-			var dataProviderType = typeof(KeyIndex<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
+			var dataProviderType = typeof(KeyChecksumIndex<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
 			//var projectionType = typeof(Func<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
 			var projection = Tools.Lambda.ConvertFunc(indexDefinition.KeyMember.GetValue, containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
 			var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
@@ -165,7 +173,8 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 
 			// public ObjectContainerUniqueKey(ObjectContainer container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer) {
 			try {
-				var uniqueKeyInstance = dataProviderType.ActivateWithCompatibleArgs(container, (long)streamIndex, projection, keyComparer, serializer);
+				//obj
+				var uniqueKeyInstance = dataProviderType.ActivateWithCompatibleArgs(container, (long)streamIndex, projection, null, null, keyComparer); // keyFetcher and keyChecksummer are null as method will auto-create
 				return (IObjectContainerAttachment)uniqueKeyInstance;
 			} catch (Exception ex) {
 				var xxx = ex.ToDiagnosticString();

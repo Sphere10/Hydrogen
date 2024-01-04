@@ -7,7 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
+using System;
 using System.Collections.Generic;
+using static Hydrogen.AMS;
 
 namespace Hydrogen.ObjectSpaces;
 
@@ -35,4 +37,22 @@ public class ObjectContainer<T> : ObjectContainer {
 		item = (T)obj;
 		return result;
 	}
+
+	internal KeyChecksumIndex<T, TKey> AddChecksumKeyIndex<TKey>(Func<T, TKey> projection, long streamIndex, IItemSerializer<TKey> keySerializer = null, IItemChecksummer<TKey> keyChecksummer= null, Func<long, TKey> keyFetcher= null, IEqualityComparer<TKey> keyComparer= null) {
+		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, StreamContainer.Endianness);
+		keyFetcher ??= x => projection(LoadItem(x));
+		var keyChecksumKeyIndex = new KeyChecksumIndex<T, TKey>(
+			this,
+			streamIndex,
+			projection,
+			keyChecksummer,
+			keyFetcher,
+			keyComparer
+		);
+		RegisterAttachment(keyChecksumKeyIndex);
+
+		return keyChecksumKeyIndex;
+	}
+
+	
 }

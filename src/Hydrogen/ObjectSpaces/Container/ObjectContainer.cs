@@ -221,6 +221,7 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		return (T)_attachments[reservedStream];
 	}
 
+
 	#endregion
 
 	#region Event Notification

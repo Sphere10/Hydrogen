@@ -48,4 +48,22 @@ public abstract class Member : IEquatable<Member> {
 	public abstract object GetValue(object target);
 
 	public abstract bool TryGetBackingField(out Member backingField);
+
+	public Func<TItem, TProperty> AsFunc<TItem, TProperty>() {
+		Guard.Ensure(DeclaringType == typeof(TItem) && PropertyType == typeof(TProperty), "Generic types TItem and TProperty must match the member's declaring type and property type.");
+		return item => {
+			if (item == null)
+				throw new ArgumentNullException(nameof(item));
+			var value = GetValue(item);
+			return (TProperty)value;
+		};
+	}
+
+	public Delegate AsDelegate() {
+		var method = GetType()
+			.GetMethod(nameof(AsFunc), BindingFlags.Public | BindingFlags.Instance)
+			.MakeGenericMethod(DeclaringType, PropertyType);
+		return (Delegate)method.Invoke(this, null);
+	}
+
 }

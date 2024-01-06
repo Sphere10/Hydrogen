@@ -126,7 +126,7 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 						false
 					) as ObjectContainer;
 
-			// construct meta-data provider
+			// construct indexes
 			foreach (var (item, index) in containerDefinition.Indexes.WithIndex()) {
 				IObjectContainerAttachment metaDataObserver = item.Type switch {
 					ObjectSpaceDefinition.IndexType.UniqueKey => BuildUniqueKey(container, containerDefinition, item, index),
@@ -138,8 +138,14 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 				container.RegisterAttachment(metaDataObserver);
 			}
 
-			// TODO: this comment??? register the object container into the root 
-
+			// load container
+			try {
+			if (container.RequiresLoad)
+				container.Load();
+			} catch (Exception ex) {
+				var xxx = ex.ToDiagnosticString();
+				throw;
+			}
 
 			containers.Add(container);
 		}
@@ -147,39 +153,22 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 		_loaded = true;
 
 		IObjectContainerAttachment BuildUniqueKey(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
-			var dataProviderType = typeof(UniqueKeyIndex<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
-			//var projectionType = typeof(Func<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
-			var projection = Tools.Lambda.ConvertFunc(indexDefinition.KeyMember.GetValue, containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
 			var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
-			var serializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
-		
-			// public ObjectContainerUniqueKey(ObjectContainer container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer) {
-			try {
-				var uniqueKeyInstance = dataProviderType.ActivateWithCompatibleArgs(container, (long)streamIndex, projection, keyComparer, serializer);
-				return (IObjectContainerAttachment)uniqueKeyInstance;
-			} catch (Exception ex) {
-				var xxx = ex.ToDiagnosticString();
-				throw;
-			}
-	
+			var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
+			return 
+				keySerializer.IsConstantSize ? 
+					IndexFactory.CreateUniqueKeyIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) : 
+					IndexFactory.CreateUniqueKeyChecksumIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 		}
 
 		IObjectContainerAttachment BuildIndex(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
-			var dataProviderType = typeof(KeyChecksumIndex<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
-			//var projectionType = typeof(Func<,>).MakeGenericType(containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
-			var projection = Tools.Lambda.ConvertFunc(indexDefinition.KeyMember.GetValue, containerDefinition.ObjectType, indexDefinition.KeyMember.PropertyType);
 			var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
-			var serializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
-
-			// public ObjectContainerUniqueKey(ObjectContainer container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer) {
-			try {
-				//obj
-				var uniqueKeyInstance = dataProviderType.ActivateWithCompatibleArgs(container, (long)streamIndex, projection, null, null, keyComparer); // keyFetcher and keyChecksummer are null as method will auto-create
-				return (IObjectContainerAttachment)uniqueKeyInstance;
-			} catch (Exception ex) {
-				var xxx = ex.ToDiagnosticString();
-				throw;
-			}
+			var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
+			return 
+				keySerializer.IsConstantSize ?
+					IndexFactory.CreateKeyIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
+					IndexFactory.CreateKeyChecksumIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
+				
 		}
 
 	}
@@ -235,8 +224,9 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 
 
 	public void Dispose() {
-		foreach(var container in Containers?.Where(x => !x.RequiresLoad)) 
-			 container.Dispose(); 
+		if (Containers is not null)
+			foreach(var container in Containers.Where(x => !x.RequiresLoad)) 
+				 container.Dispose(); 
 
 		_streamContainer?.Dispose();
 	}

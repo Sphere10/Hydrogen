@@ -22,7 +22,7 @@ internal class KeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKe
 	private readonly IItemChecksummer<TKey> _keyChecksummer;
 	private readonly Func<long, TKey> _keyFetcher;
 	private readonly IEqualityComparer<TKey> _keyComparer;
-	private readonly ChecksumKeyLookup _checksummedKeyLookup;
+	private readonly KeyChecksumLookup _checksummedLookup;
 
 	public KeyChecksumIndex(ObjectContainer<TItem> container, long reservedStreamIndex, Func<TItem, TKey> projection, IItemChecksummer<TKey> keyChecksummer, Func<long, TKey> keyFetcher, IEqualityComparer<TKey> keyComparer)
 		: base(
@@ -33,20 +33,20 @@ internal class KeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKe
 		_keyChecksummer = keyChecksummer;
 		_keyFetcher = keyFetcher;
 		_keyComparer = keyComparer;
-		_checksummedKeyLookup = new ChecksumKeyLookup(this);
+		_checksummedLookup = new KeyChecksumLookup(this);
 	}
 
 	public ILookup<TKey, long> Lookup {
 		get {
 			CheckAttached();
-			return _checksummedKeyLookup;
+			return _checksummedLookup;
 		}
 	}
 
-	private class ChecksumKeyLookup : ILookup<TKey, long> {
+	private class KeyChecksumLookup : ILookup<TKey, long> {
 		private readonly KeyChecksumIndex<TItem, TKey> _parent;
 		
-		public ChecksumKeyLookup(KeyChecksumIndex<TItem, TKey> parent) {
+		public KeyChecksumLookup(KeyChecksumIndex<TItem, TKey> parent) {
 			_parent = parent;
 		}
 

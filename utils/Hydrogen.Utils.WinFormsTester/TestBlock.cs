@@ -62,8 +62,8 @@ public class TestBlock : ApplicationBlock {
 					"Tests",
 					null,
 					new IMenuItem[] {
-						new ScreenMenuItem("Emailer", typeof(EmailTestScreen), null),
 						new ScreenMenuItem("ObjectSpace", typeof(ObjectSpaceScreen), null),
+						new ScreenMenuItem("Emailer", typeof(EmailTestScreen), null),
 						new ScreenMenuItem("TransactionalList Test", typeof(TransactionalCollectionScreen), null),
 						new ScreenMenuItem("WebSockets Test", typeof(CommunicationsTestScreen), null),
 						new ScreenMenuItem("Merkle Tree", typeof(MerkleTreeTestScreen), null),
@@ -124,7 +124,7 @@ public class TestBlock : ApplicationBlock {
 				)
 			}
 		) {
-		DefaultScreen = typeof(TransactionalCollectionScreen);
+		DefaultScreen = typeof(ObjectSpaceScreen);
 	}
 
 }

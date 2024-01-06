@@ -666,6 +666,8 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public void Dispose() {
 		CheckNoOpenedStreams(false);
+		//using (_rootStream.EnterAccessScope())
+		//	_rootStream.Flush();
 		if (OwnsStream) {
 			_rootStream.Dispose();
 		}

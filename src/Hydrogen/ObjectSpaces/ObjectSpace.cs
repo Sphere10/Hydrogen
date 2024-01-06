@@ -10,10 +10,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Hydrogen.ObjectSpaces;
 
-public class ObjectSpace : SyncLoadableBase, IDisposable {
+public class ObjectSpace : SyncLoadableBase, ITransactionalObject, IDisposable {
+
+	public event EventHandlerEx<object> Committing { add => _fileStream.Committing += value; remove => _fileStream.Committing -= value; }
+	public event EventHandlerEx<object> Committed { add => _fileStream.Committed += value; remove => _fileStream.Committed -= value; }
+	public event EventHandlerEx<object> RollingBack { add => _fileStream.RollingBack += value; remove => _fileStream.RollingBack -= value; }
+	public event EventHandlerEx<object> RolledBack { add => _fileStream.RolledBack += value; remove => _fileStream.RolledBack -= value; } 
+
+	private readonly TransactionalStream _fileStream;
 	private readonly StreamContainer _streamContainer;
 	private readonly SerializerFactory _serializerFactory;
 	private readonly ComparerFactory _comparerFactory;
@@ -27,23 +35,22 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 		Definition = objectSpaceDefinition;
 		_serializerFactory = serializerFactory;
 		_comparerFactory = comparerFactory;
+		_fileStream = new TransactionalStream(
+			file.FilePath,
+			file.PageFileDir,
+			file.PageSize,
+			file.MaxMemory,
+			readOnly,
+			false
+		);
 		_streamContainer = new StreamContainer(
-			new TransactionalStream(
-				file.FilePath,
-				file.PageFileDir,
-				file.PageSize,
-				file.MaxMemory,
-				readOnly,
-				false
-			),
+			_fileStream,
 			(int)file.ClusterSize,
 			file.ContainerPolicy,
 			0, // TODO: need to consider schema-level index's like merkle-tree, etc
 			Endianness.LittleEndian,
 			false
-		) {
-			OwnsStream = true
-		};
+		);
 		_loaded = false;
 		if (autoLoad)
 			Load();
@@ -77,6 +84,22 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 		throw new NotImplementedException();
 	}
 
+	public void Commit() => _fileStream.Commit();
+
+	public Task CommitAsync() => _fileStream.CommitAsync();
+
+	public void Rollback() => _fileStream.Rollback();
+
+	public Task RollbackAsync() => _fileStream.RollbackAsync();
+
+	public void Dispose() {
+		if (Containers is not null)
+			foreach(var container in Containers.Where(x => !x.RequiresLoad)) 
+				container.Dispose(); 
+		_streamContainer.Dispose();
+		_fileStream.Dispose();
+	}
+
 	protected override void LoadInternal() {
 		Guard.Against(_loaded, "ObjectSpace already loaded.");
 		var validationResult = Validate(Definition);
@@ -104,7 +127,7 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 		var containers = new List<ObjectContainer>();
 		foreach (var (containerDefinition, ix) in Definition.Containers.WithIndex()) {
 			// Get the stream within the object space which will comprise the object container
-			var containerStream = _streamContainer.Open(_streamContainer.Header.ReservedStreams + ix, false, false); // nb: no lock is acquired
+			var containerStream = _streamContainer.Open(_streamContainer.Header.ReservedStreams + ix, false, true);
 
 			// Create a StreamContainer mapped to this stream, so it can contain items
 			var containerItemsStreamContainer = new StreamContainer(
@@ -114,7 +137,9 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 				containerDefinition.Indexes.Length,
 				Endianness.LittleEndian,
 				false
-			);
+			) {
+				OwnsStream = true
+			};
 
 			// construct the object container
 			var container = 
@@ -125,6 +150,7 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 						CreateItemSerializer(containerDefinition.ObjectType),
 						false
 					) as ObjectContainer;
+			container.OwnsStreamContainer = true;
 
 			// construct indexes
 			foreach (var (item, index) in containerDefinition.Indexes.WithIndex()) {
@@ -139,13 +165,8 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 			}
 
 			// load container
-			try {
 			if (container.RequiresLoad)
 				container.Load();
-			} catch (Exception ex) {
-				var xxx = ex.ToDiagnosticString();
-				throw;
-			}
 
 			containers.Add(container);
 		}
@@ -221,14 +242,5 @@ public class ObjectSpace : SyncLoadableBase, IDisposable {
 
 	protected int SanitizeContainerClusterSize(int clusterSizeB)
 		=> Tools.Values.ClipValue(clusterSizeB, 256, 8192);
-
-
-	public void Dispose() {
-		if (Containers is not null)
-			foreach(var container in Containers.Where(x => !x.RequiresLoad)) 
-				 container.Dispose(); 
-
-		_streamContainer?.Dispose();
-	}
 
 }

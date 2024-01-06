@@ -29,8 +29,9 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 	}
 
 	private void DoConsensusSpaceDemo(string path) {
-		using var appSpace = new MockAppDataSpace(path);
+		using var appSpace = new DemoObjectSpace(path);
 		appSpace.Load();
+		appSpace.Commit();
 	}
 
 	private void SaveSettings() {
@@ -47,15 +48,14 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 		try {
 			SaveSettings();
 			DoConsensusSpaceDemo(_objectSpacePathControl.Path);
-	
 		} catch (Exception ex) {
 			ExceptionDialog.Show(ex);
 		}
 	}
 
-	public class MockAppDataSpace : ObjectSpace {
+	public class DemoObjectSpace : ObjectSpace {
 
-		public MockAppDataSpace(string file)
+		public DemoObjectSpace(string file)
 			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default) {
 		}
 

@@ -215,7 +215,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	public static Guid ComputeFileID(string caseCorrectFilePath) {
 		// FileID is a first 16 bytes of the case-correct path converted into a guid
 		Guard.ArgumentNotNull(caseCorrectFilePath, nameof(caseCorrectFilePath));
-		return new Guid(Hashers.Hash(CHF.SHA2_256, Encoding.UTF8.GetBytes(caseCorrectFilePath)).Take(16).ToArray());
+		return new Guid(Hashers.Hash(CHF.Blake2b_128, Encoding.UTF8.GetBytes(caseCorrectFilePath)).Take(16).ToArray());
 	}
 
 	private void CheckScopeInStatusIfExists(FileTransactionState status) {

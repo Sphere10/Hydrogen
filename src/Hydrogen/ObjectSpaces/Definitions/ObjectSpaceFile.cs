@@ -20,4 +20,5 @@ public class ObjectSpaceFile {
 	public long ClusterSize { get; set; }
 
 	public StreamContainerPolicy ContainerPolicy { get; set; }
+
 }

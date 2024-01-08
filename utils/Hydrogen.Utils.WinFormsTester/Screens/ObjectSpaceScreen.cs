@@ -55,8 +55,8 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 
 	public class DemoObjectSpace : ObjectSpace {
 
-		public DemoObjectSpace(string file)
-			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default) {
+		public DemoObjectSpace(string file, bool autoLoad = false)
+			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default, autoLoad: autoLoad) {
 		}
 
 		public IRepository<long, Account> Accounts { get; }

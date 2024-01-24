@@ -23,7 +23,7 @@ public class TransactionalListTests {
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8), accessMode: FileAccessMode.Default)) {
 			Assert.That(txnFile.RequiresLoad, Is.True);
 			txnFile.Load();
 			Assert.That(txnFile.RequiresLoad, Is.False);
@@ -37,7 +37,7 @@ public class TransactionalListTests {
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Hello World!");
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -55,7 +55,7 @@ public class TransactionalListTests {
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From( file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 			txnFile.Commit();
@@ -70,7 +70,7 @@ public class TransactionalListTests {
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy:policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			AssertEx.ListIntegrationTest(txnFile, maxCapacity, (rng, i) => Tools.Array.Gen(i, rng.NextString(StringMinSize, StringMaxSize)));
 			txnFile.Rollback();
@@ -86,7 +86,7 @@ public class TransactionalListTests {
 		using var disposables = new Disposables();
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))));
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))));
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Hello World!");
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -98,7 +98,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -115,7 +115,7 @@ public class TransactionalListTests {
 		using var disposables = new Disposables();
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))));
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))));
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Hello World!");
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -128,7 +128,7 @@ public class TransactionalListTests {
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
 		// Update previous state
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Updated");
 			txnFile.Commit();
@@ -138,7 +138,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(2));
@@ -156,7 +156,7 @@ public class TransactionalListTests {
 		using var disposables = new Disposables();
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))));
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))));
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Hello World!");
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -169,7 +169,7 @@ public class TransactionalListTests {
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
 		// Update previous state
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Updated");
 			txnFile.Rollback();
@@ -179,7 +179,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -195,7 +195,7 @@ public class TransactionalListTests {
 		using var disposables = new Disposables();
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))));
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))));
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Hello World!");
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -209,7 +209,7 @@ public class TransactionalListTests {
 
 
 		// Update previous state
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Updated");
 		}
@@ -218,7 +218,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -234,7 +234,7 @@ public class TransactionalListTests {
 		using var disposables = new Disposables();
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))));
 		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))));
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Hello World!");
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -243,7 +243,7 @@ public class TransactionalListTests {
 		}
 
 		// Update previous state
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			txnFile.Load();
 			txnFile.Add("Updated");
 			txnFile.Commit();
@@ -253,7 +253,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(file, dir, new StringSerializer(Encoding.UTF8), policy: policy)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(1));

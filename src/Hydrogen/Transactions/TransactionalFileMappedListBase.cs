@@ -24,28 +24,32 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	internal readonly MarkerRepository PageMarkerRepo;
 
 
-	protected TransactionalFileMappedListBase(
-		string filename,
-		string uncommittedPageFileDir,
-		long pageSize,
-		long maxMemory,
-		bool readOnly = false,
-		bool autoLoad = false)
-		: base(filename, pageSize, maxMemory, readOnly) {
-		Guard.ArgumentNotNullOrEmpty(uncommittedPageFileDir, nameof(uncommittedPageFileDir));
-		if (!Directory.Exists(uncommittedPageFileDir))
-			throw new DirectoryNotFoundException($"Directory not found: {uncommittedPageFileDir}");
-		FileID = ComputeFileID(Path);
-		PageMarkerRepo = new MarkerRepository(uncommittedPageFileDir, FileID);
+	protected TransactionalFileMappedListBase(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode)
+		: base(fileDescriptor, accessMode.WithoutAutoLoad()) {
+		Guard.ArgumentNotNullOrEmpty(FileDescriptor.PagesDirectoryPath, nameof(FileDescriptor.PagesDirectoryPath));
+
+		var pagesPath = FileDescriptor.PagesDirectoryPath;
+		var ownsPagesPath = !string.IsNullOrWhiteSpace(FileDescriptor.PagesDirectoryPath) && !Path.IsPathFullyQualified(FileDescriptor.PagesDirectoryPath);
+		if (ownsPagesPath) {
+			pagesPath = Path.Combine(Tools.FileSystem.GetParentDirectoryPath(FileDescriptor.Path), pagesPath);
+		} else if (!Directory.Exists(pagesPath)) {
+			throw new DirectoryNotFoundException($"Directory not found: {pagesPath}");
+		}
+		FileID = ComputeFileID(FileDescriptor.CaseCorrectPath);
+		PageMarkerRepo = new MarkerRepository(pagesPath, FileID, ownsPagesPath);
 		// Empty files with uncommitted pages still require load (marked not by base constructor). 
 		if (!RequiresLoad)
-			RequiresLoad = File.Exists(filename);
+			RequiresLoad = File.Exists(FileDescriptor.Path);
 
-		if (RequiresLoad && autoLoad)
+		if (RequiresLoad && accessMode.HasFlag(FileAccessMode.AutoLoad)) {
+			AccessMode |= FileAccessMode.AutoLoad;
 			Load();
+		}
 	}
 
 	public Guid FileID { get; }
+
+	public new TransactionalFileDescriptor FileDescriptor => (TransactionalFileDescriptor)base.FileDescriptor;
 
 	public abstract TransactionalFileMappedBuffer AsBuffer { get; }
 
@@ -64,13 +68,12 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			foreach (var marker in pageMarkers) {
 				if (marker == PageMarkerType.UncommittedPage) {
 					var pageFile = PageMarkerRepo.GetMarkerFilename(pageNumber, PageMarkerType.UncommittedPage);
-					using (var pageFileStream = File.OpenRead(pageFile)) {
-						if (pageFileStream.Length > 0) {
-							var page = InternalPages[pageMarkers.Key];
-							Stream.Seek(page.StartIndex, SeekOrigin.Begin);
-							Tools.Streams.RouteStream(pageFileStream, Stream, pageFileStream.Length, blockSizeInBytes: HydrogenDefaults.TransactionalPageBufferOperationBlockSize);
-						}
-					}
+					using var pageFileStream = File.OpenRead(pageFile);
+					if (pageFileStream.Length <= 0)
+						continue;
+					var page = InternalPages[pageMarkers.Key];
+					Stream.Seek(page.StartIndex, SeekOrigin.Begin);
+					Tools.Streams.RouteStream(pageFileStream, Stream, pageFileStream.Length, blockSizeInBytes: HydrogenDefaults.TransactionalPageBufferOperationBlockSize);
 				}
 			}
 		}
@@ -107,6 +110,8 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		}
 		if (PageMarkerRepo.FileMarkers.Any() || PageMarkerRepo.PageMarkers.Any())
 			Rollback();
+
+		PageMarkerRepo.Dispose();
 
 		base.Dispose();
 	}
@@ -170,9 +175,6 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		if (Disposing)
 			return;
 
-
-		if (Disposing)
-			return;
 		// Create marker
 		PageMarkerRepo.Remove(PageMarkerType.UncommittedPage, pageHeader.Number); // deletes uncommitted data
 		var requiresDeletedMarker = pageHeader.Number < GetCommittedPageCount();
@@ -224,7 +226,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			return;
 
 		// checks that if this is enlisted, that the scope triggered the commit
-		if (FileTransaction.IsEnlisted(Path) && txnScope.Transaction.Status != status) {
+		if (FileTransaction.IsEnlisted(FileDescriptor.CaseCorrectPath) && txnScope.Transaction.Status != status) {
 			throw new InvalidOperationException($"Commit or Rollback of a file enlisted in a {nameof(FileTransactionScope)} is prohibited. Call Commit/Rollback from the scope directly.");
 		}
 	}
@@ -245,13 +247,23 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	/// <summary>
 	/// Provides a persistable marker store based on files (can be resumed on abnormal termination)
 	/// </summary>
-	public class MarkerRepository {
-		readonly HashSet<FileMarkerType> _fileMarkers;
-		readonly ExtendedLookup<long, PageMarkerType> _pageMarkers;
+	public class MarkerRepository : IDisposable {
+		private readonly HashSet<FileMarkerType> _fileMarkers;
+		private readonly ExtendedLookup<long, PageMarkerType> _pageMarkers;
+		private readonly bool _maintainBaseDir;
 
-		public MarkerRepository(string baseDir, Guid fileID) {
+
+		public MarkerRepository(string baseDir, Guid fileID, bool maintainBaseDir) {
 			BaseDir = baseDir;
 			FileID = fileID;
+			_maintainBaseDir = maintainBaseDir;
+
+			if (!Directory.Exists(baseDir)) 
+				if (_maintainBaseDir)
+					Directory.CreateDirectory(baseDir);
+				else 
+					throw new ArgumentException("Folder does not exist and is not being maintained by this marker repository", nameof(baseDir));
+
 			ScanPersistedFileMarkers(baseDir, fileID, out _pageMarkers, out _fileMarkers);
 		}
 
@@ -285,7 +297,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			var addMarker = !_pageMarkers.Contains(pageNumber) || !_pageMarkers[pageNumber].Contains(marker);
 			if (addMarker) {
 				var file = GeneratePageMarkerFileName(BaseDir, FileID, marker, pageNumber);
-				Tools.FileSystem.CreateBlankFile(file);
+				Tools.FileSystem.CreateBlankFile(file, _maintainBaseDir);
 				_pageMarkers.Add(pageNumber, marker);
 			}
 		}
@@ -312,7 +324,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			var addMarker = !_fileMarkers.Contains(marker);
 			if (addMarker) {
 				var file = GenerateFileMarkerFileName(BaseDir, FileID, marker);
-				Tools.FileSystem.CreateBlankFile(file);
+				Tools.FileSystem.CreateBlankFile(file, _maintainBaseDir);
 				_fileMarkers.Add(marker);
 			}
 		}
@@ -466,6 +478,10 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			return System.IO.Path.Combine(baseDir, $"{fileID.ToStrictAlphaString().ToLowerInvariant()}{postfix}");
 		}
 
+		public void Dispose() {
+			if (_maintainBaseDir && Tools.FileSystem.CountDirectoryContents(BaseDir) == 0)
+				Directory.Delete(BaseDir, true);
+		}
 	}
 
 }

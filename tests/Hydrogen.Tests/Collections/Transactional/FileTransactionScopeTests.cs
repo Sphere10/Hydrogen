@@ -42,19 +42,19 @@ public class FileTransactionScopeTests {
 						scope3.EnlistFile(filePath3, 100, 1 * 100);
 
 						// Ensures that scope3 refers to 3 enlisted files
-						Assert.AreEqual(filePath1, scope3.Transaction.EnlistedFiles[0].Path);
-						Assert.AreEqual(filePath2, scope3.Transaction.EnlistedFiles[1].Path);
-						Assert.AreEqual(filePath3, scope3.Transaction.EnlistedFiles[2].Path);
+						Assert.AreEqual(filePath1, scope3.Transaction.EnlistedFiles[0].FileDescriptor.CaseCorrectPath);
+						Assert.AreEqual(filePath2, scope3.Transaction.EnlistedFiles[1].FileDescriptor.CaseCorrectPath);
+						Assert.AreEqual(filePath3, scope3.Transaction.EnlistedFiles[2].FileDescriptor.CaseCorrectPath);
 					}
 					// Ensures that scope3 refers to 3 enlisted files
-					Assert.AreEqual(filePath1, scope2.Transaction.EnlistedFiles[0].Path);
-					Assert.AreEqual(filePath2, scope2.Transaction.EnlistedFiles[1].Path);
-					Assert.AreEqual(filePath3, scope2.Transaction.EnlistedFiles[2].Path);
+					Assert.AreEqual(filePath1, scope2.Transaction.EnlistedFiles[0].FileDescriptor.CaseCorrectPath);
+					Assert.AreEqual(filePath2, scope2.Transaction.EnlistedFiles[1].FileDescriptor.CaseCorrectPath);
+					Assert.AreEqual(filePath3, scope2.Transaction.EnlistedFiles[2].FileDescriptor.CaseCorrectPath);
 				}
 				// Ensures that scope3 refers to 3 enlisted files
-				Assert.AreEqual(filePath1, scope1.Transaction.EnlistedFiles[0].Path);
-				Assert.AreEqual(filePath2, scope1.Transaction.EnlistedFiles[1].Path);
-				Assert.AreEqual(filePath3, scope1.Transaction.EnlistedFiles[2].Path);
+				Assert.AreEqual(filePath1, scope1.Transaction.EnlistedFiles[0].FileDescriptor.CaseCorrectPath);
+				Assert.AreEqual(filePath2, scope1.Transaction.EnlistedFiles[1].FileDescriptor.CaseCorrectPath);
+				Assert.AreEqual(filePath3, scope1.Transaction.EnlistedFiles[2].FileDescriptor.CaseCorrectPath);
 			}
 		}
 	}
@@ -71,10 +71,15 @@ public class FileTransactionScopeTests {
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir, filePageDir))) {
 			using (var scope = new FileTransactionScope(txnBaseDir)) {
 				scope.BeginTransaction();
-				var file = new TransactionalFileMappedBuffer(filePath,
-					filePageDir,
-					100,
-					1 * 100); // note: filePageDir != txnBaseDir
+				var file = new TransactionalFileMappedBuffer(
+					TransactionalFileDescriptor.From(
+						filePath,
+						filePageDir,
+						100,
+						1 * 100
+					),
+					FileAccessMode.Default
+				); // note: filePageDir != txnBaseDir
 				Assert.Throws<ArgumentException>(() => scope.EnlistFile(file, true));
 			}
 		}
@@ -93,10 +98,16 @@ public class FileTransactionScopeTests {
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
 			using (var scope = new FileTransactionScope(txnBaseDir)) {
 				scope.BeginTransaction();
-				var file = new TransactionalFileMappedBuffer(filePath,
-					filePageDir,
-					100,
-					1 * 100); // note: filePageDir == txnBaseDir
+				var file = new TransactionalFileMappedBuffer(
+					TransactionalFileDescriptor.From(
+						filePath,
+						filePageDir,
+						100,
+						1 * 100
+					), // note: filePageDir == txnBaseDir
+					FileAccessMode.Default
+				);
+
 				Assert.DoesNotThrow(() => scope.EnlistFile(file, true));
 			}
 		}
@@ -321,7 +332,7 @@ public class FileTransactionScopeTests {
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
 			using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 				scope1.BeginTransaction();
-				var file = new TransactionalFileMappedBuffer(filePath, 100, 1 * 100); // note: not enlisted in scope
+				var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From( filePath, txnBaseDir, 100, 1 * 100), FileAccessMode.Default); // note: not enlisted in scope
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -364,7 +375,7 @@ public class FileTransactionScopeTests {
 			using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 				scope1.BeginTransaction();
 				// note: file is not enlisted
-				var file = new TransactionalFileMappedBuffer(filePath, 100, 1 * 100); // note: not enlisted in scope
+				var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filePath, txnBaseDir, 100, 1 * 100), FileAccessMode.Default); // note: not enlisted in scope
 				if (file.RequiresLoad)
 					file.Load();
 				Assert.DoesNotThrow(() => file.Rollback());

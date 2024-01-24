@@ -40,15 +40,16 @@ public class TransactionalStream : TransactionalStream<ExtendedMemoryStream>, IL
 	public event EventHandlerEx<object> Loading { add => InnerStream.Loading += value; remove => InnerStream.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => InnerStream.Loaded += value; remove => InnerStream.Loaded -= value; }
 
-	public TransactionalStream(string filename, string uncommittedPageFileDir, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false) 
-		: base(CreateInnerStream(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly, autoLoad, out var transactionalBuffer), transactionalBuffer) {
+	public TransactionalStream(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode) 
+		: base(CreateInnerStream(fileDescriptor, accessMode, out var transactionalBuffer), transactionalBuffer) {
 	}
 
-	private static ExtendedMemoryStream CreateInnerStream(string filename, string uncommittedPageFileDir, long pageSize, long maxMemory, bool readOnly, bool autoLoad, out TransactionalFileMappedBuffer transactionalBuffer) {
-		transactionalBuffer = new TransactionalFileMappedBuffer(filename, uncommittedPageFileDir, pageSize, maxMemory, readOnly, autoLoad);
+	private static ExtendedMemoryStream CreateInnerStream(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode, out TransactionalFileMappedBuffer transactionalBuffer) {
+		transactionalBuffer = new TransactionalFileMappedBuffer(fileDescriptor, accessMode);
 		var extendedStream = new ExtendedMemoryStream(transactionalBuffer, true);
 		return extendedStream;
 	}
+
 	public bool RequiresLoad => InnerStream.RequiresLoad;
 
 	public void Load() => InnerStream.Load();

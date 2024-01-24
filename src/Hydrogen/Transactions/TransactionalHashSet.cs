@@ -13,74 +13,56 @@ namespace Hydrogen;
 
 public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransactionalHashSet<TItem> {
 	
-	public event EventHandlerEx<object> Committing { add => _internalTransactionalDictionary.Committing += value; remove => _internalTransactionalDictionary.Committing -= value; }
-	public event EventHandlerEx<object> Committed { add => _internalTransactionalDictionary.Committed += value; remove => _internalTransactionalDictionary.Committed -= value; }
-	public event EventHandlerEx<object> RollingBack { add => _internalTransactionalDictionary.RollingBack += value; remove => _internalTransactionalDictionary.RollingBack -= value; }
-	public event EventHandlerEx<object> RolledBack { add => _internalTransactionalDictionary.RolledBack += value; remove => _internalTransactionalDictionary.RolledBack -= value; }
+	public event EventHandlerEx<object> Committing { add => InternalDictionary.Committing += value; remove => InternalDictionary.Committing -= value; }
+	public event EventHandlerEx<object> Committed { add => InternalDictionary.Committed += value; remove => InternalDictionary.Committed -= value; }
+	public event EventHandlerEx<object> RollingBack { add => InternalDictionary.RollingBack += value; remove => InternalDictionary.RollingBack -= value; }
+	public event EventHandlerEx<object> RolledBack { add => InternalDictionary.RolledBack += value; remove => InternalDictionary.RolledBack -= value; }
 
-	internal readonly ITransactionalDictionary<byte[], TItem> _internalTransactionalDictionary;
+	internal new readonly ITransactionalDictionary<byte[], TItem> InternalDictionary;
 
 	public TransactionalHashSet(
-		string filename,
-		string uncommittedPageFileDir,
+		HydrogenFileDescriptor fileDescriptor,
 		IItemSerializer<TItem> serializer,
 		CHF chf = CHF.SHA2_256, 
 		IItemChecksummer<byte[]> keyChecksum = null, 
 		IEqualityComparer<TItem> comparer = null,
-		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, 
-		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, 
-		int clusterSize = HydrogenDefaults.ClusterSize,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
 		int reservedStreamCount = 2,
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1, 
 		Endianness endianness = HydrogenDefaults.Endianness, 
-		bool readOnly = false,
-		bool autoLoad = false
+		FileAccessMode accessMode = FileAccessMode.Default
 	) : this(
-		new TransactionalStream(filename, uncommittedPageFileDir, transactionalPageSize, maxMemory, readOnly, readOnly),
-		clusterSize,
+		new TransactionalStream(fileDescriptor, accessMode),
+		fileDescriptor.ClusterSize,
 		serializer,
 		new ItemDigestor<TItem>(chf, serializer),
 		keyChecksum,
 		comparer,
-		policy,
+		fileDescriptor.ContainerPolicy,
 		reservedStreamCount,
 		freeIndexStoreStreamIndex,
 		keyChecksumIndexStreamIndex,
 		endianness,
-		readOnly,
-		autoLoad
+		accessMode.IsReadOnly(),
+		accessMode.HasFlag(FileAccessMode.AutoLoad)
 	) {
 	}
 
 	public TransactionalHashSet(
-		string filename, 
-		string uncommittedPageFileDir, 
+		HydrogenFileDescriptor fileDescriptor,
 		IItemSerializer<TItem> serializer, 
 		IItemHasher<TItem> hasher, 
 		IItemChecksummer<byte[]> keyChecksum = null, 
 		IEqualityComparer<TItem> comparer = null,
-		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, 
-		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection, 
-		int clusterSize = HydrogenDefaults.ClusterSize,
 		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
 		int reservedStreamCount = 2,
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1, 
-		Endianness endianness = HydrogenDefaults.Endianness, 
-		bool readOnly = false,
-		bool autoLoad = false
+		Endianness endianness = HydrogenDefaults.Endianness,
+		FileAccessMode accessMode = FileAccessMode.Default
 	) : this(
-		new TransactionalStream(
-			filename, 
-			uncommittedPageFileDir, 
-			transactionalPageSize, 
-			maxMemory, 
-			readOnly, 
-			autoLoad
-		),
-		clusterSize,
+		new TransactionalStream(fileDescriptor, accessMode),
+		fileDescriptor.ClusterSize,
 		serializer,
 		hasher,
 		keyChecksum,
@@ -90,8 +72,8 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		freeIndexStoreStreamIndex,
 		keyChecksumIndexStreamIndex,
 		endianness,
-		readOnly,
-		autoLoad
+		accessMode.IsReadOnly(),
+		accessMode.HasFlag(FileAccessMode.AutoLoad)
 	) {
 	}
 
@@ -133,20 +115,19 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 	}
 
 	public TransactionalHashSet(
-		ITransactionalDictionary<byte[], TItem> internalTransactionalDictionary, 
+		ITransactionalDictionary<byte[], TItem> internalDictionary, 
 		IEqualityComparer<TItem> comparer,
 		IItemHasher<TItem> hasher
-	) : base(internalTransactionalDictionary, comparer, hasher) {
-		_internalTransactionalDictionary = internalTransactionalDictionary;
+	) : base(internalDictionary, comparer, hasher) {
+		InternalDictionary = internalDictionary;
 	}
 
-	public void Commit() => _internalTransactionalDictionary.Commit();
+	public void Commit() => InternalDictionary.Commit();
 
-	public Task CommitAsync() => _internalTransactionalDictionary.CommitAsync();
+	public Task CommitAsync() => InternalDictionary.CommitAsync();
 
-	public void Rollback() => _internalTransactionalDictionary.Rollback();
+	public void Rollback() => InternalDictionary.Rollback();
 
-	public Task RollbackAsync() => _internalTransactionalDictionary.RollbackAsync();
+	public Task RollbackAsync() => InternalDictionary.RollbackAsync();
 
-	public void Dispose() => _internalTransactionalDictionary.Dispose();
 }

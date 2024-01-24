@@ -116,7 +116,14 @@ public class FileTransaction : IDisposable {
 			if (GloballyEnlistedFiles.ContainsKey(filename))
 				throw new InvalidOperationException($"File already enlisted in other transaction: {filename})");
 
-			return EnlistFile(new TransactionalFileMappedBuffer(filename, UncommittedPageFileDirectory, pageSize, maxMemory, false), true);
+			//return EnlistFile(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filename, UncommittedPageFileDirectory, pageSize, maxMemory, false), true);
+			return EnlistFile(
+				new TransactionalFileMappedBuffer(
+					TransactionalFileDescriptor.From(filename, UncommittedPageFileDirectory, pageSize, maxMemory), 
+					FileAccessMode.Append
+				),
+				true
+			);
 		}
 	}
 
@@ -124,12 +131,12 @@ public class FileTransaction : IDisposable {
 		TransactionalFileMappedBuffer transactionalBuffer;
 		using (GloballyEnlistedFiles.EnterWriteScope()) {
 			// validate not already enlisted here
-			if (_enlistedFiles.ContainsKey(transactionalFile.Path))
-				throw new InvalidOperationException($"File already enlisted: {transactionalFile.Path})");
+			if (_enlistedFiles.ContainsKey(transactionalFile.FileDescriptor.Path))
+				throw new InvalidOperationException($"File already enlisted: {transactionalFile.FileDescriptor.Path})");
 
 			// check not globally enlisted
-			if (GloballyEnlistedFiles.ContainsKey(transactionalFile.Path))
-				throw new InvalidOperationException($"File already enlisted in other transaction: {transactionalFile.Path})");
+			if (GloballyEnlistedFiles.ContainsKey(transactionalFile.FileDescriptor.Path))
+				throw new InvalidOperationException($"File already enlisted in other transaction: {transactionalFile.FileDescriptor.Path})");
 
 			// Open the file
 			transactionalBuffer = transactionalFile.AsBuffer;
@@ -143,8 +150,8 @@ public class FileTransaction : IDisposable {
 			};
 
 			// Register file
-			_enlistedFiles.Add(transactionalFile.Path, new FileDescriptor { Buffer = transactionalBuffer, ShouldDispose = ownsFile });
-			GloballyEnlistedFiles.Add(transactionalFile.Path, transactionalBuffer);
+			_enlistedFiles.Add(transactionalFile.FileDescriptor.Path, new FileDescriptor { Buffer = transactionalBuffer, ShouldDispose = ownsFile });
+			GloballyEnlistedFiles.Add(transactionalFile.FileDescriptor.Path, transactionalBuffer);
 		}
 		// Save txn update
 		SaveHeader();
@@ -161,9 +168,9 @@ public class FileTransaction : IDisposable {
 
 	public void DelistFile(TransactionalFileMappedBuffer file) {
 		Guard.ArgumentNotNull(file, nameof(file));
-		var shouldDispose = _enlistedFiles[file.Path].ShouldDispose;
-		GloballyEnlistedFiles.Remove(file.Path);
-		_enlistedFiles.Remove(file.Path);
+		var shouldDispose = _enlistedFiles[file.FileDescriptor.Path].ShouldDispose;
+		GloballyEnlistedFiles.Remove(file.FileDescriptor.Path);
+		_enlistedFiles.Remove(file.FileDescriptor.Path);
 		if (shouldDispose)
 			file.Dispose();
 	}
@@ -264,7 +271,7 @@ public class FileTransaction : IDisposable {
 		}
 
 		public static void Dehydrate(TransactionalFileMappedBuffer @from, TransactionalFileSerializableSurrogate to) {
-			to.Filename = from.Path;
+			to.Filename = from.FileDescriptor.Path;
 			to.PageSize = from.PageSize;
 			to.MaxMemory = from.MaxMemory;
 		}

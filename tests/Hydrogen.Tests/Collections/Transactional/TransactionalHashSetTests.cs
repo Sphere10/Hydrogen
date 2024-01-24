@@ -26,7 +26,7 @@ public class TransactionalHashSetTests : SetTestsBase {
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
 		var serializer = ItemSerializer<TValue>.Default;
-		var hashset = new TransactionalHashSet<TValue>(file, dir, serializer, comparer: comparer);
+		var hashset = new TransactionalHashSet<TValue>(HydrogenFileDescriptor.From(file, dir), serializer, comparer: comparer, accessMode: FileAccessMode.Default);
 		if (hashset.RequiresLoad)
 			hashset.Load();
 		set = hashset;

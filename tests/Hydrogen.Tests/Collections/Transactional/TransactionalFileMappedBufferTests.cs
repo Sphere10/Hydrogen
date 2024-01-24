@@ -48,7 +48,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -70,11 +70,12 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -83,7 +84,7 @@ public class TransactionalFileMappedBufferTests {
 					file[i] ^= file[i];
 				file[0] ^= file[0]; // page 0 should be changed, but in memory only
 
-				var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
+				var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 
 				// Cause page 0 to be flushed
 				file.Flush();
@@ -103,7 +104,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -140,7 +141,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -174,16 +175,17 @@ public class TransactionalFileMappedBufferTests {
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 			// Write a commit header and a deleted page
 			var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
-			var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.Committing);
-			var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
-			Tools.FileSystem.CreateBlankFile(commitFile);
+			var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.Committing);
+			var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
+			Tools.FileSystem.CreateBlankFile(commitFile, true);
 			File.WriteAllBytes(pageFile, originalData.Select(b => (byte)(b ^ b)).ToArray());
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				file.Load(); // resumes commit
 			}
 
@@ -200,17 +202,18 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 			// Write a commit header and a deleted page
 			var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
-			var rollbackFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.RollingBack);
-			var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
-			Tools.FileSystem.CreateBlankFile(rollbackFile);
+			var rollbackFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.RollingBack);
+			var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
+			Tools.FileSystem.CreateBlankFile(rollbackFile, true);
 			File.WriteAllBytes(pageFile, originalData.Select(b => (byte)(b ^ b)).ToArray());
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				file.Load();
 			}
 
@@ -231,13 +234,13 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
 				// delete data
 				file.RemoveRange(0, file.Count);
-				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
+				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(file.PageMarkerRepo.BaseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 				Assert.IsTrue(File.Exists(markerFile));
 			}
 		}
@@ -252,7 +255,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -263,7 +266,7 @@ public class TransactionalFileMappedBufferTests {
 				var lastPage = file.Pages.Last();
 				file.RemoveRange(lastPage.StartIndex, lastPage.Count);
 
-				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPage.Number);
+				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(file.PageMarkerRepo.BaseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPage.Number);
 				Assert.IsFalse(File.Exists(markerFile));
 			}
 		}
@@ -278,13 +281,13 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
 				// delete data
 				file.RemoveRange(0, file.Count);
-				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
+				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(file.PageMarkerRepo.BaseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 				Assert.IsTrue(File.Exists(markerFile));
 
 				// rollback transaction
@@ -307,13 +310,13 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
 				// delete data
 				file.RemoveRange(0, file.Count);
-				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
+				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(file.PageMarkerRepo.BaseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 				Assert.IsTrue(File.Exists(markerFile));
 				// Commit transaction
 				file.Commit();
@@ -331,17 +334,18 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 			// Write a commit header and a deleted page
 			var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
-			var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.Committing);
-			var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
-			Tools.FileSystem.CreateBlankFile(commitFile);
-			Tools.FileSystem.CreateBlankFile(markerFile);
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.Committing);
+			var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
+			Tools.FileSystem.CreateBlankFile(commitFile, true);
+			Tools.FileSystem.CreateBlankFile(markerFile, true);
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				file.Load(); // resumes commit
 			}
 
@@ -358,17 +362,18 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 			// Write a commit header and a deleted page
 			var fileID = TransactionalFileMappedBuffer.ComputeFileID(fileName);
-			var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.RollingBack);
-			var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
-			Tools.FileSystem.CreateBlankFile(commitFile);
-			Tools.FileSystem.CreateBlankFile(markerFile);
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			var commitFile = TransactionalFileMappedBuffer.MarkerRepository.GenerateFileMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.FileMarkerType.RollingBack);
+			var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
+			Tools.FileSystem.CreateBlankFile(commitFile, true);
+			Tools.FileSystem.CreateBlankFile(markerFile, true);
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				file.Load(); // resumes rollback
 			}
 
@@ -390,16 +395,16 @@ public class TransactionalFileMappedBufferTests {
 		var originalData = RNG.NextBytes(pageSize * 2);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
-
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
 				// delete data
 				file.RemoveRange(file.Pages[1].StartIndex, file.Pages[1].Count);
-				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 1);
+				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 1);
 				Assert.IsTrue(File.Exists(markerFile));
 				// Commit transaction
 				file.Commit();
@@ -418,10 +423,10 @@ public class TransactionalFileMappedBufferTests {
 		var originalData = RNG.NextBytes(pageSize + pageSize * 2);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
-
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -429,8 +434,8 @@ public class TransactionalFileMappedBufferTests {
 				var lastPages = file.Pages.Skip(file.Pages.Count() - 2).ToArray();
 				file.RemoveRange(lastPages[0].StartIndex, lastPages[0].Count + lastPages[1].Count);
 
-				var markerFile1 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[0].Number);
-				var markerFile2 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[1].Number);
+				var markerFile1 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[0].Number);
+				var markerFile2 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[1].Number);
 				Assert.IsTrue(File.Exists(markerFile1));
 				Assert.IsTrue(File.Exists(markerFile2));
 			}
@@ -446,7 +451,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -476,17 +481,18 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize * 2);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
 				file.RemoveRange(pageSize + lastPageRemainingData, pageSize - lastPageRemainingData);
 				file.Flush();
-				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 1);
+				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 1);
 				Assert.IsTrue(File.Exists(markerFile));
 				Assert.AreEqual(lastPageRemainingData, Tools.FileSystem.GetFileSize(markerFile));
 
@@ -508,17 +514,18 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize * 2);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, 1 * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
 				file.RemoveRange(pageSize + lastPageRemainingData, pageSize - lastPageRemainingData);
 				file.Flush();
-				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 1);
+				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 1);
 				Assert.IsTrue(File.Exists(markerFile));
 				Assert.AreEqual(lastPageRemainingData, Tools.FileSystem.GetFileSize(markerFile));
 
@@ -541,11 +548,12 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize * 10);
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, maxOpenPages * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -555,7 +563,7 @@ public class TransactionalFileMappedBufferTests {
 
 				// check deleted pages 3..10 exist
 				for (var i = 2; i < 10; i++) {
-					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, i);
+					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, i);
 					Assert.IsTrue(File.Exists(markerFile));
 				}
 
@@ -578,11 +586,12 @@ public class TransactionalFileMappedBufferTests {
 		var RNG = new Random(RandomSeed);
 		var originalData = RNG.NextBytes(pageSize * 2); // create 2 pages of default data
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		var fileName = Path.Combine(baseDir, "File.dat");
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageSize, maxOpenPages * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
 				Assert.IsTrue(file.RequiresLoad);
 				file.Load();
 
@@ -594,7 +603,7 @@ public class TransactionalFileMappedBufferTests {
 
 				// check deleted pages 3..10 exist
 				for (var i = 2; i < 10; i++) {
-					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, i);
+					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, i);
 					Assert.IsTrue(File.Exists(markerFile));
 				}
 
@@ -631,7 +640,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageDir1, pageSize, maxOpenPages * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir1, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
 				file.Load();
 				AssertFileCount(pageDir1, 0);
 
@@ -642,7 +651,7 @@ public class TransactionalFileMappedBufferTests {
 				AssertFileCount(pageDir1, 10); // duplicate markers 
 			}
 
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageDir2, pageSize, maxOpenPages * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir2, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
 				file.Load();
 				AssertFileCount(pageDir1, 0);
 			}
@@ -663,7 +672,7 @@ public class TransactionalFileMappedBufferTests {
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
 			var fileID = Guid.NewGuid();
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageDir1, pageSize, maxOpenPages * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir1, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
 				file.Load();
 				AssertFileCount(pageDir1, 0);
 
@@ -675,7 +684,7 @@ public class TransactionalFileMappedBufferTests {
 				AssertFileCount(pageDir1, 2); // duplicate markers 
 			}
 
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageDir2, pageSize, maxOpenPages * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir2, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
 				file.Load();
 				AssertFileCount(pageDir1, 0);
 			}
@@ -689,7 +698,7 @@ public class TransactionalFileMappedBufferTests {
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			var file = new TransactionalFileMappedBuffer(fileName, 10, 100) { FlushOnDispose = false };
+			var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, 10, 100), FileAccessMode.Default) { FlushOnDispose = false };
 			if (file.RequiresLoad)
 				file.Load();
 			file.Add(1);
@@ -705,58 +714,59 @@ public class TransactionalFileMappedBufferTests {
 	public void CommitEvents() {
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
-		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, 100, 1 * 100, autoLoad: true)) {
-				var committingCount = 0;
-				var committedCount = 0;
-				var rollingBackCount = 0;
-				var rolledBackCount = 0;
+		var txnDir = Path.Combine(baseDir, ".txn");
+		Tools.FileSystem.CreateDirectory(txnDir);
+		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir)))
+		using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, 100, 1 * 100), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
+			var committingCount = 0;
+			var committedCount = 0;
+			var rollingBackCount = 0;
+			var rolledBackCount = 0;
 
-				file.Committing += _ => committingCount++;
-				file.Committed += _ => committedCount++;
-				file.AddRange(new Random(31337).NextBytes(100));
-				Assert.AreEqual(0, committingCount);
-				Assert.AreEqual(0, committedCount);
-				Assert.AreEqual(0, rollingBackCount);
-				Assert.AreEqual(0, rolledBackCount);
+			file.Committing += _ => committingCount++;
+			file.Committed += _ => committedCount++;
+			file.AddRange(new Random(31337).NextBytes(100));
+			Assert.AreEqual(0, committingCount);
+			Assert.AreEqual(0, committedCount);
+			Assert.AreEqual(0, rollingBackCount);
+			Assert.AreEqual(0, rolledBackCount);
 
-				// Commit transaction
-				file.Commit();
-				Assert.AreEqual(1, committingCount);
-				Assert.AreEqual(1, committedCount);
-				Assert.AreEqual(0, rollingBackCount);
-				Assert.AreEqual(0, rolledBackCount);
+			// Commit transaction
+			file.Commit();
+			Assert.AreEqual(1, committingCount);
+			Assert.AreEqual(1, committedCount);
+			Assert.AreEqual(0, rollingBackCount);
+			Assert.AreEqual(0, rolledBackCount);
 
-			}
 		}
+		
 	}
 
 	[Test]
 	public void RollbackEvents() {
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
-		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, 100, 1 * 100, autoLoad: true)) {
-				var committingCount = 0;
-				var committedCount = 0;
+		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir)))
+		using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, 100, 1 * 100), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
+			var committingCount = 0;
+			var committedCount = 0;
 
-				var rollingBackCount = 0;
-				var rolledBackCount = 0;
-				file.RollingBack += _ => rollingBackCount++;
-				file.RolledBack += _ => rolledBackCount++;
-				file.AddRange(new Random(31337).NextBytes(100));
-				Assert.AreEqual(0, committingCount);
-				Assert.AreEqual(0, committedCount);
+			var rollingBackCount = 0;
+			var rolledBackCount = 0;
+			file.RollingBack += _ => rollingBackCount++;
+			file.RolledBack += _ => rolledBackCount++;
+			file.AddRange(new Random(31337).NextBytes(100));
+			Assert.AreEqual(0, committingCount);
+			Assert.AreEqual(0, committedCount);
 
-				Assert.AreEqual(0, rollingBackCount);
-				Assert.AreEqual(0, rolledBackCount);
-				// Commit transaction
-				file.Rollback();
-				Assert.AreEqual(0, committingCount);
-				Assert.AreEqual(0, committedCount);
-				Assert.AreEqual(1, rollingBackCount);
-				Assert.AreEqual(1, rolledBackCount);
-			}
+			Assert.AreEqual(0, rollingBackCount);
+			Assert.AreEqual(0, rolledBackCount);
+			// Commit transaction
+			file.Rollback();
+			Assert.AreEqual(0, committingCount);
+			Assert.AreEqual(0, committedCount);
+			Assert.AreEqual(1, rollingBackCount);
+			Assert.AreEqual(1, rolledBackCount);
 		}
 	}
 
@@ -780,7 +790,7 @@ public class TransactionalFileMappedBufferTests {
 		expected.AddRange(startBytes);
 		File.WriteAllBytes(fileName, startBytes);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, pageBaseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -850,7 +860,7 @@ public class TransactionalFileMappedBufferTests {
 			for (var j = 0; j < 10; j++) {
 				string oldPageDir;
 				// Do a bunch of operations on a transactional file and abort them, but copy the page files before abort
-				using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize)) {
+				using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -910,7 +920,7 @@ public class TransactionalFileMappedBufferTests {
 			}
 
 			// Do final commit
-			using (var file = new TransactionalFileMappedBuffer(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
 				file.Load(); // should resume commit
 			}
 			Assert.AreEqual(expected, File.ReadAllBytes(fileName));

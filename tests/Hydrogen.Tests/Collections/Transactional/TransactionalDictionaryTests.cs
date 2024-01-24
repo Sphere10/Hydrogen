@@ -19,22 +19,30 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public sealed class TransactionalDictionaryTests : TransactionalDictionaryTestsBase {
 
-	protected override IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, StreamContainerPolicy policy,
-	                                           out ITransactionalDictionary<TKey, TValue> clustered, out string file) {
+	protected override IDisposable Create<TKey, TValue>(
+		IItemSerializer<TKey> keySerializer, 
+		IItemSerializer<TValue> valueSerializer, 
+		IEqualityComparer<TKey> keyComparer, 
+		IEqualityComparer<TValue> valueComparer, 
+		StreamContainerPolicy policy,
+		out ITransactionalDictionary<TKey, TValue> clustered, out string file
+	) {
 		file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fn = file;
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(fn)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 		clustered = new TransactionalDictionary<TKey, TValue>(
-			file, 
-			dir, 
+			HydrogenFileDescriptor.From(
+				file, 
+				dir, 
+				containerPolicy: policy
+			),
 			keySerializer, 
 			valueSerializer,
 			new ItemDigestor<TKey>(CHF.Blake2b_128, keySerializer, Endianness.LittleEndian), 
 			keyComparer, 
 			valueComparer, 
-			policy: policy, 
 			implementation: StreamMappedDictionaryImplementation.KeyValueListBased);
 		return new Disposables(disposable1, disposable2, clustered);
 	}

@@ -29,38 +29,28 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 	private readonly ITransactionalObject _transactionalObject;
 
 	public TransactionalList(
-		string filename, 
-		string uncommittedPageFileDir, 
+		HydrogenFileDescriptor fileDescriptor, 
 		IItemSerializer<T> serializer = null,
 		IEqualityComparer<T> comparer = null,
 		IItemChecksummer<T> itemChecksummer = null,
-		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize, 
-		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection,
-		int clusterSize = HydrogenDefaults.ClusterSize, 
-		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
 		long reservedStreams = 0,
 		long checksumIndexStreamIndex = 0,
-		Endianness endianness = Endianness.LittleEndian, 
-		bool autoLoad = false,
-		bool readOnly = false
+		Endianness endianness = Endianness.LittleEndian,
+		FileAccessMode accessMode = FileAccessMode.Default
 	) : this( 
 			new TransactionalStream(
-				filename, 
-				uncommittedPageFileDir, 
-				transactionalPageSize,
-				maxMemory,
-				readOnly,
-				false
+				fileDescriptor, 
+				accessMode.WithoutAutoLoad()
 			),
 			serializer, 
 			comparer, 
 			itemChecksummer,
-			clusterSize, 
-			policy, 
+			fileDescriptor.ClusterSize, 
+			fileDescriptor.ContainerPolicy, 
 			reservedStreams,
 			checksumIndexStreamIndex,
 			endianness,
-			autoLoad
+			accessMode.HasFlag(FileAccessMode.AutoLoad)
 		) {
 		InternalCollection.ObjectContainer.StreamContainer.OwnsStream = true;
 	}

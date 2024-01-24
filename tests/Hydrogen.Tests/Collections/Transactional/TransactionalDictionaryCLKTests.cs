@@ -25,14 +25,16 @@ public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTes
 		using var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
 		using var dictionary = new TransactionalDictionary<string, TestObject>(
-			file,
-			dir,
+			HydrogenFileDescriptor.From(
+				file,
+				dir,
+				containerPolicy:policy
+			),
 			new BrokenConstantLengthSerializer<string>(new PaddedSerializer<string>(256, new StringSerializer(Encoding.UTF8, SizeDescriptorStrategy.UseUInt32))),
 			new TestObjectSerializer(),
 			null,
 			EqualityComparer<string>.Default,
 			new TestObjectEqualityComparer(),
-			policy: policy,
 			implementation: StreamMappedDictionaryImplementation.ConstantLengthKeyBased
 		);
 
@@ -48,7 +50,7 @@ public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTes
 		var fn = file;
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(fn)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
-		clustered = new TransactionalDictionary<TKey, TValue>(file, dir,  keySerializer.AsConstantSize(256), valueSerializer, null, keyComparer, valueComparer, policy: policy);
+		clustered = new TransactionalDictionary<TKey, TValue>( HydrogenFileDescriptor.From(file, dir, containerPolicy: policy),  keySerializer.AsConstantSize(256), valueSerializer, null, keyComparer, valueComparer);
 		return new Disposables(disposable1, disposable2, clustered);
 	}
 

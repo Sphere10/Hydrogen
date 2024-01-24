@@ -26,7 +26,7 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 	protected bool Disposing;
 
 	protected MemoryPagedListBase(long pageSize, long maxMemory, bool autoLoad = false) 
-		: base(autoLoad) {
+		: base(false) {
 		Guard.ArgumentInRange(pageSize, 1, int.MaxValue, nameof(pageSize));
 		Guard.ArgumentInRange(maxMemory, pageSize, long.MaxValue, nameof(maxMemory));
 		PageSize = pageSize;
@@ -71,6 +71,9 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 			if (memPage.State == PageState.Deleting)
 				memPage.Dispose();
 		};
+
+		if (autoLoad && RequiresLoad)
+			Load();
 	}
 
 	public new IReadOnlyList<IMemoryPage<TItem>> Pages { get; }

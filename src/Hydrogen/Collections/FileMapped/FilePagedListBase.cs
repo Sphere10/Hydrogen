@@ -17,27 +17,24 @@ namespace Hydrogen;
 /// <typeparam name="TItem"></typeparam>
 public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFilePagedList<TItem> {
 
-	protected FilePagedListBase(string filename, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
-		: base(pageSize, maxMemory, autoLoad: false) {
-		IsReadOnly = readOnly;
-		var fileExists = File.Exists(filename);
-		if (readOnly) {
-			if (!fileExists)
-				throw new FileNotFoundException(filename);
-			FlushOnDispose = false;
-			Stream = File.Open(filename, FileMode.Open, FileAccess.Read);
-		} else {
-			FlushOnDispose = true;
-			Stream = File.Open(filename, FileMode.OpenOrCreate, FileAccess.ReadWrite);
-		}
-		RequiresLoad = fileExists && Tools.FileSystem.GetFileSize(filename) > 0;
-		if (RequiresLoad && autoLoad)
+	protected FilePagedListBase(PagedFileDescriptor pagedFileDescriptor, FileAccessMode accessMode)
+		: base(pagedFileDescriptor.PageSize, pagedFileDescriptor.MaxMemory, autoLoad: false) {
+		FileDescriptor = pagedFileDescriptor;
+		AccessMode = accessMode;
+		Stream = FileAccessHelper.Open(pagedFileDescriptor, accessMode, out var requiresLoad, out var flushOnDispose);
+		RequiresLoad = requiresLoad;
+		FlushOnDispose = flushOnDispose;
+		if (RequiresLoad && accessMode.HasFlag(FileAccessMode.AutoLoad)) {
+			AccessMode |= FileAccessMode.AutoLoad;
 			Load();
+		}
 	}
+	
+	public FileAccessMode AccessMode { get; protected set; }
+	
+	public PagedFileDescriptor FileDescriptor { get; }
 
-	public override bool IsReadOnly { get; }
-
-	public string Path => Tools.FileSystem.GetCaseCorrectFilePath(Stream?.Name);
+	public override bool IsReadOnly => AccessMode.IsReadOnly();
 
 	internal FileStream Stream { get; }
 

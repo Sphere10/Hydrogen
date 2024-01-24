@@ -84,7 +84,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		Stream = stream;
 		Reader = new EndianBinaryReader(EndianBitConverter.For(endianness), Stream);
 		Writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), Stream);
-		RequiresLoad = Stream.Length > 0;
+		RequiresLoad = Stream is ILoadable { RequiresLoad: true } || Stream.Length > 0;
 		Type = type;
 		IncludeListHeader = includeListHeader;
 		if (autoLoad && RequiresLoad)
@@ -184,8 +184,15 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		NotifyAccessed();
 	}
 
+	protected override void OnLoading() {
+		base.OnLoading();
+		if  (Stream is ILoadable { RequiresLoad: true } loadableStream)
+			loadableStream.Load();
+
+	}
+
 	protected override IPage<TItem>[] LoadPages() {
-		if (IncludeListHeader) {
+		if (Stream.Length > 0 && IncludeListHeader) {
 			Stream.Seek(0L, SeekOrigin.Begin);
 			var magic = Reader.ReadUInt32();
 			if (magic != MagicID)
@@ -196,6 +203,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 			var traits = Reader.ReadUInt32();
 			if (traits != 0)
 				throw new NotSupportedException($"Unrecognized traits {traits}");
+			Stream.Seek(ListHeaderSize, SeekOrigin.Begin);
 		}
 
 		// Load pages if any

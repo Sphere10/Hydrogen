@@ -10,7 +10,7 @@ namespace Hydrogen;
 
 public interface ITransactionalFile : ITransactionalObject {
 
-	string Path { get; }
+	TransactionalFileDescriptor FileDescriptor { get; }
 
 	TransactionalFileMappedBuffer AsBuffer { get; }
 

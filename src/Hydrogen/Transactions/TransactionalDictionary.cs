@@ -24,46 +24,33 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 	private readonly ITransactionalObject _transactionalObject;
 
 	public TransactionalDictionary(
-		string filename,
-		string uncommittedPageFileDir,
+		HydrogenFileDescriptor fileDescriptor,
 		IItemSerializer<TKey> keySerializer = null,
 		IItemSerializer<TValue> valueSerializer = null,
 		IItemChecksummer<TKey> keyChecksum = null,
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
-		int transactionalPageSize = HydrogenDefaults.TransactionalPageSize,
-		long maxMemory = HydrogenDefaults.MaxMemoryPerCollection,
-		int clusterSize = HydrogenDefaults.ClusterSize,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
 		int reservedStreamCount = 2,
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1,
 		Endianness endianness = HydrogenDefaults.Endianness,
-		bool readOnly = false,
-		bool autoLoad = false,
+		FileAccessMode accessMode = FileAccessMode.Default,
 		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
 	) : this(
-		new TransactionalStream(
-			filename, 
-			uncommittedPageFileDir, 
-			transactionalPageSize, 
-			maxMemory, 
-			readOnly,
-			autoLoad
-		),
+		new TransactionalStream(fileDescriptor, accessMode),
 		keySerializer,
 		valueSerializer,
 		keyChecksum,
 		keyComparer,
 		valueComparer, 
-		clusterSize, 
-		policy,
+		fileDescriptor.ClusterSize, 
+		fileDescriptor.ContainerPolicy,
 		reservedStreamCount,
 		freeIndexStoreStreamIndex,
 		keyChecksumIndexStreamIndex,
 		endianness,
-		readOnly,
-		autoLoad,
+		accessMode.IsReadOnly(),
+		accessMode.HasFlag(FileAccessMode.AutoLoad),
 		implementation
 	) {
 		InternalDictionary.ObjectContainer.StreamContainer.OwnsStream = true;
@@ -92,7 +79,7 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 			valueSerializer, 
 			keyChecksum,
 			keyComparer, 
-			valueComparer, 
+			valueComparer,
 			clusterSize, 
 			policy,
 			reservedStreamCount,

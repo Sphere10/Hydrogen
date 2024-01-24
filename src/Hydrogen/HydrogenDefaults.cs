@@ -21,14 +21,15 @@ public static class HydrogenDefaults {
 
 
 	// Transactional
-	public const int TransactionalPageSize = 1 << 18; // 256kb
+	public const int TransactionalPageSize = 262144; // 256kb
+	public const string TransactionalPageFolder = ".txn"; 
 
 	// Clustered
-	public const int ClusterSize = 256; // 256b
-	public const long RecordCacheSize = 1 << 20; // 1mb
-
+	public const int ClusterSize = 4096; // 4kb
+	public const long RecordCacheSize = 1048576; // 1mb
+	public const StreamContainerPolicy ContainerPolicy = StreamContainerPolicy.Default;
 
 	// Serialization
 	public const Endianness Endianness = Hydrogen.Endianness.LittleEndian;
-
+	
 }

@@ -28,7 +28,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, IDisposable {
 	private readonly ComparerFactory _comparerFactory;
 	private bool _loaded;
 
-	public ObjectSpace(ObjectSpaceFile file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, bool readOnly = false, bool autoLoad = false) {
+	public ObjectSpace(HydrogenFileDescriptor file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default) {
 		Guard.ArgumentNotNull(file, nameof(file));
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 
@@ -37,12 +37,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, IDisposable {
 		_serializerFactory = serializerFactory;
 		_comparerFactory = comparerFactory;
 		_fileStream = new TransactionalStream(
-			file.FilePath,
-			file.PageFileDir,
-			file.PageSize,
-			file.MaxMemory,
-			readOnly,
-			false
+			file,
+			accessMode.WithoutAutoLoad()
 		);
 		_streamContainer = new StreamContainer(
 			_fileStream,
@@ -53,13 +49,13 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, IDisposable {
 			false
 		);
 		_loaded = false;
-		if (autoLoad)
+		if (accessMode.HasFlag(FileAccessMode.AutoLoad))
 			Load();
 	}
 
 	public override bool RequiresLoad => !_loaded || _streamContainer.RequiresLoad;
 
-	public ObjectSpaceFile File { get; }
+	public HydrogenFileDescriptor File { get; }
 
 	public ObjectSpaceDefinition Definition { get; }
 

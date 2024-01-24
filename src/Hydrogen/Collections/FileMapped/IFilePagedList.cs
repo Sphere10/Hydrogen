@@ -9,6 +9,9 @@
 namespace Hydrogen;
 
 public interface IFilePagedList<TItem> : IMemoryPagedList<TItem> {
-	string Path { get; }
+	
+	FileAccessMode AccessMode { get; }
+
+	PagedFileDescriptor FileDescriptor { get; }
 
 }

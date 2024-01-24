@@ -25,12 +25,15 @@ namespace Hydrogen;
 public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuffer {
 	private readonly IPagedListDelegate<byte> _friend;
 
-	public FileMappedBuffer(string filename, long pageSize, long maxMemory, bool readOnly = false, bool autoLoad = false)
-		: base(filename, pageSize, maxMemory, readOnly, autoLoad: false) {
+	public FileMappedBuffer(PagedFileDescriptor fileDescriptor, FileAccessMode accessMode)
+		: base(fileDescriptor, accessMode.WithoutAutoLoad()) {
+		AccessMode = accessMode;
 		_friend = CreateFriendDelegate();
 		Pages = InternalPages.AsReadOnly().WithProjection(x => (IBufferPage)x);
-		if (autoLoad)
+		if (accessMode.HasFlag(FileAccessMode.AutoLoad)) {
+			AccessMode |= FileAccessMode.AutoLoad;
 			Load();
+		}
 	}
 
 	public new IReadOnlyList<IBufferPage> Pages { get; }

@@ -158,14 +158,14 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
-			       new PrimitiveSerializer<int>(),
-			       new PrimitiveSerializer<int>(),
-			       null,
-			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			HydrogenFileDescriptor.From(file, dir, containerPolicy: StreamContainerPolicy.Default),
+			new PrimitiveSerializer<int>(),
+			new PrimitiveSerializer<int>(),
+			null,
+			EqualityComparer<int>.Default,
+			EqualityComparer<int>.Default
+		)) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -176,20 +176,19 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
-			       new PrimitiveSerializer<int>(),
-			       new PrimitiveSerializer<int>(),
-			       null,
-			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			new PrimitiveSerializer<int>(),
+			new PrimitiveSerializer<int>(),
+			null,
+			EqualityComparer<int>.Default,
+			EqualityComparer<int>.Default
+		)) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
 			Assert.That(dictionary[1], Is.EqualTo(11));
 		}
-
 	}
 
 	[Test]
@@ -200,14 +199,14 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -217,41 +216,40 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
 			Assert.That(dictionary[1], Is.EqualTo(11));
 		}
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
-			dictionary.Load();
+			       EqualityComparer<int>.Default
+		       )) {			dictionary.Load();
 			dictionary[2] = 22;
 			dictionary.Commit();
 		}
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(2));
@@ -268,14 +266,14 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -285,41 +283,41 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
 			Assert.That(dictionary[1], Is.EqualTo(11));
 		}
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			dictionary[2] = 22;
 			dictionary.Rollback();
 		}
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
@@ -335,14 +333,14 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		var disposable1 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file)));
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			dictionary.Add(1, 11);
 			dictionary.Commit();
@@ -352,41 +350,41 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));
 			Assert.That(dictionary[1], Is.EqualTo(11));
 		}
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			dictionary[2] = 22;
 
 		}
 
-		using (var dictionary = new TransactionalDictionary<int, int>(file,
-			       dir,
+		using (var dictionary = new TransactionalDictionary<int, int>(
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
 			       EqualityComparer<int>.Default,
-			       EqualityComparer<int>.Default,
-			       policy: StreamContainerPolicy.Default)) {
+			       EqualityComparer<int>.Default
+		       )) {
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
 			Assert.That(dictionary.Count, Is.EqualTo(1));

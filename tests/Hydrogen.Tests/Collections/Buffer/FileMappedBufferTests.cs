@@ -24,7 +24,7 @@ public class FileMappedBufferTests {
 		var expected = new byte[] { 127 };
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
-			using (var binaryFile = new FileMappedBuffer(fileName, 1, 1, false, autoLoad: true)) {
+			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From( fileName, 1, 1), FileAccessMode.OpenOrCreate | FileAccessMode.AutoLoad)) {
 
 				Assert.AreEqual(0, binaryFile.Pages.Count());
 				binaryFile.AddRange(expected);
@@ -47,7 +47,7 @@ public class FileMappedBufferTests {
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		Tools.FileSystem.AppendAllBytes(fileName, expected);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
-			using (var binaryFile = new FileMappedBuffer(fileName, 1, 1, true, autoLoad: true)) {
+			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From( fileName, 1, 1), FileAccessMode.Read | FileAccessMode.AutoLoad)) {
 
 				// Check page
 				Assert.AreEqual(1, binaryFile.Pages.Count());
@@ -74,7 +74,7 @@ public class FileMappedBufferTests {
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		Tools.FileSystem.AppendAllBytes(fileName, preExistingBytes);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
-			using (var binaryFile = new FileMappedBuffer(fileName, 1, 1, false, autoLoad: true)) {
+			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From (fileName, 1, 1), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
 
 				binaryFile.AddRange(appendedBytes);
 
@@ -107,7 +107,7 @@ public class FileMappedBufferTests {
 		var expected = new byte[] { 127, 17 };
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
-			using (var binaryFile = new FileMappedBuffer(fileName, 1, 1, false, autoLoad: true)) {
+			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 1, 1), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
 
 				binaryFile.Add(expected[0]);
 
@@ -147,7 +147,7 @@ public class FileMappedBufferTests {
 		var expected = new byte[] { 127, 17, 18, 19 };
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
-			using (var binaryFile = new FileMappedBuffer(fileName, 1, 1, false, autoLoad: true)) {
+			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 1, 1), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
 
 				binaryFile.AddRange<byte>(127, 16, 15, 14, 13);
 				binaryFile.RemoveRange(1, 4);
@@ -168,7 +168,7 @@ public class FileMappedBufferTests {
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		Tools.FileSystem.AppendAllBytes(fileName, expected);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
-			using (var binaryFile = new FileMappedBuffer(fileName, 1, 1, true, autoLoad: true)) {
+			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 1, 1), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
 
 				// Check pages 1 & 2
 				Assert.AreEqual(2, binaryFile.Pages.Count());
@@ -197,7 +197,7 @@ public class FileMappedBufferTests {
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		Tools.FileSystem.AppendAllBytes(fileName, expected);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName)))
-		using (var binaryFile = new FileMappedBuffer(fileName, 8, 4 * 8, true, autoLoad: true)) {
+		using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From (fileName, 8, 4*8), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
 
 			for (var i = 0; i < 8; i++)
 				Assert.AreEqual(expected[i], binaryFile[i]);
@@ -210,7 +210,7 @@ public class FileMappedBufferTests {
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		Tools.FileSystem.AppendAllBytes(fileName, expected);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName)))
-		using (var binaryFile = new FileMappedBuffer(fileName, 8, 4 * 8, true, autoLoad: true)) {
+		using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 8, 4 * 8), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
 
 			for (var i = 0; i < 256; i++)
 				Assert.AreEqual(expected[i], binaryFile[i]);
@@ -224,7 +224,7 @@ public class FileMappedBufferTests {
 		Tools.FileSystem.AppendAllBytes(fileName, expected.Reverse().ToArray());
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 			// first load the file and sort them
-			using (var binaryFile = new FileMappedBuffer(fileName, 8, 4 * 8, false, autoLoad: true)) {
+			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 8, 4 * 8), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
 
 				QuickSorter.Sort(binaryFile, Comparer<byte>.Default);
 				for (var i = 0; i < 256; i++)
@@ -232,7 +232,7 @@ public class FileMappedBufferTests {
 			}
 
 			// check file is as expected
-			using (var binaryFile = new FileMappedBuffer(fileName, 8, 4 * 8, true, autoLoad: true)) {
+			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 8, 4 * 8), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
 
 				for (var i = 0; i < 256; i++)
 					Assert.AreEqual(expected[i], binaryFile[i]);
@@ -255,7 +255,7 @@ public class FileMappedBufferTests {
 		[Values(1, 1, 7, 2, 19)] int maxOpenPages) {
 		var fileName = Tools.FileSystem.GetTempFileName(true);
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
-			using (var binaryFile = new FileMappedBuffer(fileName, pageSize, maxOpenPages * pageSize, false, autoLoad: true)) {
+			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, pageSize, maxOpenPages * pageSize), FileAccessMode.OpenOrCreate | FileAccessMode.AutoLoad)) {
 				AssertEx.ListIntegrationTest<byte>(binaryFile, maxCapacity, (rng, i) => rng.NextBytes(i), mutateFromEndOnly: true);
 			}
 		}

@@ -314,7 +314,6 @@ public static class FileSystem {
 					destDirectory);
 		}
 
-
 		var sourceSubDirs = sourceDirInfo.GetDirectories();
 
 		// Get the files in the directory and copy them to the new location.

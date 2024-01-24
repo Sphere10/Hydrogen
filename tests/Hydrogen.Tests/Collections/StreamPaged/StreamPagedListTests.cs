@@ -148,7 +148,7 @@ public class StreamPagedListTests {
 	public void V1_Integration_SimpleRun([Values(1, 2, 3, 5)] int pageSize, [Values] StorageType storage) {
 
 		using (CreateStream(storage, 14, out var stream)) {
-			var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize);
+			var list = new StreamPagedList<string>(new StringSerializer(Encoding.UTF8), stream, pageSize, autoLoad:true);
 
 			var len0 = stream.Length;
 
@@ -243,36 +243,36 @@ public class StreamPagedListTests {
 				break;
 			case StorageType.BinaryFile_1Page_1InMem:
 				var tmpFile = Tools.FileSystem.GetTempFileName(false);
-				stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize), 1 * Math.Max(1, estimatedMaxByteSize)));
+				stream = new ExtendedMemoryStream(new FileMappedBuffer(PagedFileDescriptor.From( tmpFile, Math.Max(1, estimatedMaxByteSize), 1 * Math.Max(1, estimatedMaxByteSize)), FileAccessMode.Default));
 				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.BinaryFile_2Page_1InMem:
 				tmpFile = Tools.FileSystem.GetTempFileName(false);
-				stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 2), 2 * Math.Max(1, estimatedMaxByteSize / 2)));
+				stream = new ExtendedMemoryStream(new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, Math.Max(1, estimatedMaxByteSize / 2), 2 * Math.Max(1, estimatedMaxByteSize / 2)), FileAccessMode.Default));
 				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.BinaryFile_10Page_5InMem:
 				tmpFile = Tools.FileSystem.GetTempFileName(false);
-				stream = new ExtendedMemoryStream(new FileMappedBuffer(tmpFile, Math.Max(1, estimatedMaxByteSize / 10), 5 * Math.Max(1, estimatedMaxByteSize / 10)));
+				stream = new ExtendedMemoryStream(new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, Math.Max(1, estimatedMaxByteSize / 10), 5 * Math.Max(1, estimatedMaxByteSize / 10)), FileAccessMode.Default));
 				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.TransactionalBinaryFile_1Page_1InMem:
 				var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				var fileName = Path.Combine(baseDir, "File.dat");
-				stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Math.Max(1, estimatedMaxByteSize), 1 * Math.Max(1, estimatedMaxByteSize), autoLoad: true));
+				stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, Math.Max(1, estimatedMaxByteSize), 1 * Math.Max(1, estimatedMaxByteSize)), FileAccessMode.Default));
 				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 			case StorageType.TransactionalBinaryFile_2Page_1InMem:
 				baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				fileName = Path.Combine(baseDir, "File.dat");
-				stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Math.Max(1, estimatedMaxByteSize / 2), 2 * Math.Max(1, estimatedMaxByteSize / 2), autoLoad: true));
+				stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, Math.Max(1, estimatedMaxByteSize / 2), 2 * Math.Max(1, estimatedMaxByteSize / 2)), FileAccessMode.Default));
 				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 
 			case StorageType.TransactionalBinaryFile_10Page_5InMem:
 				baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				fileName = Path.Combine(baseDir, "File.dat");
-				stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(fileName, baseDir, Math.Max(1, estimatedMaxByteSize / 10), 5 * Math.Max(1, estimatedMaxByteSize / 10), autoLoad: true));
+				stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, Math.Max(1, estimatedMaxByteSize / 10), 5 * Math.Max(1, estimatedMaxByteSize / 10)), FileAccessMode.Default));
 				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 			default:

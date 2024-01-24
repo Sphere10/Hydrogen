@@ -55,8 +55,8 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 
 	public class DemoObjectSpace : ObjectSpace {
 
-		public DemoObjectSpace(string file, bool autoLoad = false)
-			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default, autoLoad: autoLoad) {
+		public DemoObjectSpace(string file, FileAccessMode accessMode = FileAccessMode.Default)
+			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default, FileAccessMode.Default | FileAccessMode.AutoLoad) {
 		}
 
 		public IRepository<long, Account> Accounts { get; }
@@ -67,16 +67,16 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 
 		public IRepository<long, Identity> IdentitiesByKey { get; }
 
-		private static ObjectSpaceFile BuildFileDefinition(string filePath) {
+		private static HydrogenFileDescriptor BuildFileDefinition(string filePath) {
 			Guard.ArgumentNotNull(filePath, nameof(filePath));
 			var parentPath = Tools.FileSystem.GetParentDirectoryPath(filePath);
 			var txnDir = Path.Combine(parentPath, ".txn");
 			if (!Path.Exists(txnDir))
 				Tools.FileSystem.CreateDirectory(txnDir);
 
-			return new ObjectSpaceFile {
-				FilePath = filePath,
-				PageFileDir = txnDir,
+			return new HydrogenFileDescriptor {
+				Path = filePath,
+				PagesDirectoryPath = txnDir,
 				PageSize = 8192,
 				MaxMemory = Tools.Memory.ToBytes(50, MemoryMetric.Megabyte),
 				ClusterSize = 512,

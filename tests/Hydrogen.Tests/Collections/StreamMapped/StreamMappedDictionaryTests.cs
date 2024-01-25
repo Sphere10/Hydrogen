@@ -25,7 +25,7 @@ public class StreamMappedDictionaryTests : StreamMappedDictionaryTestsBase {
 		var dict = StreamMappedFactory.CreateDictionaryKvp<int, string>(
 			stream,
 			4096,
-			keyChecksummer: new ActionChecksum<int>( key => (int)SchoenfeldFunctions.FIRSTDIGIT(key)),  // checksum is first digit of key
+			keyChecksummer: new ActionChecksum<int>( _ => 1),
 			autoLoad: true
 		);
 

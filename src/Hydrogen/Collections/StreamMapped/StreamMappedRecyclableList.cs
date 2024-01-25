@@ -20,18 +20,11 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	private readonly RecyclableIndexIndex _freeIndexStore;
 	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
 
-	internal StreamMappedRecyclableList(
-		ObjectContainer<TItem> container, 
-		RecyclableIndexIndex freeIndexStore, 
-		KeyIndex<TItem, int> checksumKeyIndex,
-		IEqualityComparer<TItem> itemComparer = null,
-		bool autoLoad = false
-	) {
+	internal StreamMappedRecyclableList(ObjectContainer<TItem> container, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(container, nameof(container));
-		Guard.ArgumentNotNull(freeIndexStore, nameof(freeIndexStore));
 		ObjectContainer = container;
-		_freeIndexStore = freeIndexStore;
-		_checksumKeyIndex = checksumKeyIndex;
+		_freeIndexStore = container.FindAttachment<RecyclableIndexIndex>();
+		container.TryFindAttachment<KeyIndex<TItem, int>>(out _checksumKeyIndex); // this index is optional
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 
 		if (autoLoad && RequiresLoad)

@@ -49,23 +49,15 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 				reservedStreams,
 				merkleTreeStreamIndex,
 				checksumIndexStreamIndex,
-				endianness,
-				out var merkleTreeIndex
+				endianness
 			),
-			merkleTreeIndex,
 			autoLoad
 	) {
 	}
 
-
-	internal StreamMappedMerkleList(
-		IStreamMappedList<TItem> streamMappedList,
-		MerkleTreeIndex merkleTreeIndex,
-		bool autoLoad = false
-	) : base(streamMappedList) {
-		Guard.ArgumentNotNull(merkleTreeIndex, nameof(merkleTreeIndex));
-		_merkleTreeIndex = merkleTreeIndex;
-
+	internal StreamMappedMerkleList(IStreamMappedList<TItem> streamMappedList, bool autoLoad = false) : base(streamMappedList) {
+		Guard.ArgumentNotNull(streamMappedList, nameof(streamMappedList));
+		_merkleTreeIndex = streamMappedList.ObjectContainer.FindAttachment<MerkleTreeIndex>();
 		if (autoLoad && RequiresLoad) 
 			Load();
 	}
@@ -99,8 +91,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 		long reservedStreams,
 		long merkleTreeStreamIndex,
 		long checksumIndexStreamIndex,
-		Endianness endianness, 
-		out MerkleTreeIndex merkleTreeIndex
+		Endianness endianness
 	) {
 		var streamMappedList =  StreamMappedFactory.CreateList(
 			rootStream,
@@ -115,7 +106,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 			false
 		);
 
-		merkleTreeIndex = new MerkleTreeIndex(
+		var merkleTreeIndex = new MerkleTreeIndex(
 			streamMappedList.ObjectContainer,
 			merkleTreeStreamIndex,
 			x => DigestItem(streamMappedList.ObjectContainer, x, hashAlgorithm),

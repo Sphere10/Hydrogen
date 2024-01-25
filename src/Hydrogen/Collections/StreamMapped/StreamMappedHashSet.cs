@@ -25,11 +25,8 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 	internal readonly IStreamMappedDictionary<byte[], TItem> InternalDictionary;
 	private readonly IItemHasher<TItem> _hasher;
 
-	internal StreamMappedHashSet(
-		IStreamMappedDictionary<byte[], TItem> internalDictionary,
-		IEqualityComparer<TItem> comparer,
-		IItemHasher<TItem> hasher
-	) : base(comparer ?? EqualityComparer<TItem>.Default) {
+	internal StreamMappedHashSet(IStreamMappedDictionary<byte[], TItem> internalDictionary, IEqualityComparer<TItem> comparer, IItemHasher<TItem> hasher) 
+		: base(comparer ?? EqualityComparer<TItem>.Default) {
 		Guard.ArgumentNotNull(internalDictionary, nameof(internalDictionary));
 		InternalDictionary = internalDictionary;
 		_hasher = hasher;

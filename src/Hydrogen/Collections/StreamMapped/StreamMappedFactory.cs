@@ -59,13 +59,11 @@ public static class StreamMappedFactory {
 			streamContainer,
 			itemSerializer,
 			itemChecksummer,
-			checksumIndexStreamIndex,
-			out var checksumIndex
+			checksumIndexStreamIndex
 		);
 
 		var list = new StreamMappedList<TItem>(
 			container,
-			checksumIndex,
 			itemComparer,
 			autoLoad
 		) {
@@ -127,12 +125,8 @@ public static class StreamMappedFactory {
 				itemSerializer,
 				itemChecksummer,
 				freeIndexStoreStreamIndex,
-				checksumIndexStreamIndex,
-				out var freeIndexStore,
-				out var checksumIndex
+				checksumIndexStreamIndex
 			),
-			freeIndexStore,
-			checksumIndex,
 			itemComparer,
 			autoLoad
 		);
@@ -290,16 +284,11 @@ public static class StreamMappedFactory {
 				keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, streamContainer.Endianness),
 				keyComparer ?? EqualityComparer<TKey>.Default,
 				freeIndexStoreStreamIndex,
-				keyChecksumIndexStreamIndex,
-				out var freeIndexStore,
-				out var keyChecksumIndex
+				keyChecksumIndexStreamIndex
 			);
 
 		var dict = new StreamMappedDictionary<TKey, TValue>(
 			container,
-			freeIndexStore,
-			keyChecksumIndex,
-			keyComparer,
 			valueComparer,
 			autoLoad
 		);
@@ -368,15 +357,11 @@ public static class StreamMappedFactory {
 			valueSerializer ?? ItemSerializer<TValue>.Default,
 			keyComparer ?? EqualityComparer<TKey>.Default,
 			freeIndexStoreStreamIndex,
-			keyStoreStreamIndex,
-			out var keyStore,
-			out var freeIndexStore
+			keyStoreStreamIndex
 		);
 		
 		var dict = new StreamMappedDictionaryCLK<TKey, TValue>(
 			container,
-			freeIndexStore,
-			keyStore,
 			valueComparer,
 			autoLoad
 		);
@@ -439,9 +424,7 @@ public static class StreamMappedFactory {
 		IItemChecksummer<TKey> keyChecksummer,
 		IEqualityComparer<TKey> keyComparer,
 		long freeIndexStoreStreamIndex,
-		long keyChecksumIndexStreamIndex,
-		out RecyclableIndexIndex recyclableIndexIndex,
-		out KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> keyChecksumKeyIndex
+		long keyChecksumIndexStreamIndex
 	) {
 		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
@@ -459,14 +442,14 @@ public static class StreamMappedFactory {
 		);
 
 		// Create free-index store
-		recyclableIndexIndex = new RecyclableIndexIndex(
+		var recyclableIndexIndex = new RecyclableIndexIndex(
 			container,
 			freeIndexStoreStreamIndex
 		);
 		container.RegisterAttachment(recyclableIndexIndex);
 
 		// Create key checksum index (for fast key lookups)
-		keyChecksumKeyIndex = IndexFactory.CreateChecksumKeyIndex(container, keyChecksumIndexStreamIndex, kvp => kvp.Key, keySerializer, keyChecksummer, ReadKey, keyComparer);
+		var keyChecksumKeyIndex = IndexFactory.CreateChecksumKeyIndex(container, keyChecksumIndexStreamIndex, kvp => kvp.Key, keySerializer, keyChecksummer, ReadKey, keyComparer);
 		container.RegisterAttachment(keyChecksumKeyIndex);
 
 		return container;
@@ -491,9 +474,7 @@ public static class StreamMappedFactory {
 		IItemSerializer<TValue> valueSerializer,
 		IEqualityComparer<TKey> keyComparer,
 		long freeIndexStoreStreamIndex,
-		long keyStoreStreamIndex,
-		out UniqueKeyStore<TKey> keyStore,
-		out RecyclableIndexIndex recyclableIndexIndex
+		long keyStoreStreamIndex
 	) {
 		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
 		Guard.ArgumentNotNull(constantLengthKeySerializer, nameof(constantLengthKeySerializer));
@@ -507,13 +488,13 @@ public static class StreamMappedFactory {
 			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
 		);
 
-		recyclableIndexIndex = new RecyclableIndexIndex(
+		var recyclableIndexIndex = new RecyclableIndexIndex(
 			container,
 			freeIndexStoreStreamIndex
 		);
 		container.RegisterAttachment(recyclableIndexIndex);
 
-		keyStore = new UniqueKeyStore<TKey>(
+		var keyStore = new UniqueKeyStore<TKey>(
 			container,
 			keyStoreStreamIndex,
 			keyComparer,
@@ -529,8 +510,7 @@ public static class StreamMappedFactory {
 		StreamContainer streamContainer,
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
-		long checksumIndexStreamIndex,
-		out KeyIndex<TItem, int> checksumKeyIndex
+		long checksumIndexStreamIndex
 	) {
 		var container = new ObjectContainer<TItem>(
 			streamContainer, 
@@ -539,7 +519,7 @@ public static class StreamMappedFactory {
 		);
 
 		if (itemChecksummer is not null) {
-			checksumKeyIndex = new KeyIndex<TItem, int>(
+			var checksumKeyIndex = new KeyIndex<TItem, int>(
 				container,
 				checksumIndexStreamIndex,
 				itemChecksummer.CalculateChecksum,
@@ -547,9 +527,7 @@ public static class StreamMappedFactory {
 				PrimitiveSerializer<int>.Instance
 			);
 			container.RegisterAttachment( checksumKeyIndex);
-		} else {
-			checksumKeyIndex = null;
-		}
+		} 
 
 		return container;
 	}
@@ -559,9 +537,7 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
 		long freeIndexStoreStreamIndex,
-		long checksumIndexStreamIndex,
-		out RecyclableIndexIndex recyclableIndexIndex,
-		out KeyIndex<TItem, int> checksumKeyIndex
+		long checksumIndexStreamIndex
 	) {
 		var container = new ObjectContainer<TItem>(
 			streamContainer, 
@@ -570,7 +546,7 @@ public static class StreamMappedFactory {
 		);
 
 		// Create free-index store
-		recyclableIndexIndex = new RecyclableIndexIndex(
+		var recyclableIndexIndex = new RecyclableIndexIndex(
 			container,
 			freeIndexStoreStreamIndex
 		);
@@ -578,7 +554,7 @@ public static class StreamMappedFactory {
 
 		// Create item checksum index (if applicable)
 		if (itemChecksummer is not null) {
-			checksumKeyIndex = new KeyIndex<TItem, int>(
+			var checksumKeyIndex = new KeyIndex<TItem, int>(
 				container,
 				checksumIndexStreamIndex,
 				itemChecksummer.CalculateChecksum,
@@ -586,8 +562,6 @@ public static class StreamMappedFactory {
 				PrimitiveSerializer<int>.Instance
 			);
 			container.RegisterAttachment( checksumKeyIndex);
-		} else {
-			checksumKeyIndex = null;
 		}
 
 		return container;

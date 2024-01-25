@@ -36,19 +36,11 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	private readonly UniqueKeyStore<TKey> _keyStore;
 	private readonly RecyclableIndexIndex _recyclableIndexIndex;
 
-	internal StreamMappedDictionaryCLK(
-		ObjectContainer objectContainer,
-		RecyclableIndexIndex recyclableIndexIndex,
-		UniqueKeyStore<TKey> keyStore,
-		IEqualityComparer<TValue> valueComparer = null,
-		bool autoLoad = false
-	) {
+	internal StreamMappedDictionaryCLK(ObjectContainer objectContainer, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
-		Guard.ArgumentNotNull(recyclableIndexIndex, nameof(recyclableIndexIndex));
-		Guard.ArgumentNotNull(keyStore, nameof(keyStore));
 		ObjectContainer = (ObjectContainer<TValue>)objectContainer;
-		_recyclableIndexIndex = recyclableIndexIndex;
-		_keyStore = keyStore;
+		_recyclableIndexIndex = objectContainer.FindAttachment<RecyclableIndexIndex>();
+		_keyStore = objectContainer.FindAttachment<UniqueKeyStore<TKey>>();
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
 		if (autoLoad && RequiresLoad)

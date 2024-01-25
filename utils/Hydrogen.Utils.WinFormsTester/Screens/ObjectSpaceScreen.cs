@@ -8,8 +8,6 @@
 
 using System;
 using System.IO;
-using System.Net.Http;
-using System.Runtime.InteropServices.JavaScript;
 using Hydrogen.Application;
 using Hydrogen.ObjectSpaces;
 using Hydrogen.Windows.Forms;
@@ -29,8 +27,8 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 	}
 
 	private void DoConsensusSpaceDemo(string path) {
-		using var appSpace = new DemoObjectSpace(path);
-		appSpace.Load();
+		using var appSpace = new DemoObjectSpace(path, FileAccessMode.Default | FileAccessMode.AutoLoad);
+
 		appSpace.Commit();
 	}
 
@@ -59,30 +57,22 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default, FileAccessMode.Default | FileAccessMode.AutoLoad) {
 		}
 
-		public IRepository<long, Account> Accounts { get; }
+		public IRepository<Account, long> Accounts => throw new NotImplementedException();
 
-		public IRepository<string, Account> AccountsByName { get; }
+		public IRepository<Account, long> AccountsByName => throw new NotImplementedException();
 
-		public IRepository<long, Identity> Identities { get; }
+		public IRepository<Identity, long> Identities => throw new NotImplementedException();
 
-		public IRepository<long, Identity> IdentitiesByKey { get; }
+		public IRepository<Identity, long> IdentitiesByKey => throw new NotImplementedException();
 
-		private static HydrogenFileDescriptor BuildFileDefinition(string filePath) {
-			Guard.ArgumentNotNull(filePath, nameof(filePath));
-			var parentPath = Tools.FileSystem.GetParentDirectoryPath(filePath);
-			var txnDir = Path.Combine(parentPath, ".txn");
-			if (!Path.Exists(txnDir))
-				Tools.FileSystem.CreateDirectory(txnDir);
-
-			return new HydrogenFileDescriptor {
-				Path = filePath,
-				PagesDirectoryPath = txnDir,
-				PageSize = 8192,
-				MaxMemory = Tools.Memory.ToBytes(50, MemoryMetric.Megabyte),
-				ClusterSize = 512,
-				ContainerPolicy = StreamContainerPolicy.Default
-			};
-		}
+		private static HydrogenFileDescriptor BuildFileDefinition(string filePath) 
+			=> HydrogenFileDescriptor.From(
+				filePath, 
+				8192, 
+				Tools.Memory.ToBytes(50, MemoryMetric.Megabyte), 
+				512, 
+				StreamContainerPolicy.Default
+			);
 
 		private static ObjectSpaceDefinition BuildSpaceDefinition() {
 			var definition = new ObjectSpaceDefinition {

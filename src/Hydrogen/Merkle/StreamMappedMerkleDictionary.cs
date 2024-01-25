@@ -60,21 +60,16 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 			merkleTreeStreamIndex,
 			endianness,
 			readOnly,
-			implementation,
-			out var merkleTreeIndex
+			implementation
 		),
-		merkleTreeIndex,
 		autoLoad
 	) {
 	}
 
-	internal StreamMappedMerkleDictionary(
-		IStreamMappedDictionary<TKey, TValue> innerDictionary,
-		MerkleTreeIndex merkleTreeIndex,
-		bool autoLoad = false
-	) : base(innerDictionary) {
-		Guard.ArgumentNotNull(merkleTreeIndex, nameof(merkleTreeIndex));
-		_merkleTreeIndex = merkleTreeIndex;
+	internal StreamMappedMerkleDictionary(IStreamMappedDictionary<TKey, TValue> innerDictionary, bool autoLoad = false) 
+		: base(innerDictionary) {
+		Guard.ArgumentNotNull(innerDictionary, nameof(innerDictionary));
+		_merkleTreeIndex = innerDictionary.ObjectContainer.FindAttachment<MerkleTreeIndex>();
 
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -123,8 +118,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		long merkleTreeIndexStreamIndex,
 		Endianness endianness,
 		bool readOnly,
-		StreamMappedDictionaryImplementation implementation,
-		out MerkleTreeIndex merkleTreeIndex
+		StreamMappedDictionaryImplementation implementation
 	) {
 		var smDict = StreamMappedFactory.CreateDictionary(
 			stream,
@@ -144,7 +138,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 			implementation
 		);
 
-		merkleTreeIndex = new MerkleTreeIndex(
+		var merkleTreeIndex = new MerkleTreeIndex(
 			smDict.ObjectContainer,
 			merkleTreeIndexStreamIndex,
 			x => DigestItem(smDict, x, hashAlgorithm),

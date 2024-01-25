@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -16,6 +17,28 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class StreamMappedDictionaryTests : StreamMappedDictionaryTestsBase {
 	private const int DefaultClusterDataSize = 32;
+
+
+	[Test]
+	public void SupportsKeysWithCollidingChecksum() {
+		using var stream = new MemoryStream();
+		var dict = StreamMappedFactory.CreateDictionaryKvp<int, string>(
+			stream,
+			4096,
+			keyChecksummer: new ActionChecksum<int>( key => (int)SchoenfeldFunctions.FIRSTDIGIT(key)),  // checksum is first digit of key
+			autoLoad: true
+		);
+
+		dict[1] = "hello";
+		dict[11] = "world";
+
+		Assert.That(dict.ContainsKey(1), Is.True);
+		Assert.That(dict.ContainsKey(11), Is.True);
+
+		Assert.That(dict[1], Is.EqualTo("hello"));
+		Assert.That(dict[11], Is.EqualTo("world"));
+	}
+
 	protected override IDisposable CreateDictionary<TKey, TValue>(
 		int estimatedMaxByteSize,
 		StorageType storageType,

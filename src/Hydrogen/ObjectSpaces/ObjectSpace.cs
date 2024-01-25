@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -61,8 +62,9 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, IDisposable {
 
 	public ObjectContainer[] Containers { get; private set; }
 
-	public IStreamMappedRecyclableList<TItem> GetContainer<TItem>() {
+	public virtual IStreamMappedRecyclableList<TItem> OpenContainer<TItem>() {
 		CheckLoaded();
+		var container = Containers[0];
 		throw new NotImplementedException();
 	}
 

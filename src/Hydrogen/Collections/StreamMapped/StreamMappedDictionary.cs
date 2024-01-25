@@ -30,27 +30,16 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
 
-	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly IEqualityComparer<TValue> _valueComparer;
 	private readonly KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _keyChecksumIndex;
 	private readonly RecyclableIndexIndex _freeIndexStore;
 
-	internal StreamMappedDictionary(
-		ObjectContainer objectContainer,
-		RecyclableIndexIndex freeIndexStore,
-		KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> keyChecksumIndex,
-		IEqualityComparer<TKey> keyComparer = null,
-		IEqualityComparer<TValue> valueComparer = null,
-		bool autoLoad = false
-	) {
+	internal StreamMappedDictionary(ObjectContainer objectContainer, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
-		Guard.ArgumentNotNull(freeIndexStore, nameof(freeIndexStore));
-		Guard.ArgumentNotNull(keyChecksumIndex, nameof(keyChecksumIndex));
 		Guard.ArgumentIsAssignable<ObjectContainer<KeyValuePair<TKey, TValue>>>(objectContainer, nameof(objectContainer));
 		ObjectContainer = (ObjectContainer<KeyValuePair<TKey, TValue>>)objectContainer;
-		_freeIndexStore = freeIndexStore;
-		_keyChecksumIndex = keyChecksumIndex;
-		_keyComparer = keyComparer ?? EqualityComparer<TKey>.Default;
+		_freeIndexStore = objectContainer.FindAttachment<RecyclableIndexIndex>();
+		_keyChecksumIndex = objectContainer.FindAttachment<KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
 		if (autoLoad && RequiresLoad) 
@@ -363,11 +352,5 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		if (RequiresLoad)
 			throw new InvalidOperationException($"{nameof(StreamMappedDictionary<TKey, TValue>)} has not been loaded");
 	}
-
-
-	//[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	//private int CalculateKeyChecksum(TKey key) 
-	//	=> _keyChecksumKeyIndex.CalculateKey(new KeyValuePair<TKey, TValue>(key, default));
-
 
 }

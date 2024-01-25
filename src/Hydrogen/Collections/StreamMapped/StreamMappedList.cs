@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Hydrogen.ObjectSpaces;
 
@@ -23,16 +24,11 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
 
-	internal StreamMappedList(
-		ObjectContainer<TItem> objectContainer,
-		KeyIndex<TItem, int> checksumKeyIndex,
-		IEqualityComparer<TItem> itemComparer = null,
-		bool autoLoad = false
-	) {
-		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
-		ObjectContainer = objectContainer;
+	internal StreamMappedList(ObjectContainer<TItem> container, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
+		Guard.ArgumentNotNull(container, nameof(container));
+		ObjectContainer = container;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
-		_checksumKeyIndex = checksumKeyIndex;
+		container.TryFindAttachment(out _checksumKeyIndex); // _checksumKeyIndex may be null in this impl
 		
 		if (autoLoad && RequiresLoad)
 			Load();

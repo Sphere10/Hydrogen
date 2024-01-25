@@ -54,7 +54,7 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public StreamContainer StreamContainer { get; }
 
-	IEnumerable<IObjectContainerAttachment> Attachments => _attachments.Values;
+	public int AttachmentCount => _attachments.Count;
 
 	public long Count => StreamContainer.Count - StreamContainer.Header.ReservedStreams;
 
@@ -68,7 +68,7 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		if (StreamContainer.RequiresLoad)
 			StreamContainer.Load();
 
-		foreach(var attachment in Attachments.Where(x => !x.IsAttached))
+		foreach(var attachment in _attachments.Values.Where(x => !x.IsAttached))
 			attachment.Attach();
 	}
 
@@ -217,8 +217,23 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 			attachment.Attach();
 	}
 
-	internal T GetAttachment<T>(long reservedStream) where T : IObjectContainerAttachment {
-		return (T)_attachments[reservedStream];
+	internal IObjectContainerAttachment GetAttachment(long reservedStream) => _attachments[reservedStream];
+
+	internal T FindAttachment<T>() where T : IObjectContainerAttachment {
+		if (!TryFindAttachment<T>(out var attachment)) 
+			throw new InvalidOperationException($"No attachment of type '{typeof(T).ToStringCS()}'");
+		return attachment;
+	}
+
+	internal bool TryFindAttachment<T>(out T attachment) where T : IObjectContainerAttachment {
+		for (var i = 0; i < _attachments.Count; i++) {
+			if (_attachments[i].GetType() == typeof(T)) {
+				attachment = (T)GetAttachment(i);
+				return true;
+			}
+		}
+		attachment = default;
+		return false;
 	}
 
 

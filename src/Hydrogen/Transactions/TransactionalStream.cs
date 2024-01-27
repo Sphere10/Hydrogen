@@ -40,7 +40,7 @@ public class TransactionalStream : TransactionalStream<ExtendedMemoryStream>, IL
 	public event EventHandlerEx<object> Loading { add => InnerStream.Loading += value; remove => InnerStream.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => InnerStream.Loaded += value; remove => InnerStream.Loaded -= value; }
 
-	public TransactionalStream(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode) 
+	public TransactionalStream(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode = FileAccessMode.Default) 
 		: base(CreateInnerStream(fileDescriptor, accessMode, out var transactionalBuffer), transactionalBuffer) {
 	}
 

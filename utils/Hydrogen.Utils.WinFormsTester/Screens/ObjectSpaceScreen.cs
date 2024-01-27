@@ -27,7 +27,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 	}
 
 	private void DoConsensusSpaceDemo(string path) {
-		using var appSpace = new DemoObjectSpace(path, FileAccessMode.Default | FileAccessMode.AutoLoad);
+		using var appSpace = new DemoObjectSpace(path);
 
 		appSpace.Commit();
 	}
@@ -54,7 +54,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 	public class DemoObjectSpace : ObjectSpace {
 
 		public DemoObjectSpace(string file, FileAccessMode accessMode = FileAccessMode.Default)
-			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default, FileAccessMode.Default | FileAccessMode.AutoLoad) {
+			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default, accessMode) {
 		}
 
 		public IRepository<Account, long> Accounts => throw new NotImplementedException();

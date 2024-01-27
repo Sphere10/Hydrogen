@@ -48,7 +48,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -75,7 +75,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -104,7 +104,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -141,7 +141,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -185,7 +185,7 @@ public class TransactionalFileMappedBufferTests {
 			var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 			Tools.FileSystem.CreateBlankFile(commitFile, true);
 			File.WriteAllBytes(pageFile, originalData.Select(b => (byte)(b ^ b)).ToArray());
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				file.Load(); // resumes commit
 			}
 
@@ -213,7 +213,7 @@ public class TransactionalFileMappedBufferTests {
 			var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 			Tools.FileSystem.CreateBlankFile(rollbackFile, true);
 			File.WriteAllBytes(pageFile, originalData.Select(b => (byte)(b ^ b)).ToArray());
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				file.Load();
 			}
 
@@ -234,7 +234,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -255,7 +255,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -281,7 +281,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -310,7 +310,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -345,7 +345,7 @@ public class TransactionalFileMappedBufferTests {
 			var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 			Tools.FileSystem.CreateBlankFile(commitFile, true);
 			Tools.FileSystem.CreateBlankFile(markerFile, true);
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				file.Load(); // resumes commit
 			}
 
@@ -373,7 +373,7 @@ public class TransactionalFileMappedBufferTests {
 			var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, fileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
 			Tools.FileSystem.CreateBlankFile(commitFile, true);
 			Tools.FileSystem.CreateBlankFile(markerFile, true);
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				file.Load(); // resumes rollback
 			}
 
@@ -398,7 +398,7 @@ public class TransactionalFileMappedBufferTests {
 		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -426,7 +426,7 @@ public class TransactionalFileMappedBufferTests {
 		var pagesDir = Path.Combine(baseDir, HydrogenDefaults.TransactionalPageFolder);
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -451,7 +451,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -486,7 +486,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -519,7 +519,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, 1 * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -553,7 +553,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, maxOpenPages * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -591,7 +591,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, maxOpenPages * pageSize), FileAccessMode.OpenOrCreate)) {
 				Assert.IsTrue(file.RequiresLoad);
 				file.Load();
 
@@ -640,7 +640,7 @@ public class TransactionalFileMappedBufferTests {
 
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir1, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir1, pageSize, maxOpenPages * pageSize))) {
 				file.Load();
 				AssertFileCount(pageDir1, 0);
 
@@ -651,7 +651,7 @@ public class TransactionalFileMappedBufferTests {
 				AssertFileCount(pageDir1, 10); // duplicate markers 
 			}
 
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir2, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir2, pageSize, maxOpenPages * pageSize))) {
 				file.Load();
 				AssertFileCount(pageDir1, 0);
 			}
@@ -672,7 +672,7 @@ public class TransactionalFileMappedBufferTests {
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(baseDir, pageDir1, pageDir2))) {
 			var fileID = Guid.NewGuid();
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir1, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir1, pageSize, maxOpenPages * pageSize))) {
 				file.Load();
 				AssertFileCount(pageDir1, 0);
 
@@ -684,7 +684,7 @@ public class TransactionalFileMappedBufferTests {
 				AssertFileCount(pageDir1, 2); // duplicate markers 
 			}
 
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir2, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageDir2, pageSize, maxOpenPages * pageSize))) {
 				file.Load();
 				AssertFileCount(pageDir1, 0);
 			}
@@ -698,7 +698,7 @@ public class TransactionalFileMappedBufferTests {
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
-			var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, 10, 100), FileAccessMode.Default) { FlushOnDispose = false };
+			var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, 10, 100)) { FlushOnDispose = false };
 			if (file.RequiresLoad)
 				file.Load();
 			file.Add(1);
@@ -717,7 +717,7 @@ public class TransactionalFileMappedBufferTests {
 		var txnDir = Path.Combine(baseDir, ".txn");
 		Tools.FileSystem.CreateDirectory(txnDir);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir)))
-		using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, 100, 1 * 100), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
+		using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, 100, 1 * 100))) {
 			var committingCount = 0;
 			var committedCount = 0;
 			var rollingBackCount = 0;
@@ -747,7 +747,7 @@ public class TransactionalFileMappedBufferTests {
 		var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var fileName = Path.Combine(baseDir, "File.dat");
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir)))
-		using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, 100, 1 * 100), FileAccessMode.Default | FileAccessMode.AutoLoad)) {
+		using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, 100, 1 * 100))) {
 			var committingCount = 0;
 			var committedCount = 0;
 
@@ -790,7 +790,7 @@ public class TransactionalFileMappedBufferTests {
 		expected.AddRange(startBytes);
 		File.WriteAllBytes(fileName, startBytes);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, pageBaseDir))) {
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize))) {
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -860,7 +860,7 @@ public class TransactionalFileMappedBufferTests {
 			for (var j = 0; j < 10; j++) {
 				string oldPageDir;
 				// Do a bunch of operations on a transactional file and abort them, but copy the page files before abort
-				using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
+				using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize))) {
 					if (file.RequiresLoad)
 						file.Load();
 
@@ -920,7 +920,7 @@ public class TransactionalFileMappedBufferTests {
 			}
 
 			// Do final commit
-			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize), FileAccessMode.Default)) {
+			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize))) {
 				file.Load(); // should resume commit
 			}
 			Assert.AreEqual(expected, File.ReadAllBytes(fileName));

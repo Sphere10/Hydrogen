@@ -108,7 +108,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 	private void RunStreamTest(int clusterSize, int pageSize, int maxMemory, StreamContainerPolicy policy) {
 		var file = Path.GetTempFileName();
 		using var _ = Tools.Scope.ExecuteOnDispose(() => File.Delete(file));
-		using (var transactionalFile = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(file, pageSize, maxMemory), FileAccessMode.Default)) {
+		using (var transactionalFile = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(file, pageSize, maxMemory))) {
 			using var rootStream = new ExtendedMemoryStream(transactionalFile);
 			if (rootStream.RequiresLoad)
 				rootStream.Load();
@@ -212,7 +212,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 			case ListType.MerkleizedList:
 				var filename = Path.GetTempFileName();
 				disposables.Add(() => File.Delete(filename));
-				Stream stream = new ExtendedMemoryStream(new FileMappedBuffer(TransactionalFileDescriptor.From(filename, pageSize, maxMemory: maxMemory), FileAccessMode.Default), true);
+				Stream stream = new ExtendedMemoryStream(new FileMappedBuffer(TransactionalFileDescriptor.From(filename, pageSize, maxMemory: maxMemory)), true);
 				var merkleList = new StreamMappedMerkleList<byte[]>(
 					stream,
 					CHF.SHA2_256,
@@ -236,14 +236,14 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 					case ListType.FilePaged:
 						filename = Path.GetTempFileName();
 						disposables.Add(() => File.Delete(filename));
-						stream = new ExtendedMemoryStream(new FileMappedBuffer(TransactionalFileDescriptor.From(filename, pageSize, maxMemory: maxMemory), FileAccessMode.Default), true);
+						stream = new ExtendedMemoryStream(new FileMappedBuffer(TransactionalFileDescriptor.From(filename, pageSize, maxMemory: maxMemory)), true);
 						break;
 					case ListType.TransactionalFilePaged:
 						var path = Tools.FileSystem.GetTempEmptyDirectory(true);
 						filename = Path.GetTempFileName();
 						disposables.Add(() => File.Delete(filename));
 						disposables.Add(() => Tools.FileSystem.DeleteDirectories(path));
-						stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filename, path, pageSize, maxMemory: maxMemory), FileAccessMode.Default), true);
+						stream = new ExtendedMemoryStream(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filename, path, pageSize, maxMemory: maxMemory)), true);
 						break;
 					default:
 						throw new NotSupportedException(listType.ToString());
@@ -282,14 +282,14 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 			case ListType.FilePaged:
 				var filename = Path.GetTempFileName();
 				disposables.Add(() => File.Delete(filename));
-				buffer = new FileMappedBuffer(TransactionalFileDescriptor.From(filename, pageSize, maxMemory: maxMemory), FileAccessMode.Default);
+				buffer = new FileMappedBuffer(TransactionalFileDescriptor.From(filename, pageSize, maxMemory: maxMemory));
 				break;
 			case ListType.TransactionalFilePaged:
 				var path = Tools.FileSystem.GetTempEmptyDirectory(true);
 				filename = Path.GetTempFileName();
 				disposables.Add(() => File.Delete(filename));
 				disposables.Add(() => Tools.FileSystem.DeleteDirectories(path));
-				buffer = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filename, path, pageSize, maxMemory: maxMemory), FileAccessMode.Default);
+				buffer = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filename, path, pageSize, maxMemory: maxMemory));
 				break;
 			default:
 				throw new NotSupportedException(listType.ToString());

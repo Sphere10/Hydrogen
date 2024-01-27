@@ -23,8 +23,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 
 	internal readonly MarkerRepository PageMarkerRepo;
 
-
-	protected TransactionalFileMappedListBase(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode)
+	protected TransactionalFileMappedListBase(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode = FileAccessMode.Default)
 		: base(fileDescriptor, accessMode.WithoutAutoLoad()) {
 		Guard.ArgumentNotNullOrEmpty(FileDescriptor.PagesDirectoryPath, nameof(FileDescriptor.PagesDirectoryPath));
 
@@ -57,12 +56,13 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	public override bool Dirty => base.Dirty || PageMarkerRepo.PageMarkers.Any() || PageMarkerRepo.FileMarkers.Any();
 
 	public void Commit() {
+		CheckLoaded();
 		CheckScopeInStatusIfExists(FileTransactionState.Committing);
 		Flush();
 		NotifyCommitting();
 		PageMarkerRepo.Add(FileMarkerType.Committing);
 		// All page files are manually copied
-		Stream.SetLength(this.Count);
+		Stream.SetLength(Count);
 		foreach (var pageMarkers in PageMarkerRepo.PageMarkers) {
 			var pageNumber = pageMarkers.Key;
 			foreach (var marker in pageMarkers) {
@@ -80,6 +80,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		Clear();
 		PageMarkerRepo.RemoveAllPageMarkers();
 		PageMarkerRepo.RemoveAllFileMarkers();
+		RequiresLoad = true;
 		Load();
 		NotifyCommitted();
 	}
@@ -87,6 +88,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	public Task CommitAsync() => Task.Run(Commit);
 
 	public void Rollback() {
+		CheckLoaded();
 		CheckScopeInStatusIfExists(FileTransactionState.RollingBack);
 		NotifyRollingBack();
 		Flush();
@@ -96,6 +98,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 		Clear();
 		PageMarkerRepo.RemoveAllPageMarkers();
 		PageMarkerRepo.RemoveAllFileMarkers();
+		RequiresLoad = true;
 		Load();
 		NotifyRolledBack();
 	}

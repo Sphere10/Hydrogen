@@ -17,7 +17,7 @@ namespace Hydrogen;
 /// <typeparam name="TItem"></typeparam>
 public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFilePagedList<TItem> {
 
-	protected FilePagedListBase(PagedFileDescriptor pagedFileDescriptor, FileAccessMode accessMode)
+	protected FilePagedListBase(PagedFileDescriptor pagedFileDescriptor, FileAccessMode accessMode = FileAccessMode.Default)
 		: base(pagedFileDescriptor.PageSize, pagedFileDescriptor.MaxMemory, autoLoad: false) {
 		FileDescriptor = pagedFileDescriptor;
 		AccessMode = accessMode;
@@ -40,7 +40,7 @@ public abstract class FilePagedListBase<TItem> : MemoryPagedListBase<TItem>, IFi
 
 	public override long Count {
 		get {
-			CheckRequiresLoad();
+			CheckLoaded();
 			return base.Count;
 		}
 	}

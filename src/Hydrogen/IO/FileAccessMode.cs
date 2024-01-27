@@ -14,7 +14,8 @@ public enum FileAccessMode {
 	OpenOrCreate = Read | Write | Append,
 	CreateOrOverwrite = Read | Write | Truncate,
 	
-	Default = OpenOrCreate
+	Default = OpenOrCreate | AutoLoad
+
 }
 
 

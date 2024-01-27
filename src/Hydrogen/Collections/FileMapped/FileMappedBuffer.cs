@@ -25,7 +25,7 @@ namespace Hydrogen;
 public sealed class FileMappedBuffer : FilePagedListBase<byte>, IMemoryPagedBuffer {
 	private readonly IPagedListDelegate<byte> _friend;
 
-	public FileMappedBuffer(PagedFileDescriptor fileDescriptor, FileAccessMode accessMode)
+	public FileMappedBuffer(PagedFileDescriptor fileDescriptor, FileAccessMode accessMode = FileAccessMode.Default)
 		: base(fileDescriptor, accessMode.WithoutAutoLoad()) {
 		AccessMode = accessMode;
 		_friend = CreateFriendDelegate();

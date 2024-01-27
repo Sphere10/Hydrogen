@@ -43,7 +43,9 @@ public sealed class TransactionalDictionaryTests : TransactionalDictionaryTestsB
 			new ItemDigestor<TKey>(CHF.Blake2b_128, keySerializer, Endianness.LittleEndian), 
 			keyComparer, 
 			valueComparer, 
-			implementation: StreamMappedDictionaryImplementation.KeyValueListBased);
+			implementation: StreamMappedDictionaryImplementation.KeyValueListBased,
+			accessMode: FileAccessMode.OpenOrCreate
+		);
 		return new Disposables(disposable1, disposable2, clustered);
 	}
 

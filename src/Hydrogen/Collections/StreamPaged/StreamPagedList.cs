@@ -121,7 +121,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 	}
 
 	public int ReadItemBytes(long itemIndex, long byteOffset, long? byteLength, out byte[] result) {
-		CheckRequiresLoad();
+		CheckLoaded();
 		NotifyAccessing();
 		CheckRange(itemIndex, 1);
 
@@ -140,7 +140,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 	}
 
 	public void WriteItemBytes(long index, long byteOffset, ReadOnlySpan<byte> bytes) {
-		CheckRequiresLoad();
+		CheckLoaded();
 		NotifyAccessing();
 		//var newItems = bytes;
 		var newItemsCount = bytes.Length;
@@ -166,7 +166,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 	}
 
 	public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(long index, long count) {
-		CheckRequiresLoad();
+		CheckLoaded();
 		NotifyAccessing();
 		CheckRange(index, count);
 		foreach (var pageSegment in GetPageSegments(index, count)) {

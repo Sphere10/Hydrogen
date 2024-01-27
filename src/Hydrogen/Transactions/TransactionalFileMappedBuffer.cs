@@ -26,7 +26,7 @@ namespace Hydrogen;
 public sealed class TransactionalFileMappedBuffer : TransactionalFileMappedListBase<byte>, IMemoryPagedBuffer {
 	private readonly IPagedListDelegate<byte> _friend;
 
-	public TransactionalFileMappedBuffer(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode)
+	public TransactionalFileMappedBuffer(TransactionalFileDescriptor fileDescriptor, FileAccessMode accessMode = FileAccessMode.Default)
 		: base(fileDescriptor, accessMode) {
 		_friend = CreateFriendDelegate();
 		Pages = InternalPages.AsReadOnly().WithProjection(x => (IBufferPage)x);

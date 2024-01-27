@@ -142,7 +142,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 
 	[Test]
 	public void LoadWhenNotRequiredDoesntBreak_BugCase() {
-		using (Create<int, int>(new PrimitiveSerializer<int>(), new PrimitiveSerializer<int>(), EqualityComparer<int>.Default, EqualityComparer<int>.Default, StreamContainerPolicy.Default, out var dictionary, out _)) {
+		using (Create(new PrimitiveSerializer<int>(), new PrimitiveSerializer<int>(), EqualityComparer<int>.Default, EqualityComparer<int>.Default, StreamContainerPolicy.Default, out var dictionary, out _)) {
 			Assert.That(dictionary.RequiresLoad, Is.True);
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);

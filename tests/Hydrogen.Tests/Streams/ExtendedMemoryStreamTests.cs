@@ -101,14 +101,14 @@ public class ExtendedMemoryStreamTests {
 				return new Disposables(memPagedBuffer);
 			case InnerListType.BinaryFile:
 				var tmpFile = Tools.FileSystem.GetTempFileName(false);
-				var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, maxOpenPages * pageSize), FileAccessMode.Default);
+				var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, maxOpenPages * pageSize));
 				stream = new ExtendedMemoryStream(binaryFile);
 				return new Disposables(new ActionScope(() => File.Delete(tmpFile)));
 
 			case InnerListType.TransactionalBinaryFile:
 				var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				var fileName = Path.Combine(baseDir, "File.dat");
-				var transactionalBinaryFile = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From( fileName, baseDir, pageSize, maxOpenPages * pageSize), FileAccessMode.Default | FileAccessMode.AutoLoad);
+				var transactionalBinaryFile = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From( fileName, baseDir, pageSize, maxOpenPages * pageSize));
 				stream = new ExtendedMemoryStream(transactionalBinaryFile);
 				return new Disposables(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 			default:

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Hydrogen;
@@ -57,6 +58,9 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	protected bool IsLoading { get; private set; }
 
 	public void Load() {
+		if (!RequiresLoad)
+			return;
+
 		NotifyLoading();
 		RequiresLoad = false;
 		IsLoading = true;
@@ -84,7 +88,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(long index, long count) {
 		CheckRange(index, count);
-		CheckRequiresLoad();
+		CheckLoaded();
 		NotifyAccessing();
 		CheckRange(index, count);
 		foreach (var pageSegment in GetPageSegments(index, count)) {
@@ -104,7 +108,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	public override void AddRange(IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		CheckRequiresLoad();
+		CheckLoaded();
 		NotifyAccessing();
 
 		var page = InternalPages.Any() ? InternalPages.Last() : CreateNextPage();
@@ -134,7 +138,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	public override void UpdateRange(long index, IEnumerable<TItem> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
-		CheckRequiresLoad();
+		CheckLoaded();
 		NotifyAccessing();
 		var newItems = items.ToExtendedList();
 		var newItemsCount = newItems.Count;
@@ -173,7 +177,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	public override void RemoveRange(long index, long count) {
 		CheckRange(index, count, rightAligned: true);
-		CheckRequiresLoad();
+		CheckLoaded();
 		NotifyAccessing();
 		CheckRange(index, count);
 		if (count == 0)
@@ -205,7 +209,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	}
 
 	public override void Clear() {
-		CheckRequiresLoad();
+		CheckLoaded();
 		NotifyAccessing();
 		while (InternalPages.Count > 0)
 			DeletePage(InternalPages[InternalPages.Count - 1]);
@@ -363,7 +367,9 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 
 	public abstract IDisposable EnterOpenPageScope(IPage<TItem> page);
 
-	protected void CheckRequiresLoad() {
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	protected void CheckLoaded() {
 		if (RequiresLoad)
 			throw new InvalidOperationException("Paged collection has not been loaded");
 	}
@@ -510,7 +516,7 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		x => _count += x,
 		x => _count -= x,
 		UpdateVersion,
-		CheckRequiresLoad,
+		CheckLoaded,
 		CheckRange,
 		EnterOpenPageScope,
 		GetPageSegments,

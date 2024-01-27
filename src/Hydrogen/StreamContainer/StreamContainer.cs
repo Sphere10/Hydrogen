@@ -494,7 +494,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	protected override void LoadInternal() {
-		if (_rootStream is ILoadable loadableStream)
+		if (_rootStream is ILoadable { RequiresLoad: true } loadableStream)
 			loadableStream.Load();
 
 		if (!Initialized)
@@ -511,7 +511,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		// acquire lock on root stream for entire initialize
 		using var _ = _rootStream.EnterAccessScope();
 
-		if (_rootStream.InnerStream is ILoadable loadableStream)
+		if (_rootStream.InnerStream is ILoadable { RequiresLoad: true } loadableStream)
 			loadableStream.Load();
 
 		// Header

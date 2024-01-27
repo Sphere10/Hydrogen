@@ -77,8 +77,7 @@ public class FileTransactionScopeTests {
 						filePageDir,
 						100,
 						1 * 100
-					),
-					FileAccessMode.Default
+					)
 				); // note: filePageDir != txnBaseDir
 				Assert.Throws<ArgumentException>(() => scope.EnlistFile(file, true));
 			}
@@ -104,8 +103,7 @@ public class FileTransactionScopeTests {
 						filePageDir,
 						100,
 						1 * 100
-					), // note: filePageDir == txnBaseDir
-					FileAccessMode.Default
+					) // note: filePageDir == txnBaseDir
 				);
 
 				Assert.DoesNotThrow(() => scope.EnlistFile(file, true));
@@ -332,7 +330,7 @@ public class FileTransactionScopeTests {
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectories(fileBaseDir, txnBaseDir))) {
 			using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 				scope1.BeginTransaction();
-				var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From( filePath, txnBaseDir, 100, 1 * 100), FileAccessMode.Default); // note: not enlisted in scope
+				var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From( filePath, txnBaseDir, 100, 1 * 100)); // note: not enlisted in scope
 				if (file.RequiresLoad)
 					file.Load();
 
@@ -375,7 +373,7 @@ public class FileTransactionScopeTests {
 			using (var scope1 = new FileTransactionScope(txnBaseDir)) {
 				scope1.BeginTransaction();
 				// note: file is not enlisted
-				var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filePath, txnBaseDir, 100, 1 * 100), FileAccessMode.Default); // note: not enlisted in scope
+				var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(filePath, txnBaseDir, 100, 1 * 100)); // note: not enlisted in scope
 				if (file.RequiresLoad)
 					file.Load();
 				Assert.DoesNotThrow(() => file.Rollback());

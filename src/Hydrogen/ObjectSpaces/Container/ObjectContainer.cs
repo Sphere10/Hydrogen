@@ -226,9 +226,10 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	internal bool TryFindAttachment<T>(out T attachment) where T : IObjectContainerAttachment {
-		for (var i = 0; i < _attachments.Count; i++) {
-			if (_attachments[i].GetType() == typeof(T)) {
-				attachment = (T)GetAttachment(i);
+		foreach (var attch in _attachments) {
+			var ix = attch.Key;
+			if (_attachments[ix].GetType() == typeof(T)) {
+				attachment = (T)GetAttachment(ix);
 				return true;
 			}
 		}

@@ -23,7 +23,7 @@ public class TransactionalListTests {
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))))
-		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8), accessMode: FileAccessMode.Default)) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8), accessMode: FileAccessMode.OpenOrCreate)) {
 			Assert.That(txnFile.RequiresLoad, Is.True);
 			txnFile.Load();
 			Assert.That(txnFile.RequiresLoad, Is.False);
@@ -98,7 +98,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8), accessMode: FileAccessMode.OpenOrCreate)) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -138,7 +138,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8), accessMode: FileAccessMode.OpenOrCreate)) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(2));
@@ -179,7 +179,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8), accessMode: FileAccessMode.OpenOrCreate)) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -218,7 +218,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8), accessMode: FileAccessMode.OpenOrCreate)) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(1));
@@ -253,7 +253,7 @@ public class TransactionalListTests {
 		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
-		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8), accessMode: FileAccessMode.OpenOrCreate)) {
 			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
 			txnFile.Load();
 			Assert.That(txnFile.Count, Is.EqualTo(1));

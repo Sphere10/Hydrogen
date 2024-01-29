@@ -46,11 +46,13 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public override bool Add(TItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));
-		var itemHash = _hasher.Hash(item);
-		if (InternalDictionary.ContainsKey(itemHash))
-			return false;
-		InternalDictionary.Add(itemHash, item);
-		return true;
+		using (ObjectContainer.EnterAccessScope()) {
+			var itemHash = _hasher.Hash(item);
+			if (InternalDictionary.ContainsKey(itemHash))
+				return false;
+			InternalDictionary.Add(itemHash, item);
+			return true;
+		}
 	}
 
 	public override bool Contains(TItem item) {
@@ -60,11 +62,13 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public override bool Remove(TItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));
-		var itemHash = _hasher.Hash(item);
-		if (!InternalDictionary.TryFindKey(itemHash, out var index))
-			return false;
-		InternalDictionary.RemoveAt(index);
-		return true;
+		using (ObjectContainer.EnterAccessScope()) {
+			var itemHash = _hasher.Hash(item);
+			if (!InternalDictionary.TryFindKey(itemHash, out var index))
+				return false;
+			InternalDictionary.RemoveAt(index);
+			return true;
+		}
 	}
 
 	public override void Clear()

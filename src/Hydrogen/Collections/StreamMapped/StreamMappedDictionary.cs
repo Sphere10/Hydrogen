@@ -277,7 +277,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
 		CheckLoaded();
-		KeyValuePairs.ToArray().CopyTo(array, arrayIndex);
+		using (ObjectContainer.EnterAccessScope())
+			KeyValuePairs.ToArray().CopyTo(array, arrayIndex);
 	}
 
 	public void Shrink() {
@@ -285,24 +286,28 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		// deletes item right to left
 		// possible optimization: a connected neighbourhood of unused records can be deleted 
 		CheckLoaded();
-		var sortedList = new SortedList<long>(SortDirection.Descending);
-		_freeIndexStore.Stack.ForEach(sortedList.Add);
-		foreach (var freeIndex in sortedList) {
-			ObjectContainer.RemoveItem(freeIndex);
+		using (ObjectContainer.EnterAccessScope()) {
+			var sortedList = new SortedList<long>(SortDirection.Descending);
+			_freeIndexStore.Stack.ForEach(sortedList.Add);
+			foreach (var freeIndex in sortedList) {
+				ObjectContainer.RemoveItem(freeIndex);
+			}
+			_freeIndexStore.Stack.Clear();
+			UpdateVersion();
 		}
-		_freeIndexStore.Stack.Clear();
-		UpdateVersion();
 	}
 
 	public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 		CheckLoaded();
-		var version = Version;
-		for (var i = 0; i < ObjectContainer.Count; i++) {
-			CheckVersion(version);
-			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
-				continue;
-			var kvp = ObjectContainer.LoadItem(i);
-			yield return kvp;
+		using (ObjectContainer.EnterAccessScope()) {
+			var version = Version;
+			for (var i = 0; i < ObjectContainer.Count; i++) {
+				CheckVersion(version);
+				if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+					continue;
+				var kvp = ObjectContainer.LoadItem(i);
+				yield return kvp;
+			}
 		}
 	}
 

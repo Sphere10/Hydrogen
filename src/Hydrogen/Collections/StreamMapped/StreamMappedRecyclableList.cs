@@ -105,18 +105,20 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	}
 
 	protected override long IndexOfInternal(TItem item)  {
-		var indicesToCheck =
-			_checksumKeyIndex != null ?
-				_checksumKeyIndex.Lookup[_checksumKeyIndex.CalculateKey(item)] :
-				Tools.Collection.RangeL(0L, ListCount);
+		using (ObjectContainer.EnterAccessScope()) {
+			var indicesToCheck =
+				_checksumKeyIndex != null ?
+					_checksumKeyIndex.Lookup[_checksumKeyIndex.CalculateKey(item)] :
+					Tools.Collection.RangeL(0L, ListCount);
 
-		foreach (var index in indicesToCheck) {
-			if (IsRecycledInternal(index))
-				continue;
-			if (ItemComparer.Equals(item, ReadInternal(index)))
-				return index;
+			foreach (var index in indicesToCheck) {
+				if (IsRecycledInternal(index))
+					continue;
+				if (ItemComparer.Equals(item, ReadInternal(index)))
+					return index;
+			}
+			return -1L;
 		}
-		return -1L;
 	}
 
 	protected override TItem ReadInternal(long index)
@@ -139,8 +141,10 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 		=> _freeIndexStore.Stack.Pop();
 
 	protected override void ClearInternal() {
-		ObjectContainer.Clear();
-		_freeIndexStore.Stack.Clear();
+		using (ObjectContainer.EnterAccessScope()) {
+			ObjectContainer.Clear();
+			_freeIndexStore.Stack.Clear();
+		}
 	}
 	
 }

@@ -58,8 +58,9 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public override long Count {
 		get {
 			CheckLoaded();
-			return ObjectContainer.Count - _recyclableIndexIndex.Stack.Count;
-		}
+			using (ObjectContainer.EnterAccessScope())
+				return ObjectContainer.Count - _recyclableIndexIndex.Stack.Count;
+		}	
 	}
 
 	public override bool IsReadOnly => false;
@@ -254,14 +255,17 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public override bool Contains(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item)); // Key not null checked in TryFindValue
 		CheckLoaded();
-		if (!TryFindValue(item.Key, out _, out var value))
-			return false;
-		return _valueComparer.Equals(item.Value, value);
+		using (ObjectContainer.EnterAccessScope()) {
+			if (!TryFindValue(item.Key, out _, out var value))
+				return false;
+			return _valueComparer.Equals(item.Value, value);
+		}
 	}
 
 	public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
 		CheckLoaded();
-		KeyValuePairs.ToArray().CopyTo(array, arrayIndex);
+		using (ObjectContainer.EnterAccessScope())
+			KeyValuePairs.ToArray().CopyTo(array, arrayIndex);
 	}
 
 	public void Shrink() {
@@ -269,48 +273,56 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		// deletes item right to left
 		// possible optimization: a connected neighbourhood of unused records can be deleted 
 		CheckLoaded();
-		var sortedList = new SortedList<long>(SortDirection.Descending);
-		_recyclableIndexIndex.Stack.ForEach(sortedList.Add);
-		foreach (var freeIndex in sortedList) {
-			ObjectContainer.RemoveItem(freeIndex);
+		using (ObjectContainer.EnterAccessScope()) {
+			var sortedList = new SortedList<long>(SortDirection.Descending);
+			_recyclableIndexIndex.Stack.ForEach(sortedList.Add);
+			foreach (var freeIndex in sortedList) {
+				ObjectContainer.RemoveItem(freeIndex);
+			}
+			_recyclableIndexIndex.Stack.Clear();
+			UpdateVersion();
 		}
-		_recyclableIndexIndex.Stack.Clear();
-		UpdateVersion();
 	}
 
 	public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 		CheckLoaded();
-		var version = Version;
-		for (var i = 0; i < ObjectContainer.Count; i++) {
-			CheckVersion(version);
-			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
-				continue;
-			var kvp = new KeyValuePair<TKey, TValue>(ReadKey(i), ObjectContainer.LoadItem(i));
-			yield return kvp;
+		using (ObjectContainer.EnterAccessScope()) {
+			var version = Version;
+			for (var i = 0; i < ObjectContainer.Count; i++) {
+				CheckVersion(version);
+				if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+					continue;
+				var kvp = new KeyValuePair<TKey, TValue>(ReadKey(i), ObjectContainer.LoadItem(i));
+				yield return kvp;
+			}
 		}
 	}
 
 	protected override IEnumerator<TKey> GetKeysEnumerator() {
 		CheckLoaded();
-		var version = Version;
-		for (var i = 0; i < ObjectContainer.Count; i++) {
-			CheckVersion(version);
-			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
-				continue;
-			var key = ReadKey(i);
-			yield return key;
+		using (ObjectContainer.EnterAccessScope()) {
+			var version = Version;
+			for (var i = 0; i < ObjectContainer.Count; i++) {
+				CheckVersion(version);
+				if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+					continue;
+				var key = ReadKey(i);
+				yield return key;
+			}
 		}
 	}
 
 	protected override IEnumerator<TValue> GetValuesEnumerator() {
 		CheckLoaded();
-		var version = Version;
-		for (var i = 0; i < ObjectContainer.Count; i++) {
-			CheckVersion(version);
-			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
-				continue;
-			var key = ReadValue(i);
-			yield return key;
+		using (ObjectContainer.EnterAccessScope()) {
+			var version = Version;
+			for (var i = 0; i < ObjectContainer.Count; i++) {
+				CheckVersion(version);
+				if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+					continue;
+				var key = ReadValue(i);
+				yield return key;
+			}
 		}
 	}
 

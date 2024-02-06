@@ -133,6 +133,8 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		NotifyPostItemOperation(index, null, ObjectContainerOperationType.Reap);
 	}
 
+	public bool IsReaped(long index) => GetItemDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Reaped);
+
 	public void Clear() => StreamContainer.Clear();
 
 	internal ClusteredStream SaveItemAndReturnStream(long index, object item, ObjectContainerOperationType operationType) {

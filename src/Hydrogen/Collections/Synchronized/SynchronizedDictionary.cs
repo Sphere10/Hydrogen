@@ -131,6 +131,10 @@ public class SynchronizedDictionary<TKey, TValue> : SynchronizedDictionary<TKey,
 		: this(new Dictionary<TKey, TValue>()) {
 	}
 
+	public SynchronizedDictionary(IEqualityComparer<TKey> keyComparer, ISynchronizedObject @lock = null)
+		: base(new Dictionary<TKey, TValue>(keyComparer), @lock) {
+	}
+
 	public SynchronizedDictionary(IDictionary<TKey, TValue> internalDictionary, ISynchronizedObject @lock = null)
 		: base(internalDictionary, @lock) {
 	}

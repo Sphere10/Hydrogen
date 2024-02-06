@@ -466,30 +466,30 @@
 
 //public class PlayerRecordSerializer : ItemSerializerBase<PlayerRecord> {
 
-//	private readonly AutoSizedSerializer<string> _stringSerializer = new(new StringSerializer(Encoding.UTF8), SizeDescriptorStrategy.UseUInt32);
+//	private readonly StringSerializer _stringSerializer = new StringSerializer(Encoding.UTF8, SizeDescriptorStrategy.UseUInt32);
 //	private readonly PrimitiveSerializer<long> _int64Serializer = new();
-//	private readonly NullableStructSerializer<DateTime> _dateTimeSerializer = new(new DateTimeSerializer());
+//	private readonly NullableSerializer<DateTime> _dateTimeSerializer = new(new DateTimeSerializer());
 
-//	public override long CalculateSize(PlayerRecord item)
+//	public override long CalculateSize(SerializationContext context, PlayerRecord item)
 //		=> _stringSerializer.CalculateSize(item.TID) +
 //		   _int64Serializer.CalculateSize(item.PID) +
 //		   _dateTimeSerializer.CalculateSize(item.FirstSeen) +
 //		   _dateTimeSerializer.CalculateSize(item.LastSeen);
 
-//	public override void Serialize(PlayerRecord item, EndianBinaryWriter writer) {
+//	public override void Serialize(PlayerRecord item, EndianBinaryWriter writer, SerializationContext context) {
 //		_stringSerializer.Serialize(item.TID, writer);
 //		_int64Serializer.Serialize(item.PID, writer);
 //		_dateTimeSerializer.Serialize(item.FirstSeen, writer);
 //		_dateTimeSerializer.Serialize(item.LastSeen, writer);
 //	}
 
-//	public override PlayerRecord Deserialize(long byteSize, EndianBinaryReader reader) 
+//	public override PlayerRecord Deserialize(EndianBinaryReader reader, SerializationContext context)
 //		=> new PlayerRecord {
-//		TID = _stringSerializer.Deserialize(reader),
-//		PID = _int64Serializer.Deserialize(reader),
-//		FirstSeen = _dateTimeSerializer.Deserialize(reader),
-//		LastSeen = _dateTimeSerializer.Deserialize(reader),
-//	};
+//			TID = _stringSerializer.Deserialize(reader),
+//			PID = _int64Serializer.Deserialize(reader),
+//			FirstSeen = _dateTimeSerializer.Deserialize(reader),
+//			LastSeen = _dateTimeSerializer.Deserialize(reader),
+//		};
 //}
 
 
@@ -574,11 +574,10 @@
 //			Tools.FileSystem.CreateDirectory(txnDir);
 
 //		_transactionalDict = new TransactionalDictionary<string, PlayerRecord>(
-//			repoPath,
-//			txnDir,
+//			HydrogenFileDescriptor.From(repoPath, txnDir, containerPolicy: StreamContainerPolicy.Default),
 //			new StringSerializer(),
 //			new PlayerRecordSerializer(),
-//			policy: StreamContainerPolicy.DictionaryDefault | StreamContainerPolicy.TrackChecksums
+//			keyChecksum: new ObjectHashCodeChecksummer<string>()
 //		);
 //		if (_transactionalDict.RequiresLoad)
 //			_transactionalDict.Load();

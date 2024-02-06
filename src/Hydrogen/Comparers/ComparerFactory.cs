@@ -174,8 +174,8 @@ public class ComparerFactory {
 		// Default: use EqualityComparer<T>.Default
 		var defaultComparer = typeof(EqualityComparer<>)
 			.MakeGenericType(type)
-			.GetMethod("Default", BindingFlags.Static | BindingFlags.Public)
-			.Invoke(null, null);
+			.GetProperty("Default", BindingFlags.Static | BindingFlags.Public)
+			.GetValue(null);
 
 		return defaultComparer;
 	}

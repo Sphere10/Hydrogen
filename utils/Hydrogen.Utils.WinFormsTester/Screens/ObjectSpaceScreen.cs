@@ -28,6 +28,23 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 
 	private void DoConsensusSpaceDemo(string path) {
 		using var appSpace = new DemoObjectSpace(path);
+		
+		var secret = "MyPassword";
+
+		var dss = DSS.ECDSA_SECP256k1;
+		var privateKey = Signers.CreatePrivateKey(dss, secret.ToAsciiByteArray());
+		var publicKey = Signers.DerivePublicKey(dss, privateKey, 0);
+
+		var identity = new Identity {
+			DSS = DSS.ECDSA_SECP256k1,
+			Key = publicKey.RawBytes
+		};
+
+		var account = new Account {
+			Identity = identity,
+			Name = "Savings",
+			Quantity = 0
+		};
 
 		appSpace.Commit();
 	}
@@ -57,13 +74,13 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default, accessMode) {
 		}
 
-		public IRepository<Account, long> Accounts => throw new NotImplementedException();
+		//public IRepository<Account, long> Accounts => throw new NotImplementedException();
 
-		public IRepository<Account, long> AccountsByName => throw new NotImplementedException();
+		//public IRepository<Account, long> AccountsByName => throw new NotImplementedException();
 
-		public IRepository<Identity, long> Identities => throw new NotImplementedException();
+		//public IRepository<Identity, long> Identities => throw new NotImplementedException();
 
-		public IRepository<Identity, long> IdentitiesByKey => throw new NotImplementedException();
+		//public IRepository<Identity, long> IdentitiesByKey => throw new NotImplementedException();
 
 		private static HydrogenFileDescriptor BuildFileDefinition(string filePath) 
 			=> HydrogenFileDescriptor.From(

@@ -16,6 +16,7 @@ public class Signers {
 
 	static Signers() {
 		Factories = new Func<IDigitalSignatureScheme>[byte.MaxValue];
+		RegisterDefaultAlgorithms();
 	}
 
 	// NOTE: attack vector if malicious plug-in library plugs in a man-in-the-middle sniffer to learn private details

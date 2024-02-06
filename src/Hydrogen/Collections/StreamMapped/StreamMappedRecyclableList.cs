@@ -20,7 +20,7 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	private readonly RecyclableIndexIndex _freeIndexStore;
 	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
 
-	internal StreamMappedRecyclableList(ObjectContainer<TItem> container, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
+	public StreamMappedRecyclableList(ObjectContainer<TItem> container, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(container, nameof(container));
 		ObjectContainer = container;
 		_freeIndexStore = container.FindAttachment<RecyclableIndexIndex>();
@@ -59,9 +59,9 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 			return base.Read(index);
 	}
 
-	public override void Add(TItem item) {
+	public override void Add(TItem item, out long index) {
 		using (ObjectContainer.EnterAccessScope())
-			base.Add(item);
+			base.Add(item, out index);
 	}
 
 	public override void Update(long index, TItem item) {
@@ -124,8 +124,11 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	protected override TItem ReadInternal(long index)
 		=> ObjectContainer.LoadItem(index);
 
-	protected override void AddInternal(TItem item) 
-		=> ObjectContainer.SaveItem(ObjectContainer.Count, item, ObjectContainerOperationType.Add);
+	protected override long AddInternal(TItem item) {
+		var index = ObjectContainer.Count;
+		ObjectContainer.SaveItem(index, item, ObjectContainerOperationType.Add);
+		return index;
+	}
 
 	protected override void UpdateInternal(long index, TItem item) 
 		=> ObjectContainer.SaveItem(index, item, ObjectContainerOperationType.Update);

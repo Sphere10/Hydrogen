@@ -18,6 +18,8 @@ public abstract class RecyclableListDecorator<TItem, TConcrete> : ExtendedListDe
 
 	public virtual long RecycledCount => InternalCollection.RecycledCount;
 
+	public void Add(TItem item, out long index) => InternalCollection.Add(item, out index);
+
 	public virtual void Recycle(long index) => InternalCollection.Recycle(index);
 
 	public virtual bool IsRecycled(long index) => InternalCollection.IsRecycled(index);

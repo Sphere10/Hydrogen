@@ -33,16 +33,18 @@ public abstract class RecyclableListBase<T> : SingularListBase<T>, IRecyclableLi
 		return ReadInternal(index);
 	}
 
-	public override void Add(T item) {
+	public sealed override void Add(T item) => Add(item, out _);
+
+	public virtual void Add(T item, out long index) {
 		if (RecycledCount > 0) {
-			var index = ConsumeRecycledIndexInternal();
+			index = ConsumeRecycledIndexInternal();
 			UpdateInternal(index, item);
 		} else {
-			AddInternal(item);
+			index = AddInternal(item);
 		}
 		UpdateVersion();
 	}
-
+	
 	public override void Update(long index, T item) {
 		Guard.Argument(!IsRecycledInternal(index), nameof(index), "Index is recycled");
 		UpdateInternal(index, item);
@@ -94,7 +96,7 @@ public abstract class RecyclableListBase<T> : SingularListBase<T>, IRecyclableLi
 
 	protected abstract long IndexOfInternal(T item);
 
-	protected abstract void AddInternal(T item);
+	protected abstract long AddInternal(T item);
 
 	protected abstract T ReadInternal(long index);
 

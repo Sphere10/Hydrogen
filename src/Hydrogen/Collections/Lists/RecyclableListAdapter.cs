@@ -39,7 +39,11 @@ public class RecyclableListAdapter<T> : RecyclableListBase<T> {
 	
 	protected override long IndexOfInternal(T item) => _list.IndexOfL(item);
 
-	protected override void AddInternal(T item) => _list.Add(item);
+	protected override long AddInternal(T item)  {
+		var index = _list.Count;
+		_list.Add(item);
+		return index;
+	}
 
 	protected override T ReadInternal(long index) => _list.Read(index);
 

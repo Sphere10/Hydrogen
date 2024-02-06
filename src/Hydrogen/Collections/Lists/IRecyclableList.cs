@@ -24,6 +24,8 @@ public interface IRecyclableList<T> : IExtendedList<T> {
 
 	long RecycledCount { get; }
 
+	void Add(T item, out long index);
+
 	void Recycle(long index);
 
 	bool IsRecycled(long index);

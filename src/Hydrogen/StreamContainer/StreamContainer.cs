@@ -141,10 +141,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public bool Initialized { get; private set; }	
 
-	public override bool RequiresLoad {
-		get => !Initialized || base.RequiresLoad || RootStream is ILoadable { RequiresLoad: true };
-		set => base.RequiresLoad = value;
-	}
+	public override bool RequiresLoad => !Initialized || base.RequiresLoad || RootStream is ILoadable { RequiresLoad: true };
 
 	public bool OwnsStream { get; set; }
 
@@ -504,7 +501,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 			_clusters.Load();
 	}
 
-	private void Initialize() {
+	internal void Initialize() {
 		var recordSerializer = new ClusteredStreamDescriptorSerializer();
 		var clusterSerializer = new ClusterSerializer(_clusterSize);
 

@@ -15,7 +15,7 @@ public abstract class LoadableBase : ILoadable {
 	public event EventHandlerEx<object> Loading;
 	public event EventHandlerEx<object> Loaded;
 
-	public virtual bool RequiresLoad { get; set; } = false;
+	public virtual bool RequiresLoad { get; } = false;
 
 	protected virtual bool SuppressNotifications { get; set; } = false;
 

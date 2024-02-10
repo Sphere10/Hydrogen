@@ -4,10 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Text;
 using Hydrogen.Collections;
-using static Hydrogen.SerializerFactory;
 
 namespace Hydrogen;
 public class ComparerFactory {
@@ -149,7 +146,7 @@ public class ComparerFactory {
 		}
 
 		// Special case comparer: extended list
-		if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)) {
+		if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ExtendedList<>)) {
 			var elementType = type.GetGenericArguments()[0];
 			var listComparerType = typeof(ExtendedListEqualityComparer<>).MakeGenericType(elementType);
 			return Activator.CreateInstance(listComparerType);

@@ -175,35 +175,47 @@ public class MerklePagedBufferTest {
 				break;
 			case StorageType.BinaryFile_1InMem:
 				var tmpFile = Tools.FileSystem.GetTempFileName(false);
-				merkleBuffer = new MerklePagedBuffer(new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, 1 * pageSize)), chf);
+				var fileMappedBuffer = new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, 1 * pageSize));
+				merkleBuffer = new MerklePagedBuffer(fileMappedBuffer, chf);
+				disposables.Add(fileMappedBuffer);
 				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.BinaryFile_2InMem:
 				tmpFile = Tools.FileSystem.GetTempFileName(false);
-				merkleBuffer = new MerklePagedBuffer(new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, 2 * pageSize)), chf);
+				fileMappedBuffer = new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, 2 * pageSize));
+				merkleBuffer = new MerklePagedBuffer(fileMappedBuffer, chf);
+				disposables.Add(fileMappedBuffer);
 				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.BinaryFile_5InMem:
 				tmpFile = Tools.FileSystem.GetTempFileName(false);
-				merkleBuffer = new MerklePagedBuffer(new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, 5 * pageSize)), chf);
+				fileMappedBuffer = new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, 5 * pageSize));
+				merkleBuffer = new MerklePagedBuffer(fileMappedBuffer, chf);
+				disposables.Add(fileMappedBuffer);
 				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.TransactionalBinaryFile_1InMem:
 				var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				var fileName = Path.Combine(baseDir, "File.dat");
-				merkleBuffer = new MerklePagedBuffer(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, pageSize, 1 * pageSize)), chf);
+				var txnFileMappedBuffer = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, pageSize, 1 * pageSize));
+				merkleBuffer = new MerklePagedBuffer(txnFileMappedBuffer, chf);
+				disposables.Add(txnFileMappedBuffer);
 				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 			case StorageType.TransactionalBinaryFile_2InMem:
 				baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				fileName = Path.Combine(baseDir, "File.dat");
-				merkleBuffer = new MerklePagedBuffer(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From( fileName, baseDir, pageSize, 2 * pageSize)), chf);
+				txnFileMappedBuffer = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From( fileName, baseDir, pageSize, 2 * pageSize));
+				merkleBuffer = new MerklePagedBuffer(txnFileMappedBuffer, chf);
+				disposables.Add(txnFileMappedBuffer);
 				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 			case StorageType.TransactionalBinaryFile_5InMem:
 				baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				fileName = Path.Combine(baseDir, "File.dat");
-				merkleBuffer = new MerklePagedBuffer(new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, pageSize, 5 * pageSize)), chf);
+				txnFileMappedBuffer = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, baseDir, pageSize, 5 * pageSize));
+				merkleBuffer = new MerklePagedBuffer(txnFileMappedBuffer, chf);
+				disposables.Add(txnFileMappedBuffer);
 				disposables.Add(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
 				break;
 			default:

@@ -193,6 +193,7 @@ public class BufferTests {
 			case StorageType.BinaryFile:
 				var tmpFile = Tools.FileSystem.GetTempFileName(false);
 				buffer = new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, maxMemory));
+				disposables.Add(buffer);
 				disposables.Add(new ActionScope(() => File.Delete(tmpFile)));
 				break;
 			case StorageType.TransactionalBinaryFile:

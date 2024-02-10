@@ -25,7 +25,7 @@ public class Disposables : ListDecorator<IDisposable>, IDisposable {
 	}
 
 	public Disposables(params IDisposable[] disposals)
-		: this(true, disposals) {
+		: this(false, disposals) {
 
 	}
 

@@ -98,19 +98,18 @@ public class ExtendedMemoryStreamTests {
 			case InnerListType.MemoryPagedBuffer:
 				var memPagedBuffer = new MemoryPagedBuffer(pageSize, maxOpenPages * pageSize);
 				stream = new ExtendedMemoryStream(memPagedBuffer);
-				return new Disposables(memPagedBuffer);
+				return new Disposables(stream, memPagedBuffer);
 			case InnerListType.BinaryFile:
 				var tmpFile = Tools.FileSystem.GetTempFileName(false);
 				var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(tmpFile, pageSize, maxOpenPages * pageSize));
 				stream = new ExtendedMemoryStream(binaryFile);
-				return new Disposables(new ActionScope(() => File.Delete(tmpFile)));
-
+				return new Disposables(stream, binaryFile,  Tools.Scope.DeleteFileOnDispose(tmpFile));
 			case InnerListType.TransactionalBinaryFile:
 				var baseDir = Tools.FileSystem.GetTempEmptyDirectory(true);
 				var fileName = Path.Combine(baseDir, "File.dat");
 				var transactionalBinaryFile = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From( fileName, baseDir, pageSize, maxOpenPages * pageSize));
 				stream = new ExtendedMemoryStream(transactionalBinaryFile);
-				return new Disposables(new ActionScope(() => Tools.FileSystem.DeleteDirectory(baseDir)));
+				return new Disposables(stream, Tools.Scope.DeleteDirOnDispose(baseDir));
 			default:
 				throw new ArgumentOutOfRangeException(nameof(listType), listType, null);
 		}

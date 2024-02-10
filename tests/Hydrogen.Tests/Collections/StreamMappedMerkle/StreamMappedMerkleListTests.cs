@@ -36,7 +36,7 @@ public class StreamMappedMerkleListTests : MerkleListTestsBase {
 		var memStream = new MemoryStream();
 		var clusteredList = new StreamMappedMerkleList<string>(memStream, chf, DefaultClusterSize, autoLoad: true);
 		merkleList = clusteredList;
-		return new Disposables(memStream, clusteredList);
+		return new Disposables(clusteredList, memStream);
 	}
 
 }

@@ -46,9 +46,8 @@ public abstract class Disposable : IAsyncDisposable, IDisposable {
 		// If you need thread safety, use a lock around these 
 		// operations, as well as in your methods that use the resource.
 
-		if (disposing) {
+		if (disposing)
 			FreeManagedResources();
-		}
 
 		FreeUnmanagedResources();
 

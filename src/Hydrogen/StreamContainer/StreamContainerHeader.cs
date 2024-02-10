@@ -145,6 +145,16 @@ public class StreamContainerHeader {
 		//Guard.Against(Policy.HasFlag(StreamContainerPolicy.TrackKey) && StreamDescriptorKeySize <= 0, $"Corrupt header property {nameof(StreamDescriptorKeySize)} value was {StreamDescriptorKeySize} but {nameof(Policy)} property value was {StreamDescriptorKeySize}");
 	}
 
+	public void FlushCache() {
+		_versionProperty?.FlushCache();
+		_policyProperty?.FlushCache();
+		_streamCountProperty?.FlushCache();
+		_streamDescriptorsClusterProperty?.FlushCache();
+		_streamDescriptorKeySizeProperty?.FlushCache();
+		_reservedStreamsProperty?.FlushCache();
+		_clusterSizeProperty?.FlushCache();
+		_totalClustersProperty?.FlushCache();
+	}
 
 	public override string ToString() {
 		using var accessScope = _lock.EnterAccessScope();

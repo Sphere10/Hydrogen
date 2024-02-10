@@ -262,5 +262,73 @@ public class TransactionalListTests {
 
 	}
 
+	[Test]
+	public void RollbackReturnsToPreviousCommittedState_BeforeScopeCloses([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+		var file = Tools.FileSystem.GenerateTempFilename();
+		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
+
+		using var disposables = new Disposables();
+		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))));
+		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))));
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
+			txnFile.Load();
+			txnFile.Add("Hello World!");
+			Assert.That(txnFile.Count, Is.EqualTo(1));
+			Assert.That(txnFile[0], Is.EqualTo("Hello World!"));
+			txnFile.Commit();
+		}
+
+		// Update previous state
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
+			txnFile.Load();
+			txnFile.Update(0, "Changed");
+			txnFile.Add("Updated");
+			Assert.That(txnFile[0], Is.EqualTo("Changed"));
+			txnFile.Rollback();
+
+			// ensure rollbacked state before scope exits
+			Assert.That(txnFile.Count, Is.EqualTo(1));
+			Assert.That(txnFile[0], Is.EqualTo("Hello World!"));
+		}
+
+	}
+
+	[Test]
+	public void RollbackReturnsToPreviousCommittedState_AfterScopeCloses([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+		var file = Tools.FileSystem.GenerateTempFilename();
+		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
+
+		using var disposables = new Disposables();
+		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))));
+		disposables.Add(Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir))));
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
+			txnFile.Load();
+			txnFile.Add("Hello World!");
+			Assert.That(txnFile.Count, Is.EqualTo(1));
+			Assert.That(txnFile[0], Is.EqualTo("Hello World!"));
+			txnFile.Commit();
+		}
+
+		// Update previous state
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8))) {
+			txnFile.Load();
+			txnFile.Update(0, "Changed");
+			txnFile.Add("Updated");
+			txnFile.Rollback();
+		}
+
+		Assert.That(File.Exists(file), Is.EqualTo(true));
+		Assert.That(Directory.Exists(dir), Is.EqualTo(true));
+		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
+
+		using (var txnFile = new TransactionalList<string>(HydrogenFileDescriptor.From(file, dir, containerPolicy: policy), new StringSerializer(Encoding.UTF8), accessMode: FileAccessMode.OpenOrCreate)) {
+			Assert.That(txnFile.RequiresLoad, Is.EqualTo(true));
+			txnFile.Load();
+			Assert.That(txnFile.Count, Is.EqualTo(1));
+			Assert.That(txnFile[0], Is.EqualTo("Hello World!"));
+		}
+
+	}
+
 
 }

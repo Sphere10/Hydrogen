@@ -114,6 +114,9 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		: base(streamMappedList) {
 		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
 		_transactionalObject = transactionalObject;
+		_transactionalObject.RolledBack += _ => {
+			streamMappedList.ObjectContainer.StreamContainer.Initialize();
+		};
 		
 		if (autoLoad && RequiresLoad)
 			Load();

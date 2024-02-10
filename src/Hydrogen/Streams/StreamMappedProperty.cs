@@ -66,4 +66,6 @@ public class StreamMappedProperty<T> {
 		}
 	}
 
+
+	public void FlushCache() => _hasValue = false;
 }

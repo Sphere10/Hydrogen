@@ -111,6 +111,7 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			Flush();
 			FlushOnDispose = false;
 		}
+
 		if (PageMarkerRepo.FileMarkers.Any() || PageMarkerRepo.PageMarkers.Any())
 			Rollback();
 

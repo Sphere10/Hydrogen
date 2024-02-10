@@ -36,7 +36,7 @@ public class ExtendedMemoryStream : Stream, ILoadable {
 	}
 
 	public ExtendedMemoryStream(IBuffer source, bool disposeSource = false) {
-		Guard.Argument(!disposeSource || source is IDisposable, nameof(source), "Not a disposable buffer");
+		Guard.ArgumentNotNull(source, nameof(source));
 		_source = source;
 		_position = 0;
 		_disposeSource = disposeSource;

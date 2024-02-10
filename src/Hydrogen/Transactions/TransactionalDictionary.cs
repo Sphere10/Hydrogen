@@ -103,7 +103,10 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 	) : base(internalDictionary) {
 		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
 		_transactionalObject = transactionalObject;
-		
+		_transactionalObject.RolledBack += _ => {
+			internalDictionary.ObjectContainer.StreamContainer.Initialize();
+		};
+
 		if (autoLoad && RequiresLoad)
 			Load();
 	}

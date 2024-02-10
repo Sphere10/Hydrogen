@@ -44,6 +44,17 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 			file,
 			accessMode.WithoutAutoLoad()
 		);
+		_fileStream.RollingBack += _ => {
+			foreach (var disposable in _collections.Values.Cast<IDisposable>())
+				disposable.Dispose();
+			_collections.Clear();
+		};
+		_fileStream.RolledBack += _ => {
+			_instanceTracker.Clear();
+			_streamContainer.Initialize();
+			_loaded = false;
+			Load();
+		};
 		_streamContainer = new StreamContainer(
 			_fileStream,
 			(int)file.ClusterSize,
@@ -52,6 +63,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 			Endianness.LittleEndian,
 			false
 		);
+
 		_loaded = false;
 		_collections = new Dictionary<Type, object>();
 		_instanceTracker = new InstanceTracker();
@@ -106,6 +118,13 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		_instanceTracker.Track(item, index);
 
 		return true;
+	}
+
+
+	public long Count<TItem>() {
+		// Get underlying stream mapped collection
+		var objectList = GetList<TItem>();
+		return objectList.Count;
 	}
 
 	public long Save<TItem>(TItem item) {
@@ -252,8 +271,6 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		// load list if applicable
 		if (list is ILoadable { RequiresLoad: true } loadable)
 			loadable.Load();
-
-		
 
 		return list;
 	}

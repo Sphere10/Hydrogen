@@ -105,9 +105,9 @@ public class ClusteredStream : StreamDecorator {
 	
 	public override void Close() {
 		// Close() is called by Dispose
-		if (!ReadOnly) {
+		if (!ReadOnly)
 			_streamContainer.UpdateStreamDescriptor(StreamIndex, _descriptor);
-		}
+		
 		_finalizeAction?.Invoke();
 		_disposables.ForEach(d => d.Dispose());
 		

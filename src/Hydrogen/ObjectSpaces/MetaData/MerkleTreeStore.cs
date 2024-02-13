@@ -62,7 +62,7 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 	
 	public override void Add(long index, byte[] data) {
 		using var _ = Container.EnterAccessScope();
-		_merkleTree.Leafs.Insert(index, data);
+		_merkleTree.Leafs.Add(data);
 		_merkleRootProperty.Value = _merkleTree.Root;
 	}
 

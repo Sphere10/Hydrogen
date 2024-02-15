@@ -19,8 +19,8 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="NStack.Core" Version="1.0.7" />
-		<PackageReference Include="Terminal.Gui" Version="1.14.1" />
+		<PackageReference Include="NStack.Core" Version="1.1.1" />
+		<PackageReference Include="Terminal.Gui" Version="1.15.1" />
 	</ItemGroup>
 
 	<ItemGroup>

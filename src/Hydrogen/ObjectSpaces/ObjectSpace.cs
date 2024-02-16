@@ -27,7 +27,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 	private readonly StreamContainer _streamContainer;
 	private readonly SerializerFactory _serializerFactory;
 	private readonly ComparerFactory _comparerFactory;
-	private readonly IDictionary<Type, object> _collections;
+	private readonly IDictionary<Type, IStreamMappedCollection> _collections;
 	private readonly InstanceTracker _instanceTracker;
 	private bool _loaded;
 
@@ -44,17 +44,10 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 			file,
 			accessMode.WithoutAutoLoad()
 		);
-		_fileStream.RollingBack += _ => {
-			foreach (var disposable in _collections.Values.Cast<IDisposable>())
-				disposable.Dispose();
-			_collections.Clear();
-		};
-		_fileStream.RolledBack += _ => {
-			_instanceTracker.Clear();
-			_streamContainer.Initialize();
-			_loaded = false;
-			Load();
-		};
+		_fileStream.Committing += _ => OnCommitting();
+		_fileStream.Committed += _ => OnCommitted();
+		_fileStream.RollingBack += _ => OnRollingBack();
+		_fileStream.RolledBack += _ => OnRolledBack();
 		_streamContainer = new StreamContainer(
 			_fileStream,
 			(int)file.ClusterSize,
@@ -65,7 +58,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		);
 
 		_loaded = false;
-		_collections = new Dictionary<Type, object>();
+		_collections = new Dictionary<Type, IStreamMappedCollection>();
 		_instanceTracker = new InstanceTracker();
 		if (accessMode.HasFlag(FileAccessMode.AutoLoad))
 			Load();
@@ -120,7 +113,6 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		return true;
 	}
 
-
 	public long Count<TItem>() {
 		// Get underlying stream mapped collection
 		var objectList = GetList<TItem>();
@@ -157,15 +149,6 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		// Remove it from the list 
 		var objectList = GetList<TItem>();
 		objectList.Recycle(index);
-	}
-
-	private StreamMappedRecyclableList<TItem> GetList<TItem>() {
-		var itemType = typeof(TItem);
-
-		if (!_collections.TryGetValue(itemType, out var dimension))
-			throw new InvalidOperationException($"A container for type '{itemType.ToStringCS()}' was not registered");
-
-		return (StreamMappedRecyclableList<TItem>)dimension;
 	}
 
 	public void Commit() => _fileStream.Commit();
@@ -215,7 +198,8 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		_loaded = true;
 
 	}
-	protected virtual object BuildObjectList(ContainerDefinition containerDefinition, int containerIndex) {
+
+	protected virtual IStreamMappedCollection BuildObjectList(ContainerDefinition containerDefinition, int containerIndex) {
 		// Get the stream within the object space which will comprise the object container
 		var containerStream = _streamContainer.Open(_streamContainer.Header.ReservedStreams + containerIndex, false, true);
 
@@ -259,7 +243,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		var comparer = _comparerFactory.GetEqualityComparer(containerDefinition.ObjectType);
 
 		// construct the the object collection
-		var list = typeof(StreamMappedRecyclableList<>)
+		var list = (IStreamMappedCollection)typeof(StreamMappedRecyclableList<>)
 			.MakeGenericType(containerDefinition.ObjectType)
 			.ActivateWithCompatibleArgs(
 				container,
@@ -309,5 +293,48 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 
 	protected virtual int SanitizeContainerClusterSize(int clusterSizeB)
 		=> Tools.Values.ClipValue(clusterSizeB, 256, 8192);
+
+
+	protected virtual void OnCommitting() {
+		// TODO: potentially move this up to Consensus Space
+
+		// need to ensure all merkle-trees are committed 
+		foreach(var collection in _collections.Values) {
+			if (collection.ObjectContainer.TryFindAttachment<MerkleTreeIndex>(out var merkleTreeIndex)) {
+				// fetching the root ensures the stream-mapped merkle-tree is fully calculated
+				var root = merkleTreeIndex.MerkleTree.Root;
+			}
+		}
+
+		// TODO: ensure the global merkle-tree is updated
+		// var truthSingularity = containerTree.MerkleTree.Root;
+	}
+
+	protected virtual void OnCommitted() {
+	}
+
+	protected virtual void OnRollingBack() {
+		// close all object containers when rolling back
+		foreach (var disposable in _collections.Values.Cast<IDisposable>())
+			disposable.Dispose();
+		_collections.Clear();
+	}
+
+	protected virtual void OnRolledBack() {
+		// reload after rollback
+		_instanceTracker.Clear();
+		_streamContainer.Initialize();
+		_loaded = false;
+		Load();
+	}
+
+	private StreamMappedRecyclableList<TItem> GetList<TItem>() {
+		var itemType = typeof(TItem);
+
+		if (!_collections.TryGetValue(itemType, out var dimension))
+			throw new InvalidOperationException($"A container for type '{itemType.ToStringCS()}' was not registered");
+
+		return (StreamMappedRecyclableList<TItem>)dimension;
+	}
 
 }

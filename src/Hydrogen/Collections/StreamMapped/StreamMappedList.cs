@@ -15,7 +15,7 @@ using Hydrogen.ObjectSpaces;
 namespace Hydrogen;
 
 /// <summary>
-/// A list whose items are persisted over a stream via an <see cref="IClusteredStorage"/>.
+/// A list whose items are persisted over a stream via an <see cref="ObjectContainer{TItem}"/>.
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedList<TItem> {
@@ -37,6 +37,8 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public override long Count => ObjectContainer.Count;
 
 	public ObjectContainer<TItem> ObjectContainer { get; }
+
+	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
 
 	public IItemSerializer<TItem> ItemSerializer => ObjectContainer.ItemSerializer;
 

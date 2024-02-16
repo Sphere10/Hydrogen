@@ -41,6 +41,8 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	
 	public ObjectContainer<TItem> ObjectContainer { get; }
 
+	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
+
 	public IItemSerializer<TItem> ItemSerializer => ObjectContainer.ItemSerializer;
 
 	public IEqualityComparer<TItem> ItemComparer { get; }
@@ -149,5 +151,5 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 			_freeIndexStore.Stack.Clear();
 		}
 	}
-	
+
 }

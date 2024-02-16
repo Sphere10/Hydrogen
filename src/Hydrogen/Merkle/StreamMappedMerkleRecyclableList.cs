@@ -68,6 +68,8 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 
 	public ObjectContainer<TItem> ObjectContainer => InternalCollection.ObjectContainer;
 
+	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
+
 	public IItemSerializer<TItem> ItemSerializer => InternalCollection.ItemSerializer;
 
 	public IEqualityComparer<TItem> ItemComparer => InternalCollection.ItemComparer;

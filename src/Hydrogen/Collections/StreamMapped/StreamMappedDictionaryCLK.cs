@@ -47,7 +47,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 			Load();
 	}
 	
-	ObjectContainer IStreamMappedDictionary<TKey, TValue>.ObjectContainer => ObjectContainer;
+	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
 
 	public ObjectContainer<TValue> ObjectContainer { get; }
 

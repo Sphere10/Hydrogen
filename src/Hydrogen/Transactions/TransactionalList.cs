@@ -128,6 +128,8 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 
 	public ObjectContainer<T> ObjectContainer => InternalCollection.ObjectContainer;
 
+	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
+
 	public IItemSerializer<T> ItemSerializer => InternalCollection.ItemSerializer;
 
 	public IEqualityComparer<T> ItemComparer => InternalCollection.ItemComparer;

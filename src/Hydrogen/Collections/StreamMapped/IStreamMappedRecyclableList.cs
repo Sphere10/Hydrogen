@@ -12,9 +12,7 @@ using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
-public interface IStreamMappedRecyclableList<TItem> : IRecyclableList<TItem>, ILoadable, IDisposable {
-
-	ObjectContainer<TItem> ObjectContainer { get; }
+public interface IStreamMappedRecyclableList<TItem> : IRecyclableList<TItem>, IStreamMappedCollection<TItem>, ILoadable, IDisposable {
 
 	IItemSerializer<TItem> ItemSerializer { get; }
 

@@ -63,6 +63,8 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 	}
 
 	public ObjectContainer<TItem> ObjectContainer => InternalCollection.ObjectContainer;
+
+	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
 	
 	public IItemSerializer<TItem> ItemSerializer => InternalCollection.ItemSerializer;
 	

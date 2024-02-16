@@ -9,9 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Hydrogen.ObjectSpaces;
 
@@ -47,7 +45,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	}
 
 
-	ObjectContainer IStreamMappedDictionary<TKey, TValue>.ObjectContainer => ObjectContainer;
+	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
 
 	public ObjectContainer<KeyValuePair<TKey, TValue>> ObjectContainer { get; }
 

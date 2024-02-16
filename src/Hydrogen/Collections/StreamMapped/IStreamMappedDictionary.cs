@@ -8,14 +8,10 @@
 
 using System;
 using System.Collections.Generic;
-using Hydrogen.ObjectSpaces;
-
 
 namespace Hydrogen;
 
-public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, ILoadable, IDisposable {
-
-	ObjectContainer ObjectContainer { get; }
+public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IStreamMappedCollection, ILoadable, IDisposable {
 
 	TKey ReadKey(long index);
 

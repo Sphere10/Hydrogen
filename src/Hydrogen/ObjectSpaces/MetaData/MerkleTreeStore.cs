@@ -18,25 +18,70 @@ namespace Hydrogen.ObjectSpaces;
 /// stores only the value part in the container, the keys are stored in these (mapped to a reserved stream).
 /// </summary>
 /// <remarks>Unlike <see cref="KeyIndex{TItem,TKey}"/> which automatically extracts the key from the item and stores it, this is used as a primary storage for the key itself. Thus it is not an index, it is a pure store.</remarks>
-/// <typeparam name="TKey"></typeparam>
 internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 	private readonly CHF _hashAlgorithm;
 	private IMerkleTree _readOnlyMerkleTree;
 	private IDynamicMerkleTree _merkleTree;
 	private StreamMappedProperty<byte[]> _merkleRootProperty;
+	private bool _dirtyRoot;
 
 	// Migrate from MerkleTreeIndex stuff into here
 	public MerkleTreeStore(ObjectContainer container, long reservedStreamIndex, CHF hashAlgorithm) 
 		: base(container, reservedStreamIndex) {
 		_hashAlgorithm = hashAlgorithm;
+		_dirtyRoot = false;
 	}
 
 	public IMerkleTree MerkleTree => _readOnlyMerkleTree;
 
+	public override long Count => _merkleTree.Size.LeafCount;
+
+	public override byte[] Read(long index) 
+		=> ReadBytes(index);
+
+	public override byte[] ReadBytes(long index) 
+		=> _merkleTree.Leafs.Read(index);
+	
+	public override void Add(long index, byte[] data) {
+		using var _ = Container.EnterAccessScope();
+		_merkleTree.Leafs.Add(data);
+		_dirtyRoot = true;
+	}
+
+	public override void Update(long index, byte[] data) {
+		using var _ = Container.EnterAccessScope();
+		_merkleTree.Leafs.Update(index, data);
+		_dirtyRoot = true;
+	}
+
+	public override void Insert(long index, byte[] data) {
+		using var _ = Container.EnterAccessScope();
+		_merkleTree.Leafs.Insert(index, data);
+		_dirtyRoot = true;
+	}
+
+	public override void Remove(long index) {
+		using var _ = Container.EnterAccessScope();
+		_merkleTree.Leafs.RemoveAt(index);
+		_dirtyRoot = true;
+	}
+
+	public override void Reap(long index) {
+		using var _ = Container.EnterAccessScope();
+		var digest = Hashers.ZeroHash(_hashAlgorithm);
+		_merkleTree.Leafs.Update(index, digest);
+		_dirtyRoot = true;
+	}
+
+	public override void Clear() {
+		 _merkleTree.Leafs.Clear();
+		 _dirtyRoot = true;
+	}
+
 	protected override void AttachInternal() {
 		var flatTreeData = new StreamMappedBuffer(Stream);
 		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, Container.Count);
-		_readOnlyMerkleTree = new ContainerLockingMerkleTree(_merkleTree, Container);
+		_readOnlyMerkleTree = new ContainerLockingMerkleTree(this, _merkleTree, Container);
 		var hashSize = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 		using (Container.StreamContainer.EnterAccessScope()) {
 			_merkleRootProperty = Container.StreamContainer.Header.CreateExtensionProperty(
@@ -48,70 +93,45 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 	}
 
 	protected override void DetachInternal() {
+		// Ensure tree is calculated 
 		_merkleTree = null;
 		_readOnlyMerkleTree = null;
 		_merkleRootProperty = null;
 	}
 
-	public override long Count => _merkleTree.Size.LeafCount;
+	internal void EnsureTreeCalculated() {
+		// TODO: future optimizations can be made by doing smart eliminations of operations from _unsavedChanges
+		// Example: Add(0, "alpha"), Update(0, "beta"), Add(1, "gamma"), Remove(1) -> Add(0, "beta")
 
-	public override byte[] Read(long index) => ReadBytes(index);
+		if (!_dirtyRoot) 
+			return;
 
-	public override byte[] ReadBytes(long index) 
-		=> _merkleTree.Leafs.Read(index);
-	
-	public override void Add(long index, byte[] data) {
-		using var _ = Container.EnterAccessScope();
-		_merkleTree.Leafs.Add(data);
 		_merkleRootProperty.Value = _merkleTree.Root;
 	}
-
-	public override void Update(long index, byte[] data) {
-		using var _ = Container.EnterAccessScope();
-		_merkleTree.Leafs.Update(index, data);
-		_merkleRootProperty.Value = _merkleTree.Root;
-	}
-
-	public override void Insert(long index, byte[] data) {
-		using var _ = Container.EnterAccessScope();
-		_merkleTree.Leafs.Insert(index, data);
-		_merkleRootProperty.Value = _merkleTree.Root;
-	}
-
-	public override void Remove(long index) {
-		using var _ = Container.EnterAccessScope();
-		_merkleTree.Leafs.RemoveAt(index);
-		_merkleRootProperty.Value = _merkleTree.Root;
-	}
-
-	public override void Reap(long index) {
-		using var _ = Container.EnterAccessScope();
-		var digest = Hashers.ZeroHash(_hashAlgorithm);
-		_merkleTree.Leafs.Update(index, digest);
-		_merkleRootProperty.Value = _merkleTree.Root;
-	}
-
-	public override void Clear() 
-		=> _merkleTree.Leafs.Clear();
 
 	private class ContainerLockingMerkleTree : MerkleTreeDecorator  {
+		private readonly MerkleTreeStore _merkleTreeStore;
 		private readonly ObjectContainer _container;
-		public ContainerLockingMerkleTree(IMerkleTree internalMerkleTree, ObjectContainer container) : base(internalMerkleTree) {
+
+		public ContainerLockingMerkleTree(MerkleTreeStore merkleTreeStore, IMerkleTree internalMerkleTree, ObjectContainer container) 
+			: base(internalMerkleTree) {
+			_merkleTreeStore = merkleTreeStore;
 			_container = container;
 		}
 
 		public override byte[] Root { 
 			get {
 				using var _ = _container.EnterAccessScope();
+				_merkleTreeStore.EnsureTreeCalculated();
 				return base.Root;
 			}
 		}
 
 		public override ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate) {
 			using var _ = _container.EnterAccessScope();
+			_merkleTreeStore.EnsureTreeCalculated();
 			return base.GetValue(coordinate);
 		}
 	}
-
 
 }

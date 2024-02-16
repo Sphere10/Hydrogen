@@ -8,13 +8,10 @@
 
 using System;
 using System.Collections.Generic;
-using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
-public interface IStreamMappedList<TItem> : IExtendedList<TItem>, ILoadable, IDisposable {
-
-	ObjectContainer<TItem> ObjectContainer { get; }
+public interface IStreamMappedList<TItem> : IExtendedList<TItem>,  IStreamMappedCollection<TItem>, ILoadable, IDisposable {
 
 	IItemSerializer<TItem> ItemSerializer { get; }
 

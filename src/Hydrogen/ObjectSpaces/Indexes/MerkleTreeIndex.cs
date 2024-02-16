@@ -8,6 +8,7 @@
 
 using Hydrogen.Collections;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 
@@ -26,12 +27,11 @@ internal class MerkleTreeIndex : IndexBase<byte[], MerkleTreeStore> {
 		long reservedStreamIndex,
 		Func<long, byte[]> itemDigestor,
 		CHF chf
-	) : base(objectContainer,  new MerkleTreeStore(objectContainer, reservedStreamIndex, chf)) {
+	) : base(objectContainer, new MerkleTreeStore(objectContainer, reservedStreamIndex, chf)) {
 		_itemDigestor = itemDigestor;
 	}
 
 	public IMerkleTree MerkleTree => KeyStore.MerkleTree;
-
 
 	protected override void OnAdded(object item, long index) 
 		=> KeyStore.Add(index, _itemDigestor(index));
@@ -40,6 +40,6 @@ internal class MerkleTreeIndex : IndexBase<byte[], MerkleTreeStore> {
 		=> KeyStore.Insert(index, _itemDigestor(index));
 
 	protected override void OnUpdated(object item, long index) 
-		=> KeyStore.Update(index, _itemDigestor(index));
+		=> KeyStore.Update(index,  _itemDigestor(index));
 
 }

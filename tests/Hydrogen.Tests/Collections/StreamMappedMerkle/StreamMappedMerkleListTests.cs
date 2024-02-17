@@ -32,6 +32,38 @@ public class StreamMappedMerkleListTests : MerkleListTestsBase {
 		Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }, chf)));
 	}
 
+
+	
+	[Test]
+	public void Special_Remove([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		var memStream = new MemoryStream();
+		using var clusteredList = new StreamMappedMerkleList<string>(memStream, chf, 256, autoLoad: true);
+		clusteredList.Add("alpha");
+		clusteredList.Insert(0, "beta");
+		clusteredList.Add("gamma");
+		clusteredList.RemoveAt(1);
+		clusteredList.Add("delta");
+		clusteredList.RemoveAt(0);
+		clusteredList.RemoveAt(0);
+		Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "delta" }, chf)));
+	}
+
+
+	[Test]
+	public void Special_RemoveAll([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		var memStream = new MemoryStream();
+		using var clusteredList = new StreamMappedMerkleList<string>(memStream, chf, 256, autoLoad: true);
+		clusteredList.Add("alpha");
+		clusteredList.Insert(0, "beta");
+		clusteredList.Add("gamma");
+		clusteredList.RemoveAt(1);
+		clusteredList.Add("delta");
+		clusteredList.RemoveAt(0);
+		clusteredList.RemoveAt(0);
+		clusteredList.RemoveAt(0);
+		Assert.That(clusteredList.MerkleTree.Root, Is.Null);
+	}
+
 	protected override IDisposable CreateMerkleList([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, out IMerkleList<string> merkleList) {
 		var memStream = new MemoryStream();
 		var clusteredList = new StreamMappedMerkleList<string>(memStream, chf, DefaultClusterSize, autoLoad: true);

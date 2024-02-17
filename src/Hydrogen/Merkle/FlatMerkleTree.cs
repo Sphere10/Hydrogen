@@ -29,6 +29,7 @@ namespace Hydrogen;
 public class FlatMerkleTree : IDynamicMerkleTree {
 	public const int DefaultLeafGrowth = 4096;
 	public const int DefaultMaxLeaf = 1 << 24;
+	
 	private IBuffer _nodeBuffer;
 	private BitArray _dirtyNodes;
 	private readonly int _digestSize;

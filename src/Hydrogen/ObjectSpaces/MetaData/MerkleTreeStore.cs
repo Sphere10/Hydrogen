@@ -7,8 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using Hydrogen.Collections;
 
 namespace Hydrogen.ObjectSpaces;
@@ -87,7 +86,7 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 			_merkleRootProperty = Container.StreamContainer.Header.CreateExtensionProperty(
 				0, 
 				hashSize, 
-				new ConstantSizeByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(_hashAlgorithm))
+				new ConstantSizeByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(_hashAlgorithm), ByteArrayEqualityComparer.Instance)
 			);
 		}
 	}
@@ -99,14 +98,14 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 		_merkleRootProperty = null;
 	}
 
-	internal void EnsureTreeCalculated() {
-		// TODO: future optimizations can be made by doing smart eliminations of operations from _unsavedChanges
-		// Example: Add(0, "alpha"), Update(0, "beta"), Add(1, "gamma"), Remove(1) -> Add(0, "beta")
+	private void EnsureTreeCalculated() {
+		// TODO: Guard ensure access scope is entered
 
 		if (!_dirtyRoot) 
 			return;
 
 		_merkleRootProperty.Value = _merkleTree.Root;
+		_dirtyRoot = true;
 	}
 
 	private class ContainerLockingMerkleTree : MerkleTreeDecorator  {
@@ -123,6 +122,8 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 			get {
 				using var _ = _container.EnterAccessScope();
 				_merkleTreeStore.EnsureTreeCalculated();
+				var root = base.Root;;
+				Debug.Assert(ByteArrayEqualityComparer.Instance.Equals(root, _merkleTreeStore._merkleRootProperty.Value));
 				return base.Root;
 			}
 		}

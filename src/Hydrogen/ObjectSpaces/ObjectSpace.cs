@@ -199,6 +199,14 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 
 	}
 
+	protected void Unload() {
+		// close all object containers when rolling back
+		foreach (var disposable in _collections.Values.Cast<IDisposable>())
+			disposable.Dispose();
+		_collections.Clear();
+		_loaded = false;
+	}
+
 	protected virtual IStreamMappedCollection BuildObjectList(ContainerDefinition containerDefinition, int containerIndex) {
 		// Get the stream within the object space which will comprise the object container
 		var containerStream = _streamContainer.Open(_streamContainer.Header.ReservedStreams + containerIndex, false, true);
@@ -314,17 +322,13 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 	}
 
 	protected virtual void OnRollingBack() {
-		// close all object containers when rolling back
-		foreach (var disposable in _collections.Values.Cast<IDisposable>())
-			disposable.Dispose();
-		_collections.Clear();
+		Unload();
 	}
 
 	protected virtual void OnRolledBack() {
 		// reload after rollback
 		_instanceTracker.Clear();
 		_streamContainer.Initialize();
-		_loaded = false;
 		Load();
 	}
 

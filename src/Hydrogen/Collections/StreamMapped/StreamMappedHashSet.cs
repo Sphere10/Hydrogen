@@ -38,7 +38,7 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public bool RequiresLoad => InternalDictionary.RequiresLoad;
 
-	public ObjectContainer ObjectContainer => InternalDictionary.ObjectContainer;
+	public ObjectStream ObjectStream => InternalDictionary.ObjectStream;
 
 	public void Load() => InternalDictionary.Load();
 
@@ -46,7 +46,7 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public override bool Add(TItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			var itemHash = _hasher.Hash(item);
 			if (InternalDictionary.ContainsKey(itemHash))
 				return false;
@@ -62,7 +62,7 @@ public class StreamMappedHashSet<TItem> : SetBase<TItem>, IStreamMappedHashSet<T
 
 	public override bool Remove(TItem item) {
 		Guard.ArgumentNotNull(item, nameof(item));
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			var itemHash = _hasher.Hash(item);
 			if (!InternalDictionary.TryFindKey(itemHash, out var index))
 				return false;

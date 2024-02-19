@@ -30,8 +30,8 @@ public class StreamMappedDictionaryCLKTests : StreamMappedDictionaryTestsBase {
 			policy: ClusteredStreamsPolicy.Performance);
 		if (dict.RequiresLoad)
 			dict.Load();
-		Assert.That(dict.ObjectContainer.Streams.Header.ClusterSize, Is.EqualTo(21));
-		Assert.That(dict.ObjectContainer.Streams.Header.ReservedStreams, Is.EqualTo(33));
+		Assert.That(dict.ObjectStream.Streams.Header.ClusterSize, Is.EqualTo(21));
+		Assert.That(dict.ObjectStream.Streams.Header.ReservedStreams, Is.EqualTo(33));
 	}
 
 	protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStreamsPolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,

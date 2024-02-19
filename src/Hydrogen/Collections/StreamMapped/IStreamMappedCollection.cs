@@ -3,10 +3,10 @@
 namespace Hydrogen;
 
 public interface IStreamMappedCollection {
-	ObjectContainer ObjectContainer { get; }
+	ObjectStream ObjectStream { get; }
 }
 
 public interface IStreamMappedCollection<TItem> : IStreamMappedCollection {
-	new ObjectContainer<TItem> ObjectContainer { get; }
+	new ObjectStream<TItem> ObjectStream { get; }
 
 }

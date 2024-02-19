@@ -52,7 +52,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 			endianness,
 			accessMode.HasFlag(FileAccessMode.AutoLoad)
 		) {
-		InternalCollection.ObjectContainer.Streams.OwnsStream = true;
+		InternalCollection.ObjectStream.Streams.OwnsStream = true;
 	}
 
 	public TransactionalList(
@@ -82,7 +82,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 			checksumIndexStreamIndex,
 			autoLoad
 		) {
-		InternalCollection.ObjectContainer.OwnsStreamContainer = true;
+		InternalCollection.ObjectStream.OwnsStreamContainer = true;
 	}
 
 	public TransactionalList(
@@ -115,7 +115,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
 		_transactionalObject = transactionalObject;
 		_transactionalObject.RolledBack += _ => {
-			streamMappedList.ObjectContainer.Streams.Initialize();
+			streamMappedList.ObjectStream.Streams.Initialize();
 		};
 		
 		if (autoLoad && RequiresLoad)
@@ -126,9 +126,9 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 
 	public bool RequiresLoad => InternalCollection.RequiresLoad;
 
-	public ObjectContainer<T> ObjectContainer => InternalCollection.ObjectContainer;
+	public ObjectStream<T> ObjectStream => InternalCollection.ObjectStream;
 
-	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
+	ObjectStream IStreamMappedCollection.ObjectStream => ObjectStream;
 
 	public IItemSerializer<T> ItemSerializer => InternalCollection.ItemSerializer;
 

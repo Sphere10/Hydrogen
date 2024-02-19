@@ -16,9 +16,9 @@ using System.Runtime.CompilerServices;
 namespace Hydrogen;
 
 /// <summary>
-/// A container of <see cref="Stream"/>'s whose contents are stored in a clustered manner over a root <see cref="Stream"/> (similar in principle to how a file-system works).
+/// A objectStream of <see cref="Stream"/>'s whose contents are stored in a clustered manner over a root <see cref="Stream"/> (similar in principle to how a file-system works).
 /// Fundamentally, this class can function as a "virtual file system" allowing an arbitrary number of <see cref="Stream"/>'s to be stored (and changed). This class
-/// also serves as the base container for implementations of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s.
+/// also serves as the base objectStream for implementations of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s.
 /// <remarks>
 /// The structure of the underlying stream is depicted below:
 /// [ClusteredStreamsHeader] Version: 1, ClusterSize: 4, TotalClusters: 17, StreamCount: 2, StreamDescriptorsEndCluster: 14, ReservedStreams: 0, Policy: 0, MerkleRoot: 0000000000000000000000000000000000000000000000000000000000000000
@@ -539,7 +539,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		//  - are stored StreamPagedList or ClusteredStreamRecords (single page, statically sized items) which mapped over the cluster chain starting from 0
 		//  - the end cluster of the cluster chain is tracked in the header
 		//  - the descriptor count is also tracked in the header
-		//  - this list of records maintains all the other lists stored in the cluster container
+		//  - this list of records maintains all the other lists stored in the cluster objectStream
 		//var recordsCount = _header.StreamCount;
 		_streamDescriptorsFragmentProvider = new ClusteredStreamFragmentProvider(
 			_clusters,
@@ -683,11 +683,11 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	
 	internal void RegisterAttachment(IClusteredStreamsAttachment attachment) {
 		Guard.ArgumentNotNull(attachment, nameof(attachment));
-		//Guard.Against(StreamContainer.Initialized, "Cannot register meta-data provider after container has been initialized");
+		//Guard.Against(StreamContainer.Initialized, "Cannot register meta-data provider after objectStream has been initialized");
 		Guard.Against(_attachments.ContainsKey(attachment.ReservedStreamIndex), $"Meta-data provider for reserved stream {attachment.ReservedStreamIndex} already registered");
 		_attachments.Add(attachment.ReservedStreamIndex, attachment);
 
-		// If container is already loaded, then attach now
+		// If objectStream is already loaded, then attach now
 		if (!RequiresLoad)
 			attachment.Attach();
 	}

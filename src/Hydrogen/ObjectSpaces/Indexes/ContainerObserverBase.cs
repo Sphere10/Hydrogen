@@ -12,11 +12,11 @@ namespace Hydrogen.ObjectSpaces;
 
 public abstract class ContainerObserverBase  {
 
-	protected ContainerObserverBase(ObjectContainer objectContainer) {
-		objectContainer.PreItemOperation += OnPreItemOperation;
-		objectContainer.PostItemOperation += OnPostItemOperation;
-		objectContainer.Clearing += OnContainerClearing;
-		objectContainer.Cleared += OnContainerCleared;
+	protected ContainerObserverBase(ObjectStream objectStream) {
+		objectStream.PreItemOperation += OnPreItemOperation;
+		objectStream.PostItemOperation += OnPostItemOperation;
+		objectStream.Clearing += OnContainerClearing;
+		objectStream.Cleared += OnContainerCleared;
 	}
 
 	protected virtual void OnAdding(object item, long index) {
@@ -49,23 +49,23 @@ public abstract class ContainerObserverBase  {
 	protected virtual void OnReaped(long index) {
 	}
 
-	protected virtual void OnPreItemOperation(long index, object item, ObjectContainerOperationType operationType) {
+	protected virtual void OnPreItemOperation(long index, object item, ObjectStreamOperationType operationType) {
 		switch (operationType) {
-			case ObjectContainerOperationType.Read:
+			case ObjectStreamOperationType.Read:
 				break;
-			case ObjectContainerOperationType.Add:
+			case ObjectStreamOperationType.Add:
 				OnAdding(item, index);
 				break;
-			case ObjectContainerOperationType.Insert:
+			case ObjectStreamOperationType.Insert:
 				OnInserting(item, index);
 				break;
-			case ObjectContainerOperationType.Update:
+			case ObjectStreamOperationType.Update:
 				OnUpdating(item, index);
 				break;
-			case ObjectContainerOperationType.Remove:
+			case ObjectStreamOperationType.Remove:
 				OnRemoving(index);
 				break;
-			case ObjectContainerOperationType.Reap:
+			case ObjectStreamOperationType.Reap:
 				OnReaping(index);
 				break;
 			default:
@@ -73,23 +73,23 @@ public abstract class ContainerObserverBase  {
 		}
 	}
 
-	protected virtual void OnPostItemOperation(long index, object item, ObjectContainerOperationType operationType) {
+	protected virtual void OnPostItemOperation(long index, object item, ObjectStreamOperationType operationType) {
 		switch (operationType) {
-			case ObjectContainerOperationType.Read:
+			case ObjectStreamOperationType.Read:
 				break;
-			case ObjectContainerOperationType.Add:
+			case ObjectStreamOperationType.Add:
 				OnAdded(item, index);
 				break;
-			case ObjectContainerOperationType.Insert:
+			case ObjectStreamOperationType.Insert:
 				OnInserted(item, index);
 				break;
-			case ObjectContainerOperationType.Update:
+			case ObjectStreamOperationType.Update:
 				OnUpdated(item, index);
 				break;
-			case ObjectContainerOperationType.Remove:
+			case ObjectStreamOperationType.Remove:
 				OnRemoved(index);
 				break;
-			case ObjectContainerOperationType.Reap:
+			case ObjectStreamOperationType.Reap:
 				OnReaped(index);
 				break;
 			default:

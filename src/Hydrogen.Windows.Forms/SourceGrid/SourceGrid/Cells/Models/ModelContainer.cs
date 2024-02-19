@@ -11,7 +11,7 @@ using System;
 namespace SourceGrid.Cells.Models;
 
 /// <summary>
-/// A container for the model classes. THe only required model is the Value model, that you can assign using the ValueModel property.
+/// A objectStream for the model classes. THe only required model is the Value model, that you can assign using the ValueModel property.
 /// </summary>
 public class ModelContainer {
 	/// <summary>

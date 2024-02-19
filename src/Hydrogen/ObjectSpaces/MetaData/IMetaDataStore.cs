@@ -9,7 +9,7 @@
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// Stores meta-data about items in an <see cref="ObjectContainer"/>.
+/// Stores meta-data about items in an <see cref="ObjectStream"/>.
 /// </summary>
 /// <typeparam name="TData">The type of the meta-data datum.</typeparam>
 public interface IMetaDataStore<TData> : IClusteredStreamsAttachment {

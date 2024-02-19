@@ -101,11 +101,11 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 			return false;
 
 		// Reap check
-		if (objectList.ObjectContainer.IsReaped(index))
+		if (objectList.ObjectStream.IsReaped(index))
 			return false;
 
 		// Deserialize from stream
-		item = objectList.ObjectContainer.LoadItem(index);
+		item = objectList.ObjectStream.LoadItem(index);
 
 		// Track item instance
 		_instanceTracker.Track(item, index);
@@ -160,8 +160,8 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 	public Task RollbackAsync() => _fileStream.RollbackAsync();
 
 	public void Dispose() {
-		//foreach (var container in _collections.Values.Cast<ObjectContainer>().Where(x => !x.RequiresLoad))
-		//	container.Dispose();
+		//foreach (var objectStream in _collections.Values.Cast<ObjectStream>().Where(x => !x.RequiresLoad))
+		//	objectStream.Dispose();
 		foreach (var disposable in _collections.Values.Cast<IDisposable>())
 			disposable.Dispose();
 
@@ -173,11 +173,11 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		Guard.Against(_loaded, "ObjectSpace already loaded.");
 		Definition.Validate().ThrowOnFailure();
 
-		// Load up stream container
+		// Load up stream objectStream
 		if (_streams.RequiresLoad)
 			_streams.Load();
 
-		// Ensure container streams exist
+		// Ensure objectStream streams exist
 		var containerStreams = _streams.Header.StreamCount - _streams.Header.ReservedStreams;
 		if (containerStreams == 0) {
 			// TODO: create the consensus-space merkle tree here
@@ -209,7 +209,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 	}
 
 	protected virtual IStreamMappedCollection BuildObjectList(ContainerDefinition containerDefinition, int containerIndex) {
-		// Get the stream within the object space which will comprise the object container
+		// Get the stream within the object space which will comprise the object objectStream
 		var containerStream = _streams.Open(_streams.Header.ReservedStreams + containerIndex, false, true);
 
 		// Create a StreamContainer mapped to this stream, so it can contain items
@@ -224,15 +224,15 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 			OwnsStream = true
 		};
 
-		// construct the object container
+		// construct the object objectStream
 		var container =
-			typeof(ObjectContainer<>)
+			typeof(ObjectStream<>)
 				.MakeGenericType(containerDefinition.ObjectType)
 				.ActivateWithCompatibleArgs(
 					containerItemsStreamContainer,
 					CreateItemSerializer(containerDefinition.ObjectType),
 					false
-				) as ObjectContainer;
+				) as ObjectStream;
 		container.OwnsStreamContainer = true;
 
 		// construct indexes
@@ -268,31 +268,31 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		return list;
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildIdentifier(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IClusteredStreamsAttachment BuildIdentifier(ObjectStream objectStream, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
-				IndexFactory.CreateUniqueKeyIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
-				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
+				IndexFactory.CreateUniqueKeyIndexAttachment(objectStream, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
+				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(objectStream, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildUniqueKey(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IClusteredStreamsAttachment BuildUniqueKey(ObjectStream objectStream, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
-				IndexFactory.CreateUniqueKeyIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
-				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
+				IndexFactory.CreateUniqueKeyIndexAttachment(objectStream, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
+				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(objectStream, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildIndex(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IClusteredStreamsAttachment BuildIndex(ObjectStream objectStream, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
-				IndexFactory.CreateKeyIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
-				IndexFactory.CreateKeyChecksumIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
+				IndexFactory.CreateKeyIndexAttachment(objectStream, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
+				IndexFactory.CreateKeyChecksumIndexAttachment(objectStream, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 
 	}
 	
@@ -309,7 +309,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 
 		// need to ensure all merkle-trees are committed 
 		foreach(var collection in _collections.Values) {
-			if (collection.ObjectContainer.Streams.TryFindAttachment<MerkleTreeIndex>(out var merkleTreeIndex)) {
+			if (collection.ObjectStream.Streams.TryFindAttachment<MerkleTreeIndex>(out var merkleTreeIndex)) {
 				// fetching the root ensures the stream-mapped merkle-tree is fully calculated
 				var root = merkleTreeIndex.MerkleTree.Root;
 			}
@@ -337,7 +337,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		var itemType = typeof(TItem);
 
 		if (!_collections.TryGetValue(itemType, out var dimension))
-			throw new InvalidOperationException($"A container for type '{itemType.ToStringCS()}' was not registered");
+			throw new InvalidOperationException($"A objectStream for type '{itemType.ToStringCS()}' was not registered");
 
 		return (StreamMappedRecyclableList<TItem>)dimension;
 	}

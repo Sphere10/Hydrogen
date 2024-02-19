@@ -53,7 +53,7 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		accessMode.HasFlag(FileAccessMode.AutoLoad),
 		implementation
 	) {
-		InternalDictionary.ObjectContainer.Streams.OwnsStream = true;
+		InternalDictionary.ObjectStream.Streams.OwnsStream = true;
 	}
 
 	public TransactionalDictionary(
@@ -104,7 +104,7 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
 		_transactionalObject = transactionalObject;
 		_transactionalObject.RolledBack += _ => {
-			internalDictionary.ObjectContainer.Streams.Initialize();
+			internalDictionary.ObjectStream.Streams.Initialize();
 		};
 
 		if (autoLoad && RequiresLoad)
@@ -113,7 +113,7 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 
 	public bool OwnsDictionary { get; set; }
 
-	public ObjectContainer ObjectContainer => InternalDictionary.ObjectContainer;
+	public ObjectStream ObjectStream => InternalDictionary.ObjectStream;
 
 	public bool RequiresLoad => InternalDictionary.RequiresLoad;
 

@@ -12,8 +12,8 @@ namespace Hydrogen.Windows.Forms.Components;
 //        InitializeComponent();
 //    }
 
-//    public FormApplicationIconProvider(IContainer container) {
-//        container.Add(this);
+//    public FormApplicationIconProvider(IContainer objectStream) {
+//        objectStream.Add(this);
 //        InitializeComponent();
 //    }
 //}

@@ -190,7 +190,7 @@ public class CustomComboBox : ComboBoxEx, IPopupControlHost {
 	protected virtual void AssignControl(Control control) {
 		// If specified control is different then...
 		if (control != DropDownControl) {
-			// Preserve original container size.
+			// Preserve original objectStream size.
 			m_sizeOriginal = control.Size;
 
 			// Reference the user-specified drop down control.

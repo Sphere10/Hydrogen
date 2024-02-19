@@ -69,7 +69,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	internal StreamMappedMerkleDictionary(IStreamMappedDictionary<TKey, TValue> innerDictionary, bool autoLoad = false) 
 		: base(innerDictionary) {
 		Guard.ArgumentNotNull(innerDictionary, nameof(innerDictionary));
-		_merkleTreeIndex = innerDictionary.ObjectContainer.Streams.FindAttachment<MerkleTreeIndex>();
+		_merkleTreeIndex = innerDictionary.ObjectStream.Streams.FindAttachment<MerkleTreeIndex>();
 
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -77,7 +77,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 
 	public IMerkleTree MerkleTree => _merkleTreeIndex.MerkleTree;
 
-	public ObjectContainer ObjectContainer => InternalDictionary.ObjectContainer;
+	public ObjectStream ObjectStream => InternalDictionary.ObjectStream;
 
 	public bool RequiresLoad => InternalDictionary.RequiresLoad;
 
@@ -139,18 +139,18 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		);
 
 		var merkleTreeIndex = new MerkleTreeIndex(
-			smDict.ObjectContainer,
+			smDict.ObjectStream,
 			merkleTreeIndexStreamIndex,
 			x => DigestItem(smDict, x, hashAlgorithm),
 			hashAlgorithm
 		);
-		smDict.ObjectContainer.Streams.RegisterAttachment(merkleTreeIndex);
+		smDict.ObjectStream.Streams.RegisterAttachment(merkleTreeIndex);
 
 		return smDict;
 	}
 
 	private static byte[] DigestItem(IStreamMappedDictionary<TKey, TValue> dict, long index, CHF chf) {
-		var descriptor = dict.ObjectContainer.GetItemDescriptor(index);
+		var descriptor = dict.ObjectStream.GetItemDescriptor(index);
 		if (descriptor.Traits.HasFlag(ClusteredStreamTraits.Reaped))
 			return Hashers.ZeroHash(chf);
 

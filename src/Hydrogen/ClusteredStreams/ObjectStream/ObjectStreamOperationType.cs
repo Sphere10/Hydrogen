@@ -8,7 +8,7 @@
 
 namespace Hydrogen.ObjectSpaces;
 
-public enum ObjectContainerOperationType {
+public enum ObjectStreamOperationType {
 	Read,
 	Add,
 	Insert,

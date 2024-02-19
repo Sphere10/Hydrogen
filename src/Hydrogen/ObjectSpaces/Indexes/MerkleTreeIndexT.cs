@@ -12,11 +12,11 @@ namespace Hydrogen.ObjectSpaces;
 
 /// <inheritdoc />
 internal class MerkleTreeIndex<TItem> : MerkleTreeIndex {
-	public MerkleTreeIndex(ObjectContainer<TItem> objectContainer, Func<TItem, long, byte[]> digestor, CHF hashAlgorithm, long reservedStreamIndex)
+	public MerkleTreeIndex(ObjectStream<TItem> objectStream, Func<TItem, long, byte[]> digestor, CHF hashAlgorithm, long reservedStreamIndex)
 		: base(
-			objectContainer,
+			objectStream,
 			reservedStreamIndex,
-			index => digestor(objectContainer.LoadItem(index), index),
+			index => digestor(objectStream.LoadItem(index), index),
 			hashAlgorithm
 		) {
 	}

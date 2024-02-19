@@ -28,7 +28,7 @@ using System.Windows.Forms;
 namespace Hydrogen.Windows.Forms;
 
 /// <summary>
-/// This class oversees the checkin/unchecking when mixing RadioButton objects with RadioGroupBox objects within the same container.
+/// This class oversees the checkin/unchecking when mixing RadioButton objects with RadioGroupBox objects within the same objectStream.
 /// </summary>
 public class RadioButtonPanel : Panel {
 	/// <summary>

@@ -26,7 +26,7 @@ public class VeryLargeSQLBuilder : SQLBuilderDecorator, IDisposable {
 		SystemLog.Info($"VeryLargeScriptBuilder created - scriptPageSize = {scriptPageSize}");
 		_pageSize = scriptPageSize;
 		_generatedContainers = new List<LargeCollection<SQLStatement>>();
-		// We clear again, which forces the base implementation to recreate the container
+		// We clear again, which forces the base implementation to recreate the objectStream
 		base.Clear();
 	}
 
@@ -36,7 +36,7 @@ public class VeryLargeSQLBuilder : SQLBuilderDecorator, IDisposable {
 			1,
 			statement => sizeof(SQLStatementType) + statement.SQL.Length * sizeof(char)
 		);
-		//container.PageSwapped += (statements, oldPage, newPage) =>
+		//objectStream.PageSwapped += (statements, oldPage, newPage) =>
 		//    SystemLog.Error("Page Swap: {0} - {1} / {2}", oldPage.PageNumber, newPage.PageNumber, statements.PageCount);
 		_generatedContainers.Add(container);
 		return container;

@@ -312,9 +312,9 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 					// Manually test the merkle root
 					var itemSerializer = new TestObjectSerializer();
 					
-					var itemHashes = Enumerable.Range(0, (int)clusteredDictionary.ObjectContainer.Count).Select(i => {
+					var itemHashes = Enumerable.Range(0, (int)clusteredDictionary.ObjectStream.Count).Select(i => {
 
-						if (clusteredDictionary.ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+						if (clusteredDictionary.ObjectStream.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
 							return Hashers.ZeroHash(chf);
 
 						var keyHash = Hashers.HashWithNullSupport(chf, clusteredDictionary.ReadKeyBytes(i));

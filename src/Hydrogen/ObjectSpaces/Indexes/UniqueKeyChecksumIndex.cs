@@ -14,7 +14,7 @@ using System.Linq;
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// An index that only stores the checksum of the key rather than the key itself and relies on fetching the key from the container when needed for comparisons.
+/// An index that only stores the checksum of the key rather than the key itself and relies on fetching the key from the objectStream when needed for comparisons.
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 /// <typeparam name="TKey"></typeparam>
@@ -24,11 +24,11 @@ internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUn
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly KeyChecksumDictionary _checksummedDictionary;
 
-	public UniqueKeyChecksumIndex(ObjectContainer<TItem> container, long reservedStreamIndex, Func<TItem, TKey> projection, IItemChecksummer<TKey> keyChecksummer, Func<long, TKey> keyFetcher, IEqualityComparer<TKey> keyComparer)
+	public UniqueKeyChecksumIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IItemChecksummer<TKey> keyChecksummer, Func<long, TKey> keyFetcher, IEqualityComparer<TKey> keyComparer)
 		: base(
-			container,
+			objectStream,
 			x => keyChecksummer.CalculateChecksum(projection.Invoke(x)),
-			new NonUniqueKeyStore<int>(container, reservedStreamIndex, EqualityComparer<int>.Default, PrimitiveSerializer<int>.Instance)
+			new NonUniqueKeyStore<int>(objectStream, reservedStreamIndex, EqualityComparer<int>.Default, PrimitiveSerializer<int>.Instance)
 		) {
 		_keyChecksummer = keyChecksummer;
 		_keyFetcher = keyFetcher;

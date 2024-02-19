@@ -53,7 +53,7 @@ public partial class ApplicationBar : ApplicationControl {
 		item.Button.ButtonStateChanged += new EventHandler(Button_ButtonStateChanged);
 		item.Button.BottomBorderColor = Color.Transparent;
 
-		// add to the button container
+		// add to the button objectStream
 		_items.Add(item);
 		_splitContainer.Panel2.Controls.Add(item.Button);
 		_buttonsToShow++;

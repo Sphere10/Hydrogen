@@ -13,7 +13,7 @@ using System.Collections.Generic;
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// Stores meta-data about an <see cref="ObjectContainer"/>'s items as a Stack within in a reserved stream inside the <see cref="ObjectContainer"/>.
+/// Stores meta-data about an <see cref="ObjectStream"/>'s items as a Stack within in a reserved stream inside the <see cref="ObjectStream"/>.
 /// This is used within a <see cref="RecyclableIndexIndex" /> to store the recyclable indicies of deleted items and has no memory overhead. 
 /// </summary>
 /// <remarks>The metadata datum must be constant-sized for all items to ensure fast addressing.</remarks>

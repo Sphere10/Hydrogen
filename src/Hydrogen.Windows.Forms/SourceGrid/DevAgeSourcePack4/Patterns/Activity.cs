@@ -381,7 +381,7 @@ public abstract class ActivityBase : IActivity {
 
 
 /// <summary>
-/// An activity used as a container for other activities using a syncronized code.
+/// An activity used as a objectStream for other activities using a syncronized code.
 /// </summary>
 public class Activity : ActivityBase {
 	protected override void OnWork() {
@@ -391,7 +391,7 @@ public class Activity : ActivityBase {
 
 
 /// <summary>
-/// An activity used as a container for other activities using an asynchronous code.
+/// An activity used as a objectStream for other activities using an asynchronous code.
 /// Override the OnAsyncWork method for custom asynchronous work.
 /// </summary>
 public class AsynchronousActivity : AsyncActivityBase {

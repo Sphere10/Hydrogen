@@ -10,22 +10,22 @@
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// A container that stores objects in a stream using a <see cref="ClusteredStreams"/>. This can also maintain
+/// A objectStream that stores objects in a stream using a <see cref="ClusteredStreams"/>. This can also maintain
 /// object metadata such as indexes, timestamps, merkle-trees, etc. This is like a "table" within a "database".
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class ObjectContainer<T> : ObjectContainer {
-	public ObjectContainer(ClusteredStreams streams, IItemSerializer<T> serializer = null, bool preAllocateOptimization = true) 
+public class ObjectStream<T> : ObjectStream {
+	public ObjectStream(ClusteredStreams streams, IItemSerializer<T> serializer = null, bool preAllocateOptimization = true) 
 		: base(typeof(T), streams, (serializer ?? ItemSerializer<T>.Default), preAllocateOptimization) {
 	}
 
 	public new IItemSerializer<T> ItemSerializer => (IItemSerializer<T>) base.ItemSerializer;
 	
-	public void SaveItem(long index, T item, ObjectContainerOperationType operationType) => SaveItem(index, item as object, operationType);
+	public void SaveItem(long index, T item, ObjectStreamOperationType operationType) => SaveItem(index, item as object, operationType);
 
 	public new T LoadItem(long index) => (T)base.LoadItem(index);
 
-	internal ClusteredStream SaveItemAndReturnStream(long index, T item, ObjectContainerOperationType operationType) 
+	internal ClusteredStream SaveItemAndReturnStream(long index, T item, ObjectStreamOperationType operationType) 
 		=> SaveItemAndReturnStream(index, item as object, operationType);
 
 	internal new ClusteredStream LoadItemAndReturnStream(long index, out T item)  {

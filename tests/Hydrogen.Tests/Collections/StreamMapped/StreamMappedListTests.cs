@@ -32,7 +32,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	[Test]
 	public void HasReservedRecord([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var scope = CreateList(policy, useChecksumIndex, out var list);
-		Assert.That(list.ObjectContainer.Streams.Count, Is.EqualTo(useChecksumIndex ? 1 : 0));
+		Assert.That(list.ObjectStream.Streams.Count, Is.EqualTo(useChecksumIndex ? 1 : 0));
 	}
 
 	[Test]

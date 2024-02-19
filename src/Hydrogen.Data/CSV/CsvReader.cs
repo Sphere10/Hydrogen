@@ -2155,7 +2155,7 @@ public partial class CsvReader
 		if (!_isDisposed) {
 			try {
 				// Dispose-time code should call Dispose() on all owned objects that implement the IDisposable interface. 
-				// "owned" means objects whose lifetime is solely controlled by the container. 
+				// "owned" means objects whose lifetime is solely controlled by the objectStream. 
 				// In cases where ownership is not as straightforward, techniques such as HandleCollector can be used.  
 				// Large managed object fields should be nulled out.
 

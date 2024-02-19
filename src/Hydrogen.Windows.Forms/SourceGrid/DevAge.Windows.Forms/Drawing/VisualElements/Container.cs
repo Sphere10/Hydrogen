@@ -12,7 +12,7 @@ using System.Collections.Generic;
 namespace DevAge.Drawing.VisualElements;
 
 /// <summary>
-/// A container for other elements
+/// A objectStream for other elements
 /// </summary>
 [Serializable]
 public class Container : ContainerBase {

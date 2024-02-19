@@ -9,8 +9,8 @@
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// Stores meta-data about an <see cref="ObjectContainer"/>'s items as a list within in a reserved stream inside the <see cref="ObjectContainer"/>.
-/// The index of the metadata datum correlates to that of the item in the container (i.e. metadata at index N belongs to item N)
+/// Stores meta-data about an <see cref="ObjectStream"/>'s items as a list within in a reserved stream inside the <see cref="ObjectStream"/>.
+/// The index of the metadata datum correlates to that of the item in the objectStream (i.e. metadata at index N belongs to item N)
 /// Can be used to store anything about the items  (i.e. checksums, keys, etc).
 /// </summary>
 /// <remarks>The metadata datum must be constant-sized for all items to ensure fast addressing.</remarks>

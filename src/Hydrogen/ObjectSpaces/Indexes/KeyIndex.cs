@@ -14,11 +14,11 @@ namespace Hydrogen.ObjectSpaces;
 
 internal class KeyIndex<TItem, TKey> : IndexBase<TItem, TKey, NonUniqueKeyStore<TKey>> {
 
-	public KeyIndex(ObjectContainer<TItem> container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
+	public KeyIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
 		: base(
-			container,
+			objectStream,
 			projection,
-			new NonUniqueKeyStore<TKey>(container, reservedStreamIndex, keyComparer, keySerializer)
+			new NonUniqueKeyStore<TKey>(objectStream, reservedStreamIndex, keyComparer, keySerializer)
 		) {
 	}
 

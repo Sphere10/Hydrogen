@@ -11,7 +11,7 @@ using System;
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// Used to maintain a merkle-tree of an <see cref="ObjectContainer"/>'s items. The merkle-tree is stored within a reserved stream within the container.
+/// Used to maintain a merkle-tree of an <see cref="ObjectStream"/>'s items. The merkle-tree is stored within a reserved stream within the objectStream.
 /// </summary>
 /// <remarks>When fetching item bytes for hashing, a key-value-pair with same key but empty/null value will result in the same digest.</remarks>
 internal class MerkleTreeIndex : IndexBase<byte[], MerkleTreeStore> {
@@ -19,11 +19,11 @@ internal class MerkleTreeIndex : IndexBase<byte[], MerkleTreeStore> {
 	private readonly Func<long, byte[]> _itemDigestor;
 
 	public MerkleTreeIndex(
-		ObjectContainer objectContainer,
+		ObjectStream objectStream,
 		long reservedStreamIndex,
 		Func<long, byte[]> itemDigestor,
 		CHF chf
-	) : base(objectContainer, new MerkleTreeStore(objectContainer.Streams, reservedStreamIndex, chf)) {
+	) : base(objectStream, new MerkleTreeStore(objectStream.Streams, reservedStreamIndex, chf)) {
 		_itemDigestor = itemDigestor;
 	}
 

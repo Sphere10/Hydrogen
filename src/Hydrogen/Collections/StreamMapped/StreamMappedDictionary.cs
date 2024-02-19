@@ -16,28 +16,28 @@ using Hydrogen.ObjectSpaces;
 namespace Hydrogen;
 
 /// <summary>
-/// A dictionary whose contents are mapped onto a stream using an <see cref="ObjectContainer"/> which in turn uses a <see cref="ClusteredStreams"/>.
+/// A dictionary whose contents are mapped onto a stream using an <see cref="ObjectStream"/> which in turn uses a <see cref="ClusteredStreams"/>.
 /// This implementation persists <see cref="KeyValuePair{TKey, TValue}"/>s to a stream and uses an index on the <see cref="TKey"/> checksum to find keys
-/// in the container. This is suitable for general purpose dictionaries whose key's of arbitrary length. For keys that are constant length, a more
+/// in the objectStream. This is suitable for general purpose dictionaries whose key's of arbitrary length. For keys that are constant length, a more
 /// optimized version is <see cref="StreamMappedDictionaryCLK{TKey,TValue}"/>. 
 /// </summary>
 /// <typeparam name="TKey">The type of key stored in the dictionary</typeparam>
 /// <typeparam name="TValue">The type of value stored in the dictionary</typeparam>
-/// <remarks>When deleting an item the underlying slot in the <see cref="ObjectContainer"/> is marked as reaped and that index re-used in subsequent <see cref="Add(TKey,TValue)"/> operations.</remarks>
+/// <remarks>When deleting an item the underlying slot in the <see cref="ObjectStream"/> is marked as reaped and that index re-used in subsequent <see cref="Add(TKey,TValue)"/> operations.</remarks>
 public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>, IStreamMappedDictionary<TKey, TValue> {
-	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
-	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
+	public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
 	private readonly IEqualityComparer<TValue> _valueComparer;
 	private readonly KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _keyChecksumIndex;
 	private readonly RecyclableIndexIndex _freeIndexStore;
 
-	internal StreamMappedDictionary(ObjectContainer objectContainer, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
-		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
-		Guard.ArgumentIsAssignable<ObjectContainer<KeyValuePair<TKey, TValue>>>(objectContainer, nameof(objectContainer));
-		ObjectContainer = (ObjectContainer<KeyValuePair<TKey, TValue>>)objectContainer;
-		_freeIndexStore = objectContainer.Streams.FindAttachment<RecyclableIndexIndex>();
-		_keyChecksumIndex = objectContainer.Streams.FindAttachment<KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
+	internal StreamMappedDictionary(ObjectStream objectStream, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
+		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
+		Guard.ArgumentIsAssignable<ObjectStream<KeyValuePair<TKey, TValue>>>(objectStream, nameof(objectStream));
+		ObjectStream = (ObjectStream<KeyValuePair<TKey, TValue>>)objectStream;
+		_freeIndexStore = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
+		_keyChecksumIndex = objectStream.Streams.FindAttachment<KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
 		if (autoLoad && RequiresLoad) 
@@ -45,18 +45,18 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	}
 
 
-	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
+	ObjectStream IStreamMappedCollection.ObjectStream => ObjectStream;
 
-	public ObjectContainer<KeyValuePair<TKey, TValue>> ObjectContainer { get; }
+	public ObjectStream<KeyValuePair<TKey, TValue>> ObjectStream { get; }
 
 	protected IEnumerable<KeyValuePair<TKey, TValue>> KeyValuePairs => GetEnumerator().AsEnumerable();
 
-	public bool RequiresLoad => ObjectContainer.RequiresLoad;
+	public bool RequiresLoad => ObjectStream.RequiresLoad;
 
 	public override long Count {
 		get {
 			CheckLoaded();
-			return ObjectContainer.Count - _freeIndexStore.Stack.Count;
+			return ObjectStream.Count - _freeIndexStore.Stack.Count;
 		}
 	}
 
@@ -64,60 +64,60 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public bool OwnsContainer { get; set; }
 
-	public void Load() => ObjectContainer.Load();
+	public void Load() => ObjectStream.Load();
 
-	public Task LoadAsync() => ObjectContainer.LoadAsync();
+	public Task LoadAsync() => ObjectStream.LoadAsync();
 
 	public virtual void Dispose() {
 		if (OwnsContainer)
-			ObjectContainer.Dispose();
+			ObjectStream.Dispose();
 	}
 
 	public TKey ReadKey(long index) {
-		using (ObjectContainer.EnterAccessScope()) {
-			var traits = ObjectContainer.GetItemDescriptor(index).Traits;
+		using (ObjectStream.EnterAccessScope()) {
+			var traits = ObjectStream.GetItemDescriptor(index).Traits;
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			using var stream = ObjectContainer.Streams.OpenRead(ObjectContainer.Streams.Header.ReservedStreams + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.Streams.Endianness), stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).DeserializeKey(reader);
+			using var stream = ObjectStream.Streams.OpenRead(ObjectStream.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectStream.Streams.Endianness), stream);
+			return ((KeyValuePairSerializer<TKey, TValue>)ObjectStream.ItemSerializer).DeserializeKey(reader);
 		}
 	}
 
 	public byte[] ReadKeyBytes(long index) {
-		using (ObjectContainer.EnterAccessScope()) {
-			var traits = ObjectContainer.GetItemDescriptor(index).Traits;
+		using (ObjectStream.EnterAccessScope()) {
+			var traits = ObjectStream.GetItemDescriptor(index).Traits;
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			using var stream = ObjectContainer.Streams.OpenRead(ObjectContainer.Streams.Header.ReservedStreams + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.Streams.Endianness), stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadKeyBytes(reader);
+			using var stream = ObjectStream.Streams.OpenRead(ObjectStream.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectStream.Streams.Endianness), stream);
+			return ((KeyValuePairSerializer<TKey, TValue>)ObjectStream.ItemSerializer).ReadKeyBytes(reader);
 		}
 	}
 
 	public TValue ReadValue(long index) {
-		using (ObjectContainer.EnterAccessScope()) {
-			var traits = ObjectContainer.GetItemDescriptor(index).Traits;
+		using (ObjectStream.EnterAccessScope()) {
+			var traits = ObjectStream.GetItemDescriptor(index).Traits;
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 			
-			using var stream = ObjectContainer.Streams.OpenRead(ObjectContainer.Streams.Header.ReservedStreams + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.Streams.Endianness), stream);
-			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).DeserializeValue(reader);
+			using var stream = ObjectStream.Streams.OpenRead(ObjectStream.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectStream.Streams.Endianness), stream);
+			return ((KeyValuePairSerializer<TKey, TValue>)ObjectStream.ItemSerializer).DeserializeValue(reader);
 		}
 	}
 
 	public byte[] ReadValueBytes(long index) {
-		using (ObjectContainer.EnterAccessScope()) {
-			var traits = ObjectContainer.GetItemDescriptor(index).Traits;
+		using (ObjectStream.EnterAccessScope()) {
+			var traits = ObjectStream.GetItemDescriptor(index).Traits;
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			using var stream = ObjectContainer.Streams.OpenRead(ObjectContainer.Streams.Header.ReservedStreams + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.Streams.Endianness), stream);
-			var bytes = ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadValueBytes(reader);
+			using var stream = ObjectStream.Streams.OpenRead(ObjectStream.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectStream.Streams.Endianness), stream);
+			var bytes = ((KeyValuePairSerializer<TKey, TValue>)ObjectStream.ItemSerializer).ReadValueBytes(reader);
 			
 			// The value is null, so it's bytes are null (null is serialized as a single byte 0)
 			if (bytes.Length == 1 && bytes[0] == 0)
@@ -130,7 +130,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override void Add(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			if (TryFindKey(key, out _))
 				throw new KeyNotFoundException($"An item with key '{key}' was already added");
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
@@ -139,7 +139,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	}
 
 	public override void Update(TKey key, TValue value) {
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			if (!TryFindKey(key, out var index))
 				throw new KeyNotFoundException($"The key '{key}' was not found");
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
@@ -150,7 +150,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	protected override void AddOrUpdate(TKey key, TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			var kvp = new KeyValuePair<TKey, TValue>(key, value);
 			if (TryFindKey(key, out var index)) {
 				UpdateInternal(index, kvp);
@@ -163,7 +163,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool Remove(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			if (TryFindKey(key, out var index)) {
 				RemoveAt(index);
 				return true;
@@ -175,15 +175,15 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool ContainsKey(TKey key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			return _keyChecksumIndex.Lookup[key].Any();
 		}
 	}
 
 	public override void Clear() {
 		// Load not required
-		using (ObjectContainer.EnterAccessScope()) {
-			ObjectContainer.Clear();
+		using (ObjectStream.EnterAccessScope()) {
+			ObjectStream.Clear();
 			UpdateVersion();
 		}
 	}
@@ -191,7 +191,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool TryGetValue(TKey key, out TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			if (TryFindValue(key, out _, out value)) {
 				return true;
 			}
@@ -202,7 +202,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public bool TryFindKey(TKey key, out long index) {
 		Debug.Assert(key != null);
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			var matches = _keyChecksumIndex.Lookup[key].ToArray();
 			if (matches.Length == 0) {
 				index = -1;
@@ -216,7 +216,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public bool TryFindValue(TKey key, out long index, out TValue value) {
 		Debug.Assert(key != null);
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			var matches = _keyChecksumIndex.Lookup[key].ToArray();
 			if (matches.Length == 0) {
 				index = -1;
@@ -233,7 +233,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override void Add(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			if (ContainsKey(item.Key))
 				throw new KeyNotFoundException($"An item with key '{item.Key}' was already added");
 			AddInternal(item);
@@ -243,7 +243,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool Remove(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			if (TryFindValue(item.Key, out var index, out var value)) {
 				if (_valueComparer.Equals(item.Value, value)) {
 					RemoveAt(index);
@@ -257,8 +257,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public void RemoveAt(long index) {
 		CheckLoaded();
 		// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
-		using (ObjectContainer.EnterAccessScope()) {
-			ObjectContainer.ReapItem(index);
+		using (ObjectStream.EnterAccessScope()) {
+			ObjectStream.ReapItem(index);
 			UpdateVersion();
 		}
 	}
@@ -266,7 +266,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override bool Contains(KeyValuePair<TKey, TValue> item) {
 		Guard.ArgumentNotNull(item, nameof(item));
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			if (!TryFindValue(item.Key, out _, out var value))
 				return false;
 			return _valueComparer.Equals(value, item.Value);
@@ -275,7 +275,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public override void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) {
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope())
+		using (ObjectStream.EnterAccessScope())
 			KeyValuePairs.ToArray().CopyTo(array, arrayIndex);
 	}
 
@@ -284,11 +284,11 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		// deletes item right to left
 		// possible optimization: a connected neighbourhood of unused records can be deleted 
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			var sortedList = new SortedList<long>(SortDirection.Descending);
 			_freeIndexStore.Stack.ForEach(sortedList.Add);
 			foreach (var freeIndex in sortedList) {
-				ObjectContainer.RemoveItem(freeIndex);
+				ObjectStream.RemoveItem(freeIndex);
 			}
 			_freeIndexStore.Stack.Clear();
 			UpdateVersion();
@@ -297,13 +297,13 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	public override IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() {
 		CheckLoaded();
-		using (ObjectContainer.EnterAccessScope()) {
+		using (ObjectStream.EnterAccessScope()) {
 			var version = Version;
-			for (var i = 0; i < ObjectContainer.Count; i++) {
+			for (var i = 0; i < ObjectStream.Count; i++) {
 				CheckVersion(version);
-				if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+				if (ObjectStream.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
 					continue;
-				var kvp = ObjectContainer.LoadItem(i);
+				var kvp = ObjectStream.LoadItem(i);
 				yield return kvp;
 			}
 		}
@@ -312,9 +312,9 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	protected override IEnumerator<TKey> GetKeysEnumerator() {
 		CheckLoaded();
 		var version = Version;
-		for (var i = 0; i < ObjectContainer.Count; i++) {
+		for (var i = 0; i < ObjectStream.Count; i++) {
 			CheckVersion(version);
-			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+			if (ObjectStream.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
 				continue;
 			var key = ReadKey(i);
 			yield return key;
@@ -324,9 +324,9 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	protected override IEnumerator<TValue> GetValuesEnumerator() {
 		CheckLoaded();
 		var version = Version;
-		for (var i = 0; i < ObjectContainer.Count; i++) {
+		for (var i = 0; i < ObjectStream.Count; i++) {
 			CheckVersion(version);
-			if (ObjectContainer.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
+			if (ObjectStream.GetItemDescriptor(i).Traits.HasFlag(ClusteredStreamTraits.Reaped))
 				continue;
 			var key = ReadValue(i);
 			yield return key;
@@ -337,17 +337,17 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		long index;
 		if (_freeIndexStore.Stack.Any()) {
 			index = _freeIndexStore.Stack.Pop();
-			ObjectContainer.SaveItem(index, item, ObjectContainerOperationType.Update);
+			ObjectStream.SaveItem(index, item, ObjectStreamOperationType.Update);
 		} else {
 			index = Count;
-			ObjectContainer.SaveItem(index, item, ObjectContainerOperationType.Add);
+			ObjectStream.SaveItem(index, item, ObjectStreamOperationType.Add);
 		}
 		UpdateVersion();
 	}
 
 	private void UpdateInternal(long index, KeyValuePair<TKey, TValue> item) {
 		// Updating value only, records (and checksum) don't change  when updating
-		ObjectContainer.SaveItem(index, item, ObjectContainerOperationType.Update);
+		ObjectStream.SaveItem(index, item, ObjectStreamOperationType.Update);
 		UpdateVersion();
 	}
 

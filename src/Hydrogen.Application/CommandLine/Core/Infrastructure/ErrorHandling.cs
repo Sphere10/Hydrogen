@@ -361,7 +361,7 @@ namespace RailwaySharp.ErrorHandling {
 		}
 
 		/// <summary>
-		/// Lifts a function into a Result container and applies it on the given result.
+		/// Lifts a function into a Result objectStream and applies it on the given result.
 		/// </summary>
 #if ERRH_ENABLE_INLINE_METHODS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -26,12 +26,12 @@ public class ObjectSpaceDefinition {
 
 		// Verify all containers
 		if (Containers != null) {
-			// At least 1 container
+			// At least 1 objectStream
 			if (Containers.Length == 0) {
-				result.AddError("At least 1 container must be defined.");
+				result.AddError("At least 1 objectStream must be defined.");
 			}
 
-			// Verify container
+			// Verify objectStream
 			foreach (var (container, ix) in Containers.WithIndex()) {
 				if (container.Indexes != null && container.Indexes.Length > 0) {
 					// Ensure has 1 free-index store
@@ -53,7 +53,7 @@ public class ObjectSpaceDefinition {
 				.Where(x => x.Count() > 1)
 				.ForEach(x => result.AddError($"Container type '{x.Key}' is defined more than once."));
 
-			// Each container index correctly maps to an object property
+			// Each objectStream index correctly maps to an object property
 
 		} else {
 			result.AddError("No containers defined.");

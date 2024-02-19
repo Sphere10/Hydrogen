@@ -173,7 +173,7 @@ public class PopupDropDown : ToolStripDropDown {
 	}
 
 	protected void hostedControl_SizeChanged(object sender, EventArgs e) {
-		// Only update size of this container when it is not locked.
+		// Only update size of this objectStream when it is not locked.
 		if (!m_lockedHostedControlSize)
 			ResizeFromContent(-1);
 	}

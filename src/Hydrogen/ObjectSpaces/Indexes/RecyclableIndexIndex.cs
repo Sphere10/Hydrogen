@@ -11,23 +11,23 @@ using System;
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// Tracks and maintains a list of of spare indices in an <see cref="ObjectContainer"/> so they can be re-used in
+/// Tracks and maintains a list of of spare indices in an <see cref="ObjectStream"/> so they can be re-used in
 /// subsequent operations. This is needed by a <see cref="StreamMappedRecyclableList{TItem}"/>
 /// </summary>
 internal class RecyclableIndexIndex : IndexBase<long, StackBasedMetaDataStore<long>> {
 
-	public RecyclableIndexIndex(ObjectContainer objectContainer, long reservedStreamIndex) 
-		: base(objectContainer, new StackBasedMetaDataStore<long>(objectContainer.Streams, reservedStreamIndex, PrimitiveSerializer<long>.Instance)) {
+	public RecyclableIndexIndex(ObjectStream objectStream, long reservedStreamIndex) 
+		: base(objectStream, new StackBasedMetaDataStore<long>(objectStream.Streams, reservedStreamIndex, PrimitiveSerializer<long>.Instance)) {
 	}
 
 	public IStack<long> Stack => KeyStore.Stack;
 
 	protected override void OnInserted(object item, long index) {
-		throw new InvalidOperationException($"A {typeof(RecyclableIndexIndex).ToStringCS()} cannot be used on a container which inserts items. Items can only be reaped when using this index");
+		throw new InvalidOperationException($"A {typeof(RecyclableIndexIndex).ToStringCS()} cannot be used on a objectStream which inserts items. Items can only be reaped when using this index");
 	}
 
 	protected override void OnRemoved(long index) {
-		throw new InvalidOperationException($"A {typeof(RecyclableIndexIndex).ToStringCS()} cannot be used on a container which removes items. Items can only be reaped when using this index");
+		throw new InvalidOperationException($"A {typeof(RecyclableIndexIndex).ToStringCS()} cannot be used on a objectStream which removes items. Items can only be reaped when using this index");
 	}
 
 	protected override void OnReaped(long index) {

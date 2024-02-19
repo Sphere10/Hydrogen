@@ -149,7 +149,7 @@ internal static class PagedBufferImplementationHelper {
 
 		var totalWriteCount = writeSpan.Length;
 
-		// source.SetCount(source.GetCount() + writeSpan.Length); // When updating a page, the owner container should be aware of acquiring the count
+		// source.SetCount(source.GetCount() + writeSpan.Length); // When updating a page, the owner objectStream should be aware of acquiring the count
 
 		if (page.Count == 0 && totalWriteCount == 0) // Was unable to write the first element in an empty page, item too large
 			throw new InvalidOperationException("Span cannot be fitted onto a page of this collection");
@@ -178,7 +178,7 @@ internal static class PagedBufferImplementationHelper {
 		page.Size += newBytesCount;
 		page.Dirty = true;
 
-		//source.SetCount(source.GetCount() + newBytesCount);  // When updating a page, the owner container should be aware of acquiring the count
+		//source.SetCount(source.GetCount() + newBytesCount);  // When updating a page, the owner objectStream should be aware of acquiring the count
 	}
 
 }

@@ -12,7 +12,7 @@ namespace Hydrogen.ObjectSpaces;
 /// Base implementation for memory-caching an <see cref="IMetaDataStore{TData}"/>.
 /// </summary>
 /// <remarks>This derives from <see cref="MetaDataStoreDecorator{TData,TInner}"/> as it always wraps an internal
-/// <see cref="IMetaDataStore{TData}"/> which persists the data in the <see cref="ObjectContainer"/>.  </remarks>
+/// <see cref="IMetaDataStore{TData}"/> which persists the data in the <see cref="ObjectStream"/>.  </remarks>
 /// <typeparam name="TData">The type of the meta-data being stored in memory</typeparam>
 internal abstract class MemoryCachedMetaDataStoreBase<TData> : MetaDataStoreDecorator<TData> {
 

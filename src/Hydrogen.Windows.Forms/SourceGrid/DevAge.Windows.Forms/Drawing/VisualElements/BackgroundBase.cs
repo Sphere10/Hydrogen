@@ -19,7 +19,7 @@ public interface IBackground : IVisualElement {
 
 
 /// <summary>
-/// The background visualelement can be used as a background for a container element.
+/// The background visualelement can be used as a background for a objectStream element.
 /// Override the OnDraw, GetBackgroundContentRectangle and GetBackgroundExtent to draw a custom background.
 /// </summary>
 [Serializable]

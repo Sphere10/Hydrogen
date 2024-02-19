@@ -13,8 +13,8 @@ namespace Hydrogen.ObjectSpaces;
 
 internal class UniqueKeyIndex<TItem, TKey> : IndexBase<TItem, TKey, UniqueKeyStore<TKey>> {
 
-	public UniqueKeyIndex(ObjectContainer<TItem> container, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
-		: base( container, projection, new UniqueKeyStore<TKey>(container.Streams, reservedStreamIndex, keyComparer, keySerializer)) {
+	public UniqueKeyIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
+		: base( objectStream, projection, new UniqueKeyStore<TKey>(objectStream.Streams, reservedStreamIndex, keyComparer, keySerializer)) {
 	}
 
 	public IReadOnlyDictionary<TKey, long> Dictionary => KeyStore.Dictionary;

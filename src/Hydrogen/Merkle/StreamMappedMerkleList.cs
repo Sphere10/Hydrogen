@@ -57,14 +57,14 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 
 	internal StreamMappedMerkleList(IStreamMappedList<TItem> streamMappedList, bool autoLoad = false) : base(streamMappedList) {
 		Guard.ArgumentNotNull(streamMappedList, nameof(streamMappedList));
-		_merkleTreeIndex = streamMappedList.ObjectContainer.Streams.FindAttachment<MerkleTreeIndex>();
+		_merkleTreeIndex = streamMappedList.ObjectStream.Streams.FindAttachment<MerkleTreeIndex>();
 		if (autoLoad && RequiresLoad) 
 			Load();
 	}
 
-	public ObjectContainer<TItem> ObjectContainer => InternalCollection.ObjectContainer;
+	public ObjectStream<TItem> ObjectStream => InternalCollection.ObjectStream;
 
-	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
+	ObjectStream IStreamMappedCollection.ObjectStream => ObjectStream;
 	
 	public IItemSerializer<TItem> ItemSerializer => InternalCollection.ItemSerializer;
 	
@@ -109,18 +109,18 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 		);
 
 		var merkleTreeIndex = new MerkleTreeIndex(
-			streamMappedList.ObjectContainer,
+			streamMappedList.ObjectStream,
 			merkleTreeStreamIndex,
-			x => DigestItem(streamMappedList.ObjectContainer, x, hashAlgorithm),
+			x => DigestItem(streamMappedList.ObjectStream, x, hashAlgorithm),
 			hashAlgorithm
 		);
-		streamMappedList.ObjectContainer.Streams.RegisterAttachment(merkleTreeIndex);
+		streamMappedList.ObjectStream.Streams.RegisterAttachment(merkleTreeIndex);
 
 		return streamMappedList;
 	}
 
-	private static byte[] DigestItem(ObjectContainer container, long index, CHF chf) {
-		var bytes = container.GetItemBytes(index);
+	private static byte[] DigestItem(ObjectStream objectStream, long index, CHF chf) {
+		var bytes = objectStream.GetItemBytes(index);
 		return Hashers.HashWithNullSupport(chf, bytes);
 	}
 

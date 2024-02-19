@@ -46,9 +46,9 @@ public interface IContainer : IVisualElement {
 
 
 /// <summary>
-/// The base abstract class for all container VisualElements. 
-/// Override the GetElements() to get a collection of elements to draw inside the container.
-/// Use the Border, Padding and Background properties to customize the container
+/// The base abstract class for all objectStream VisualElements. 
+/// Override the GetElements() to get a collection of elements to draw inside the objectStream.
+/// Use the Border, Padding and Background properties to customize the objectStream
 /// </summary>
 [Serializable]
 public abstract class ContainerBase : VisualElementBase, IContainer {

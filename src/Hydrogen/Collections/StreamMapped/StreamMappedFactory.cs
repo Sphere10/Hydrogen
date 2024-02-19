@@ -43,7 +43,7 @@ public static class StreamMappedFactory {
 			checksumIndexStreamIndex,
 			autoLoad
 		);
-		list.ObjectContainer.OwnsStreamContainer = true;
+		list.ObjectStream.OwnsStreamContainer = true;
 		return list;
 	}
 
@@ -106,7 +106,7 @@ public static class StreamMappedFactory {
 			checksumIndexStreamIndex,
 			autoLoad
 		);
-		list.ObjectContainer.OwnsStreamContainer = true;
+		list.ObjectStream.OwnsStreamContainer = true;
 		return list;
 	}
 
@@ -261,7 +261,7 @@ public static class StreamMappedFactory {
 			freeIndexStoreStreamIndex,
 			keyChecksumIndexStreamIndex
 		);
-		dict.ObjectContainer.OwnsStreamContainer = true;
+		dict.ObjectStream.OwnsStreamContainer = true;
 		return dict;
 	}
 
@@ -336,7 +336,7 @@ public static class StreamMappedFactory {
 			keyChecksumIndexStreamIndex
 		);
 
-		dict.ObjectContainer.OwnsStreamContainer = true;
+		dict.ObjectStream.OwnsStreamContainer = true;
 		
 		return dict;
 	}
@@ -417,7 +417,7 @@ public static class StreamMappedFactory {
 
 	#region Object Container
 
-	internal static ObjectContainer<KeyValuePair<TKey, TValue>> CreateKvpObjectContainer<TKey, TValue>(
+	internal static ObjectStream<KeyValuePair<TKey, TValue>> CreateKvpObjectContainer<TKey, TValue>(
 		ClusteredStreams streams,
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
@@ -431,8 +431,8 @@ public static class StreamMappedFactory {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.ArgumentNotNull(keyChecksummer, nameof(keyChecksummer));
 
-		// Create object container
-		var container = new ObjectContainer<KeyValuePair<TKey, TValue>>(
+		// Create object objectStream
+		var container = new ObjectStream<KeyValuePair<TKey, TValue>>(
 			streams,
 			new KeyValuePairSerializer<TKey, TValue>(
 				keySerializer ?? ItemSerializer<TKey>.Default,
@@ -468,7 +468,7 @@ public static class StreamMappedFactory {
 
 	}
 
-	internal static ObjectContainer<TValue> CreateClkContainer<TKey, TValue>(
+	internal static ObjectStream<TValue> CreateClkContainer<TKey, TValue>(
 		ClusteredStreams streams,
 		IItemSerializer<TKey> constantLengthKeySerializer,
 		IItemSerializer<TValue> valueSerializer,
@@ -482,7 +482,7 @@ public static class StreamMappedFactory {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
 
-		var container = new ObjectContainer<TValue>(
+		var container = new ObjectStream<TValue>(
 			streams, 
 			valueSerializer,
 			streams.Policy.HasFlag(ClusteredStreamsPolicy.FastAllocate)
@@ -506,13 +506,13 @@ public static class StreamMappedFactory {
 		return container;
 	}
 
-	private static ObjectContainer<TItem> CreateListContainer<TItem>(
+	private static ObjectStream<TItem> CreateListContainer<TItem>(
 		ClusteredStreams streams,
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
 		long checksumIndexStreamIndex
 	) {
-		var container = new ObjectContainer<TItem>(
+		var container = new ObjectStream<TItem>(
 			streams, 
 			itemSerializer, 
 			streams.Policy.HasFlag(ClusteredStreamsPolicy.FastAllocate)
@@ -532,14 +532,14 @@ public static class StreamMappedFactory {
 		return container;
 	}
 
-	private static ObjectContainer<TItem> BuildRecyclableListContainer<TItem>(
+	private static ObjectStream<TItem> BuildRecyclableListContainer<TItem>(
 		ClusteredStreams streams,
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
 		long freeIndexStoreStreamIndex,
 		long checksumIndexStreamIndex
 	) {
-		var container = new ObjectContainer<TItem>(
+		var container = new ObjectStream<TItem>(
 			streams, 
 			itemSerializer, 
 			streams.Policy.HasFlag(ClusteredStreamsPolicy.FastAllocate)

@@ -15,51 +15,51 @@ using Hydrogen.ObjectSpaces;
 namespace Hydrogen;
 
 /// <summary>
-/// A list whose items are persisted over a stream via an <see cref="ObjectContainer{TItem}"/>.
+/// A list whose items are persisted over a stream via an <see cref="ObjectStreamStream{T}"/>.
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedList<TItem> {
-	public event EventHandlerEx<object> Loading { add => ObjectContainer.Loading += value; remove => ObjectContainer.Loading -= value; }
-	public event EventHandlerEx<object> Loaded { add => ObjectContainer.Loaded += value; remove => ObjectContainer.Loaded -= value; }
+	public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
+	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
 	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
 
-	internal StreamMappedList(ObjectContainer<TItem> container, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
-		Guard.ArgumentNotNull(container, nameof(container));
-		ObjectContainer = container;
+	internal StreamMappedList(ObjectStream<TItem> objectStream, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
+		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
+		ObjectStream = objectStream;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
-		container.Streams.TryFindAttachment(out _checksumKeyIndex); // _checksumKeyIndex may be null in this impl
+		objectStream.Streams.TryFindAttachment(out _checksumKeyIndex); // _checksumKeyIndex may be null in this impl
 		
 		if (autoLoad && RequiresLoad)
 			Load();
 	}
 
-	public override long Count => ObjectContainer.Count;
+	public override long Count => ObjectStream.Count;
 
-	public ObjectContainer<TItem> ObjectContainer { get; }
+	public ObjectStream<TItem> ObjectStream { get; }
 
-	ObjectContainer IStreamMappedCollection.ObjectContainer => ObjectContainer;
+	ObjectStream IStreamMappedCollection.ObjectStream => ObjectStream;
 
-	public IItemSerializer<TItem> ItemSerializer => ObjectContainer.ItemSerializer;
+	public IItemSerializer<TItem> ItemSerializer => ObjectStream.ItemSerializer;
 
 	public IEqualityComparer<TItem> ItemComparer { get; }
 
 	public bool OwnsContainer { get; set; }
 
-	public virtual bool RequiresLoad => ObjectContainer.RequiresLoad;
+	public virtual bool RequiresLoad => ObjectStream.RequiresLoad;
 
-	public virtual void Load() => ObjectContainer.Load();
+	public virtual void Load() => ObjectStream.Load();
 
-	public virtual Task LoadAsync() => ObjectContainer.LoadAsync();
+	public virtual Task LoadAsync() => ObjectStream.LoadAsync();
 
 	public virtual void Dispose() {
 		if (OwnsContainer)
-			ObjectContainer.Dispose();
+			ObjectStream.Dispose();
 	}
 
 	public override TItem Read(long index) {
 		CheckIndex(index, true);
-		return ObjectContainer.LoadItem(index);
+		return ObjectStream.LoadItem(index);
 	}
 
 	public override long IndexOfL(TItem item) {
@@ -95,7 +95,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		var index = IndexOf(item);
 		if (index >= 0) {
 			UpdateVersion();
-			ObjectContainer.RemoveItem(index);
+			ObjectStream.RemoveItem(index);
 			return true;
 		}
 		return false;
@@ -104,12 +104,12 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public override void RemoveAt(long index) {
 		CheckIndex(index, false);
 		UpdateVersion();
-		ObjectContainer.RemoveItem(index);
+		ObjectStream.RemoveItem(index);
 	}
 
 	public override void Clear() {
 		UpdateVersion();
-		ObjectContainer.Clear();
+		ObjectStream.Clear();
 	}
 
 	public override void CopyTo(TItem[] array, int arrayIndex) {
@@ -132,19 +132,19 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	protected ClusteredStream EnterAddScope(TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return ObjectContainer.SaveItemAndReturnStream(ObjectContainer.Count, item, ObjectContainerOperationType.Add);
+		return ObjectStream.SaveItemAndReturnStream(ObjectStream.Count, item, ObjectStreamOperationType.Add);
 	}
 
 	protected ClusteredStream EnterInsertScope(long index, TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return ObjectContainer.SaveItemAndReturnStream(index, item, ObjectContainerOperationType.Insert);
+		return ObjectStream.SaveItemAndReturnStream(index, item, ObjectStreamOperationType.Insert);
 	}
 
 	protected ClusteredStream EnterUpdateScope(long index, TItem item) {
 		// Index checking deferred to Streams
 		UpdateVersion();
-		return ObjectContainer.SaveItemAndReturnStream(index, item, ObjectContainerOperationType.Update);
+		return ObjectStream.SaveItemAndReturnStream(index, item, ObjectStreamOperationType.Update);
 	}
 	
 }

@@ -12,15 +12,15 @@ using System.Runtime.CompilerServices;
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// Base implementation for an index on an <see cref="ObjectContainer{TItem}"/>.
+/// Base implementation for an index on an <see cref="ObjectStreamStream{T}"/>.
 /// </summary>
-/// <typeparam name="TItem">Type of item being stored in <see cref="ObjectContainer{T}"/></typeparam>
+/// <typeparam name="TItem">Type of item being stored in <see cref="ObjectStream{T}"/></typeparam>
 /// <typeparam name="TKey">Type of property in <see cref="TItem"/> that is the key</typeparam>
 public abstract class IndexBase<TData, TStore> : ContainerObserverBase, IClusteredStreamsAttachment where TStore : IMetaDataStore<TData> {
 
-	protected IndexBase(ObjectContainer container, TStore keyStore)
-		: base(container) {
-		Guard.ArgumentNotNull(container, nameof(container));
+	protected IndexBase(ObjectStream objectStream, TStore keyStore)
+		: base(objectStream) {
+		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
 		KeyStore = keyStore;
 	}
 
@@ -37,13 +37,13 @@ public abstract class IndexBase<TData, TStore> : ContainerObserverBase, ICluster
 	}
 
 	protected override void OnContainerClearing() {
-		// When the container about to be cleared, we detach the observer
+		// When the objectStream about to be cleared, we detach the observer
 		CheckAttached();
 		KeyStore.Detach();
 	}
 
 	protected override void OnContainerCleared() {
-		// After container was cleared, we reboot the index
+		// After objectStream was cleared, we reboot the index
 		CheckDetached();
 		KeyStore.Attach();
 	}

@@ -173,11 +173,11 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		Guard.Against(_loaded, "ObjectSpace already loaded.");
 		Definition.Validate().ThrowOnFailure();
 
-		// Load up stream objectStream
+		// Load ObjectStream streams
 		if (_streams.RequiresLoad)
 			_streams.Load();
 
-		// Ensure objectStream streams exist
+		// Ensure all container ObjectStream's exist
 		var containerStreams = _streams.Header.StreamCount - _streams.Header.ReservedStreams;
 		if (containerStreams == 0) {
 			// TODO: create the consensus-space merkle tree here

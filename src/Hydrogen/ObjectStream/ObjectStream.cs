@@ -28,13 +28,13 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 	private readonly Type _objectType;
 	
 
-	public ObjectStream(Type objectType, ClusteredStreams streams, IItemSerializer packedPackedSerializer, bool preAllocateOptimization) {
+	public ObjectStream(Type objectType, ClusteredStreams streams, IItemSerializer objectSerializer, bool preAllocateOptimization) {
 		Guard.ArgumentNotNull(objectType, nameof(objectType));
 		Guard.ArgumentNotNull(streams, nameof(streams));
-		Guard.ArgumentNotNull(packedPackedSerializer, nameof(packedPackedSerializer));
+		Guard.ArgumentNotNull(objectSerializer, nameof(objectSerializer));
 		Streams = streams;
 		_objectType = objectType;
-		ItemSerializer = packedPackedSerializer;
+		ItemSerializer = objectSerializer;
 		_preAllocateOptimization = preAllocateOptimization;
 		streams.Loading += _ => NotifyLoading();
 		streams.Loaded += _ => NotifyLoaded();

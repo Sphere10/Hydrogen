@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -50,6 +52,7 @@ public class StreamContainerHeader {
 	private readonly StreamMappedProperty<long> _reservedStreamsProperty;
 	private readonly StreamMappedProperty<int> _clusterSizeProperty;
 	private readonly StreamMappedProperty<long> _totalClustersProperty;
+	private readonly IList<Action> _mappedExtensionPropertyFlushes;
 
 	internal StreamContainerHeader(ConcurrentStream rootStream, Endianness endianness) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
@@ -65,6 +68,7 @@ public class StreamContainerHeader {
 		_clusterSizeProperty = new StreamMappedProperty<int>(_headerStream, ClusterSizeOffset, ClusterSizeLength, PrimitiveSerializer<int>.Instance, _reader, _writer, @lock: _lock);
 		_totalClustersProperty = new StreamMappedProperty<long>(_headerStream, TotalClustersOffset, TotalClustersLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
 		_extensionPropertiesStream = rootStream.AsBounded(TotalClustersOffset + TotalClustersLength, ByteLength - TotalClustersLength - ClusterSizeLength - ReservedStreamsLength /*- StreamDescriptorKeySizeLength*/ - StreamDescriptorsEndClusterLength - StreamCountLength - PolicyOffset - VersionLength, allowInnerResize: false, useRelativeOffset: true);
+		_mappedExtensionPropertyFlushes = new List<Action>();
 	}
 
 	public byte Version { get => _versionProperty.Value; internal set => _versionProperty.Value = value; }
@@ -96,7 +100,9 @@ public class StreamContainerHeader {
 		Guard.ArgumentInRange(offset, 0, _extensionPropertiesStream.Length - 1, nameof(offset));
 		Guard.ArgumentInRange(length, 1, _extensionPropertiesStream.Length - offset, nameof(length));
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
-		return new StreamMappedProperty<T>(_extensionPropertiesStream, offset, length, serializer, _reader, _writer, @lock: _lock);
+		var extProp = new StreamMappedProperty<T>(_extensionPropertiesStream, offset, length, serializer, _reader, _writer, @lock: _lock);
+		_mappedExtensionPropertyFlushes.Add(extProp.FlushCache);
+		return extProp;
 	}
 
 	public void Load() {
@@ -141,6 +147,7 @@ public class StreamContainerHeader {
 		_reservedStreamsProperty?.FlushCache();
 		_clusterSizeProperty?.FlushCache();
 		_totalClustersProperty?.FlushCache();
+		_mappedExtensionPropertyFlushes.ForEach(x => x.Invoke());
 	}
 
 	public override string ToString() {

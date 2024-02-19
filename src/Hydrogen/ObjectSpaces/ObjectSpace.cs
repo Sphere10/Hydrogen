@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static Hydrogen.ObjectSpaces.ObjectSpaceDefinition;
 
 namespace Hydrogen.ObjectSpaces;
 
@@ -208,7 +207,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		_loaded = false;
 	}
 
-	protected virtual IStreamMappedCollection BuildObjectList(ContainerDefinition containerDefinition, int containerIndex) {
+	protected virtual IStreamMappedCollection BuildObjectList(ObjectSpaceDefinition.ContainerDefinition containerDefinition, int containerIndex) {
 		// Get the stream within the object space which will comprise the object objectStream
 		var containerStream = _streams.Open(_streams.Header.ReservedStreams + containerIndex, false, true);
 
@@ -238,11 +237,11 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		// construct indexes
 		foreach (var (item, index) in containerDefinition.Indexes.WithIndex()) {
 			IClusteredStreamsAttachment metaDataObserver = item.Type switch {
-				IndexType.Identifier => BuildIdentifier(container, containerDefinition, item, index),
-				IndexType.UniqueKey => BuildUniqueKey(container, containerDefinition, item, index),
-				IndexType.Index => BuildIndex(container, containerDefinition, item, index),
-				IndexType.FreeIndexStore => new RecyclableIndexIndex(container, index),
-				IndexType.MerkleTree => throw new NotImplementedException(),
+				ObjectSpaceDefinition.IndexType.Identifier => BuildIdentifier(container, containerDefinition, item, index),
+				ObjectSpaceDefinition.IndexType.UniqueKey => BuildUniqueKey(container, containerDefinition, item, index),
+				ObjectSpaceDefinition.IndexType.Index => BuildIndex(container, containerDefinition, item, index),
+				ObjectSpaceDefinition.IndexType.FreeIndexStore => new RecyclableIndexIndex(container, index),
+				ObjectSpaceDefinition.IndexType.MerkleTree => throw new NotImplementedException(),
 				_ => throw new ArgumentOutOfRangeException()
 			};
 			container.Streams.RegisterAttachment(metaDataObserver);

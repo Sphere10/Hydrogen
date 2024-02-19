@@ -110,9 +110,8 @@ public class StreamContainerHeader {
 		Guard.Ensure(_headerStream.Length >= ByteLength, "Missing or corrupt header");
 	}
 
-	public void Create(byte version, int clusterSize,/* long recordKeySize,*/ long reservedRecords) {
+	public void Create(byte version, int clusterSize, long reservedRecords) {
 		Guard.ArgumentGTE(clusterSize, 1, nameof(clusterSize));
-		//Guard.ArgumentInRange(recordKeySize, 0, ushort.MaxValue, nameof(recordKeySize));
 		Guard.ArgumentGTE(reservedRecords, 0, nameof(reservedRecords));
 		
 		using var accessScope = _lock.EnterAccessScope();

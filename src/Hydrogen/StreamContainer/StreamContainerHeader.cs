@@ -96,7 +96,7 @@ public class StreamContainerHeader {
 
 	public long TotalClusters { get => _totalClustersProperty.Value; set => _totalClustersProperty.Value = value; }
 
-	public StreamMappedProperty<T> CreateExtensionProperty<T>(long offset, int length, IItemSerializer<T> serializer) {
+	public StreamMappedProperty<T> MapExtensionProperty<T>(long offset, int length, IItemSerializer<T> serializer) {
 		Guard.ArgumentInRange(offset, 0, _extensionPropertiesStream.Length - 1, nameof(offset));
 		Guard.ArgumentInRange(length, 1, _extensionPropertiesStream.Length - offset, nameof(length));
 		Guard.ArgumentNotNull(serializer, nameof(serializer));

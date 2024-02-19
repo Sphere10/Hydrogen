@@ -83,7 +83,7 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 		_readOnlyMerkleTree = new ContainerLockingMerkleTree(this, _merkleTree, Container);
 		var hashSize = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 		using (Container.StreamContainer.EnterAccessScope()) {
-			_merkleRootProperty = Container.StreamContainer.Header.CreateExtensionProperty(
+			_merkleRootProperty = Container.StreamContainer.Header.MapExtensionProperty(
 				0, 
 				hashSize, 
 				new ConstantSizeByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(_hashAlgorithm), ByteArrayEqualityComparer.Instance)

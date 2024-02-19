@@ -10,9 +10,9 @@ using System;
 
 namespace Hydrogen.ObjectSpaces;
 
-public abstract class ContainerObserverBase  {
+public abstract class ObjectStreamObserverBase  {
 
-	protected ContainerObserverBase(ObjectStream objectStream) {
+	protected ObjectStreamObserverBase(ObjectStream objectStream) {
 		objectStream.PreItemOperation += OnPreItemOperation;
 		objectStream.PostItemOperation += OnPostItemOperation;
 		objectStream.Clearing += OnContainerClearing;

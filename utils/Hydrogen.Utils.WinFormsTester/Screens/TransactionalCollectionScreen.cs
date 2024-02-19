@@ -174,9 +174,9 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 				if (commit)
 					dict.Commit();
 			}
-			_outputWriter.WriteLine($"Appended {batch}, Batch Duration (ms): {batchStats.Sum:#.###}, Batch Avg: {batchStats.Mean:#.###}, Size = {Tools.Memory.ConvertToReadable(dict.ObjectContainer.StreamContainer.RootStream.Length, MemoryMetric.Byte)}");
+			_outputWriter.WriteLine($"Appended {batch}, Batch Duration (ms): {batchStats.Sum:#.###}, Batch Avg: {batchStats.Mean:#.###}, Size = {Tools.Memory.ConvertToReadable(dict.ObjectContainer.Streams.RootStream.Length, MemoryMetric.Byte)}");
 		}
-		_outputWriter.WriteLine($"Total: {stats.Sum:#.##} (ms), Avg (ms): {stats.Mean:#.###}, Size = {Tools.Memory.ConvertToReadable(dict.ObjectContainer.StreamContainer.RootStream.Length, MemoryMetric.Byte)}");
+		_outputWriter.WriteLine($"Total: {stats.Sum:#.##} (ms), Avg (ms): {stats.Mean:#.###}, Size = {Tools.Memory.ConvertToReadable(dict.ObjectContainer.Streams.RootStream.Length, MemoryMetric.Byte)}");
 
 		TimeSpan Do(Action action) {
 			var start = DateTime.Now;

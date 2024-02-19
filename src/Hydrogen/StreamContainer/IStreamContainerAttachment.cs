@@ -12,7 +12,7 @@ namespace Hydrogen;
 /// An auxillary component that attaches to a reserved stream within a <see cref="StreamContainer"/>.
 /// </summary>
 public interface IStreamContainerAttachment {
-	StreamContainer Container { get; }
+	StreamContainer Streams { get; }
 
 	long ReservedStreamIndex { get; }
 

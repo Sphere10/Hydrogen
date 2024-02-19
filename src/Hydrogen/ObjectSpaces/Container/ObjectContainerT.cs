@@ -19,8 +19,8 @@ namespace Hydrogen.ObjectSpaces;
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class ObjectContainer<T> : ObjectContainer {
-	public ObjectContainer(StreamContainer streamContainer, IItemSerializer<T> serializer = null, bool preAllocateOptimization = true) 
-		: base(typeof(T), streamContainer, (serializer ?? ItemSerializer<T>.Default), preAllocateOptimization) {
+	public ObjectContainer(StreamContainer streams, IItemSerializer<T> serializer = null, bool preAllocateOptimization = true) 
+		: base(typeof(T), streams, (serializer ?? ItemSerializer<T>.Default), preAllocateOptimization) {
 	}
 
 	public new IItemSerializer<T> ItemSerializer => (IItemSerializer<T>) base.ItemSerializer;

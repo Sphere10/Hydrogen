@@ -25,8 +25,8 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 	private bool _dirtyRoot;
 
 	// Migrate from MerkleTreeIndex stuff into here
-	public MerkleTreeStore(StreamContainer container, long reservedStreamIndex, CHF hashAlgorithm) 
-		: base(container, reservedStreamIndex) {
+	public MerkleTreeStore(StreamContainer streams, long reservedStreamIndex, CHF hashAlgorithm) 
+		: base(streams, reservedStreamIndex) {
 		_hashAlgorithm = hashAlgorithm;
 		_dirtyRoot = false;
 	}
@@ -42,31 +42,31 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 		=> _merkleTree.Leafs.Read(index);
 	
 	public override void Add(long index, byte[] data) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		_merkleTree.Leafs.Add(data);
 		_dirtyRoot = true;
 	}
 
 	public override void Update(long index, byte[] data) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		_merkleTree.Leafs.Update(index, data);
 		_dirtyRoot = true;
 	}
 
 	public override void Insert(long index, byte[] data) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		_merkleTree.Leafs.Insert(index, data);
 		_dirtyRoot = true;
 	}
 
 	public override void Remove(long index) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		_merkleTree.Leafs.RemoveAt(index);
 		_dirtyRoot = true;
 	}
 
 	public override void Reap(long index) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		var digest = Hashers.ZeroHash(_hashAlgorithm);
 		_merkleTree.Leafs.Update(index, digest);
 		_dirtyRoot = true;
@@ -78,12 +78,12 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 	}
 
 	protected override void AttachInternal() {
-		var flatTreeData = new StreamMappedBuffer(Stream);
-		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, Container.Count);
-		_readOnlyMerkleTree = new ContainerLockingMerkleTree(this, _merkleTree, Container);
+		var flatTreeData = new StreamMappedBuffer(AttachmentStream);
+		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, Streams.Count);
+		_readOnlyMerkleTree = new ContainerLockingMerkleTree(this, _merkleTree, Streams);
 		var hashSize = Hashers.GetDigestSizeBytes(_hashAlgorithm);
-		using (Container.EnterAccessScope()) {
-			_merkleRootProperty = Container.Header.MapExtensionProperty(
+		using (Streams.EnterAccessScope()) {
+			_merkleRootProperty = Streams.Header.MapExtensionProperty(
 				0, 
 				hashSize, 
 				new ConstantSizeByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(_hashAlgorithm), ByteArrayEqualityComparer.Instance)

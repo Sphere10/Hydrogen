@@ -19,8 +19,8 @@ internal class ListBasedMetaDataStore<TData> : MetaDataStoreBase<TData> {
 	
 	private StreamPagedList<TData> _inStreamIndex;
 	
-	public ListBasedMetaDataStore(StreamContainer container, long reservedStreamIndex, IItemSerializer<TData> datumSerializer) 
-		: base(container, reservedStreamIndex) {
+	public ListBasedMetaDataStore(StreamContainer streams, long reservedStreamIndex, IItemSerializer<TData> datumSerializer) 
+		: base(streams, reservedStreamIndex) {
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Datum serializer must be a constant-length serializer.");
 		DatumSerializer = datumSerializer;
@@ -35,8 +35,8 @@ internal class ListBasedMetaDataStore<TData> : MetaDataStoreBase<TData> {
 	protected override void AttachInternal () {
 		_inStreamIndex = new StreamPagedList<TData>(
 			DatumSerializer, 
-			Stream, 
-			Container.Endianness,
+			AttachmentStream, 
+			Streams.Endianness,
 			false, 
 			true
 		);
@@ -47,47 +47,47 @@ internal class ListBasedMetaDataStore<TData> : MetaDataStoreBase<TData> {
 	}
 
 	public override TData Read(long index) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		ValidateRead(index);
 		return _inStreamIndex.Read(index);
 	}
 
 	public override byte[] ReadBytes(long index) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		ValidateRead(index);
 		_inStreamIndex.ReadItemBytes(index, 0, null, out var bytes);
 		return bytes;
 	}
 
 	public override void Add(long index, TData key) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		ValidateAdd(key, index);
 		Guard.Ensure(index == _inStreamIndex.Count, "Index must be equal to the current count.");
 		_inStreamIndex.Add(key);
 	}
 
 	public override void Update(long index, TData key) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		var oldKey = Read(index);
 		ValidateUpdate(oldKey, key, index);
 		_inStreamIndex[index] = key;
 	}
 
 	public override void Insert(long index, TData key) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		ValidateInsert(key, index);
 		_inStreamIndex.ShuffleRightInsert(index, key);
 	}
 
 	public override void Remove(long index) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		var key = Read(index);
 		ValidateRemove(key, index);
 		_inStreamIndex.ShuffleLeftRemoveAt(index);
 	}
 
 	public override void Reap(long index) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		var key = Read(index);
 		ValidateReap(key, index);
 		// A reaped object's value is ignored. Instead the index is marked as reaped.
@@ -95,7 +95,7 @@ internal class ListBasedMetaDataStore<TData> : MetaDataStoreBase<TData> {
 	}
 
 	public override void Clear() {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		ValidateClear();
 		_inStreamIndex.Clear();
 	}

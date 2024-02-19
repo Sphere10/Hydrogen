@@ -71,13 +71,13 @@ internal abstract class MemoryCachedMetaDataStoreBase<TData> : MetaDataStoreDeco
 	protected virtual void LoadMetaData() {
 		// read the stream and populate the index
 		var streamCount = base.Count;
-		var containerCount = Container.Count - Container.Header.ReservedStreams;  // item count inferred from total stream count - reserved stream count
+		var containerCount = Streams.Count - Streams.Header.ReservedStreams;  // item count inferred from total stream count - reserved stream count
 		Guard.Ensure(streamCount == containerCount, "Container and meta-data store stream are out of sync.");
-		using var _ = Container.EnterAccessScope();
-		var reserved = Container.Header.ReservedStreams;
+		using var _ = Streams.EnterAccessScope();
+		var reserved = Streams.Header.ReservedStreams;
 		for(var i = 0L; i < streamCount; i++) {
 			// reaped objects are not loaded into memory
-			if (Container.FastReadStreamDescriptorTraits(i + reserved).HasFlag(ClusteredStreamTraits.Reaped))
+			if (Streams.FastReadStreamDescriptorTraits(i + reserved).HasFlag(ClusteredStreamTraits.Reaped))
 				continue;
 			var key = base.Read(i);
 			AddToMemory(key, i);

@@ -57,7 +57,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 
 	internal StreamMappedMerkleList(IStreamMappedList<TItem> streamMappedList, bool autoLoad = false) : base(streamMappedList) {
 		Guard.ArgumentNotNull(streamMappedList, nameof(streamMappedList));
-		_merkleTreeIndex = streamMappedList.ObjectContainer.StreamContainer.FindAttachment<MerkleTreeIndex>();
+		_merkleTreeIndex = streamMappedList.ObjectContainer.Streams.FindAttachment<MerkleTreeIndex>();
 		if (autoLoad && RequiresLoad) 
 			Load();
 	}
@@ -114,7 +114,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 			x => DigestItem(streamMappedList.ObjectContainer, x, hashAlgorithm),
 			hashAlgorithm
 		);
-		streamMappedList.ObjectContainer.StreamContainer.RegisterAttachment(merkleTreeIndex);
+		streamMappedList.ObjectContainer.Streams.RegisterAttachment(merkleTreeIndex);
 
 		return streamMappedList;
 	}

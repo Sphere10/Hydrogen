@@ -446,11 +446,11 @@ public static class StreamMappedFactory {
 			container,
 			freeIndexStoreStreamIndex
 		);
-		container.StreamContainer.RegisterAttachment(recyclableIndexIndex);
+		container.Streams.RegisterAttachment(recyclableIndexIndex);
 
 		// Create key checksum index (for fast key lookups)
 		var keyChecksumKeyIndex = IndexFactory.CreateChecksumKeyIndex(container, keyChecksumIndexStreamIndex, kvp => kvp.Key, keySerializer, keyChecksummer, ReadKey, keyComparer);
-		container.StreamContainer.RegisterAttachment(keyChecksumKeyIndex);
+		container.Streams.RegisterAttachment(keyChecksumKeyIndex);
 
 		return container;
 
@@ -460,8 +460,8 @@ public static class StreamMappedFactory {
 				if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 					throw new InvalidOperationException($"Object {index} has been reaped");
 
-				using var stream = container.StreamContainer.OpenRead(container.StreamContainer.Header.ReservedStreams + index);
-				var reader = new EndianBinaryReader(EndianBitConverter.For(container.StreamContainer.Endianness), stream);
+				using var stream = container.Streams.OpenRead(container.Streams.Header.ReservedStreams + index);
+				var reader = new EndianBinaryReader(EndianBitConverter.For(container.Streams.Endianness), stream);
 				return ((KeyValuePairSerializer<TKey, TValue>)container.ItemSerializer).DeserializeKey(reader);
 			}
 		}
@@ -492,15 +492,15 @@ public static class StreamMappedFactory {
 			container,
 			freeIndexStoreStreamIndex
 		);
-		container.StreamContainer.RegisterAttachment(recyclableIndexIndex);
+		container.Streams.RegisterAttachment(recyclableIndexIndex);
 
 		var keyStore = new UniqueKeyStore<TKey>(
-			container.StreamContainer,
+			container.Streams,
 			keyStoreStreamIndex,
 			keyComparer,
 			constantLengthKeySerializer
 		);
-		container.StreamContainer.RegisterAttachment(keyStore);
+		container.Streams.RegisterAttachment(keyStore);
 		
 		
 		return container;
@@ -526,7 +526,7 @@ public static class StreamMappedFactory {
 				EqualityComparer<int>.Default,
 				PrimitiveSerializer<int>.Instance
 			);
-			container.StreamContainer.RegisterAttachment( checksumKeyIndex);
+			container.Streams.RegisterAttachment( checksumKeyIndex);
 		} 
 
 		return container;
@@ -550,7 +550,7 @@ public static class StreamMappedFactory {
 			container,
 			freeIndexStoreStreamIndex
 		);
-		container.StreamContainer.RegisterAttachment(recyclableIndexIndex);
+		container.Streams.RegisterAttachment(recyclableIndexIndex);
 
 		// Create item checksum index (if applicable)
 		if (itemChecksummer is not null) {
@@ -561,7 +561,7 @@ public static class StreamMappedFactory {
 				EqualityComparer<int>.Default,
 				PrimitiveSerializer<int>.Instance
 			);
-			container.StreamContainer.RegisterAttachment( checksumKeyIndex);
+			container.Streams.RegisterAttachment( checksumKeyIndex);
 		}
 
 		return container;

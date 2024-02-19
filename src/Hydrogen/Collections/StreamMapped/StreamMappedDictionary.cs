@@ -36,8 +36,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		Guard.ArgumentIsAssignable<ObjectContainer<KeyValuePair<TKey, TValue>>>(objectContainer, nameof(objectContainer));
 		ObjectContainer = (ObjectContainer<KeyValuePair<TKey, TValue>>)objectContainer;
-		_freeIndexStore = objectContainer.StreamContainer.FindAttachment<RecyclableIndexIndex>();
-		_keyChecksumIndex = objectContainer.StreamContainer.FindAttachment<KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
+		_freeIndexStore = objectContainer.Streams.FindAttachment<RecyclableIndexIndex>();
+		_keyChecksumIndex = objectContainer.Streams.FindAttachment<KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
 		if (autoLoad && RequiresLoad) 
@@ -79,8 +79,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
+			using var stream = ObjectContainer.Streams.OpenRead(ObjectContainer.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.Streams.Endianness), stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).DeserializeKey(reader);
 		}
 	}
@@ -91,8 +91,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
+			using var stream = ObjectContainer.Streams.OpenRead(ObjectContainer.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.Streams.Endianness), stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadKeyBytes(reader);
 		}
 	}
@@ -103,8 +103,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 			
-			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
+			using var stream = ObjectContainer.Streams.OpenRead(ObjectContainer.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.Streams.Endianness), stream);
 			return ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).DeserializeValue(reader);
 		}
 	}
@@ -115,8 +115,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			using var stream = ObjectContainer.StreamContainer.OpenRead(ObjectContainer.StreamContainer.Header.ReservedStreams + index);
-			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.StreamContainer.Endianness), stream);
+			using var stream = ObjectContainer.Streams.OpenRead(ObjectContainer.Streams.Header.ReservedStreams + index);
+			var reader = new EndianBinaryReader(EndianBitConverter.For(ObjectContainer.Streams.Endianness), stream);
 			var bytes = ((KeyValuePairSerializer<TKey, TValue>)ObjectContainer.ItemSerializer).ReadValueBytes(reader);
 			
 			// The value is null, so it's bytes are null (null is serialized as a single byte 0)

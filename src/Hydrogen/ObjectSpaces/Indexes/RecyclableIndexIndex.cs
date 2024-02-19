@@ -17,7 +17,7 @@ namespace Hydrogen.ObjectSpaces;
 internal class RecyclableIndexIndex : IndexBase<long, StackBasedMetaDataStore<long>> {
 
 	public RecyclableIndexIndex(ObjectContainer objectContainer, long reservedStreamIndex) 
-		: base(objectContainer, new StackBasedMetaDataStore<long>(objectContainer.StreamContainer, reservedStreamIndex, PrimitiveSerializer<long>.Instance)) {
+		: base(objectContainer, new StackBasedMetaDataStore<long>(objectContainer.Streams, reservedStreamIndex, PrimitiveSerializer<long>.Instance)) {
 	}
 
 	public IStack<long> Stack => KeyStore.Stack;

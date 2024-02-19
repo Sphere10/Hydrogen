@@ -22,8 +22,8 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 	
 	private StreamPagedList<TData> _inStreamIndex;
 
-	public StackBasedMetaDataStore(StreamContainer container, long reservedStreamIndex, IItemSerializer<TData> datumSerializer) 
-		: base(container, reservedStreamIndex) {
+	public StackBasedMetaDataStore(StreamContainer streams, long reservedStreamIndex, IItemSerializer<TData> datumSerializer) 
+		: base(streams, reservedStreamIndex) {
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Datum serializer must be a constant-length serializer.");
 		DatumSerializer = datumSerializer;
@@ -38,8 +38,8 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 	protected override void AttachInternal () {
 		_inStreamIndex = new StreamPagedList<TData>(
 			DatumSerializer, 
-			Stream, 
-			Container.Endianness,
+			AttachmentStream, 
+			Streams.Endianness,
 			false, 
 			true
 		);
@@ -50,20 +50,20 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 	}
 
 	public override TData Read(long index) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		ValidateRead(index);
 		return _inStreamIndex.Read(index);
 	}
 
 	public override byte[] ReadBytes(long index) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		ValidateRead(index);
 		_inStreamIndex.ReadItemBytes(index, 0, null, out var bytes);
 		return bytes;
 	}
 
 	public override void Add(long index, TData key) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		ValidateAdd(key, index);
 		Guard.Ensure(index == _inStreamIndex.Count, "Index must be equal to the current count.");
 		_inStreamIndex.Add(key);
@@ -76,7 +76,7 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 		=> throw new NotSupportedException("Insert operation is not supported in a stack-based store");
 
 	public override void Remove(long index) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		var key = Read(index);
 		ValidateRemove(key, index);
 		_inStreamIndex.RemoveAt(index);
@@ -86,7 +86,7 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 		=> throw new NotSupportedException("Reap operation is not supported in a stack-based store");
 
 	public override void Clear() {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		ValidateClear();
 		_inStreamIndex.Clear();
 	}
@@ -127,7 +127,7 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
     bool ICollection<TData>.Remove(TData item) => throw new NotSupportedException("Operation restricted in stack-based store");
 
 	bool IStack<TData>.TryPeek(out TData value) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		var count = _inStreamIndex.Count;
 		if (count > 0) {
 			value = Read(count);
@@ -138,7 +138,7 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 	}
 
 	bool IStack<TData>.TryPop(out TData value) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		var count = _inStreamIndex.Count;
 		if (count > 0) {
 			value = Read(count - 1);
@@ -150,7 +150,7 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 	}
 
 	void IStack<TData>.Push(TData item) {
-		using var _ = Container.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		Add(Count, item);
 	}
 

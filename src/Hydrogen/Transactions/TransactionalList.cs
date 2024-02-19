@@ -52,7 +52,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 			endianness,
 			accessMode.HasFlag(FileAccessMode.AutoLoad)
 		) {
-		InternalCollection.ObjectContainer.StreamContainer.OwnsStream = true;
+		InternalCollection.ObjectContainer.Streams.OwnsStream = true;
 	}
 
 	public TransactionalList(
@@ -115,7 +115,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
 		_transactionalObject = transactionalObject;
 		_transactionalObject.RolledBack += _ => {
-			streamMappedList.ObjectContainer.StreamContainer.Initialize();
+			streamMappedList.ObjectContainer.Streams.Initialize();
 		};
 		
 		if (autoLoad && RequiresLoad)

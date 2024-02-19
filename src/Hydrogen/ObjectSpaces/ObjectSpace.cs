@@ -245,7 +245,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 				IndexType.MerkleTree => throw new NotImplementedException(),
 				_ => throw new ArgumentOutOfRangeException()
 			};
-			container.StreamContainer.RegisterAttachment(metaDataObserver);
+			container.Streams.RegisterAttachment(metaDataObserver);
 		}
 	
 		// Get a comparer
@@ -309,7 +309,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 
 		// need to ensure all merkle-trees are committed 
 		foreach(var collection in _collections.Values) {
-			if (collection.ObjectContainer.StreamContainer.TryFindAttachment<MerkleTreeIndex>(out var merkleTreeIndex)) {
+			if (collection.ObjectContainer.Streams.TryFindAttachment<MerkleTreeIndex>(out var merkleTreeIndex)) {
 				// fetching the root ensures the stream-mapped merkle-tree is fully calculated
 				var root = merkleTreeIndex.MerkleTree.Root;
 			}

@@ -90,7 +90,7 @@ internal static class IndexFactory {
 
 	internal static KeyChecksumIndex<TItem, TKey> CreateChecksumKeyIndex<TItem, TKey>(ObjectContainer<TItem> container, long streamIndex, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer = null, IItemChecksummer<TKey> keyChecksummer= null, Func<long, TKey> keyFetcher= null, IEqualityComparer<TKey> keyComparer= null) {
 		keySerializer ??= ItemSerializer<TKey>.Default;
-		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, container.StreamContainer.Endianness);
+		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, container.Streams.Endianness);
 		keyFetcher ??= x => projection(container.LoadItem(x));
 		keyComparer ??= EqualityComparer<TKey>.Default;
 		var keyChecksumKeyIndex = new KeyChecksumIndex<TItem, TKey>(
@@ -129,7 +129,7 @@ internal static class IndexFactory {
 
 	internal static UniqueKeyChecksumIndex<TItem, TKey> CreateUniqueChecksumKeyIndex<TItem, TKey>(ObjectContainer<TItem> container, long streamIndex, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer = null, IItemChecksummer<TKey> keyChecksummer= null, Func<long, TKey> keyFetcher= null, IEqualityComparer<TKey> keyComparer= null) {
 		keySerializer ??= ItemSerializer<TKey>.Default;
-		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, container.StreamContainer.Endianness);
+		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, container.Streams.Endianness);
 		keyFetcher ??= x => projection(container.LoadItem(x));
 		keyComparer ??= EqualityComparer<TKey>.Default;
 		var uniqueKeyChecksumIndex = new UniqueKeyChecksumIndex<TItem, TKey>(

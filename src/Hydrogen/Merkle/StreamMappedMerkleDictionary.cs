@@ -69,7 +69,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 	internal StreamMappedMerkleDictionary(IStreamMappedDictionary<TKey, TValue> innerDictionary, bool autoLoad = false) 
 		: base(innerDictionary) {
 		Guard.ArgumentNotNull(innerDictionary, nameof(innerDictionary));
-		_merkleTreeIndex = innerDictionary.ObjectContainer.StreamContainer.FindAttachment<MerkleTreeIndex>();
+		_merkleTreeIndex = innerDictionary.ObjectContainer.Streams.FindAttachment<MerkleTreeIndex>();
 
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -144,7 +144,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 			x => DigestItem(smDict, x, hashAlgorithm),
 			hashAlgorithm
 		);
-		smDict.ObjectContainer.StreamContainer.RegisterAttachment(merkleTreeIndex);
+		smDict.ObjectContainer.Streams.RegisterAttachment(merkleTreeIndex);
 
 		return smDict;
 	}

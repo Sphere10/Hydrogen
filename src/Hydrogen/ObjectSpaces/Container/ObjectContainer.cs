@@ -16,7 +16,7 @@ namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
 /// A container that stores objects (and metadata) in a stream and provides a List-like interface.
-/// This class uses a <see cref="StreamContainer"/> to store the objects and their metadata. This class is 
+/// This class uses a <see cref="Streams"/> to store the objects and their metadata. This class is 
 /// a primitive from which <see cref="StreamMappedList{TItem}"/>, <see cref="StreamMappedDictionary{TKey,TValue}"/> and
 /// <see cref="StreamMappedHashSet{TItem}"/> build their functionality of. It it also what <see cref="ObjectSpace"/> are comprised of.
 /// Conceptually, an <see cref="ObjectContainer"/> like "database table" that stores objects and metadata suitable for querying and lookup.
@@ -25,36 +25,36 @@ namespace Hydrogen.ObjectSpaces;
 public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	public event EventHandlerEx<long, object, ObjectContainerOperationType> PreItemOperation;
 	public event EventHandlerEx<long, object, ObjectContainerOperationType> PostItemOperation;
-	public event EventHandlerEx Clearing { add => StreamContainer.Clearing += value; remove => StreamContainer.Clearing -= value; }
-	public event EventHandlerEx Cleared { add => StreamContainer.Cleared += value; remove => StreamContainer.Cleared -= value; }
+	public event EventHandlerEx Clearing { add => Streams.Clearing += value; remove => Streams.Clearing -= value; }
+	public event EventHandlerEx Cleared { add => Streams.Cleared += value; remove => Streams.Cleared -= value; }
 
 	private readonly bool _preAllocateOptimization;
 	private readonly Type _objectType;
 	
 
-	public ObjectContainer(Type objectType, StreamContainer streamContainer, IItemSerializer packedPackedSerializer, bool preAllocateOptimization) {
+	public ObjectContainer(Type objectType, StreamContainer streams, IItemSerializer packedPackedSerializer, bool preAllocateOptimization) {
 		Guard.ArgumentNotNull(objectType, nameof(objectType));
-		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
+		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(packedPackedSerializer, nameof(packedPackedSerializer));
-		StreamContainer = streamContainer;
+		Streams = streams;
 		_objectType = objectType;
 		ItemSerializer = packedPackedSerializer;
 		_preAllocateOptimization = preAllocateOptimization;
-		streamContainer.Loading += _ => NotifyLoading();
-		streamContainer.Loaded += _ => NotifyLoaded();
+		streams.Loading += _ => NotifyLoading();
+		streams.Loaded += _ => NotifyLoaded();
 	}
 
-	public ICriticalObject ParentCriticalObject { get => StreamContainer.ParentCriticalObject; set => StreamContainer.ParentCriticalObject = value; }
+	public ICriticalObject ParentCriticalObject { get => Streams.ParentCriticalObject; set => Streams.ParentCriticalObject = value; }
 
-	public object Lock => StreamContainer.Lock;
+	public object Lock => Streams.Lock;
 
-	public bool IsLocked => StreamContainer.IsLocked;
+	public bool IsLocked => Streams.IsLocked;
 
-	public override bool RequiresLoad => StreamContainer.RequiresLoad;
+	public override bool RequiresLoad => Streams.RequiresLoad;
 
-	public StreamContainer StreamContainer { get; }
+	public StreamContainer Streams { get; }
 
-	public long Count => StreamContainer.Count - StreamContainer.Header.ReservedStreams;
+	public long Count => Streams.Count - Streams.Header.ReservedStreams;
 
 	public bool OwnsStreamContainer { get; set; }
 
@@ -63,15 +63,15 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	#region ILoadable & IDisposable
 	
 	protected override void LoadInternal() {
-		if (StreamContainer.RequiresLoad)
-			StreamContainer.Load();
+		if (Streams.RequiresLoad)
+			Streams.Load();
 	}
 
-	public IDisposable EnterAccessScope() => StreamContainer.EnterAccessScope();
+	public IDisposable EnterAccessScope() => Streams.EnterAccessScope();
 
 	public void Dispose() {
 		if (OwnsStreamContainer)
-			StreamContainer.Dispose();
+			Streams.Dispose();
 	}
 
 	#endregion
@@ -79,43 +79,43 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	#region Item management
 
 	public ClusteredStreamDescriptor GetItemDescriptor(long index) {
-		using var _ = StreamContainer.EnterAccessScope();
-		return StreamContainer.GetStreamDescriptor(index + StreamContainer.Header.ReservedStreams);
+		using var _ = Streams.EnterAccessScope();
+		return Streams.GetStreamDescriptor(index + Streams.Header.ReservedStreams);
 	}
 
 	public void SaveItem(long index, object item, ObjectContainerOperationType operationType) {
 		Guard.Argument(operationType != ObjectContainerOperationType.Remove, nameof(operationType), "Remove operation not supported in this method");
 		CheckItemType(item);
-		using var _ = StreamContainer.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		using var stream = SaveItemAndReturnStream(index, item, operationType);
 	}
 
 	public object LoadItem(long index) {
-		using var _ = StreamContainer.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		using var stream = LoadItemAndReturnStream(index, out var item);
 		CheckItemType(item);
 		return item;
 	}
 
 	public byte[] GetItemBytes(long index) {
-		using var _ = StreamContainer.EnterAccessScope();
-		using var stream = StreamContainer.OpenRead(index + StreamContainer.Header.ReservedStreams);
+		using var _ = Streams.EnterAccessScope();
+		using var stream = Streams.OpenRead(index + Streams.Header.ReservedStreams);
 		if (stream.IsNull || stream.IsReaped)
 			return null;
 		return stream.ToArray();
 	}
 
 	public void RemoveItem(long index) {
-		using var _ = StreamContainer.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		NotifyPreItemOperation(index, null, ObjectContainerOperationType.Remove);
-		StreamContainer.Remove(index + StreamContainer.Header.ReservedStreams);
+		Streams.Remove(index + Streams.Header.ReservedStreams);
 		NotifyPostItemOperation(index, null, ObjectContainerOperationType.Remove);
 	}
 
 	public void ReapItem(long index) {
-		using var _ = StreamContainer.EnterAccessScope();
+		using var _ = Streams.EnterAccessScope();
 		NotifyPreItemOperation(index, null, ObjectContainerOperationType.Reap);
-		using (var stream = StreamContainer.OpenWrite(index + StreamContainer.Header.ReservedStreams)) {
+		using (var stream = Streams.OpenWrite(index + Streams.Header.ReservedStreams)) {
 			stream.SetLength(0);
 			stream.IsNull = false;
 			stream.IsReaped = true;
@@ -125,24 +125,24 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public bool IsReaped(long index) => GetItemDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Reaped);
 
-	public void Clear() => StreamContainer.Clear();
+	public void Clear() => Streams.Clear();
 
 	internal ClusteredStream SaveItemAndReturnStream(long index, object item, ObjectContainerOperationType operationType) {
 		Guard.ArgumentGTE(index, 0, nameof(index));
 		Guard.Argument(operationType != ObjectContainerOperationType.Remove, nameof(operationType), "Remove operation not supported in this method");
 		CheckItemType(item);
 
-		var streamIndex = index + StreamContainer.Header.ReservedStreams;
+		var streamIndex = index + Streams.Header.ReservedStreams;
 		// initialized and re-entrancy checks done by one of below called methods
 		var stream = operationType switch {
-			ObjectContainerOperationType.Add => StreamContainer.Add(),
-			ObjectContainerOperationType.Update => StreamContainer.OpenWrite(streamIndex),
-			ObjectContainerOperationType.Insert => StreamContainer.Insert(streamIndex),
+			ObjectContainerOperationType.Add => Streams.Add(),
+			ObjectContainerOperationType.Update => Streams.OpenWrite(streamIndex),
+			ObjectContainerOperationType.Insert => Streams.Insert(streamIndex),
 			_ => throw new ArgumentException($@"List operation type '{operationType}' not supported", nameof(operationType)),
 		};
 		try {
 			stream.IsReaped = false;
-			using var writer = new EndianBinaryWriter(EndianBitConverter.For(StreamContainer.Endianness), stream);
+			using var writer = new EndianBinaryWriter(EndianBitConverter.For(Streams.Endianness), stream);
 			if (item != null) {
 				NotifyPreItemOperation(index, item, operationType);
 				stream.IsNull = false;
@@ -171,14 +171,14 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	internal ClusteredStream LoadItemAndReturnStream(long index, out object item) {
-		var streamIndex = index + StreamContainer.Header.ReservedStreams;
+		var streamIndex = index + Streams.Header.ReservedStreams;
 		// initialized and re-entrancy checks done by Open
-		var stream = StreamContainer.OpenRead(streamIndex);
+		var stream = Streams.OpenRead(streamIndex);
 		Guard.Ensure(!stream.IsReaped, $"Item at index {index} has been reaped");
 		try {
 			NotifyPreItemOperation(index, default, ObjectContainerOperationType.Read);
 			if (!stream.IsNull) {
-				using var reader = new EndianBinaryReader(EndianBitConverter.For(StreamContainer.Endianness), stream);
+				using var reader = new EndianBinaryReader(EndianBitConverter.For(Streams.Endianness), stream);
 				item = ItemSerializer.Deserialize(reader);
 				CheckItemType(item);
 			} else {

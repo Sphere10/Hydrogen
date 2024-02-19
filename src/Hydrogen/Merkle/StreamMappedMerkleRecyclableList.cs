@@ -60,7 +60,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 	internal StreamMappedMerkleRecyclableList(IStreamMappedRecyclableList<TItem> streamMappedList, bool autoLoad = false) 
 		: base(streamMappedList) {
 		Guard.ArgumentNotNull(streamMappedList, nameof(streamMappedList));
-		_merkleTreeIndex = streamMappedList.ObjectContainer.StreamContainer.FindAttachment<MerkleTreeIndex>();
+		_merkleTreeIndex = streamMappedList.ObjectContainer.Streams.FindAttachment<MerkleTreeIndex>();
 
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -120,7 +120,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 			x => DigestItem(streamMappedList.ObjectContainer, x, hashAlgorithm),
 			hashAlgorithm
 		);
-		streamMappedList.ObjectContainer.StreamContainer.RegisterAttachment(merkleTreeIndex);
+		streamMappedList.ObjectContainer.Streams.RegisterAttachment(merkleTreeIndex);
 
 		return streamMappedList;
 	}

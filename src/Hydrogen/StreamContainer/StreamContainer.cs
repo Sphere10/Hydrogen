@@ -485,7 +485,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	#endregion
 
-	#region Initialization & Loading & Disposal
+	#region Lifecycle Management
 
 	public void RegisterInitAction(Action action) {
 		if (Initialized)

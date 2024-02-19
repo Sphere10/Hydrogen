@@ -60,7 +60,7 @@ public abstract class IndexBase<TData, TStore> : ContainerObserverBase, IStreamC
 
 	// NOTE: use of backing field _keyStore to avoid attached check
 
-	StreamContainer IStreamContainerAttachment.Container => KeyStore.Container;
+	StreamContainer IStreamContainerAttachment.Streams => KeyStore.Streams;
 
 	long IStreamContainerAttachment.ReservedStreamIndex => KeyStore.ReservedStreamIndex; 
 

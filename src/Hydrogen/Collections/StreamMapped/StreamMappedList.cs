@@ -28,7 +28,7 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 		Guard.ArgumentNotNull(container, nameof(container));
 		ObjectContainer = container;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
-		container.StreamContainer.TryFindAttachment(out _checksumKeyIndex); // _checksumKeyIndex may be null in this impl
+		container.Streams.TryFindAttachment(out _checksumKeyIndex); // _checksumKeyIndex may be null in this impl
 		
 		if (autoLoad && RequiresLoad)
 			Load();

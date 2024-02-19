@@ -21,18 +21,18 @@ public abstract class StreamContainerAttachmentBase : IDisposable, IStreamContai
 	private readonly long _streamOffset;
 	private bool _attached;
 
-	protected StreamContainerAttachmentBase(StreamContainer container, long reservedStreamIndex) {
-		Container = container;
+	protected StreamContainerAttachmentBase(StreamContainer streams, long reservedStreamIndex) {
+		Streams = streams;
 		ReservedStreamIndex = reservedStreamIndex;
 		_attached = false;
 		_streamOffset = 0;
 	}
 
-	public StreamContainer Container { get; }
+	public StreamContainer Streams { get; }
 
 	public long ReservedStreamIndex { get; }
 
-	protected Stream Stream {
+	protected Stream AttachmentStream {
 		get {
 			CheckAttached();
 			return _stream;
@@ -44,23 +44,23 @@ public abstract class StreamContainerAttachmentBase : IDisposable, IStreamContai
 
 	public void Attach() {
 		CheckNotAttached();
-		Guard.Ensure(!Container.RequiresLoad, "Unable to attach to an unloaded Object Container");
-		Guard.Ensure(Container.Header.ReservedStreams > 0, "Stream Container has no reserved streams available");
-		Guard.Ensure(ReservedStreamIndex < Container.Header.ReservedStreams, $"Stream at index {ReservedStreamIndex} is not reserved");
-		using (Container.EnterAccessScope()) {
+		Guard.Ensure(!Streams.RequiresLoad, "Unable to attach to an unloaded Object Container");
+		Guard.Ensure(Streams.Header.ReservedStreams > 0, "Stream Container has no reserved streams available");
+		Guard.Ensure(ReservedStreamIndex < Streams.Header.ReservedStreams, $"Stream at index {ReservedStreamIndex} is not reserved");
+		using (Streams.EnterAccessScope()) {
 			_attached = true;
 
 			// Open the stream used by the index. No access scope is acquired for the stream
 			// and thus all use of the index must take place within an explicit access scope.
-			Stream =
-				Container
+			AttachmentStream =
+				Streams
 					.Open(ReservedStreamIndex, false, false)
 					.AsBounded(_streamOffset, long.MaxValue, allowInnerResize: true);
 
 			// Ensures the stream is at least as long as the offset (the space prior to offset can
 			// be used to store header information (i.e. factory info to decide what type of index to load)
-			if (Stream.Position < 0)
-				Stream.SetLength(0);
+			if (AttachmentStream.Position < 0)
+				AttachmentStream.SetLength(0);
 
 			AttachInternal();
 		}
@@ -71,8 +71,8 @@ public abstract class StreamContainerAttachmentBase : IDisposable, IStreamContai
 	public void Detach() {
 		CheckAttached();
 		DetachInternal();
-		Stream.Dispose();
-		Stream = null;
+		AttachmentStream.Dispose();
+		AttachmentStream = null;
 		_attached = false;
 	}
 

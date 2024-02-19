@@ -12,11 +12,9 @@ using System.Runtime.CompilerServices;
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// Base implementation for an index on an <see cref="ObjectStreamStream{T}"/>.
+/// Base implementation for an index on an <see cref="ObjectStream{T}"/>.
 /// </summary>
-/// <typeparam name="TItem">Type of item being stored in <see cref="ObjectStream{T}"/></typeparam>
-/// <typeparam name="TKey">Type of property in <see cref="TItem"/> that is the key</typeparam>
-public abstract class IndexBase<TData, TStore> : ContainerObserverBase, IClusteredStreamsAttachment where TStore : IMetaDataStore<TData> {
+public abstract class IndexBase<TData, TStore> : ObjectStreamObserverBase, IClusteredStreamsAttachment where TStore : IMetaDataStore<TData> {
 
 	protected IndexBase(ObjectStream objectStream, TStore keyStore)
 		: base(objectStream) {

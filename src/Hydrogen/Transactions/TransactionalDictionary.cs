@@ -64,7 +64,7 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null, 
 		int clusterSize = HydrogenDefaults.ClusterSize,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default, 
 		int reservedStreamCount = 2,
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1,

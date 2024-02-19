@@ -18,7 +18,7 @@ namespace Hydrogen.Tests;
 public class TransactionalListTests {
 
 	[Test]
-	public void LoadWhenNotRequiredDoesntBreak_BugCase([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void LoadWhenNotRequiredDoesntBreak_BugCase([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
@@ -32,7 +32,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void AddOne([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddOne([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => File.Delete(file))))
@@ -48,7 +48,7 @@ public class TransactionalListTests {
 
 
 	[Test]
-	public void IntegrationTests_Commit([Values(0, 1, 50)] int maxCapacity, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void IntegrationTests_Commit([Values(0, 1, 50)] int maxCapacity, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int StringMinSize = 0;
 		const int StringMaxSize = 100;
 		var file = Tools.FileSystem.GenerateTempFilename();
@@ -63,7 +63,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void IntegrationTests_Rollback([Values(0, 1, 50)] int maxCapacity, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void IntegrationTests_Rollback([Values(0, 1, 50)] int maxCapacity, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int StringMinSize = 0;
 		const int StringMaxSize = 100;
 		var file = Tools.FileSystem.GenerateTempFilename();
@@ -79,7 +79,7 @@ public class TransactionalListTests {
 
 
 	[Test]
-	public void CanLoadPreviouslyCommittedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CanLoadPreviouslyCommittedState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -108,7 +108,7 @@ public class TransactionalListTests {
 
 
 	[Test]
-	public void CanUpdatePreviouslyCommittedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CanUpdatePreviouslyCommittedState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -149,7 +149,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyRolledBackState_1([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CanUpdatePreviouslyRolledBackState_1([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -188,7 +188,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyAbandonedState_1([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CanUpdatePreviouslyAbandonedState_1([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -227,7 +227,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyRolledBackState_2([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CanUpdatePreviouslyRolledBackState_2([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -263,7 +263,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void RollbackReturnsToPreviousCommittedState_BeforeScopeCloses([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void RollbackReturnsToPreviousCommittedState_BeforeScopeCloses([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -294,7 +294,7 @@ public class TransactionalListTests {
 	}
 
 	[Test]
-	public void RollbackReturnsToPreviousCommittedState_AfterScopeCloses([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void RollbackReturnsToPreviousCommittedState_AfterScopeCloses([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 

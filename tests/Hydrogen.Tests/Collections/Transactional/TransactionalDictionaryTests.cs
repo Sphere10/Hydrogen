@@ -24,7 +24,7 @@ public sealed class TransactionalDictionaryTests : TransactionalDictionaryTestsB
 		IItemSerializer<TValue> valueSerializer, 
 		IEqualityComparer<TKey> keyComparer, 
 		IEqualityComparer<TValue> valueComparer, 
-		StreamContainerPolicy policy,
+		ClusteredStreamsPolicy policy,
 		out ITransactionalDictionary<TKey, TValue> clustered, out string file
 	) {
 		file = Tools.FileSystem.GenerateTempFilename();

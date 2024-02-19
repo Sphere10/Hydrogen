@@ -162,7 +162,7 @@ public class ObjectSpacesTest {
 			8192,
 			Tools.Memory.ToBytes(50, MemoryMetric.Megabyte),
 			512,
-			StreamContainerPolicy.Default
+			ClusteredStreamsPolicy.Default
 		);
 
 	private static ObjectSpaceDefinition BuildSpaceDefinition() {

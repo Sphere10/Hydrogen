@@ -16,7 +16,7 @@ namespace Hydrogen.ObjectSpaces;
 /// </summary>
 /// <typeparam name="TItem">Type of item being stored in <see cref="ObjectContainer{T}"/></typeparam>
 /// <typeparam name="TKey">Type of property in <see cref="TItem"/> that is the key</typeparam>
-public abstract class IndexBase<TData, TStore> : ContainerObserverBase, IStreamContainerAttachment where TStore : IMetaDataStore<TData> {
+public abstract class IndexBase<TData, TStore> : ContainerObserverBase, IClusteredStreamsAttachment where TStore : IMetaDataStore<TData> {
 
 	protected IndexBase(ObjectContainer container, TStore keyStore)
 		: base(container) {
@@ -60,15 +60,15 @@ public abstract class IndexBase<TData, TStore> : ContainerObserverBase, IStreamC
 
 	// NOTE: use of backing field _keyStore to avoid attached check
 
-	StreamContainer IStreamContainerAttachment.Streams => KeyStore.Streams;
+	ClusteredStreams IClusteredStreamsAttachment.Streams => KeyStore.Streams;
 
-	long IStreamContainerAttachment.ReservedStreamIndex => KeyStore.ReservedStreamIndex; 
+	long IClusteredStreamsAttachment.ReservedStreamIndex => KeyStore.ReservedStreamIndex; 
 
-	bool IStreamContainerAttachment.IsAttached => KeyStore.IsAttached;
+	bool IClusteredStreamsAttachment.IsAttached => KeyStore.IsAttached;
 
-	void IStreamContainerAttachment.Attach() => KeyStore.Attach();
+	void IClusteredStreamsAttachment.Attach() => KeyStore.Attach();
 
-	void IStreamContainerAttachment.Detach() => KeyStore.Detach();
+	void IClusteredStreamsAttachment.Detach() => KeyStore.Detach();
 
 	#endregion
 }

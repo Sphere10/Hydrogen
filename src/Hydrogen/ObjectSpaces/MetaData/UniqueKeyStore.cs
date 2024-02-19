@@ -18,7 +18,7 @@ namespace Hydrogen.ObjectSpaces;
 /// <typeparam name="TKey"></typeparam>
 internal class UniqueKeyStore<TKey> : MetaDataStoreDecorator<TKey> {
 
-	public UniqueKeyStore(StreamContainer container, long reservedStreamIndex, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
+	public UniqueKeyStore(ClusteredStreams container, long reservedStreamIndex, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
 		: base(
 			new MemoryCachedMetaDataDictionary<TKey>(
 				new ListBasedMetaDataStore<TKey>(

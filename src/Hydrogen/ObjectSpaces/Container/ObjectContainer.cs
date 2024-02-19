@@ -32,7 +32,7 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	private readonly Type _objectType;
 	
 
-	public ObjectContainer(Type objectType, StreamContainer streams, IItemSerializer packedPackedSerializer, bool preAllocateOptimization) {
+	public ObjectContainer(Type objectType, ClusteredStreams streams, IItemSerializer packedPackedSerializer, bool preAllocateOptimization) {
 		Guard.ArgumentNotNull(objectType, nameof(objectType));
 		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(packedPackedSerializer, nameof(packedPackedSerializer));
@@ -52,7 +52,7 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public override bool RequiresLoad => Streams.RequiresLoad;
 
-	public StreamContainer Streams { get; }
+	public ClusteredStreams Streams { get; }
 
 	public long Count => Streams.Count - Streams.Header.ReservedStreams;
 

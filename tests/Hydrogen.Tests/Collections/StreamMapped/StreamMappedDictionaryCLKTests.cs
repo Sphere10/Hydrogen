@@ -27,14 +27,14 @@ public class StreamMappedDictionaryCLKTests : StreamMappedDictionaryTestsBase {
 			new StringSerializer().AsReferenceSerializer().AsConstantSize(11),
 			new StringSerializer(),
 			reservedStreamCount: 33,
-			policy: StreamContainerPolicy.Performance);
+			policy: ClusteredStreamsPolicy.Performance);
 		if (dict.RequiresLoad)
 			dict.Load();
 		Assert.That(dict.ObjectContainer.Streams.Header.ClusterSize, Is.EqualTo(21));
 		Assert.That(dict.ObjectContainer.Streams.Header.ReservedStreams, Is.EqualTo(33));
 	}
 
-	protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, StreamContainerPolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,
+	protected override IDisposable CreateDictionary<TKey, TValue>(int estimatedMaxByteSize, StorageType storageType, ClusteredStreamsPolicy policy, IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer,
 	                                                              IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, out IStreamMappedDictionary<TKey, TValue> clusteredDictionary) {
 		var disposable = base.CreateStream(storageType, estimatedMaxByteSize, out var stream);
 		clusteredDictionary = StreamMappedFactory.CreateDictionaryClk<TKey, TValue>(stream,

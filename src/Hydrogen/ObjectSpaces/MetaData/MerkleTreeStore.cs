@@ -25,7 +25,7 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 	private bool _dirtyRoot;
 
 	// Migrate from MerkleTreeIndex stuff into here
-	public MerkleTreeStore(StreamContainer streams, long reservedStreamIndex, CHF hashAlgorithm) 
+	public MerkleTreeStore(ClusteredStreams streams, long reservedStreamIndex, CHF hashAlgorithm) 
 		: base(streams, reservedStreamIndex) {
 		_hashAlgorithm = hashAlgorithm;
 		_dirtyRoot = false;
@@ -110,9 +110,9 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 
 	private class ContainerLockingMerkleTree : MerkleTreeDecorator  {
 		private readonly MerkleTreeStore _merkleTreeStore;
-		private readonly StreamContainer _container;
+		private readonly ClusteredStreams _container;
 
-		public ContainerLockingMerkleTree(MerkleTreeStore merkleTreeStore, IMerkleTree internalMerkleTree, StreamContainer container) 
+		public ContainerLockingMerkleTree(MerkleTreeStore merkleTreeStore, IMerkleTree internalMerkleTree, ClusteredStreams container) 
 			: base(internalMerkleTree) {
 			_merkleTreeStore = merkleTreeStore;
 			_container = container;

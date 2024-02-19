@@ -20,13 +20,13 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> itemSerializer = null,
 		IEqualityComparer<TItem> itemComparer = null,
 		IItemChecksummer<TItem> itemChecksummer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 0,
 		long checksumIndexStreamIndex = 0,
 		Endianness endianness = Endianness.LittleEndian, 
 		bool autoLoad = false
 	) {
-		var streamContainer = new StreamContainer(
+		var streamContainer = new ClusteredStreams(
 				rootStream, 
 				clusterSize,
 				policy,
@@ -48,7 +48,7 @@ public static class StreamMappedFactory {
 	}
 
 	public static IStreamMappedList<TItem> CreateList<TItem>(
-		StreamContainer streamContainer,
+		ClusteredStreams streams,
 		IItemSerializer<TItem> itemSerializer = null,
 		IEqualityComparer<TItem> itemComparer = null,
 		IItemChecksummer<TItem> itemChecksummer = null,
@@ -56,7 +56,7 @@ public static class StreamMappedFactory {
 		bool autoLoad = false
 	) {
 		var container = CreateListContainer(
-			streamContainer,
+			streams,
 			itemSerializer,
 			itemChecksummer,
 			checksumIndexStreamIndex
@@ -83,7 +83,7 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> itemSerializer = null,
 		IEqualityComparer<TItem> itemComparer = null,
 		IItemChecksummer<TItem> itemChecksummer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 1,
 		long freeIndexStoreStreamIndex = 0,
 		long checksumIndexStreamIndex = 1,
@@ -91,7 +91,7 @@ public static class StreamMappedFactory {
 		bool autoLoad = false
 	) {
 		var list = CreateRecyclableList(
-		new StreamContainer(
+		new ClusteredStreams(
 				rootStream, 
 				clusterSize,
 				policy,
@@ -111,7 +111,7 @@ public static class StreamMappedFactory {
 	}
 
 	public static IStreamMappedRecyclableList<TItem> CreateRecyclableList<TItem>(
-		StreamContainer streamContainer,
+		ClusteredStreams streams,
 		IItemSerializer<TItem> itemSerializer = null,
 		IEqualityComparer<TItem> itemComparer = null,
 		IItemChecksummer<TItem> itemChecksummer = null,
@@ -121,7 +121,7 @@ public static class StreamMappedFactory {
 	) {
 		var list = new StreamMappedRecyclableList<TItem>(
 			BuildRecyclableListContainer(
-				streamContainer,
+				streams,
 				itemSerializer,
 				itemChecksummer,
 				freeIndexStoreStreamIndex,
@@ -146,7 +146,7 @@ public static class StreamMappedFactory {
 		IEqualityComparer<TKey> keyComparer,
 		IEqualityComparer<TValue> valueComparer,
 		int clusterSize = HydrogenDefaults.ClusterSize,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 2,
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1,
@@ -236,7 +236,7 @@ public static class StreamMappedFactory {
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
 		IItemChecksummer<TKey> keyChecksummer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false,
 		long reservedStreamCount = 2,
@@ -244,7 +244,7 @@ public static class StreamMappedFactory {
 		long keyChecksumIndexStreamIndex = 1
 	) {
 		var dict = CreateDictionaryKvp (
-			new StreamContainer(
+			new ClusteredStreams(
 				rootStream,
 				clusterSize,
 				policy,
@@ -266,7 +266,7 @@ public static class StreamMappedFactory {
 	}
 
 	public static StreamMappedDictionary<TKey, TValue> CreateDictionaryKvp<TKey, TValue>(
-		StreamContainer streamContainer,
+		ClusteredStreams streams,
 		IItemSerializer<TKey> keySerializer = null,
 		IItemSerializer<TValue> valueSerializer = null,
 		IEqualityComparer<TKey> keyComparer = null,
@@ -278,10 +278,10 @@ public static class StreamMappedFactory {
 	) {
 
 		var container = CreateKvpObjectContainer(
-				streamContainer,
+				streams,
 				keySerializer ?? ItemSerializer<TKey>.Default,
 				valueSerializer ?? ItemSerializer<TValue>.Default,
-				keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, streamContainer.Endianness),
+				keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, streams.Endianness),
 				keyComparer ?? EqualityComparer<TKey>.Default,
 				freeIndexStoreStreamIndex,
 				keyChecksumIndexStreamIndex
@@ -309,14 +309,14 @@ public static class StreamMappedFactory {
 		IItemSerializer<TValue> valueSerializer = null,
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false,
 		long reservedStreamCount = 2,
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1
 	) {
-		var container = new StreamContainer(
+		var container = new ClusteredStreams(
 			rootStream,
 			clusterSize,
 			policy,
@@ -342,7 +342,7 @@ public static class StreamMappedFactory {
 	}
 
 	public static StreamMappedDictionaryCLK<TKey, TValue> CreateDictionaryClk<TKey, TValue>(
-		StreamContainer streamContainer,
+		ClusteredStreams streams,
 		IItemSerializer<TKey> constantLengthKeySerializer,
 		IItemSerializer<TValue> valueSerializer = null,
 		IEqualityComparer<TKey> keyComparer = null,
@@ -352,7 +352,7 @@ public static class StreamMappedFactory {
 		long keyStoreStreamIndex = 1
 	) {
 		var container = CreateClkContainer(
-			streamContainer,
+			streams,
 			constantLengthKeySerializer,
 			valueSerializer ?? ItemSerializer<TValue>.Default,
 			keyComparer ?? EqualityComparer<TKey>.Default,
@@ -378,7 +378,7 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> serializer,
 		CHF chf,
 		IEqualityComparer<TItem> comparer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		Endianness endianness = Endianness.LittleEndian
 	) => CreateHashSet(
 		rootStream,
@@ -396,7 +396,7 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> serializer,
 		IItemHasher<TItem> hasher,
 		IEqualityComparer<TItem> comparer = null,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		Endianness endianness = Endianness.LittleEndian
 	) => new (
 		CreateDictionaryClk(
@@ -418,7 +418,7 @@ public static class StreamMappedFactory {
 	#region Object Container
 
 	internal static ObjectContainer<KeyValuePair<TKey, TValue>> CreateKvpObjectContainer<TKey, TValue>(
-		StreamContainer streamContainer,
+		ClusteredStreams streams,
 		IItemSerializer<TKey> keySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IItemChecksummer<TKey> keyChecksummer,
@@ -426,19 +426,19 @@ public static class StreamMappedFactory {
 		long freeIndexStoreStreamIndex,
 		long keyChecksumIndexStreamIndex
 	) {
-		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
+		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.ArgumentNotNull(keyChecksummer, nameof(keyChecksummer));
 
 		// Create object container
 		var container = new ObjectContainer<KeyValuePair<TKey, TValue>>(
-			streamContainer,
+			streams,
 			new KeyValuePairSerializer<TKey, TValue>(
 				keySerializer ?? ItemSerializer<TKey>.Default,
 				valueSerializer ?? ItemSerializer<TValue>.Default
 			),
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+			streams.Policy.HasFlag(ClusteredStreamsPolicy.FastAllocate)
 		);
 
 		// Create free-index store
@@ -469,23 +469,23 @@ public static class StreamMappedFactory {
 	}
 
 	internal static ObjectContainer<TValue> CreateClkContainer<TKey, TValue>(
-		StreamContainer streamContainer,
+		ClusteredStreams streams,
 		IItemSerializer<TKey> constantLengthKeySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IEqualityComparer<TKey> keyComparer,
 		long freeIndexStoreStreamIndex,
 		long keyStoreStreamIndex
 	) {
-		Guard.ArgumentNotNull(streamContainer, nameof(streamContainer));
+		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(constantLengthKeySerializer, nameof(constantLengthKeySerializer));
 		Guard.Argument(constantLengthKeySerializer.IsConstantSize, nameof(constantLengthKeySerializer), "Keys must be statically sized");
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
 		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
 
 		var container = new ObjectContainer<TValue>(
-			streamContainer, 
+			streams, 
 			valueSerializer,
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+			streams.Policy.HasFlag(ClusteredStreamsPolicy.FastAllocate)
 		);
 
 		var recyclableIndexIndex = new RecyclableIndexIndex(
@@ -507,15 +507,15 @@ public static class StreamMappedFactory {
 	}
 
 	private static ObjectContainer<TItem> CreateListContainer<TItem>(
-		StreamContainer streamContainer,
+		ClusteredStreams streams,
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
 		long checksumIndexStreamIndex
 	) {
 		var container = new ObjectContainer<TItem>(
-			streamContainer, 
+			streams, 
 			itemSerializer, 
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+			streams.Policy.HasFlag(ClusteredStreamsPolicy.FastAllocate)
 		);
 
 		if (itemChecksummer is not null) {
@@ -533,16 +533,16 @@ public static class StreamMappedFactory {
 	}
 
 	private static ObjectContainer<TItem> BuildRecyclableListContainer<TItem>(
-		StreamContainer streamContainer,
+		ClusteredStreams streams,
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
 		long freeIndexStoreStreamIndex,
 		long checksumIndexStreamIndex
 	) {
 		var container = new ObjectContainer<TItem>(
-			streamContainer, 
+			streams, 
 			itemSerializer, 
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.FastAllocate)
+			streams.Policy.HasFlag(ClusteredStreamsPolicy.FastAllocate)
 		);
 
 		// Create free-index store

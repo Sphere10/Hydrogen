@@ -574,7 +574,7 @@
 //			Tools.FileSystem.CreateDirectory(txnDir);
 
 //		_transactionalDict = new TransactionalDictionary<string, PlayerRecord>(
-//			HydrogenFileDescriptor.From(repoPath, txnDir, containerPolicy: StreamContainerPolicy.Default),
+//			HydrogenFileDescriptor.From(repoPath, txnDir, containerPolicy: ClusteredStreamsPolicy.Default),
 //			new StringSerializer(),
 //			new PlayerRecordSerializer(),
 //			keyChecksum: new ObjectHashCodeChecksummer<string>()

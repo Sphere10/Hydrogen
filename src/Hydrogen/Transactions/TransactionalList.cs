@@ -61,13 +61,13 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		IEqualityComparer<T> comparer = null, 
 		IItemChecksummer<T> itemChecksummer = null,
 		int clusterSize = HydrogenDefaults.ClusterSize, 
-		StreamContainerPolicy policy = StreamContainerPolicy.Default, 
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default, 
 		long reservedStreams = 0,
 		long checksumIndexStreamIndex = 0,
 		Endianness endianness = HydrogenDefaults.Endianness,
 		bool autoLoad = false
 	) : this(
-			new StreamContainer(
+			new ClusteredStreams(
 			  transactionalStream, 
 			  clusterSize, 
 			  policy, 
@@ -86,7 +86,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 	}
 
 	public TransactionalList(
-		StreamContainer streams, 
+		ClusteredStreams streams, 
 		ITransactionalObject transactionalObject, 
 		IItemSerializer<T> serializer = null, 
 		IEqualityComparer<T> comparer = null,

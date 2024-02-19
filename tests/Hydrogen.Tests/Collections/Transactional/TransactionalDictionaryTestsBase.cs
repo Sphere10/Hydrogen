@@ -20,7 +20,7 @@ namespace Hydrogen.Tests;
 public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 
 	[Test]
-	public void AddNothing([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddNothing([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -29,7 +29,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void AddOne([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void AddOne([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -39,7 +39,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void ReuseRecord([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ReuseRecord([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -51,7 +51,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void ContainsKey([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ContainsKey([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -61,7 +61,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void DoesNotContainKeyAfterRemove([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void DoesNotContainKeyAfterRemove([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -72,7 +72,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void ContainsKeyValuePair([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ContainsKeyValuePair([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -84,7 +84,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -97,7 +97,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void RemoveByKey([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void RemoveByKey([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -108,7 +108,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void RemoveByKeyValuePair([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void RemoveByKeyValuePair([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -119,14 +119,14 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void IntegrationTests([StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(23)] int maxItems) => DoIntegrationTests(policy, maxItems, 30);
+	public void IntegrationTests([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(23)] int maxItems) => DoIntegrationTests(policy, maxItems, 30);
 
 #if DEBUG
 	[Test]
-	public void IntegrationTests_Heavy([StreamContainerPolicyTestValues] StreamContainerPolicy policy) => DoIntegrationTests(policy, 250, 250);
+	public void IntegrationTests_Heavy([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) => DoIntegrationTests(policy, 250, 250);
 #endif
 
-	private void DoIntegrationTests([StreamContainerPolicyTestValues] StreamContainerPolicy policy, int maxItems, int iterations) {
+	private void DoIntegrationTests([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, int maxItems, int iterations) {
 		var keyGens = 0;
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -142,7 +142,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 
 	[Test]
 	public void LoadWhenNotRequiredDoesntBreak_BugCase() {
-		using (Create(new PrimitiveSerializer<int>(), new PrimitiveSerializer<int>(), EqualityComparer<int>.Default, EqualityComparer<int>.Default, StreamContainerPolicy.Default, out var dictionary, out _)) {
+		using (Create(new PrimitiveSerializer<int>(), new PrimitiveSerializer<int>(), EqualityComparer<int>.Default, EqualityComparer<int>.Default, ClusteredStreamsPolicy.Default, out var dictionary, out _)) {
 			Assert.That(dictionary.RequiresLoad, Is.True);
 			dictionary.Load();
 			Assert.That(dictionary.RequiresLoad, Is.False);
@@ -151,7 +151,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanLoadPreviouslyCommittedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CanLoadPreviouslyCommittedState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -159,7 +159,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			HydrogenFileDescriptor.From(file, dir, containerPolicy: StreamContainerPolicy.Default),
+			HydrogenFileDescriptor.From(file, dir, containerPolicy: ClusteredStreamsPolicy.Default),
 			new PrimitiveSerializer<int>(),
 			new PrimitiveSerializer<int>(),
 			null,
@@ -177,7 +177,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			new PrimitiveSerializer<int>(),
 			new PrimitiveSerializer<int>(),
 			null,
@@ -192,7 +192,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyCommittedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CanUpdatePreviouslyCommittedState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -200,7 +200,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -217,7 +217,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -231,7 +231,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		}
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -243,7 +243,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		}
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -259,7 +259,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyRolledBackState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CanUpdatePreviouslyRolledBackState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -267,7 +267,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -284,7 +284,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -298,7 +298,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		}
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -311,7 +311,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		}
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -326,7 +326,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyAbandonedState([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CanUpdatePreviouslyAbandonedState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -334,7 +334,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		var disposable2 = Tools.Scope.ExecuteOnDispose(() => Tools.Lambda.ActionIgnoringExceptions(() => Tools.FileSystem.DeleteDirectory(dir)));
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -351,7 +351,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		Assert.That(Tools.FileSystem.CountDirectoryContents(dir), Is.EqualTo(0));
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -365,7 +365,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		}
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -378,7 +378,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		}
 
 		using (var dictionary = new TransactionalDictionary<int, int>(
-			       HydrogenFileDescriptor.From(file, dir, containerPolicy:StreamContainerPolicy.Default),
+			       HydrogenFileDescriptor.From(file, dir, containerPolicy:ClusteredStreamsPolicy.Default),
 			       new PrimitiveSerializer<int>(),
 			       new PrimitiveSerializer<int>(),
 			       null,
@@ -392,9 +392,9 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 		}
 	}
 
-	protected IDisposable Create(StreamContainerPolicy policy, out ITransactionalDictionary<string, TestObject> dictionary)
+	protected IDisposable Create(ClusteredStreamsPolicy policy, out ITransactionalDictionary<string, TestObject> dictionary)
 		=> Create(new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectEqualityComparer(), policy, out dictionary, out _);
 
-	protected abstract IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, StreamContainerPolicy policy,
+	protected abstract IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, ClusteredStreamsPolicy policy,
 	                                           out ITransactionalDictionary<TKey, TValue> clustered, out string file);
 }

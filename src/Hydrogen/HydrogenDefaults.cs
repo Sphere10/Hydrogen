@@ -27,7 +27,7 @@ public static class HydrogenDefaults {
 	// Clustered
 	public const int ClusterSize = 4096; // 4kb
 	public const long RecordCacheSize = 1048576; // 1mb
-	public const StreamContainerPolicy ContainerPolicy = StreamContainerPolicy.Default;
+	public const ClusteredStreamsPolicy ContainerPolicy = ClusteredStreamsPolicy.Default;
 
 	// Serialization
 	public const Endianness Endianness = Hydrogen.Endianness.LittleEndian;

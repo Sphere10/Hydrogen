@@ -24,7 +24,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 
 	private readonly SynchronizedObject _lock;
 	private readonly TransactionalStream _fileStream;
-	private readonly StreamContainer _streamContainer;
+	private readonly ClusteredStreams _streams;
 	private readonly SerializerFactory _serializerFactory;
 	private readonly ComparerFactory _comparerFactory;
 	private readonly IDictionary<Type, IStreamMappedCollection> _collections;
@@ -48,7 +48,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		_fileStream.Committed += _ => OnCommitted();
 		_fileStream.RollingBack += _ => OnRollingBack();
 		_fileStream.RolledBack += _ => OnRolledBack();
-		_streamContainer = new StreamContainer(
+		_streams = new ClusteredStreams(
 			_fileStream,
 			(int)file.ClusterSize,
 			file.ContainerPolicy,
@@ -64,7 +64,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 			Load();
 	}
 
-	public override bool RequiresLoad => !_loaded || _streamContainer.RequiresLoad;
+	public override bool RequiresLoad => !_loaded || _streams.RequiresLoad;
 
 	public HydrogenFileDescriptor File { get; }
 
@@ -165,7 +165,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		foreach (var disposable in _collections.Values.Cast<IDisposable>())
 			disposable.Dispose();
 
-		_streamContainer.Dispose();
+		_streams.Dispose();
 		_fileStream.Dispose();
 	}
 
@@ -174,18 +174,18 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		Definition.Validate().ThrowOnFailure();
 
 		// Load up stream container
-		if (_streamContainer.RequiresLoad)
-			_streamContainer.Load();
+		if (_streams.RequiresLoad)
+			_streams.Load();
 
 		// Ensure container streams exist
-		var containerStreams = _streamContainer.Header.StreamCount - _streamContainer.Header.ReservedStreams;
+		var containerStreams = _streams.Header.StreamCount - _streams.Header.ReservedStreams;
 		if (containerStreams == 0) {
 			// TODO: create the consensus-space merkle tree here
 			for (var i = 0; i < Definition.Containers.Length; i++) {
-				using var _ = _streamContainer.Add();
+				using var _ = _streams.Add();
 			}
 		}
-		containerStreams = _streamContainer.Header.StreamCount - _streamContainer.Header.ReservedStreams;
+		containerStreams = _streams.Header.StreamCount - _streams.Header.ReservedStreams;
 		Guard.Ensure(containerStreams == Definition.Containers.Length, $"Unexpected stream count {Definition?.Containers.Length}, expected {containerStreams}");
 
 
@@ -210,13 +210,13 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 
 	protected virtual IStreamMappedCollection BuildObjectList(ContainerDefinition containerDefinition, int containerIndex) {
 		// Get the stream within the object space which will comprise the object container
-		var containerStream = _streamContainer.Open(_streamContainer.Header.ReservedStreams + containerIndex, false, true);
+		var containerStream = _streams.Open(_streams.Header.ReservedStreams + containerIndex, false, true);
 
 		// Create a StreamContainer mapped to this stream, so it can contain items
-		var containerItemsStreamContainer = new StreamContainer(
+		var containerItemsStreamContainer = new ClusteredStreams(
 			containerStream,
 			SanitizeContainerClusterSize(containerDefinition.AverageObjectSizeBytes),
-			StreamContainerPolicy.FastAllocate,
+			ClusteredStreamsPolicy.FastAllocate,
 			containerDefinition.Indexes.Length,
 			Endianness.LittleEndian,
 			false
@@ -237,7 +237,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 
 		// construct indexes
 		foreach (var (item, index) in containerDefinition.Indexes.WithIndex()) {
-			IStreamContainerAttachment metaDataObserver = item.Type switch {
+			IClusteredStreamsAttachment metaDataObserver = item.Type switch {
 				IndexType.Identifier => BuildIdentifier(container, containerDefinition, item, index),
 				IndexType.UniqueKey => BuildUniqueKey(container, containerDefinition, item, index),
 				IndexType.Index => BuildIndex(container, containerDefinition, item, index),
@@ -268,7 +268,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		return list;
 	}
 
-	protected virtual IStreamContainerAttachment BuildIdentifier(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IClusteredStreamsAttachment BuildIdentifier(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
@@ -277,7 +277,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IStreamContainerAttachment BuildUniqueKey(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IClusteredStreamsAttachment BuildUniqueKey(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
@@ -286,7 +286,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IStreamContainerAttachment BuildIndex(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IClusteredStreamsAttachment BuildIndex(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
@@ -329,7 +329,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 	protected virtual void OnRolledBack() {
 		// reload after rollback
 		_instanceTracker.Clear();
-		_streamContainer.Initialize();
+		_streams.Initialize();
 		Load();
 	}
 

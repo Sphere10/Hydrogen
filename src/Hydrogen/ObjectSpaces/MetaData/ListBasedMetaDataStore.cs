@@ -19,7 +19,7 @@ internal class ListBasedMetaDataStore<TData> : MetaDataStoreBase<TData> {
 	
 	private StreamPagedList<TData> _inStreamIndex;
 	
-	public ListBasedMetaDataStore(StreamContainer streams, long reservedStreamIndex, IItemSerializer<TData> datumSerializer) 
+	public ListBasedMetaDataStore(ClusteredStreams streams, long reservedStreamIndex, IItemSerializer<TData> datumSerializer) 
 		: base(streams, reservedStreamIndex) {
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Datum serializer must be a constant-length serializer.");

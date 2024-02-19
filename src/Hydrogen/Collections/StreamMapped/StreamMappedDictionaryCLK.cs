@@ -17,9 +17,9 @@ using Hydrogen.ObjectSpaces;
 namespace Hydrogen;
 
 /// <summary>
-/// A dictionary whose contents are mapped onto a stream using an <see cref="ObjectContainer"/> which in turn uses a <see cref="StreamContainer"/>.
+/// A dictionary whose contents are mapped onto a stream using an <see cref="ObjectContainer"/> which in turn uses a <see cref="ClusteredStreams"/>.
 /// This implementation is specialized for "constant-length keys" (i.e CLK) and stores only the <see cref="TValue "/> in the object container, not KeyValuePair's
-/// like <see cref="StreamMappedDictionary{TKey,TValue}"/>. The keys are stored in a separate index in a reserved stream within the <see cref="StreamContainer"/>.
+/// like <see cref="StreamMappedDictionary{TKey,TValue}"/>. The keys are stored in a separate index in a reserved stream within the <see cref="ClusteredStreams"/>.
 /// Like <see cref="StreamMappedDictionary{TKey,TValue}"/>, deleted items are not removed from the underlying stream, but rather marked as reaped
 /// and re-used in subsequent <see cref="Add(TKey,TValue)"/> operations.
 /// </summary>

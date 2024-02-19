@@ -11,7 +11,7 @@ using System;
 namespace Hydrogen;
 
 /// <summary>
-/// A cluster map used to store disparate data streams into connected chains of clusters. <see cref="StreamContainer"/> uses
+/// A cluster map used to store disparate data streams into connected chains of clusters. <see cref="ClusteredStreams"/> uses
 /// this to store multiple streams of data into a single stream.
 /// </summary>
 /// <remarks>Not thread-safe.</remarks>

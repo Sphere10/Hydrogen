@@ -28,9 +28,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 
 
 	[Test]
-	public void CannotSwapOpenStream([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CannotSwapOpenStream([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		using var stream = streamContainer.Add();
 		Assert.That(streamContainer.Count, Is.EqualTo(2));
@@ -40,9 +40,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void TestCheckWipesOutOldData([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void TestCheckWipesOutOldData([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 32, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 32, policy: policy, autoLoad: true);
 		using (streamContainer.EnterAccessScope()) {
 			streamContainer.AddBytes(Tools.Array.Gen<byte>(64, 1));
 			Assert.That(streamContainer.Count, Is.EqualTo(1));
@@ -92,11 +92,11 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void BugCase_1([Values(32)] int clusterSize, [Values(1)] int N, [Values(65)] int M, [Values(StreamContainerPolicy.Debug)] StreamContainerPolicy policy) {
+	public void BugCase_1([Values(32)] int clusterSize, [Values(1)] int N, [Values(65)] int M, [Values(ClusteredStreamsPolicy.Debug)] ClusteredStreamsPolicy policy) {
 
 		var actual = new List<byte[]>();
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		for (var i = 0; i < N; i++) {
 			using var stream = streamContainer.Add();
 			var data = Tools.Array.Gen<byte>(M, 1);
@@ -112,9 +112,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void CheckStructure_1([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CheckStructure_1([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		using (var stream = streamContainer.OpenWrite(0))
 			stream.SetLength(0);
@@ -123,9 +123,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void CheckStructure_2([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CheckStructure_2([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		streamContainer.AddBytes(new byte[] { 1 });
 		using (var stream = streamContainer.OpenWrite(0))
@@ -134,9 +134,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void CheckStructure_3([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CheckStructure_3([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		streamContainer.AddBytes(new byte[] { 1 });
 		using (var scope = streamContainer.OpenWrite(1))
@@ -145,32 +145,32 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AlwaysRequiresLoad([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AlwaysRequiresLoad([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy);
 		Assert.That(streamContainer.RequiresLoad, Is.True);
 	}
 
 	[Test]
-	public void LoadEmpty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void LoadEmpty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy);
 	}
 
 	[Test]
-	public void ReloadEmpty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void ReloadEmpty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 1, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 1, autoLoad: true);
 		using var clonedStream = new MemoryStream(rootStream.ToArray());
-		var loadedStreamContainer = new StreamContainer(clonedStream, 1, autoLoad: true);
+		var loadedStreamContainer = new ClusteredStreams(clonedStream, 1, autoLoad: true);
 		Assert.That(() => ClusterDiagnostics.VerifyClusters(loadedStreamContainer), Throws.Nothing);
 	}
 
 
 	[Test]
-	public void AddEmpty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddEmpty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using (var stream = streamContainer.Add())
 			Assert.That(stream.Length, Is.EqualTo(0));
 		Assert.That(streamContainer.Count, Is.EqualTo(1));
@@ -178,9 +178,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Add2Empty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Add2Empty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using (var stream = streamContainer.Add())
 			Assert.That(stream.Length, Is.EqualTo(0));
 		using (var stream = streamContainer.Add())
@@ -190,9 +190,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddNull([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddNull([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(null);
 		using (var stream = streamContainer.OpenRead(0))
 			Assert.That(stream.Length, Is.EqualTo(0));
@@ -200,9 +200,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddManyEmpty([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddManyEmpty([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		for (var i = 0; i < N; i++) {
 			using (var stream = streamContainer.Add())
 				Assert.That(stream.Length, Is.EqualTo(0));
@@ -212,9 +212,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void OpenEmpty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void OpenEmpty([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using (_ = streamContainer.Add()) ;
 		using (var stream = streamContainer.OpenRead(0))
 			Assert.That(stream.Length, Is.EqualTo(0));
@@ -222,9 +222,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void SetEmpty_1([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void SetEmpty_1([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using (var stream = streamContainer.Add()) {
 			stream.SetLength(0);
 		}
@@ -236,9 +236,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void SetEmpty_2([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void SetEmpty_2([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using (var stream = streamContainer.Add()) {
 			stream.Write(new byte[] { 1 });
 			stream.SetLength(0);
@@ -251,9 +251,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void SetEmpty_3([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void SetEmpty_3([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using (var stream = streamContainer.Add()) {
 			stream.Write(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
 			stream.SetLength(0);
@@ -266,9 +266,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Add1Byte([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Add1Byte([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		Assert.That(streamContainer.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.ReadAll(0), Is.EqualTo(new byte[] { 1 }));
@@ -276,9 +276,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Add2x1Byte([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Add2x1Byte([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		streamContainer.AddBytes(new byte[] { 1 });
 		Assert.That(streamContainer.Count, Is.EqualTo(2));
@@ -288,9 +288,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Add2ShrinkFirst_1b([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Add2ShrinkFirst_1b([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		streamContainer.AddBytes(new byte[] { 2 });
 		using (var stream = streamContainer.OpenWrite(0))
@@ -304,9 +304,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Add2ShrinkFirst_2b([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Add2ShrinkFirst_2b([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1, 1 });
 		streamContainer.AddBytes(new byte[] { 2, 2 });
 
@@ -320,9 +320,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Add2ShrinkSecond_2b([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Add2ShrinkSecond_2b([Values(1, 2, 3, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1, 1 });
 		streamContainer.AddBytes(new byte[] { 2, 2 });
 		using (var stream = streamContainer.OpenWrite(1))
@@ -335,9 +335,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddNx1Byte([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddNx1Byte([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		for (var i = 0; i < N; i++)
 			streamContainer.AddBytes(new byte[] { 1 });
 
@@ -352,11 +352,11 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddNxMByte([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddNxMByte([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var rng = new Random(31337);
 		var actual = new List<byte[]>();
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		for (var i = 0; i < N; i++) {
 			using var stream = streamContainer.Add();
 			var data = rng.NextBytes(M);
@@ -370,9 +370,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Insert1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Insert1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.InsertBytes(0, new byte[] { 1 });
 		Assert.That(streamContainer.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.ReadAll(0), Is.EqualTo(new byte[] { 1 }));
@@ -380,9 +380,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Insert2x1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Insert2x1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.InsertBytes(0, new byte[] { 1 });
 		streamContainer.InsertBytes(0, new byte[] { 2 });
 		Assert.That(streamContainer.Count, Is.EqualTo(2));
@@ -392,9 +392,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Insert3x1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Insert3x1b([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int N, [Values(2, 4, 100)] int M, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.InsertBytes(0, new byte[] { 1 });
 		streamContainer.InsertBytes(0, new byte[] { 2 });
 		streamContainer.InsertBytes(0, new byte[] { 3 });
@@ -408,7 +408,7 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	[Test]
 	public void Insert_BugCase() {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 32, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 32, autoLoad: true);
 		streamContainer.InsertBytes(0, new byte[] { 1 });
 		streamContainer.InsertBytes(0, Array.Empty<byte>());
 		using (streamContainer.EnterAccessScope()) {
@@ -418,46 +418,46 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Remove1b([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Remove1b([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		streamContainer.Remove(0);
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
 		Assert.That(streamContainer.ClusterMap.Clusters.Count, Is.EqualTo(0));
-		Assert.That(rootStream.Length, Is.EqualTo(StreamContainerHeader.ByteLength));
+		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStreamsHeader.ByteLength));
 		StreamContainerTestsHelper.AssertValidStreamDescriptors(streamContainer);
 	}
 
 	[Test]
-	public void Remove2b([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Remove2b([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1, 2 });
 		streamContainer.Remove(0);
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
 		Assert.That(streamContainer.ClusterMap.Clusters.Count, Is.EqualTo(0));
-		Assert.That(rootStream.Length, Is.EqualTo(StreamContainerHeader.ByteLength));
+		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStreamsHeader.ByteLength));
 		StreamContainerTestsHelper.AssertValidStreamDescriptors(streamContainer);
 	}
 
 	[Test]
-	public void Remove3b_Bug([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void Remove3b_Bug([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 1, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 1, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1, 2, 3 });
 		streamContainer.Remove(0);
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
-		Assert.That(rootStream.Length, Is.EqualTo(StreamContainerHeader.ByteLength));
+		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStreamsHeader.ByteLength));
 		StreamContainerTestsHelper.AssertValidStreamDescriptors(streamContainer);
 	}
 
 	[Test]
-	public void AddString([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddString([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const string data = "Hello Stream!";
 		var dataBytes = Encoding.ASCII.GetBytes(data);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(dataBytes);
 		Assert.That(streamContainer.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.ReadAll(0), Is.EqualTo(dataBytes));
@@ -465,25 +465,25 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void RemoveString([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void RemoveString([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const string data = "Hello Stream! This is a long sentence which should span various clusters. If it's too short, won't be a good test...";
 		var dataBytes = Encoding.ASCII.GetBytes(data);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(dataBytes);
 		streamContainer.Remove(0);
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
 		Assert.That(streamContainer.ClusterMap.Clusters.Count, Is.EqualTo(0));
-		Assert.That(rootStream.Length, Is.EqualTo(StreamContainerHeader.ByteLength));
+		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStreamsHeader.ByteLength));
 		StreamContainerTestsHelper.AssertValidStreamDescriptors(streamContainer);
 	}
 
 	[Test]
-	public void RemoveMiddle([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void RemoveMiddle([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const string data = "Hello Stream! This is a long sentence which should span various clusters. If it's too short, won't be a good test...";
 
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		for (var i = 0; i < 100; i++)
 			streamContainer.AddBytes(Encoding.ASCII.GetBytes(data + $"{i}"));
 		streamContainer.Remove(50);
@@ -498,11 +498,11 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void RemoveLast([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void RemoveLast([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const string data = "Hello Stream! This is a long sentence which should span various clusters. If it's too short, won't be a good test...";
 		var dataBytes = Encoding.ASCII.GetBytes(data);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		for (var i = 0; i < 100; i++)
 			streamContainer.AddBytes(Encoding.ASCII.GetBytes(data + $"{i}"));
 		streamContainer.Remove(99);
@@ -516,13 +516,13 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void UpdateWithSmallerStream([Values(1, 4, 32, 2048)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void UpdateWithSmallerStream([Values(1, 4, 32, 2048)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const string data1 = "Hello Stream! This is a long string which will be replaced by a smaller one.";
 		const string data2 = "a";
 		var data1Bytes = Encoding.ASCII.GetBytes(data1);
 		var data2Bytes = Encoding.ASCII.GetBytes(data2);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using (var stream = streamContainer.Add()) {
 			stream.Write(data1Bytes);
 			stream.SetLength(0);
@@ -534,13 +534,13 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void UpdateWithLargerStream([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void UpdateWithLargerStream([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const string data1 = "a";
 		const string data2 = "Hello Stream! This is a long string which did replace a smaller one.";
 		var data1Bytes = Encoding.ASCII.GetBytes(data1);
 		var data2Bytes = Encoding.ASCII.GetBytes(data2);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using (var stream = streamContainer.Add()) {
 			stream.Write(data1Bytes);
 			stream.SetLength(0);
@@ -552,9 +552,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddRemoveAllAddFirst([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddRemoveAllAddFirst([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4 });
 		streamContainer.AddBytes(new byte[] { 5, 6, 7, 8, 9 });
 		streamContainer.Remove(0);
@@ -566,9 +566,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddTwoRemoveFirst([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddTwoRemoveFirst([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4 });
 		streamContainer.AddBytes(new byte[] { 5, 6, 7, 8, 9 });
 		streamContainer.Remove(0);
@@ -578,9 +578,9 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddTwoRemoveAndReAdd([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void AddTwoRemoveAndReAdd([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4 });
 		streamContainer.AddBytes(new byte[] { 5, 6, 7, 8, 9 });
 		streamContainer.Remove(0);
@@ -595,7 +595,7 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	public void ClearTest_1() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 1, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 1, autoLoad: true);
 		streamContainer.Clear();
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
 		Assert.That(streamContainer.Header.StreamCount, Is.EqualTo(0));
@@ -607,7 +607,7 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	public void ClearTest_2() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 1, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 1, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(100));
 		streamContainer.Clear();
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
@@ -620,7 +620,7 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	public void ClearTest_3() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 1, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 1, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(100));
 		streamContainer.AddBytes(rng.NextBytes(100));
 		streamContainer.AddBytes(rng.NextBytes(100));
@@ -635,7 +635,7 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	public void ClearTest_Bug1() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 1, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 1, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(100));
 		streamContainer.AddBytes(rng.NextBytes(100));
 		streamContainer.AddBytes(rng.NextBytes(100));
@@ -648,23 +648,23 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void TestRootStreamLengthConsistent([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void TestRootStreamLengthConsistent([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 111;
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
-		Assert.That(rootStream.Length, Is.EqualTo(StreamContainerHeader.ByteLength + 4 * (clusterSize + sizeof(byte) + sizeof(long) * 2)));
+		Assert.That(rootStream.Length, Is.EqualTo(ClusteredStreamsHeader.ByteLength + 4 * (clusterSize + sizeof(byte) + sizeof(long) * 2)));
 		StreamContainerTestsHelper.AssertValidStreamDescriptors(streamContainer);
 	}
 
 	[Test]
-	public void TestClear([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void TestClear([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
@@ -674,11 +674,11 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void TestClear_2([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void TestClear_2([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const string data = "Hello Stream!";
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
@@ -686,7 +686,7 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 		Assert.That(streamContainer.Count, Is.EqualTo(0));
 
 		var dataBytes = Encoding.ASCII.GetBytes(data);
-		streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(dataBytes);
 		Assert.That(streamContainer.Count, Is.EqualTo(1));
 		Assert.That(streamContainer.ReadAll(0), Is.EqualTo(dataBytes));
@@ -695,10 +695,10 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void TestDanglingPrevOnFirstDataCluster([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void TestDanglingPrevOnFirstDataCluster([Values(1, 4, 32)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(clusterSize * 2));
 		streamContainer.AddBytes(rng.NextBytes(clusterSize));
 		streamContainer.Remove(0);
@@ -707,10 +707,10 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ConsistentFastReadPrev([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void ConsistentFastReadPrev([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		using (streamContainer.EnterAccessScope()) {
 			for (var i = 0; i < streamContainer.ClusterMap.Clusters.Count; i++) {
@@ -722,10 +722,10 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ConsistentFastReadNext([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void ConsistentFastReadNext([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		using (streamContainer.EnterAccessScope()) {
 			for (var i = 0; i < streamContainer.ClusterMap.Clusters.Count; i++) {
@@ -737,10 +737,10 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ConsistentFastWritePrev([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void ConsistentFastWritePrev([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		using (streamContainer.EnterAccessScope()) {
 			for (var i = 0; i < streamContainer.ClusterMap.Clusters.Count; i++) {
@@ -753,10 +753,10 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ConsistentFastWriteNext([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void ConsistentFastWriteNext([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		using (streamContainer.EnterAccessScope()) {
 			for (var i = 0; i < streamContainer.ClusterMap.Clusters.Count; i++) {
@@ -769,11 +769,11 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void FastWriteClusterPrevDoesntCorrupt([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void FastWriteClusterPrevDoesntCorrupt([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		// make a 3 streams, corrupt middle back, should clear no problem
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1, 1 });
 		using (streamContainer.EnterAccessScope()) {
 			Assert.That(streamContainer.ClusterMap.Clusters[0].Next, Is.EqualTo(1));
@@ -786,10 +786,10 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void CorruptData_ForwardsCyclicClusterChain([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_ForwardsCyclicClusterChain([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		// corrupt root-stream, make tip cluster 18 have next to 10 creating a circular linked loop through forward traversal
 		var nextOffset = rootStream.Length - clusterSize - ClusterSerializer.NextLength;
@@ -800,11 +800,11 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void CorruptData_PrevPointsNonExistentCluster([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_PrevPointsNonExistentCluster([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		// make a 3 streams, corrupt middle back, should clear no problem
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
 		var firstStartCluster = streamContainer.GetStreamDescriptor(0).StartCluster;
 		using (streamContainer.EnterAccessScope()) {
@@ -815,11 +815,11 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void CorruptData_BackwardsCyclicClusterChainAtFirstData_Graceful([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_BackwardsCyclicClusterChainAtFirstData_Graceful([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		// make a 3 streams, corrupt middle back, should clear no problem
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 });
 		streamContainer.AddBytes(new byte[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2 });
 		var firstStartCluster = streamContainer.GetStreamDescriptor(0).StartCluster;
@@ -834,118 +834,118 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void CorruptData_BadHeaderVersion([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_BadHeaderVersion([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		rootStream.Position = StreamContainerHeader.VersionOffset;
+		rootStream.Position = ClusteredStreamsHeader.VersionOffset;
 		rootStream.WriteByte(2);
 
-		Assert.That(() => StreamContainer.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
+		Assert.That(() => ClusteredStreams.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
-	public void CorruptData_BadClusterSize_Zero([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_BadClusterSize_Zero([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		rootStream.Position = StreamContainerHeader.ClusterSizeOffset;
+		rootStream.Position = ClusteredStreamsHeader.ClusterSizeOffset;
 		writer.Write(0);
-		Assert.That(() => StreamContainer.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
+		Assert.That(() => ClusteredStreams.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
-	public void CorruptData_BadClusterSize_TooLarge([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_BadClusterSize_TooLarge([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		rootStream.Position = StreamContainerHeader.ClusterSizeOffset;
+		rootStream.Position = ClusteredStreamsHeader.ClusterSizeOffset;
 		writer.Write(100);
-		Assert.That(() => StreamContainer.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
+		Assert.That(() => ClusteredStreams.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
-	public void CorruptData_BadClusterSize_TooBig([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_BadClusterSize_TooBig([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		rootStream.Position = StreamContainerHeader.ClusterSizeOffset;
+		rootStream.Position = ClusteredStreamsHeader.ClusterSizeOffset;
 		writer.Write(clusterSize + 1);
-		Assert.That(() => StreamContainer.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
+		Assert.That(() => ClusteredStreams.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
-	public void CorruptData_TotalClusters_Zero([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_TotalClusters_Zero([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		rootStream.Position = StreamContainerHeader.TotalClustersOffset;
+		rootStream.Position = ClusteredStreamsHeader.TotalClustersOffset;
 		writer.Write(0);
-		Assert.That(() => StreamContainer.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
+		Assert.That(() => ClusteredStreams.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
-	public void CorruptData_TotalClusters_TooLarge([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_TotalClusters_TooLarge([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		rootStream.Position = StreamContainerHeader.TotalClustersOffset;
+		rootStream.Position = ClusteredStreamsHeader.TotalClustersOffset;
 		writer.Write(streamContainer.ClusterMap.Clusters.Count + 1);
-		Assert.That(() => StreamContainer.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
+		Assert.That(() => ClusteredStreams.FromStream(rootStream, autoLoad: true), Throws.TypeOf<InvalidOperationException>());
 	}
 
 	[Test]
-	public void CorruptData_Records_TooSmall_HandlesGracefully([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_Records_TooSmall_HandlesGracefully([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		rootStream.Position = StreamContainerHeader.StreamCountOffset;
+		rootStream.Position = ClusteredStreamsHeader.StreamCountOffset;
 		writer.Write(streamContainer.Count - 1);
 		// note: Can't detect this scenario in integrity checks without examining data, so will
 		// end up creating a corrupt data later. This is not ideal, but acceptable.
-		Assert.That( () => StreamContainer.FromStream(rootStream), Throws.Nothing);
+		Assert.That( () => ClusteredStreams.FromStream(rootStream), Throws.Nothing);
 	}
 
 	[Test]
-	public void CorruptData_Records_TooLarge([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CorruptData_Records_TooLarge([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, rootStream);
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
-		rootStream.Position = StreamContainerHeader.StreamCountOffset;
+		rootStream.Position = ClusteredStreamsHeader.StreamCountOffset;
 		writer.Write((long)(streamContainer.Count + 1));
-		Assert.That(() => StreamContainer.FromStream(rootStream, autoLoad: true), Throws.InstanceOf<InvalidOperationException>());
+		Assert.That(() => ClusteredStreams.FromStream(rootStream, autoLoad: true), Throws.InstanceOf<InvalidOperationException>());
 	}
 
 	[Test]
 	public void LoadOneOneByteListing() {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 1, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 1, autoLoad: true);
 		streamContainer.AddBytes(new byte[] { 1 });
 		using var clonedStream = new MemoryStream(rootStream.ToArray());
-		var loadedStreamContainer = new StreamContainer(clonedStream, 1, autoLoad: true);
+		var loadedStreamContainer = new ClusteredStreams(clonedStream, 1, autoLoad: true);
 		Assert.That(ClusterDiagnostics.ToTextDump(streamContainer), Is.EqualTo(ClusterDiagnostics.ToTextDump(loadedStreamContainer)));
 	}
 
 	[Test]
-	public void LoadComplex([Values(1, 4, 32)] int clusterSize, [Values(0, 2, 4, 100)] int maxStreamSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void LoadComplex([Values(1, 4, 32)] int clusterSize, [Values(0, 2, 4, 100)] int maxStreamSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var rng = new Random(31337 + (int)policy);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		for (var i = 0; i < 100; i++)
 			streamContainer.AddBytes(rng.NextBytes(maxStreamSize));
 
@@ -956,31 +956,31 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 			streamContainer.Swap(i, 100 - i - 1);
 
 		using var clonedStream = new MemoryStream(rootStream.ToArray());
-		var loadedStreamContainer = new StreamContainer(clonedStream, clusterSize, policy: policy, autoLoad: true);
+		var loadedStreamContainer = new ClusteredStreams(clonedStream, clusterSize, policy: policy, autoLoad: true);
 		Assert.That(ClusterDiagnostics.ToTextDump(streamContainer), Is.EqualTo(ClusterDiagnostics.ToTextDump(loadedStreamContainer)));
 		StreamContainerTestsHelper.AssertValidStreamDescriptors(streamContainer);
 
 	}
 
 	[Test]
-	public void IntegrationTests_NoReservedRecords([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int totalStreams, [Values(0, 2, 4, 100)] int maxStreamSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void IntegrationTests_NoReservedRecords([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 100)] int totalStreams, [Values(0, 2, 4, 100)] int maxStreamSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		IntegrationTestsInternal(clusterSize, totalStreams, maxStreamSize, 0, policy);
 	}
 
 	[Test]
 	public void IntegrationTests_ReservedRecords([Values(1, 4, 32)] int clusterSize, [Values(1, 2, 10)] int totalStreams, [Values(0, 2, 4, 100)] int maxStreamSize, [Values(1, 11, 111)] int reservedRecords,
-												 [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+												 [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		IntegrationTestsInternal(clusterSize, totalStreams, maxStreamSize, reservedRecords, policy);
 	}
 
-	public void IntegrationTestsInternal(int clusterSize, int totalStreams, int maxStreamSize, int reservedRecords, StreamContainerPolicy policy) {
+	public void IntegrationTestsInternal(int clusterSize, int totalStreams, int maxStreamSize, int reservedRecords, ClusteredStreamsPolicy policy) {
 		// NOTE: change DebugMode to True when trying to isolate error, else leave False when confirmed working (for faster evaluation)
 		const bool DebugMode = true;
 		const int StreamStreamOperations = 100;
 		var rng = new Random(31337 + (int)policy);
 		var expectedStreams = new List<Stream>();
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, reservedStreams: reservedRecords, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, reservedStreams: reservedRecords, policy: policy, autoLoad: true);
 
 		// Populate reserved records
 		for (var i = 0; i < reservedRecords; i++) {
@@ -1051,13 +1051,13 @@ public class StreamContainerTests : StreamPersistedCollectionTestsBase {
 
 public static class StreamContainerTestsHelper {
 
-	public static void AssertValidStreamDescriptors(StreamContainer streams) {
+	public static void AssertValidStreamDescriptors(ClusteredStreams streams) {
 		Guard.ArgumentNotNull(streams, nameof(streams));
 		for (var i = 0; i < streams.Count; i++)
 			AssertValidRecord(streams, i);
 	}
 
-	public static void AssertValidRecord(StreamContainer streams, int recordIndex) {
+	public static void AssertValidRecord(ClusteredStreams streams, int recordIndex) {
 		using var _ = streams.EnterAccessScope();
 		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentLT(recordIndex, streams.Count, nameof(recordIndex));
@@ -1075,7 +1075,7 @@ public static class StreamContainerTestsHelper {
 		}
 	}
 
-	public static void AssertClusterChainConsistency(StreamContainer streams, long startCluster, long endCluster) {
+	public static void AssertClusterChainConsistency(ClusteredStreams streams, long startCluster, long endCluster) {
 		Assert.That(startCluster, Is.InRange(0, streams.ClusterMap.Clusters.Count - 1), "Start cluster doesn't exist");
 		Assert.That(endCluster, Is.InRange(0, streams.ClusterMap.Clusters.Count - 1), "End cluster doesn't exist");
 		var visited = new HashSet<long>();

@@ -11,7 +11,7 @@ using System;
 namespace Hydrogen;
 
 [Flags]
-public enum StreamContainerPolicy : uint {
+public enum ClusteredStreamsPolicy : uint {
 
 	/// <summary>
 	/// ClusterMap are pre-allocated when serializing items. This avoids on-the-fly allocation during serialization which can be slow.

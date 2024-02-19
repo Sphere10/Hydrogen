@@ -16,7 +16,7 @@ using Hydrogen.ObjectSpaces;
 namespace Hydrogen;
 
 /// <summary>
-/// A dictionary whose contents are mapped onto a stream using an <see cref="ObjectContainer"/> which in turn uses a <see cref="StreamContainer"/>.
+/// A dictionary whose contents are mapped onto a stream using an <see cref="ObjectContainer"/> which in turn uses a <see cref="ClusteredStreams"/>.
 /// This implementation persists <see cref="KeyValuePair{TKey, TValue}"/>s to a stream and uses an index on the <see cref="TKey"/> checksum to find keys
 /// in the container. This is suitable for general purpose dictionaries whose key's of arbitrary length. For keys that are constant length, a more
 /// optimized version is <see cref="StreamMappedDictionaryCLK{TKey,TValue}"/>. 

@@ -16,7 +16,7 @@ internal abstract class MetaDataStoreDecorator<TData, TInner> : IMetaDataStore<T
 		InnerStore = innerStore;
 	}
 
-	public virtual StreamContainer Streams => InnerStore.Streams;
+	public virtual ClusteredStreams Streams => InnerStore.Streams;
 
 	public virtual long ReservedStreamIndex => InnerStore.ReservedStreamIndex;
 	

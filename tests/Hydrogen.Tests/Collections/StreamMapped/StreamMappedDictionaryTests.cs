@@ -42,7 +42,7 @@ public class StreamMappedDictionaryTests : StreamMappedDictionaryTestsBase {
 	protected override IDisposable CreateDictionary<TKey, TValue>(
 		int estimatedMaxByteSize,
 		StorageType storageType,
-		StreamContainerPolicy policy, 
+		ClusteredStreamsPolicy policy, 
 		IItemSerializer<TKey> keySerializer, 
 		IItemSerializer<TValue> valueSerializer,
 		IEqualityComparer<TKey> keyComparer, 

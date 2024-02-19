@@ -21,7 +21,7 @@ namespace Hydrogen;
 /// also serves as the base container for implementations of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s.
 /// <remarks>
 /// The structure of the underlying stream is depicted below:
-/// [StreamContainerHeader] Version: 1, ClusterSize: 4, TotalClusters: 17, StreamCount: 2, StreamDescriptorsEndCluster: 14, ReservedStreams: 0, Policy: 0, MerkleRoot: 0000000000000000000000000000000000000000000000000000000000000000
+/// [ClusteredStreamsHeader] Version: 1, ClusterSize: 4, TotalClusters: 17, StreamCount: 2, StreamDescriptorsEndCluster: 14, ReservedStreams: 0, Policy: 0, MerkleRoot: 0000000000000000000000000000000000000000000000000000000000000000
 /// [Stream Descriptors]:
 /// 0: [ClusteredStreamDescriptor] Size: 5, StartCluster: 7, EndCluster: 8, Traits: Default, KeyChecksum: 0, Key: 
 /// 1: [ClusteredStreamDescriptor] Size: 5, StartCluster: 15, EndCluster: 16, Traits: Default, KeyChecksum: 0, Key: 
@@ -54,7 +54,7 @@ namespace Hydrogen;
 ///  - Stream Descriptors are metadata describing a Stream, where they start/end and other info.
 ///  - Stream Descriptors are are stored in a cluster chain starting at cluster 0 having Terminal -1.
 /// </remarks>
-public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
+public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	public event EventHandlerEx<ClusteredStreamDescriptor> StreamCreated;
 	public event EventHandlerEx<long, ClusteredStreamDescriptor> StreamAdded;
 	public event EventHandlerEx<long, ClusteredStreamDescriptor> StreamInserted;
@@ -69,9 +69,9 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	private ClusteredStreamFragmentProvider _streamDescriptorsFragmentProvider;
 	private UpdateOnlyList<ClusteredStreamDescriptor, StreamPagedList<ClusteredStreamDescriptor>> _streamDescriptors;
 	private ICache<long, ClusteredStreamDescriptor> _streamDescriptorCache;
-	private StreamContainerHeader _header;
+	private ClusteredStreamsHeader _header;
 	private readonly IDictionary<long, ClusteredStream> _openStreams;
-	private readonly IDictionary<long, IStreamContainerAttachment> _attachments;
+	private readonly IDictionary<long, IClusteredStreamsAttachment> _attachments;
 	private readonly List<Action> _initActions;
 
 	private readonly ConcurrentStream _rootStream;
@@ -80,10 +80,10 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	private readonly bool _integrityChecks;
 	private bool _suppressEvents;
 
-	public StreamContainer(
+	public ClusteredStreams(
 		Stream rootStream,
 		int clusterSize = HydrogenDefaults.ClusterSize,
-		StreamContainerPolicy policy = StreamContainerPolicy.Default,
+		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 0,
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false
@@ -99,38 +99,38 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		_streamDescriptorCache = null;
 		_header = null;
 		_openStreams = new Dictionary<long, ClusteredStream>();
-		_attachments = new Dictionary<long, IStreamContainerAttachment>();
+		_attachments = new Dictionary<long, IClusteredStreamsAttachment>();
 		_initActions = new List<Action>();
 		Initialized = false;
 		_rootStream = rootStream.AsConcurrent();
 		_clusterSize = clusterSize;
 		_reservedStreams = reservedStreams;
-		_integrityChecks = Policy.HasFlag(StreamContainerPolicy.IntegrityChecks);
+		_integrityChecks = Policy.HasFlag(ClusteredStreamsPolicy.IntegrityChecks);
 		_suppressEvents = false;
 
 		if (autoLoad && RequiresLoad)
 			Load();
 	}
 
-	public static StreamContainer FromStream(Stream rootStream, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
-		Guard.Ensure(rootStream.Length >= StreamContainerHeader.ByteLength, $"Corrupt header (stream was too small {rootStream.Length} bytes)");
+	public static ClusteredStreams FromStream(Stream rootStream, Endianness endianness = Endianness.LittleEndian, bool autoLoad = false) {
+		Guard.Ensure(rootStream.Length >= ClusteredStreamsHeader.ByteLength, $"Corrupt header (stream was too small {rootStream.Length} bytes)");
 		var reader = new EndianBinaryReader(EndianBitConverter.For(endianness), rootStream);
 
 		// read cluster size
-		rootStream.Seek(StreamContainerHeader.ClusterSizeOffset, SeekOrigin.Begin);
+		rootStream.Seek(ClusteredStreamsHeader.ClusterSizeOffset, SeekOrigin.Begin);
 		var clusterSize = reader.ReadInt32();
 		Guard.Ensure(clusterSize > 0, $"Corrupt header (ClusterSize field was {clusterSize} bytes)");
 
 		// read policy
-		rootStream.Seek(StreamContainerHeader.PolicyOffset, SeekOrigin.Begin);
-		var policy = (StreamContainerPolicy)reader.ReadUInt32();
+		rootStream.Seek(ClusteredStreamsHeader.PolicyOffset, SeekOrigin.Begin);
+		var policy = (ClusteredStreamsPolicy)reader.ReadUInt32();
 
 		// read records offset
-		rootStream.Seek(StreamContainerHeader.ReservedStreamsOffset, SeekOrigin.Begin);
+		rootStream.Seek(ClusteredStreamsHeader.ReservedStreamsOffset, SeekOrigin.Begin);
 		var reservedStreams = reader.ReadInt64();
 
 		rootStream.Position = 0;
-		var storage = new StreamContainer(rootStream, clusterSize, policy, reservedStreams, endianness, autoLoad: autoLoad);
+		var storage = new ClusteredStreams(rootStream, clusterSize, policy, reservedStreams, endianness, autoLoad: autoLoad);
 
 		return storage;
 	}
@@ -149,7 +149,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public Stream RootStream => _rootStream;
 
-	public StreamContainerHeader Header {
+	public ClusteredStreamsHeader Header {
 		get {
 			CheckInitialized();
 			return _header;
@@ -157,7 +157,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		private set => _header = value;
 	}
 
-	public StreamContainerPolicy Policy { get; }
+	public ClusteredStreamsPolicy Policy { get; }
 
 	public Endianness Endianness { get; }
 
@@ -518,7 +518,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 			loadableStream.Load();
 
 		// Header
-		_header = new StreamContainerHeader(_rootStream, Endianness);
+		_header = new ClusteredStreamsHeader(_rootStream, Endianness);
 		var wasEmptyStream = _rootStream.Length == 0;
 		if (!wasEmptyStream) {
 			_header.Load();
@@ -532,7 +532,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		// ClusterMap
 		// - stored in a StreamPagedList (single page, statically sized items)
 		// - when a start/end cluster is moved, we must update the descriptor that points to it (the descriptor is stored as the terminal values of a cluster chain)
-		_clusters = new StreamMappedClusterMap(_rootStream, StreamContainerHeader.ByteLength, clusterSerializer, Policy.HasFlag(StreamContainerPolicy.CacheClusterHeaders), Endianness, autoLoad: true);
+		_clusters = new StreamMappedClusterMap(_rootStream, ClusteredStreamsHeader.ByteLength, clusterSerializer, Policy.HasFlag(ClusteredStreamsPolicy.CacheClusterHeaders), Endianness, autoLoad: true);
 		_clusters.Changed += ClusterMapChangedHandler;
 
 		// Records
@@ -575,7 +575,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 				NewStreamDescriptor
 			);
 
-		if (Policy.HasFlag(StreamContainerPolicy.CacheDescriptors)) {
+		if (Policy.HasFlag(ClusteredStreamsPolicy.CacheDescriptors)) {
 			_streamDescriptorCache = new ActionCache<long, ClusteredStreamDescriptor>(
 				FetchStreamDescriptor,
 				sizeEstimator: _ => recordSerializer.ConstantSize,
@@ -681,7 +681,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	#region Attachment Management
 	
-	internal void RegisterAttachment(IStreamContainerAttachment attachment) {
+	internal void RegisterAttachment(IClusteredStreamsAttachment attachment) {
 		Guard.ArgumentNotNull(attachment, nameof(attachment));
 		//Guard.Against(StreamContainer.Initialized, "Cannot register meta-data provider after container has been initialized");
 		Guard.Against(_attachments.ContainsKey(attachment.ReservedStreamIndex), $"Meta-data provider for reserved stream {attachment.ReservedStreamIndex} already registered");
@@ -692,15 +692,15 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 			attachment.Attach();
 	}
 
-	internal IStreamContainerAttachment GetAttachment(long reservedStream) => _attachments[reservedStream];
+	internal IClusteredStreamsAttachment GetAttachment(long reservedStream) => _attachments[reservedStream];
 
-	internal T FindAttachment<T>() where T : IStreamContainerAttachment {
+	internal T FindAttachment<T>() where T : IClusteredStreamsAttachment {
 		if (!TryFindAttachment<T>(out var attachment)) 
 			throw new InvalidOperationException($"No attachment of type '{typeof(T).ToStringCS()}'");
 		return attachment;
 	}
 
-	internal bool TryFindAttachment<T>(out T attachment) where T : IStreamContainerAttachment {
+	internal bool TryFindAttachment<T>(out T attachment) where T : IClusteredStreamsAttachment {
 		foreach (var attch in _attachments) {
 			var ix = attch.Key;
 			if (_attachments[ix].GetType() == typeof(T)) {
@@ -864,11 +864,11 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 			throw new InvalidOperationException($"This operation cannot be performed on a reserved stream (index: {index}");
 	}
 
-	private void CheckHeaderDataIntegrity(long rootStreamLength, StreamContainerHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamDescriptor> recordSerializer) {
+	private void CheckHeaderDataIntegrity(long rootStreamLength, ClusteredStreamsHeader header, IItemSerializer<Cluster> clusterSerializer, IItemSerializer<ClusteredStreamDescriptor> recordSerializer) {
 		var clusterEnvelopeSize = clusterSerializer.ConstantSize - header.ClusterSize;
 		var recordClusters = (long)Math.Ceiling(header.StreamCount * recordSerializer.ConstantSize / (float)header.ClusterSize);
-		Guard.Ensure(header.TotalClusters >= recordClusters, $"Inconsistency in {nameof(StreamContainerHeader.TotalClusters)}/{nameof(StreamContainerHeader.StreamCount)}");
-		var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + StreamContainerHeader.ByteLength;
+		Guard.Ensure(header.TotalClusters >= recordClusters, $"Inconsistency in {nameof(ClusteredStreamsHeader.TotalClusters)}/{nameof(ClusteredStreamsHeader.StreamCount)}");
+		var minStreamSize = header.TotalClusters * (header.ClusterSize + clusterEnvelopeSize) + ClusteredStreamsHeader.ByteLength;
 		Guard.Ensure(rootStreamLength >= minStreamSize, $"Stream too small (header gives minimum size {minStreamSize} but was {rootStreamLength})");
 	}
 

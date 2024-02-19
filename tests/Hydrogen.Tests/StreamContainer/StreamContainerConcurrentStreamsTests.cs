@@ -23,9 +23,9 @@ namespace Hydrogen.Tests;
 public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTestsBase {
 
 	[Test]
-	public void ConcurrentStreams_OpenRead_SameTwice_Throws([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void ConcurrentStreams_OpenRead_SameTwice_Throws([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, 5, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, 5, policy: policy, autoLoad: true);
 		var rng = new Random();
 		streamContainer.AddBytes(rng.NextBytes(100));
 		using var _ = streamContainer.OpenRead(0);
@@ -37,7 +37,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_OpenRead_OpenRead() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
@@ -49,7 +49,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_OpenRead_OpenWrite() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
@@ -61,7 +61,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_OpenRead_Add() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
 		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.Nothing);
@@ -71,7 +71,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_OpenRead_Insert_Throws() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
 		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
@@ -81,7 +81,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_OpenRead_Remove_Throws() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
 		Assert.That(() => streamContainer.Remove(0), Throws.Exception.InstanceOf<InvalidOperationException>());
@@ -91,7 +91,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_OpenRead_Clear_Throws() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.OpenRead(0);
 		Assert.That(() => streamContainer.Clear(), Throws.Exception.InstanceOf<InvalidOperationException>());
@@ -102,7 +102,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Add_OpenRead() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Add();
 		Assert.That(() => streamContainer.OpenRead(0), Throws.Nothing);
@@ -113,7 +113,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Add_OpenWrite() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Add();
 		Assert.That(() => streamContainer.OpenWrite(0), Throws.Nothing);
@@ -123,7 +123,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Add_Add() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Add();
 		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.Nothing);
@@ -134,7 +134,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Add_Insert_Throws() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Add();
 		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
@@ -144,7 +144,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Add_Remove_Throws() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		using var _ = streamContainer.Add();
 		Assert.That(() => streamContainer.Remove(0), Throws.InvalidOperationException);
 	}
@@ -153,7 +153,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Add_Clear_Throws() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Add();
 		Assert.That(() => streamContainer.Clear(), Throws.InvalidOperationException);
@@ -163,7 +163,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Insert_OpenRead() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Insert(0);
 		Assert.That(() => streamContainer.OpenRead(1), Throws.Nothing);
@@ -174,7 +174,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Insert_Add() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Insert(0);
 		Assert.That(() => streamContainer.AddBytes(rng.NextBytes(1000)), Throws.Nothing);
@@ -185,7 +185,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Insert_Insert_Throws() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Insert(0);
 		Assert.That(() => streamContainer.InsertBytes(0, rng.NextBytes(1000)), Throws.InvalidOperationException);
@@ -196,7 +196,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Insert_Remove_Throws() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Insert(0);
 		Assert.That(() => streamContainer.Remove(0), Throws.InvalidOperationException);
@@ -206,17 +206,17 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 	public void ConcurrentStreams_Insert_Clear_Throws() {
 		var rng = new Random(31337);
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, autoLoad: true);
 		streamContainer.AddBytes(rng.NextBytes(1000));
 		using var _ = streamContainer.Insert(0); 
 		Assert.That(() => streamContainer.Clear(), Throws.InvalidOperationException);
 	}
 
 	[Test]
-	public void CusterSeeker_2ClusterChain_Becomes1([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void CusterSeeker_2ClusterChain_Becomes1([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		const int clusterSize = 1;
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, clusterSize, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, clusterSize, policy: policy, autoLoad: true);
 		using var stream1 = streamContainer.Add();
 		using var stream2 = streamContainer.Add();
 		stream1.WriteByte(1);
@@ -229,7 +229,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 
 
 	[Test]
-	public void ConcurrentStreams_IntegrationTest([Values(1, 5, 11, 33, 1000)] int clusterSize, [StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void ConcurrentStreams_IntegrationTest([Values(1, 5, 11, 33, 1000)] int clusterSize, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 		// This test will open multiple streams and read/write to them randomly until they're all filled.
 		// Then it will reverse until empty.
 		// Then again until filled.
@@ -241,7 +241,7 @@ public class StreamContainerConcurrentStreamsTests : StreamPersistedCollectionTe
 		const int ShrinkChunkSize = GrowChunkSize / 2;
 
 		using var rootStream = new MemoryStream();
-		var streamContainer = new StreamContainer(rootStream, policy: policy, autoLoad: true);
+		var streamContainer = new ClusteredStreams(rootStream, policy: policy, autoLoad: true);
 		var rng = new Random(31337 + (int)policy); 
 		var streams = new ClusteredStream[Streams];
 

@@ -26,8 +26,8 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 		_outputWriter = new TextBoxWriter(_outputTextBox);
 		_copyButton.Image = Hydrogen.Windows.Forms.Resources.Copy_16x16.ToBitmap(16, 16);
 		_clearButton.Image = Hydrogen.Windows.Forms.Resources.CrossIcon.ToBitmap(16, 16);
-		_policyBox.EnumType = typeof(StreamContainerPolicy);
-		_policyBox.SelectedEnum = StreamContainerPolicy.Default;
+		_policyBox.EnumType = typeof(ClusteredStreamsPolicy);
+		_policyBox.SelectedEnum = ClusteredStreamsPolicy.Default;
 	}
 
 
@@ -105,7 +105,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 	}
 
 
-	private void RunStreamTest(int clusterSize, int pageSize, int maxMemory, StreamContainerPolicy policy) {
+	private void RunStreamTest(int clusterSize, int pageSize, int maxMemory, ClusteredStreamsPolicy policy) {
 		var file = Path.GetTempFileName();
 		using var _ = Tools.Scope.ExecuteOnDispose(() => File.Delete(file));
 		using (var transactionalFile = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(file, pageSize, maxMemory))) {
@@ -113,7 +113,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 			if (rootStream.RequiresLoad)
 				rootStream.Load();
 
-			var storage = new StreamContainer(rootStream, clusterSize, policy: policy);
+			var storage = new ClusteredStreams(rootStream, clusterSize, policy: policy);
 			var rng = new Random(31337);
 			var stats = new Statistics();
 
@@ -143,7 +143,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 	private void RunDictAppendTest() {
 		var rng = new Random(31337);
 		var totalTime = TimeSpan.Zero;
-		var policy = (StreamContainerPolicy)_policyBox.SelectedEnum;
+		var policy = (ClusteredStreamsPolicy)_policyBox.SelectedEnum;
 		var dict = new TransactionalDictionary<byte[], byte[]>(
 			HydrogenFileDescriptor.From(
 				Path.GetTempFileName(),
@@ -192,7 +192,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 		var pageSize = _pageSizeIntBox.Value.GetValueOrDefault(0);
 		var clusterSize = _clusterSizeIntBox.Value.GetValueOrDefault(0);
 		var maxMemory = _cacheSizeIntBox.Value.GetValueOrDefault(0);
-		var policy = (StreamContainerPolicy)_policyBox.SelectedEnum;
+		var policy = (ClusteredStreamsPolicy)_policyBox.SelectedEnum;
 		switch (listType) {
 			case ListType.Transactional:
 				var txnList = new TransactionalList<byte[]>(
@@ -327,7 +327,7 @@ public partial class TransactionalCollectionScreen : ApplicationScreen {
 				_clusterSizeIntBox.Value.GetValueOrDefault(0),
 				_pageSizeIntBox.Value.GetValueOrDefault(0),
 				_cacheSizeIntBox.Value.GetValueOrDefault(0),
-				(StreamContainerPolicy)_policyBox.SelectedEnum
+				(ClusteredStreamsPolicy)_policyBox.SelectedEnum
 			));
 		} catch (Exception error) {
 			ExceptionDialog.Show(error);

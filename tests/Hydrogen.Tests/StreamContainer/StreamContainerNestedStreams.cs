@@ -22,12 +22,12 @@ public class StreamContainerNestedStreams {
 	private const string TestString2 = "And this is another string containing a bunch of other text.";
 
 	[Test]
-	public void Simple( [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
+	public void Simple( [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
 		using var rootStream = new MemoryStream();
-		var parentContainer = new StreamContainer(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
+		var parentContainer = new ClusteredStreams(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
 		var scope = parentContainer.EnterAccessScope();
 		using var child1 = parentContainer.Add();
-		var childContainer = new StreamContainer(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
+		var childContainer = new ClusteredStreams(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
 		childContainer.AddBytes(Encoding.ASCII.GetBytes(TestString1));
 		childContainer.AddBytes(Encoding.ASCII.GetBytes(TestString2));
 
@@ -37,48 +37,48 @@ public class StreamContainerNestedStreams {
 	}
 
 	[Test]
-	public void Simple_Reload( [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
+	public void Simple_Reload( [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
 		using var rootStream = new MemoryStream();
 		// this scope creates the data
 		{
-			var parentContainer = new StreamContainer(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
+			var parentContainer = new ClusteredStreams(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
 			var scope = parentContainer.EnterAccessScope();
 			using var child1 = parentContainer.Add();
-			var childContainer = new StreamContainer(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
+			var childContainer = new ClusteredStreams(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
 			childContainer.AddBytes(Encoding.ASCII.GetBytes(TestString1));
 			childContainer.AddBytes(Encoding.ASCII.GetBytes(TestString2));
 		}
 
 		//this scope reads the data
 		{
-			var parentContainer = new StreamContainer(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
+			var parentContainer = new ClusteredStreams(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
 			var scope = parentContainer.EnterAccessScope();
 			using var child1 = parentContainer.OpenWrite(0);
-			var childContainer = new StreamContainer(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
+			var childContainer = new ClusteredStreams(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
 			Assert.That(childContainer.ReadAll(0), Is.EqualTo(Encoding.ASCII.GetBytes(TestString1))); 
 			Assert.That(childContainer.ReadAll(1), Is.EqualTo(Encoding.ASCII.GetBytes(TestString2)));
 		}
 	}
 
 	[Test]
-	public void ClearParentFails( [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
+	public void ClearParentFails( [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
 		using var rootStream = new MemoryStream();
-		var parentContainer = new StreamContainer(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
+		var parentContainer = new ClusteredStreams(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
 		var scope = parentContainer.EnterAccessScope();
 		using var child1 = parentContainer.Add();
-		var childContainer = new StreamContainer(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
+		var childContainer = new ClusteredStreams(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
 		childContainer.AddBytes(Encoding.ASCII.GetBytes(TestString1));
 		childContainer.AddBytes(Encoding.ASCII.GetBytes(TestString2));
 		Assert.That(parentContainer.Clear, Throws.InvalidOperationException);
 	}
 
 	[Test]
-	public void ClearChildSucceds( [StreamContainerPolicyTestValues] StreamContainerPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
+	public void ClearChildSucceds( [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
 		using var rootStream = new MemoryStream();
-		var parentContainer = new StreamContainer(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
+		var parentContainer = new ClusteredStreams(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
 		var scope = parentContainer.EnterAccessScope();
 		using var child1 = parentContainer.Add();
-		var childContainer = new StreamContainer(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
+		var childContainer = new ClusteredStreams(child1, clusterSize: clusterSize, policy: policy, autoLoad: true);
 		childContainer.AddBytes(Encoding.ASCII.GetBytes(TestString1));
 		childContainer.AddBytes(Encoding.ASCII.GetBytes(TestString2));
 		Assert.That(childContainer.Clear, Throws.Nothing);

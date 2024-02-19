@@ -14,21 +14,21 @@ using Hydrogen.ObjectSpaces;
 namespace Hydrogen;
 
 /// <summary>
-/// Base implementation for an <see cref="IStreamContainerAttachment"/>
+/// Base implementation for an <see cref="IClusteredStreamsAttachment"/>
 /// </summary>
-public abstract class StreamContainerAttachmentBase : IDisposable, IStreamContainerAttachment {
+public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredStreamsAttachment {
 	private Stream _stream;
 	private readonly long _streamOffset;
 	private bool _attached;
 
-	protected StreamContainerAttachmentBase(StreamContainer streams, long reservedStreamIndex) {
+	protected ClusteredStreamsAttachmentBase(ClusteredStreams streams, long reservedStreamIndex) {
 		Streams = streams;
 		ReservedStreamIndex = reservedStreamIndex;
 		_attached = false;
 		_streamOffset = 0;
 	}
 
-	public StreamContainer Streams { get; }
+	public ClusteredStreams Streams { get; }
 
 	public long ReservedStreamIndex { get; }
 

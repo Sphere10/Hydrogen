@@ -14,12 +14,12 @@ using static Hydrogen.AMS;
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-/// A container that stores objects in a stream using a <see cref="StreamContainer"/>. This can also maintain
+/// A container that stores objects in a stream using a <see cref="ClusteredStreams"/>. This can also maintain
 /// object metadata such as indexes, timestamps, merkle-trees, etc. This is like a "table" within a "database".
 /// </summary>
 /// <typeparam name="T"></typeparam>
 public class ObjectContainer<T> : ObjectContainer {
-	public ObjectContainer(StreamContainer streams, IItemSerializer<T> serializer = null, bool preAllocateOptimization = true) 
+	public ObjectContainer(ClusteredStreams streams, IItemSerializer<T> serializer = null, bool preAllocateOptimization = true) 
 		: base(typeof(T), streams, (serializer ?? ItemSerializer<T>.Default), preAllocateOptimization) {
 	}
 

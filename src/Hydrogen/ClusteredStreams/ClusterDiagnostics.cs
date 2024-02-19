@@ -15,7 +15,7 @@ namespace Hydrogen;
 
 public static class ClusterDiagnostics {
 
-	public static string ToTextDump(StreamContainer streams) {
+	public static string ToTextDump(ClusteredStreams streams) {
 		using (streams.EnterAccessScope()) {
 			var stringBuilder = new FastStringBuilder();
 			stringBuilder.AppendLine(streams.ToString());
@@ -98,9 +98,9 @@ public static class ClusterDiagnostics {
 
 	public static void VerifyClusters(ClusterMap clusterMap) => VerifyClusters(clusterMap.Clusters.ToArray(), null);
 
-	public static void VerifyClusters(StreamContainer streamContainer) {
-		using (streamContainer.EnterAccessScope()) {
-			VerifyClusters(streamContainer.ClusterMap.Clusters.ToArray(), Tools.Collection.RangeL(0, streamContainer.Count).Select(streamContainer.GetStreamDescriptor).ToArray());
+	public static void VerifyClusters(ClusteredStreams streams) {
+		using (streams.EnterAccessScope()) {
+			VerifyClusters(streams.ClusterMap.Clusters.ToArray(), Tools.Collection.RangeL(0, streams.Count).Select(streams.GetStreamDescriptor).ToArray());
 		}
 	}
 

@@ -14,7 +14,7 @@ namespace Hydrogen.Tests;
 public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTestsBase {
 
 	[Test]
-	public void BrokenKeySerializerFailsGracefully([StreamContainerPolicyTestValues] StreamContainerPolicy policy) {
+	public void BrokenKeySerializerFailsGracefully([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
 
 		var rng = new Random(31337);
 		var key = rng.NextString(256 - sizeof(Int32));
@@ -43,7 +43,7 @@ public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTes
 	}
 
 
-	protected override IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, StreamContainerPolicy policy,
+	protected override IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, ClusteredStreamsPolicy policy,
 	                                           out ITransactionalDictionary<TKey, TValue> clustered, out string file) {
 		file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);

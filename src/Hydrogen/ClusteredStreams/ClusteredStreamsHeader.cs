@@ -8,14 +8,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace Hydrogen;
 
-public class StreamContainerHeader {
+public class ClusteredStreamsHeader {
 
 	public const int ByteLength = 256;
 	public const int MerkleRootLength = 32;
@@ -46,7 +43,7 @@ public class StreamContainerHeader {
 	private readonly ICriticalObject _lock;
 
 	private readonly StreamMappedProperty<byte> _versionProperty;
-	private readonly StreamMappedProperty<StreamContainerPolicy> _policyProperty;
+	private readonly StreamMappedProperty<ClusteredStreamsPolicy> _policyProperty;
 	private readonly StreamMappedProperty<long> _streamCountProperty;
 	private readonly StreamMappedProperty<long> _streamDescriptorsClusterProperty;
 	private readonly StreamMappedProperty<long> _reservedStreamsProperty;
@@ -54,14 +51,14 @@ public class StreamContainerHeader {
 	private readonly StreamMappedProperty<long> _totalClustersProperty;
 	private readonly IList<Action> _mappedExtensionPropertyFlushes;
 
-	internal StreamContainerHeader(ConcurrentStream rootStream, Endianness endianness) {
+	internal ClusteredStreamsHeader(ConcurrentStream rootStream, Endianness endianness) {
 		Guard.ArgumentNotNull(rootStream, nameof(rootStream));
 		_headerStream = rootStream.AsBounded(0, ByteLength, allowInnerResize: true); 
 		_lock = rootStream;
 		_reader = new EndianBinaryReader(EndianBitConverter.For(endianness), _headerStream);
 		_writer = new EndianBinaryWriter(EndianBitConverter.For(endianness), _headerStream);
 		_versionProperty = new StreamMappedProperty<byte>(_headerStream, VersionOffset, VersionLength, PrimitiveSerializer<byte>.Instance, _reader, _writer, @lock: _lock);
-		_policyProperty = new StreamMappedProperty<StreamContainerPolicy>(_headerStream, PolicyOffset, PolicyLength, EnumSerializer<StreamContainerPolicy>.Instance, _reader, _writer, @lock: _lock);
+		_policyProperty = new StreamMappedProperty<ClusteredStreamsPolicy>(_headerStream, PolicyOffset, PolicyLength, EnumSerializer<ClusteredStreamsPolicy>.Instance, _reader, _writer, @lock: _lock);
 		_streamCountProperty = new StreamMappedProperty<long>(_headerStream, StreamCountOffset, StreamCountLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
 		_streamDescriptorsClusterProperty = new StreamMappedProperty<long>(_headerStream, StreamDescriptorsEndClusterOffset, StreamDescriptorsEndClusterLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
 		_reservedStreamsProperty = new StreamMappedProperty<long>(_headerStream, ReservedStreamsOffset, ReservedStreamsLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
@@ -73,7 +70,7 @@ public class StreamContainerHeader {
 
 	public byte Version { get => _versionProperty.Value; internal set => _versionProperty.Value = value; }
 
-	public StreamContainerPolicy Policy { get => _policyProperty.Value; internal set => _policyProperty.Value = value; }
+	public ClusteredStreamsPolicy Policy { get => _policyProperty.Value; internal set => _policyProperty.Value = value; }
 
 	public long StreamCount { get => _streamCountProperty.Value; internal set => _streamCountProperty.Value = value; }
 
@@ -151,7 +148,7 @@ public class StreamContainerHeader {
 
 	public override string ToString() {
 		using var accessScope = _lock.EnterAccessScope();
-		return $"[{nameof(StreamContainerHeader)}] {nameof(Version)}: {Version}, {nameof(ClusterSize)}: {ClusterSize}, {nameof(TotalClusters)}: {TotalClusters}, {nameof(StreamCount)}: {StreamCount}, {nameof(StreamDescriptorsEndCluster)}: {StreamDescriptorsEndCluster}, {nameof(ReservedStreams)}: {ReservedStreams}, {nameof(Policy)}: {Policy}, Extension Data: {_extensionPropertiesStream.ToArray()}";
+		return $"[{nameof(ClusteredStreamsHeader)}] {nameof(Version)}: {Version}, {nameof(ClusterSize)}: {ClusterSize}, {nameof(TotalClusters)}: {TotalClusters}, {nameof(StreamCount)}: {StreamCount}, {nameof(StreamDescriptorsEndCluster)}: {StreamDescriptorsEndCluster}, {nameof(ReservedStreams)}: {ReservedStreams}, {nameof(Policy)}: {Policy}, Extension Data: {_extensionPropertiesStream.ToArray()}";
 	}
 
 }

@@ -13,22 +13,22 @@ namespace Hydrogen;
 
 /// <summary>
 /// A <see cref="Stream"/> whose contents are clustered across a <see cref="ClusterMap"/>. Instances of <see cref="ClusteredStream"/> are
-/// the component streams managed by a <see cref="StreamContainer"/>. A <see cref="ClusteredStream"/> is for all intensive purposes to be
+/// the component streams managed by a <see cref="ClusteredStreams"/>. A <see cref="ClusteredStream"/> is for all intensive purposes to be
 /// considered a usual <see cref="Stream"/> except it's contents (and <see cref="ClusteredStreamDescriptor"/>) managed entirely by it's
-/// owning <see cref="StreamContainer"/>.
+/// owning <see cref="ClusteredStreams"/>.
 /// </summary>
 public class ClusteredStream : StreamDecorator {
 	public event EventHandlerEx<long> StreamLengthChanged;
 
-	private readonly StreamContainer _streamContainer;
+	private readonly ClusteredStreams _streams;
 	private readonly ClusteredStreamFragmentProvider _fragmentProvider;
 	private ClusteredStreamDescriptor _descriptor;
 	private readonly Action _finalizeAction;
 	private readonly Disposables  _disposables;
 
-	internal ClusteredStream(StreamContainer streamContainer, long streamIndex, bool readOnly, Action finalizeAction = null)
-		: base(CreateInternalStream(streamContainer, streamIndex, readOnly, out var streamDescriptor, out var fragmentProvider)) {
-		_streamContainer = streamContainer;
+	internal ClusteredStream(ClusteredStreams streams, long streamIndex, bool readOnly, Action finalizeAction = null)
+		: base(CreateInternalStream(streams, streamIndex, readOnly, out var streamDescriptor, out var fragmentProvider)) {
+		_streams = streams;
 		_finalizeAction = finalizeAction;
 		StreamIndex = streamIndex;
 		_descriptor = streamDescriptor;
@@ -106,7 +106,7 @@ public class ClusteredStream : StreamDecorator {
 	public override void Close() {
 		// Close() is called by Dispose
 		if (!ReadOnly)
-			_streamContainer.UpdateStreamDescriptor(StreamIndex, _descriptor);
+			_streams.UpdateStreamDescriptor(StreamIndex, _descriptor);
 		
 		_finalizeAction?.Invoke();
 		_disposables.ForEach(d => d.Dispose());
@@ -122,16 +122,16 @@ public class ClusteredStream : StreamDecorator {
 		StreamLengthChanged?.Invoke(newSize);
 	}
 
-	private static Stream CreateInternalStream(StreamContainer streamContainer, long streamIndex, bool readOnly, out ClusteredStreamDescriptor streamDescriptor, out ClusteredStreamFragmentProvider fragmentProvider) {
-		streamDescriptor = streamContainer.GetStreamDescriptor(streamIndex);
+	private static Stream CreateInternalStream(ClusteredStreams streams, long streamIndex, bool readOnly, out ClusteredStreamDescriptor streamDescriptor, out ClusteredStreamFragmentProvider fragmentProvider) {
+		streamDescriptor = streams.GetStreamDescriptor(streamIndex);
 		fragmentProvider = new ClusteredStreamFragmentProvider(
-			streamContainer.ClusterMap, 
+			streams.ClusterMap, 
 			streamIndex, 
 			streamDescriptor.Size,
 			streamDescriptor.StartCluster,
 			streamDescriptor.EndCluster,
-			streamContainer.ClusterMap.CalculateClusterChainLength(streamDescriptor.Size),
-			streamContainer.Policy.HasFlag(StreamContainerPolicy.IntegrityChecks)
+			streams.ClusterMap.CalculateClusterChainLength(streamDescriptor.Size),
+			streams.Policy.HasFlag(ClusteredStreamsPolicy.IntegrityChecks)
 		);
 		Stream stream = new FragmentedStream(fragmentProvider);
 		if (readOnly)

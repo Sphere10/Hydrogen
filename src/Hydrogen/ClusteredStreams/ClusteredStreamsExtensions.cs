@@ -11,7 +11,7 @@ using System.IO;
 
 namespace Hydrogen;
 
-internal static class StreamContainerExtensions {
+internal static class ClusteredStreamsExtensions {
 
 	//public static bool IsTraits(this StreamContainer streams, long index) {
 	//	using var _ = streams.EnterAccessScope();
@@ -23,7 +23,7 @@ internal static class StreamContainerExtensions {
 	//	return streams.GetStreamDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Reaped);
 	//}
 
-	public static byte[] ReadAll(this StreamContainer streams, long index) {
+	public static byte[] ReadAll(this ClusteredStreams streams, long index) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.OpenRead(index);
 		if (stream.IsNull)
@@ -31,27 +31,27 @@ internal static class StreamContainerExtensions {
 		return stream.ReadAll();
 	}
 
-	public static void AddBytes(this StreamContainer streams, ReadOnlySpan<byte> bytes) {
+	public static void AddBytes(this ClusteredStreams streams, ReadOnlySpan<byte> bytes) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.Add();
 		stream.Write(bytes);
 	}
 
-	public static void UpdateBytes(this StreamContainer streams, long index, ReadOnlySpan<byte> bytes) {
+	public static void UpdateBytes(this ClusteredStreams streams, long index, ReadOnlySpan<byte> bytes) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.OpenWrite(index);
 		stream.SetLength(0);
 		stream.Write(bytes);
 	}
 
-	public static void AppendBytes(this StreamContainer streams, long index, ReadOnlySpan<byte> bytes) {
+	public static void AppendBytes(this ClusteredStreams streams, long index, ReadOnlySpan<byte> bytes) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.OpenWrite(index);
 		stream.Seek(stream.Length, SeekOrigin.Current);
 		stream.Write(bytes);
 	}
 
-	public static void InsertBytes(this StreamContainer streams, long index, ReadOnlySpan<byte> bytes) {
+	public static void InsertBytes(this ClusteredStreams streams, long index, ReadOnlySpan<byte> bytes) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.Insert(index);
 		if (bytes != null) {

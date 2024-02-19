@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// Tracks and maintains a list of of spare indices in an <see cref="ObjectStream"/> so they can be re-used in

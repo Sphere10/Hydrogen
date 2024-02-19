@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// A wrapper for an <see cref="IMetaDataStore{TData}"/> that stores the meta-data in an in-memory <see cref="IDictionary{TKey,TValue}"/>.

@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// A objectStream that stores objects (and metadata) in a stream and provides a List-like interface.

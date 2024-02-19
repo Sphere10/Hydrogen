@@ -7,7 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// A objectStream that stores objects in a stream using a <see cref="ClusteredStreams"/>. This can also maintain

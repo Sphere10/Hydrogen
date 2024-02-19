@@ -10,7 +10,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// Stores meta-data about an <see cref="ObjectStream"/>'s items as a Stack within in a reserved stream inside the <see cref="ObjectStream"/>.

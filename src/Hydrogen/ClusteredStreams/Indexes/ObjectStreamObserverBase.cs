@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 public abstract class ObjectStreamObserverBase  {
 

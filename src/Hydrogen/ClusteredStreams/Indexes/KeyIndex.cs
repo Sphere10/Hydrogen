@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 internal class KeyIndex<TItem, TKey> : IndexBase<TItem, TKey, NonUniqueKeyStore<TKey>> {
 

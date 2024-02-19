@@ -11,7 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// An index that only stores the checksum of the key rather than the key itself and relies on fetching the key from the objectStream when needed for comparisons.

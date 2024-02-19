@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Hydrogen.Mapping;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 internal static class IndexFactory {
 	

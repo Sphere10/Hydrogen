@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// Stores meta-data about items in an <see cref="ObjectStream"/>.

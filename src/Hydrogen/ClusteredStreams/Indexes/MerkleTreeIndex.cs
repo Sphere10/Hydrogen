@@ -8,7 +8,7 @@
 
 using System;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// Used to maintain a merkle-tree of an <see cref="ObjectStream"/>'s items. The merkle-tree is stored within a reserved stream within the objectStream.

@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// A wrapper for an <see cref="IMetaDataStore{TData}"/> that caches the meta-data as an in-memory <see cref="ILookup{TKey,TValue}"/>.

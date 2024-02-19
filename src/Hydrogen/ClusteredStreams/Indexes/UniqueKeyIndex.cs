@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 internal class UniqueKeyIndex<TItem, TKey> : IndexBase<TItem, TKey, UniqueKeyStore<TKey>> {
 

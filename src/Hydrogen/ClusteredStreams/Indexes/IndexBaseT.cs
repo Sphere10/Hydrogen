@@ -9,7 +9,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// Base implementation for an index on an <see cref="ObjectStreamStream{T}"/>.

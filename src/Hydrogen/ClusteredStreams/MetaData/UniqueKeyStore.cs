@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
 /// Used to store keys of an item in an <see cref="ObjectStream"/>. Used primarily for <see cref="StreamMappedDictionaryCLK{TKey,TValue}"/>"/> which

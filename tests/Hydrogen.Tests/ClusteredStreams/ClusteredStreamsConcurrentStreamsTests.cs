@@ -241,13 +241,13 @@ public class ClusteredStreamsConcurrentStreamsTests : StreamPersistedCollectionT
 		const int ShrinkChunkSize = GrowChunkSize / 2;
 
 		using var rootStream = new MemoryStream();
-		var streams = new ClusteredStreams(rootStream, policy: policy, autoLoad: true);
+		var clusteredStreams = new ClusteredStreams(rootStream, policy: policy, autoLoad: true);
 		var rng = new Random(31337 + (int)policy); 
 		var streams = new ClusteredStream[Streams];
 
 		// add the streams
 		for (var i = 0; i < Streams; i++) {
-			streams[i] = streams.Add();
+			streams[i] = clusteredStreams.Add();
 		}
 
 		MutateStreamsRandomlyUntilAllFilled();
@@ -261,7 +261,7 @@ public class ClusteredStreamsConcurrentStreamsTests : StreamPersistedCollectionT
 
 		// Verify all the data
 		for (var i = 0; i < Streams; i++) {
-			var actual = streams.ReadAll(i);
+			var actual = clusteredStreams.ReadAll(i);
 			var expected = Enumerable.Range(0, Length).Select(x => x * i % 256).Select(x => (byte)x).ToArray();
 			Assert.That(actual, Is.EqualTo(expected));
 		}

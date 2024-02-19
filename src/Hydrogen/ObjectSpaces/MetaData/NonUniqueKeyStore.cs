@@ -23,7 +23,7 @@ internal class NonUniqueKeyStore<TKey> : MetaDataStoreDecorator<TKey> {
 		: base(
 			new MemoryCachedMetaDataLookup<TKey>(
 				new ListBasedMetaDataStore<TKey>(
-					container,
+					container.StreamContainer,
 					reservedStreamIndex,
 					keySerializer
 				),

@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace Hydrogen.ObjectSpaces;
@@ -29,7 +30,7 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	private readonly bool _preAllocateOptimization;
 	private readonly Type _objectType;
-	private readonly IDictionary<long, IObjectContainerAttachment> _attachments;
+	
 
 	public ObjectContainer(Type objectType, StreamContainer streamContainer, IItemSerializer packedPackedSerializer, bool preAllocateOptimization) {
 		Guard.ArgumentNotNull(objectType, nameof(objectType));
@@ -39,7 +40,6 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		_objectType = objectType;
 		ItemSerializer = packedPackedSerializer;
 		_preAllocateOptimization = preAllocateOptimization;
-		_attachments = new Dictionary<long, IObjectContainerAttachment>();
 		streamContainer.Loading += _ => NotifyLoading();
 		streamContainer.Loaded += _ => NotifyLoaded();
 	}
@@ -54,8 +54,6 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public StreamContainer StreamContainer { get; }
 
-	public int AttachmentCount => _attachments.Count;
-
 	public long Count => StreamContainer.Count - StreamContainer.Header.ReservedStreams;
 
 	public bool OwnsStreamContainer { get; set; }
@@ -67,19 +65,11 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	protected override void LoadInternal() {
 		if (StreamContainer.RequiresLoad)
 			StreamContainer.Load();
-
-		foreach(var attachment in _attachments.Values.Where(x => !x.IsAttached))
-			attachment.Attach();
 	}
 
 	public IDisposable EnterAccessScope() => StreamContainer.EnterAccessScope();
 
 	public void Dispose() {
-		foreach(var attachment in _attachments.Values.Where(x => x.IsAttached))
-			attachment.Detach();
-
-		_attachments.Clear();
-
 		if (OwnsStreamContainer)
 			StreamContainer.Dispose();
 	}
@@ -205,43 +195,7 @@ public class ObjectContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	#endregion
-
-	#region Attachment Management
 	
-	internal void RegisterAttachment(IObjectContainerAttachment attachment) {
-		Guard.ArgumentNotNull(attachment, nameof(attachment));
-		//Guard.Against(StreamContainer.Initialized, "Cannot register meta-data provider after container has been initialized");
-		Guard.Against(_attachments.ContainsKey(attachment.ReservedStreamIndex), $"Meta-data provider for reserved stream {attachment.ReservedStreamIndex} already registered");
-		_attachments.Add(attachment.ReservedStreamIndex, attachment);
-
-		// If container is already loaded, then attach now
-		if (!RequiresLoad)
-			attachment.Attach();
-	}
-
-	internal IObjectContainerAttachment GetAttachment(long reservedStream) => _attachments[reservedStream];
-
-	internal T FindAttachment<T>() where T : IObjectContainerAttachment {
-		if (!TryFindAttachment<T>(out var attachment)) 
-			throw new InvalidOperationException($"No attachment of type '{typeof(T).ToStringCS()}'");
-		return attachment;
-	}
-
-	internal bool TryFindAttachment<T>(out T attachment) where T : IObjectContainerAttachment {
-		foreach (var attch in _attachments) {
-			var ix = attch.Key;
-			if (_attachments[ix].GetType() == typeof(T)) {
-				attachment = (T)GetAttachment(ix);
-				return true;
-			}
-		}
-		attachment = default;
-		return false;
-	}
-
-
-	#endregion
-
 	#region Event Notification
 
 	private void NotifyPreItemOperation(long index, object item, ObjectContainerOperationType operationType) {

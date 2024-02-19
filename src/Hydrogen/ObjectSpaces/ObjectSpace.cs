@@ -200,6 +200,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 	}
 
 	protected void Unload() {
+
 		// close all object containers when rolling back
 		foreach (var disposable in _collections.Values.Cast<IDisposable>())
 			disposable.Dispose();
@@ -236,7 +237,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 
 		// construct indexes
 		foreach (var (item, index) in containerDefinition.Indexes.WithIndex()) {
-			IObjectContainerAttachment metaDataObserver = item.Type switch {
+			IStreamContainerAttachment metaDataObserver = item.Type switch {
 				IndexType.Identifier => BuildIdentifier(container, containerDefinition, item, index),
 				IndexType.UniqueKey => BuildUniqueKey(container, containerDefinition, item, index),
 				IndexType.Index => BuildIndex(container, containerDefinition, item, index),
@@ -244,7 +245,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 				IndexType.MerkleTree => throw new NotImplementedException(),
 				_ => throw new ArgumentOutOfRangeException()
 			};
-			container.RegisterAttachment(metaDataObserver);
+			container.StreamContainer.RegisterAttachment(metaDataObserver);
 		}
 	
 		// Get a comparer
@@ -267,7 +268,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 		return list;
 	}
 
-	protected virtual IObjectContainerAttachment BuildIdentifier(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IStreamContainerAttachment BuildIdentifier(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
@@ -276,7 +277,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IObjectContainerAttachment BuildUniqueKey(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IStreamContainerAttachment BuildUniqueKey(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
@@ -285,7 +286,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(container, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IObjectContainerAttachment BuildIndex(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IStreamContainerAttachment BuildIndex(ObjectContainer container, ObjectSpaceDefinition.ContainerDefinition containerDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
@@ -308,7 +309,7 @@ public class ObjectSpace : SyncLoadableBase, ISynchronizedObject, ITransactional
 
 		// need to ensure all merkle-trees are committed 
 		foreach(var collection in _collections.Values) {
-			if (collection.ObjectContainer.TryFindAttachment<MerkleTreeIndex>(out var merkleTreeIndex)) {
+			if (collection.ObjectContainer.StreamContainer.TryFindAttachment<MerkleTreeIndex>(out var merkleTreeIndex)) {
 				// fetching the root ensures the stream-mapped merkle-tree is fully calculated
 				var root = merkleTreeIndex.MerkleTree.Root;
 			}

@@ -12,9 +12,9 @@ namespace Hydrogen.ObjectSpaces;
 /// Base implementation for an <see cref="IMetaDataStore{TData}"/>.
 /// </summary>
 /// <typeparam name="TData">The type of meta-data being stored</typeparam>
-internal abstract class MetaDataStoreBase<TData> : ObjectContainerAttachmentBase,  IMetaDataStore<TData> {
+internal abstract class MetaDataStoreBase<TData> : StreamContainerAttachmentBase,  IMetaDataStore<TData> {
 
-	protected MetaDataStoreBase(ObjectContainer container, long reservedStreamIndex)
+	protected MetaDataStoreBase(StreamContainer container, long reservedStreamIndex)
 		: base(container, reservedStreamIndex) {
 
 	}

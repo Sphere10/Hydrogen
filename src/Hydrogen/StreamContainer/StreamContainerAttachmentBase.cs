@@ -9,27 +9,26 @@
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Hydrogen.ObjectSpaces;
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
 /// <summary>
-/// When dealing with object containers, auxilliary components that attached to the container (such as <see cref="IndexBase{TItem,TKey}"/>
-/// derived classes) need to participate in the lifecycle of the container. By deriving from this, they can be attached  to the container
-/// via <see cref="ObjectContainer.RegisterAttachment"/>.
+/// Base implementation for an <see cref="IStreamContainerAttachment"/>
 /// </summary>
-public abstract class ObjectContainerAttachmentBase : IDisposable, IObjectContainerAttachment {
+public abstract class StreamContainerAttachmentBase : IDisposable, IStreamContainerAttachment {
 	private Stream _stream;
 	private readonly long _streamOffset;
 	private bool _attached;
 
-	protected ObjectContainerAttachmentBase(ObjectContainer objectContainer, long reservedStreamIndex) {
-		Container = objectContainer;
+	protected StreamContainerAttachmentBase(StreamContainer container, long reservedStreamIndex) {
+		Container = container;
 		ReservedStreamIndex = reservedStreamIndex;
 		_attached = false;
 		_streamOffset = 0;
 	}
 
-	public ObjectContainer Container { get; }
+	public StreamContainer Container { get; }
 
 	public long ReservedStreamIndex { get; }
 
@@ -46,16 +45,15 @@ public abstract class ObjectContainerAttachmentBase : IDisposable, IObjectContai
 	public void Attach() {
 		CheckNotAttached();
 		Guard.Ensure(!Container.RequiresLoad, "Unable to attach to an unloaded Object Container");
-		Guard.Ensure(Container.StreamContainer.Header.ReservedStreams > 0, "Stream Container has no reserved streams available");
-		Guard.Ensure(ReservedStreamIndex < Container.StreamContainer.Header.ReservedStreams, $"Stream at index {ReservedStreamIndex} is not reserved");
-		using (Container.StreamContainer.EnterAccessScope()) {
+		Guard.Ensure(Container.Header.ReservedStreams > 0, "Stream Container has no reserved streams available");
+		Guard.Ensure(ReservedStreamIndex < Container.Header.ReservedStreams, $"Stream at index {ReservedStreamIndex} is not reserved");
+		using (Container.EnterAccessScope()) {
 			_attached = true;
 
 			// Open the stream used by the index. No access scope is acquired for the stream
 			// and thus all use of the index must take place within an explicit access scope.
 			Stream =
 				Container
-					.StreamContainer
 					.Open(ReservedStreamIndex, false, false)
 					.AsBounded(_streamOffset, long.MaxValue, allowInnerResize: true);
 

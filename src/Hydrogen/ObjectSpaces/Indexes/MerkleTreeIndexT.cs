@@ -20,6 +20,4 @@ internal class MerkleTreeIndex<TItem> : MerkleTreeIndex {
 			hashAlgorithm
 		) {
 	}
-
-	protected new ObjectContainer<TItem> Container => (ObjectContainer<TItem>)((IObjectContainerAttachment)this).Container;
 }

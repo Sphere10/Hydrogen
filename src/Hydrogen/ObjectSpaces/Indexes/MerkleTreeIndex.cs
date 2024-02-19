@@ -23,7 +23,7 @@ internal class MerkleTreeIndex : IndexBase<byte[], MerkleTreeStore> {
 		long reservedStreamIndex,
 		Func<long, byte[]> itemDigestor,
 		CHF chf
-	) : base(objectContainer, new MerkleTreeStore(objectContainer, reservedStreamIndex, chf)) {
+	) : base(objectContainer, new MerkleTreeStore(objectContainer.StreamContainer, reservedStreamIndex, chf)) {
 		_itemDigestor = itemDigestor;
 	}
 

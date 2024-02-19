@@ -36,8 +36,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		Guard.ArgumentNotNull(objectContainer, nameof(objectContainer));
 		Guard.ArgumentIsAssignable<ObjectContainer<KeyValuePair<TKey, TValue>>>(objectContainer, nameof(objectContainer));
 		ObjectContainer = (ObjectContainer<KeyValuePair<TKey, TValue>>)objectContainer;
-		_freeIndexStore = objectContainer.FindAttachment<RecyclableIndexIndex>();
-		_keyChecksumIndex = objectContainer.FindAttachment<KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
+		_freeIndexStore = objectContainer.StreamContainer.FindAttachment<RecyclableIndexIndex>();
+		_keyChecksumIndex = objectContainer.StreamContainer.FindAttachment<KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
 		if (autoLoad && RequiresLoad) 

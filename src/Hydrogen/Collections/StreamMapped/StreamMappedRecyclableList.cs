@@ -23,8 +23,8 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	public StreamMappedRecyclableList(ObjectContainer<TItem> container, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(container, nameof(container));
 		ObjectContainer = container;
-		_freeIndexStore = container.FindAttachment<RecyclableIndexIndex>();
-		container.TryFindAttachment<KeyIndex<TItem, int>>(out _checksumKeyIndex); // this index is optional
+		_freeIndexStore = container.StreamContainer.FindAttachment<RecyclableIndexIndex>();
+		container.StreamContainer.TryFindAttachment<KeyIndex<TItem, int>>(out _checksumKeyIndex); // this index is optional
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 
 		if (autoLoad && RequiresLoad)

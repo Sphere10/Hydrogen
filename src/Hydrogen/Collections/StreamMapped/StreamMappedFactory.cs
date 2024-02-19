@@ -446,11 +446,11 @@ public static class StreamMappedFactory {
 			container,
 			freeIndexStoreStreamIndex
 		);
-		container.RegisterAttachment(recyclableIndexIndex);
+		container.StreamContainer.RegisterAttachment(recyclableIndexIndex);
 
 		// Create key checksum index (for fast key lookups)
 		var keyChecksumKeyIndex = IndexFactory.CreateChecksumKeyIndex(container, keyChecksumIndexStreamIndex, kvp => kvp.Key, keySerializer, keyChecksummer, ReadKey, keyComparer);
-		container.RegisterAttachment(keyChecksumKeyIndex);
+		container.StreamContainer.RegisterAttachment(keyChecksumKeyIndex);
 
 		return container;
 
@@ -492,15 +492,15 @@ public static class StreamMappedFactory {
 			container,
 			freeIndexStoreStreamIndex
 		);
-		container.RegisterAttachment(recyclableIndexIndex);
+		container.StreamContainer.RegisterAttachment(recyclableIndexIndex);
 
 		var keyStore = new UniqueKeyStore<TKey>(
-			container,
+			container.StreamContainer,
 			keyStoreStreamIndex,
 			keyComparer,
 			constantLengthKeySerializer
 		);
-		container.RegisterAttachment(keyStore);
+		container.StreamContainer.RegisterAttachment(keyStore);
 		
 		
 		return container;
@@ -526,7 +526,7 @@ public static class StreamMappedFactory {
 				EqualityComparer<int>.Default,
 				PrimitiveSerializer<int>.Instance
 			);
-			container.RegisterAttachment( checksumKeyIndex);
+			container.StreamContainer.RegisterAttachment( checksumKeyIndex);
 		} 
 
 		return container;
@@ -550,7 +550,7 @@ public static class StreamMappedFactory {
 			container,
 			freeIndexStoreStreamIndex
 		);
-		container.RegisterAttachment(recyclableIndexIndex);
+		container.StreamContainer.RegisterAttachment(recyclableIndexIndex);
 
 		// Create item checksum index (if applicable)
 		if (itemChecksummer is not null) {
@@ -561,7 +561,7 @@ public static class StreamMappedFactory {
 				EqualityComparer<int>.Default,
 				PrimitiveSerializer<int>.Instance
 			);
-			container.RegisterAttachment( checksumKeyIndex);
+			container.StreamContainer.RegisterAttachment( checksumKeyIndex);
 		}
 
 		return container;

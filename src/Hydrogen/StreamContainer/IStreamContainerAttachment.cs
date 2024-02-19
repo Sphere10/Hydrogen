@@ -6,10 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-namespace Hydrogen.ObjectSpaces;
+namespace Hydrogen;
 
-public interface IObjectContainerAttachment {
-	ObjectContainer Container { get; } 
+/// <summary>
+/// An auxillary component that attaches to a reserved stream within a <see cref="StreamContainer"/>.
+/// </summary>
+public interface IStreamContainerAttachment {
+	StreamContainer Container { get; }
 
 	long ReservedStreamIndex { get; }
 

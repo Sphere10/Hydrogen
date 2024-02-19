@@ -12,7 +12,7 @@ namespace Hydrogen.ObjectSpaces;
 /// Stores meta-data about items in an <see cref="ObjectContainer"/>.
 /// </summary>
 /// <typeparam name="TData">The type of the meta-data datum.</typeparam>
-public interface IMetaDataStore<TData> : IObjectContainerAttachment {
+public interface IMetaDataStore<TData> : IStreamContainerAttachment {
 
 	long Count { get; }
 

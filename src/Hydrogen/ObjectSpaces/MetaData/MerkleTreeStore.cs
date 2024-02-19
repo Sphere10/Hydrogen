@@ -25,7 +25,7 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 	private bool _dirtyRoot;
 
 	// Migrate from MerkleTreeIndex stuff into here
-	public MerkleTreeStore(ObjectContainer container, long reservedStreamIndex, CHF hashAlgorithm) 
+	public MerkleTreeStore(StreamContainer container, long reservedStreamIndex, CHF hashAlgorithm) 
 		: base(container, reservedStreamIndex) {
 		_hashAlgorithm = hashAlgorithm;
 		_dirtyRoot = false;
@@ -82,8 +82,8 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, Container.Count);
 		_readOnlyMerkleTree = new ContainerLockingMerkleTree(this, _merkleTree, Container);
 		var hashSize = Hashers.GetDigestSizeBytes(_hashAlgorithm);
-		using (Container.StreamContainer.EnterAccessScope()) {
-			_merkleRootProperty = Container.StreamContainer.Header.MapExtensionProperty(
+		using (Container.EnterAccessScope()) {
+			_merkleRootProperty = Container.Header.MapExtensionProperty(
 				0, 
 				hashSize, 
 				new ConstantSizeByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(_hashAlgorithm), ByteArrayEqualityComparer.Instance)
@@ -110,9 +110,9 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 
 	private class ContainerLockingMerkleTree : MerkleTreeDecorator  {
 		private readonly MerkleTreeStore _merkleTreeStore;
-		private readonly ObjectContainer _container;
+		private readonly StreamContainer _container;
 
-		public ContainerLockingMerkleTree(MerkleTreeStore merkleTreeStore, IMerkleTree internalMerkleTree, ObjectContainer container) 
+		public ContainerLockingMerkleTree(MerkleTreeStore merkleTreeStore, IMerkleTree internalMerkleTree, StreamContainer container) 
 			: base(internalMerkleTree) {
 			_merkleTreeStore = merkleTreeStore;
 			_container = container;

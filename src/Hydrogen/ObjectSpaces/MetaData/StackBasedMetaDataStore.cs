@@ -22,7 +22,7 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 	
 	private StreamPagedList<TData> _inStreamIndex;
 
-	public StackBasedMetaDataStore(ObjectContainer container, long reservedStreamIndex, IItemSerializer<TData> datumSerializer) 
+	public StackBasedMetaDataStore(StreamContainer container, long reservedStreamIndex, IItemSerializer<TData> datumSerializer) 
 		: base(container, reservedStreamIndex) {
 		Guard.ArgumentNotNull(datumSerializer, nameof(datumSerializer));
 		Guard.Argument(datumSerializer.IsConstantSize, nameof(datumSerializer), "Datum serializer must be a constant-length serializer.");
@@ -39,7 +39,7 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 		_inStreamIndex = new StreamPagedList<TData>(
 			DatumSerializer, 
 			Stream, 
-			Container.StreamContainer.Endianness,
+			Container.Endianness,
 			false, 
 			true
 		);

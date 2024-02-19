@@ -71,6 +71,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	private ICache<long, ClusteredStreamDescriptor> _streamDescriptorCache;
 	private StreamContainerHeader _header;
 	private readonly IDictionary<long, ClusteredStream> _openStreams;
+	private readonly IDictionary<long, IStreamContainerAttachment> _attachments;
 	private readonly List<Action> _initActions;
 
 	private readonly ConcurrentStream _rootStream;
@@ -98,6 +99,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 		_streamDescriptorCache = null;
 		_header = null;
 		_openStreams = new Dictionary<long, ClusteredStream>();
+		_attachments = new Dictionary<long, IStreamContainerAttachment>();
 		_initActions = new List<Action>();
 		Initialized = false;
 		_rootStream = rootStream.AsConcurrent();
@@ -165,6 +167,8 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 			return Header.StreamCount;
 		}
 	}
+
+	public int AttachmentCount => _attachments.Count;
 
 	internal ClusterMap ClusterMap {
 		get {
@@ -499,6 +503,8 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 
 		if (_clusters.RequiresLoad)
 			_clusters.Load();
+
+		LoadAttachments();
 	}
 
 	internal void Initialize() {
@@ -662,6 +668,7 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	public void Dispose() {
+		UnloadAttachments();
 		CheckNoOpenedStreams(false);
 		//using (_rootStream.EnterAccessScope())
 		//	_rootStream.Flush();
@@ -669,6 +676,55 @@ public class StreamContainer : SyncLoadableBase, ICriticalObject, IDisposable {
 			_rootStream.Dispose();
 		}
 	}
+
+	#endregion
+
+	#region Attachment Management
+	
+	internal void RegisterAttachment(IStreamContainerAttachment attachment) {
+		Guard.ArgumentNotNull(attachment, nameof(attachment));
+		//Guard.Against(StreamContainer.Initialized, "Cannot register meta-data provider after container has been initialized");
+		Guard.Against(_attachments.ContainsKey(attachment.ReservedStreamIndex), $"Meta-data provider for reserved stream {attachment.ReservedStreamIndex} already registered");
+		_attachments.Add(attachment.ReservedStreamIndex, attachment);
+
+		// If container is already loaded, then attach now
+		if (!RequiresLoad)
+			attachment.Attach();
+	}
+
+	internal IStreamContainerAttachment GetAttachment(long reservedStream) => _attachments[reservedStream];
+
+	internal T FindAttachment<T>() where T : IStreamContainerAttachment {
+		if (!TryFindAttachment<T>(out var attachment)) 
+			throw new InvalidOperationException($"No attachment of type '{typeof(T).ToStringCS()}'");
+		return attachment;
+	}
+
+	internal bool TryFindAttachment<T>(out T attachment) where T : IStreamContainerAttachment {
+		foreach (var attch in _attachments) {
+			var ix = attch.Key;
+			if (_attachments[ix].GetType() == typeof(T)) {
+				attachment = (T)GetAttachment(ix);
+				return true;
+			}
+		}
+		attachment = default;
+		return false;
+	}
+
+	private void LoadAttachments() {
+		foreach(var attachment in _attachments.Values.Where(x => !x.IsAttached))
+			attachment.Attach();
+	}
+
+	private void UnloadAttachments() {
+		foreach(var attachment in _attachments.Values.Where(x => x.IsAttached))
+			attachment.Detach();
+
+		_attachments.Clear();
+	}
+
+
 
 	#endregion
 

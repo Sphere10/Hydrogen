@@ -14,7 +14,7 @@ namespace Hydrogen.Tests;
 public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTestsBase {
 
 	[Test]
-	public void BrokenKeySerializerFailsGracefully([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
+	public void BrokenKeySerializerFailsGracefully([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy) {
 
 		var rng = new Random(31337);
 		var key = rng.NextString(256 - sizeof(Int32));

@@ -20,7 +20,7 @@ namespace Hydrogen.Tests;
 public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollectionTestsBase {
 
 	[Test]
-	public void AddNothing([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
+	public void AddNothing([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -29,7 +29,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void AddOne([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void AddOne([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -39,7 +39,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void ReuseRecord([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ReuseRecord([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -51,7 +51,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void ContainsKey([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ContainsKey([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -61,7 +61,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void DoesNotContainKeyAfterRemove([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void DoesNotContainKeyAfterRemove([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -72,7 +72,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void ContainsKeyValuePair([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void ContainsKeyValuePair([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -84,7 +84,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void DoesNotContainKeyValuePair_SameKeyDifferentValue([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -97,7 +97,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void RemoveByKey([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void RemoveByKey([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -108,7 +108,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void RemoveByKeyValuePair([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
+	public void RemoveByKeyValuePair([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values("alpha", "Unicode😊😊😊", "")] string key) {
 		var rng = new Random(31337);
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -119,14 +119,14 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void IntegrationTests([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(23)] int maxItems) => DoIntegrationTests(policy, maxItems, 30);
+	public void IntegrationTests([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values(23)] int maxItems) => DoIntegrationTests(policy, maxItems, 30);
 
 #if DEBUG
 	[Test]
-	public void IntegrationTests_Heavy([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) => DoIntegrationTests(policy, 250, 250);
+	public void IntegrationTests_Heavy([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy) => DoIntegrationTests(policy, 250, 250);
 #endif
 
-	private void DoIntegrationTests([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, int maxItems, int iterations) {
+	private void DoIntegrationTests([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, int maxItems, int iterations) {
 		var keyGens = 0;
 		using (Create(policy, out var dictionary)) {
 			dictionary.Load();
@@ -151,7 +151,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanLoadPreviouslyCommittedState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
+	public void CanLoadPreviouslyCommittedState([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -192,7 +192,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyCommittedState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
+	public void CanUpdatePreviouslyCommittedState([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -259,7 +259,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyRolledBackState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
+	public void CanUpdatePreviouslyRolledBackState([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 
@@ -326,7 +326,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	[Test]
-	public void CanUpdatePreviouslyAbandonedState([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
+	public void CanUpdatePreviouslyAbandonedState([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy) {
 		var file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);
 

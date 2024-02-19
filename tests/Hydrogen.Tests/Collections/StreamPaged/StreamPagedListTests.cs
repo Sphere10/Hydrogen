@@ -22,9 +22,9 @@ public class StreamPagedListTests {
 	[Test]
 	public void EmptyString_Bug() {
 		using var stream = new MemoryStream();
-		using var streamContainer = new ClusteredStreams(stream, reservedStreams: 1, autoLoad: true);
-		using var clusteredStream = streamContainer.OpenWrite(0);
-		streamContainer.AddBytes(new byte[256]);
+		using var streams = new ClusteredStreams(stream, reservedStreams: 1, autoLoad: true);
+		using var clusteredStream = streams.OpenWrite(0);
+		streams.AddBytes(new byte[256]);
 		var serializer = new StringSerializer(Encoding.UTF8).AsReferenceSerializer().AsConstantSize(256);
 		var size = serializer.ConstantSize;
 		var list = new StreamPagedList<string>(serializer, clusteredStream, includeListHeader: false, autoLoad: true);

@@ -10,8 +10,8 @@ using NUnit.Framework;
 
 namespace Hydrogen.Tests;
 
-internal class StreamContainerStorageTypeValuesAttribute : ValuesAttribute {
-	public StreamContainerStorageTypeValuesAttribute()
+internal class ClusteredStreamsStorageTypeValuesAttribute : ValuesAttribute {
+	public ClusteredStreamsStorageTypeValuesAttribute()
 		: base(StreamPersistedCollectionTestsBase.StorageType.MemoryStream) {
 	}
 }

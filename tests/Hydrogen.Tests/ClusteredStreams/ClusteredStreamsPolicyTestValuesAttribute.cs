@@ -10,8 +10,8 @@ using NUnit.Framework;
 
 namespace Hydrogen.Tests;
 
-internal class StreamContainerPolicyTestValuesAttribute : ValuesAttribute {
-	public StreamContainerPolicyTestValuesAttribute()
+internal class ClusteredStreamsPolicyTestValuesAttribute : ValuesAttribute {
+	public ClusteredStreamsPolicyTestValuesAttribute()
 		: base(ClusteredStreamsPolicy.Default, ClusteredStreamsPolicy.Performance, ClusteredStreamsPolicy.Debug) {
 	}
 }

@@ -30,13 +30,13 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void HasReservedRecord([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void HasReservedRecord([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var scope = CreateList(policy, useChecksumIndex, out var list);
 		Assert.That(list.ObjectContainer.Streams.Count, Is.EqualTo(useChecksumIndex ? 1 : 0));
 	}
 
 	[Test]
-	public void AddOneTest([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void AddOneTest([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var rng = new Random(31337);
 		using (CreateList(policy, useChecksumIndex, out var clusteredList)) {
 			var obj = new TestObject(rng);
@@ -48,7 +48,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddOneRepeat([Values(100)] int iterations, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void AddOneRepeat([Values(100)] int iterations, [ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var rng = new Random(31337);
 		using (CreateList(policy, useChecksumIndex, out var clusteredList)) {
 			for (var i = 0; i < iterations; i++) {
@@ -61,14 +61,14 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ConstructorArgumentsAreGuarded([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy) {
+	public void ConstructorArgumentsAreGuarded([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy) {
 		Assert.Throws<ArgumentNullException>(() => StreamMappedFactory.CreateList<int>(null, 1, new PrimitiveSerializer<int>(), reservedStreams: 1, policy: policy));
 		Assert.DoesNotThrow(() => StreamMappedFactory.CreateList<int>(new MemoryStream(), 1, null, reservedStreams: 1, policy: policy));
 		Assert.Throws<ArgumentOutOfRangeException>(() => StreamMappedFactory.CreateList<int>(new MemoryStream(), 0, null, reservedStreams: 1, policy: policy));
 	}
 
 	[Test]
-	public void ReadRange([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void ReadRange([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(5, 10)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -87,7 +87,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ReadRangeInvalidArguments([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void ReadRangeInvalidArguments([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -101,7 +101,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void ReadRangeEmpty([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void ReadRangeEmpty([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -115,7 +115,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddRangeEmptyNullStrings([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void AddRangeEmptyNullStrings([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -127,7 +127,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IndexOf_NullEmptyStrings([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void IndexOf_NullEmptyStrings([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -143,7 +143,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void AddRangeNullEmptyCollections([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void AddRangeNullEmptyCollections([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -153,7 +153,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void UpdateRange([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void UpdateRange([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -170,7 +170,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void UpdateRangeInvalidArguments([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void UpdateRangeInvalidArguments([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<int>(stream, 32, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -185,7 +185,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void RemoveRange([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void RemoveRange([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -201,7 +201,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void RemoveRangeInvalidArguments([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void RemoveRangeInvalidArguments([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -217,7 +217,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IndexOf([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void IndexOf([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(1, 10).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -243,7 +243,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IndexOfInvalidArguments([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void IndexOfInvalidArguments([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -255,7 +255,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Count([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void Count([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -269,7 +269,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void InsertRange([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void InsertRange([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(1, random.Next(1, 5)).Select(x => random.NextString(1, 5)).ToArray();
 		using var stream = new MemoryStream();
@@ -285,7 +285,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void InsertRangeInvalidArguments([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void InsertRangeInvalidArguments([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<int>(stream, 1, new PrimitiveSerializer<int>(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<int>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -300,7 +300,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void Clear([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void Clear([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337);
 		string[] inputs = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 		using var stream = new MemoryStream();
@@ -316,7 +316,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IntegrationTests_String([StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void IntegrationTests_String([ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		using var stream = new MemoryStream();
 		using var list = StreamMappedFactory.CreateList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
@@ -330,7 +330,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void LoadAndUseExistingStream([Values(1, 100)] int iterations, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void LoadAndUseExistingStream([Values(1, 100)] int iterations, [ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var random = new Random(31337 + iterations);
 		var input = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(0, 100)).ToArray();
 		var fileName = Tools.FileSystem.GetTempFileName(true);
@@ -375,7 +375,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 	}
 
 	[Test]
-	public void IntegrationTests([StreamContainerStorageTypeValues] StorageType storage, [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
+	public void IntegrationTests([ClusteredStreamsStorageTypeValues] StorageType storage, [ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values] bool useChecksumIndex) {
 		var rng = new Random(31337);
 		using (CreateStream(storage, 5000, out Stream stream)) {
 			using var list = StreamMappedFactory.CreateList<TestObject>(stream, 100, new TestObjectSerializer(), new TestObjectEqualityComparer(), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<TestObject>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);

@@ -17,12 +17,12 @@ namespace Hydrogen.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class StreamContainerNestedStreams {
+public class NestedClusteredStreamsTests {
 	private const string TestString1 = "Hello World! This is a string containing a bunch of text";
 	private const string TestString2 = "And this is another string containing a bunch of other text.";
 
 	[Test]
-	public void Simple( [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
+	public void Simple( [ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
 		using var rootStream = new MemoryStream();
 		var parentContainer = new ClusteredStreams(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
 		var scope = parentContainer.EnterAccessScope();
@@ -37,7 +37,7 @@ public class StreamContainerNestedStreams {
 	}
 
 	[Test]
-	public void Simple_Reload( [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
+	public void Simple_Reload( [ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
 		using var rootStream = new MemoryStream();
 		// this scope creates the data
 		{
@@ -61,7 +61,7 @@ public class StreamContainerNestedStreams {
 	}
 
 	[Test]
-	public void ClearParentFails( [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
+	public void ClearParentFails( [ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
 		using var rootStream = new MemoryStream();
 		var parentContainer = new ClusteredStreams(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
 		var scope = parentContainer.EnterAccessScope();
@@ -73,7 +73,7 @@ public class StreamContainerNestedStreams {
 	}
 
 	[Test]
-	public void ClearChildSucceds( [StreamContainerPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
+	public void ClearChildSucceds( [ClusteredStreamsPolicyTestValues] ClusteredStreamsPolicy policy, [Values(1, 3, 512)] int clusterSize ) {
 		using var rootStream = new MemoryStream();
 		var parentContainer = new ClusteredStreams(rootStream, clusterSize: clusterSize, policy: policy, autoLoad: true);
 		var scope = parentContainer.EnterAccessScope();

@@ -13,6 +13,9 @@ using System.IO;
 namespace Hydrogen;
 
 public class StreamMappedProperty<T> {
+
+	public EventHandlerEx<T, T> ValueChanged;
+
 	private readonly Stream _stream;
 	private readonly long _offset;
 	private readonly long _size;
@@ -61,11 +64,15 @@ public class StreamMappedProperty<T> {
 				return;
 			_stream.Seek(_offset, SeekOrigin.Begin);
 			_serializer.Serialize(value, _writer);
+			var oldValue = _lastValue;
 			_lastValue = value;
 			_hasValue = true;
+			ValueChanged?.Invoke(oldValue, value);
 		}
 	}
 
 
 	public void FlushCache() => _hasValue = false;
+
+	public void ClearListeners() => ValueChanged = null;
 }

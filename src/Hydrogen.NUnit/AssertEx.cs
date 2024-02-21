@@ -608,8 +608,8 @@ public static class AssertEx {
 		// Clear
 		expected.Clear();
 		dictionary.Clear();
-		Assert.That(expected.Count, Is.EqualTo(dictionary.Count));
-		Assert.That(expected, Is.EqualTo(dictionary).Using(kvpComparer));
+		Assert.That(dictionary.Count, Is.EqualTo(expected.Count));
+		Assert.That(dictionary, Is.EqualTo(expected).Using(kvpComparer));
 
 		for (var i = 0; i < iterations; i++) {
 			var remainingCapacity = maxCapacity - expected.Count;
@@ -622,6 +622,8 @@ public static class AssertEx {
 				expected.Add(item.Item1, item.Item2);
 				Assert.That(dictionary.ContainsKey(item.Item1), Is.EqualTo(expected.ContainsKey(item.Item1)));
 			}
+
+			Assert.That(dictionary.Count, Is.EqualTo(expected.Count));
 
 			// update a bunch of random items
 			var toUpdate = rng.Next(0, expected.Count);
@@ -644,8 +646,10 @@ public static class AssertEx {
 			foreach (var key in keys) {
 				var removeResult = dictionary.Remove(key);
 				var expectedRemoveResult = expected.Remove(key);
+				Assert.That(dictionary.Count, Is.EqualTo(expected.Count));
 				Assert.That(removeResult, Is.EqualTo(expectedRemoveResult));
 				Assert.That(dictionary.ContainsKey(key), Is.EqualTo(expected.ContainsKey(key)));
+				
 			}
 
 			//remove by kvp

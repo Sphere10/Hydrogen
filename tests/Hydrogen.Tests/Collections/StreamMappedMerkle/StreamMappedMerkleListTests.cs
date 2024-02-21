@@ -31,8 +31,6 @@ public class StreamMappedMerkleListTests : MerkleListTestsBase {
 		clusteredList.Add("epsilon");
 		Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }, chf)));
 	}
-
-
 	
 	[Test]
 	public void Special_Remove([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
@@ -47,7 +45,6 @@ public class StreamMappedMerkleListTests : MerkleListTestsBase {
 		clusteredList.RemoveAt(0);
 		Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "delta" }, chf)));
 	}
-
 
 	[Test]
 	public void Special_RemoveAll([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {

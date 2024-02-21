@@ -79,7 +79,8 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 
 	protected override void AttachInternal() {
 		var flatTreeData = new StreamMappedBuffer(AttachmentStream);
-		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, Streams.Count);
+		var itemCount = Streams.Count - Streams.Header.ReservedStreams;
+		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, itemCount);
 		_readOnlyMerkleTree = new ContainerLockingMerkleTree(this, _merkleTree, Streams);
 		var hashSize = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 		using (Streams.EnterAccessScope()) {
@@ -133,6 +134,7 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 			_merkleTreeStore.EnsureTreeCalculated();
 			return base.GetValue(coordinate);
 		}
+
 	}
 
 }

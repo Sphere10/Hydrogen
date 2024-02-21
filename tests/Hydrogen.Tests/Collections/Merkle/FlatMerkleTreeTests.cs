@@ -269,7 +269,6 @@ public class FlatMerkleTreeTests {
 		}
 	}
 
-
 	[Test]
 	public void TestBug_1() {
 		var rng = new Random(31337);
@@ -279,5 +278,17 @@ public class FlatMerkleTreeTests {
 		Assert.DoesNotThrow(() => {
 			var _ = tree.Root;
 		});
+	}
+
+	[Test]
+	public void EmptyRootDoesntThrow() {
+		var flatMerkle = new FlatMerkleTree(CHF.SHA2_256);
+		Assert.That(() => flatMerkle.Root, Throws.Nothing);
+	}
+
+	[Test]
+	public void EmptyRootIsNull() {
+		var flatMerkle = new FlatMerkleTree(CHF.SHA2_256);
+		Assert.That(flatMerkle.Root, Is.Null);
 	}
 }

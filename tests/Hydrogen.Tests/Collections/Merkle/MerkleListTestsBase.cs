@@ -18,6 +18,14 @@ public abstract class MerkleListTestsBase {
 
 	protected abstract IDisposable CreateMerkleList(CHF chf, out IMerkleList<string> merkleList);
 
+	
+	[Test]
+	public void EmptyHasZeroLeafs([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		using (CreateMerkleList(chf, out var merkleList)) {
+			Assert.That(merkleList.MerkleTree.Size.LeafCount, Is.EqualTo(0));
+		}
+	}
+
 	[Test]
 	public void EmptyHasNullHash([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		using (CreateMerkleList(chf, out var merkleList)) {
@@ -42,18 +50,18 @@ public abstract class MerkleListTestsBase {
 	[Test]
 	public void TestSimple_2([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		var memStream = new MemoryStream();
-		var clusteredList = new StreamMappedMerkleList<string>(memStream, chf, 256);
-		clusteredList.Load();
+		var merkleList = new StreamMappedMerkleList<string>(memStream, chf, 256);
+		merkleList.Load();
 
-		Assert.That(clusteredList.MerkleTree.Root, Is.Null);
-		clusteredList.Add("beta");
-		clusteredList.Insert(0, "alpha");
-		clusteredList.Insert(2, "gammaa");
-		clusteredList.Add("delta");
-		clusteredList.Update(2, "gamma");
-		clusteredList.Add("epsilon");
-		Assert.That(clusteredList.ToArray(), Is.EqualTo(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }));
-		Assert.That(clusteredList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }, chf)));
+		Assert.That(merkleList.MerkleTree.Root, Is.Null);
+		merkleList.Add("beta");
+		merkleList.Insert(0, "alpha");
+		merkleList.Insert(2, "gammaa");
+		merkleList.Add("delta");
+		merkleList.Update(2, "gamma");
+		merkleList.Add("epsilon");
+		Assert.That(merkleList.ToArray(), Is.EqualTo(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }));
+		Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "alpha", "beta", "gamma", "delta", "epsilon" }, chf)));
 	}
 
 	[Test]
@@ -130,7 +138,6 @@ public abstract class MerkleListTestsBase {
 			Assert.That(merkleList.MerkleTree.Root, Is.Null);
 		}
 	}
-
 	
 	[Test]
 	public void NullAndEmptyNotSame([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {

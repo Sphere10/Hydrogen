@@ -37,6 +37,8 @@ public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyV
 
 	public abstract bool TryGetValue(TKey key, out TValue value);
 
+	public override void Add(KeyValuePair<TKey, TValue> item) => Add(item.Key, item.Value);
+
 	public abstract void Add(TKey key, TValue value);
 
 	public abstract void Update(TKey key, TValue value);
@@ -57,9 +59,9 @@ public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyV
 			Add(key, value);
 	}
 
-	protected virtual IEnumerator<TKey> GetKeysEnumerator() => GetEnumerator().AsEnumerable().Select(x => x.Key).GetEnumerator();
+	protected virtual IEnumerator<TKey> GetKeysEnumerator() => Keys.GetEnumerator();
 
-	protected virtual IEnumerator<TValue> GetValuesEnumerator() => GetEnumerator().AsEnumerable().Select(x => x.Value).GetEnumerator();
+	protected virtual IEnumerator<TValue> GetValuesEnumerator() => Values.GetEnumerator();
 
 	public override void AddRange(IEnumerable<KeyValuePair<TKey, TValue>> items) {
 		Guard.ArgumentNotNull(items, nameof(items));

@@ -18,7 +18,7 @@ internal class KeyIndex<TItem, TKey> : IndexBase<TItem, TKey, NonUniqueKeyStore<
 		: base(
 			objectStream,
 			projection,
-			new NonUniqueKeyStore<TKey>(objectStream, reservedStreamIndex, keyComparer, keySerializer)
+			new NonUniqueKeyStore<TKey>(objectStream.Streams, reservedStreamIndex, keyComparer, keySerializer)
 		) {
 	}
 

@@ -19,11 +19,11 @@ namespace Hydrogen;
 /// <typeparam name="TKey"></typeparam>
 internal class NonUniqueKeyStore<TKey> : MetaDataStoreDecorator<TKey> {
 
-	public NonUniqueKeyStore(ObjectStream objectStream, long reservedStreamIndex, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
+	public NonUniqueKeyStore(ClusteredStreams streams, long reservedStreamIndex, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
 		: base(
 			new MemoryCachedMetaDataLookup<TKey>(
 				new ListBasedMetaDataStore<TKey>(
-					objectStream.Streams,
+					streams,
 					reservedStreamIndex,
 					keySerializer
 				),

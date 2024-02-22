@@ -28,7 +28,7 @@ internal class KeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKe
 		: base(
 			objectStream,
 			x => keyChecksummer.CalculateChecksum(projection.Invoke(x)),
-			new NonUniqueKeyStore<int>(objectStream, reservedStreamIndex, EqualityComparer<int>.Default, PrimitiveSerializer<int>.Instance)
+			new NonUniqueKeyStore<int>(objectStream.Streams, reservedStreamIndex, EqualityComparer<int>.Default, PrimitiveSerializer<int>.Instance)
 		) {
 		_keyChecksummer = keyChecksummer;
 		_keyFetcher = keyFetcher;

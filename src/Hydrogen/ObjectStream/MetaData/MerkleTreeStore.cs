@@ -18,6 +18,9 @@ namespace Hydrogen;
 /// </summary>
 /// <remarks>Unlike <see cref="KeyIndex{TItem,TKey}"/> which automatically extracts the key from the item and stores it, this is used as a primary storage for the key itself. Thus it is not an index, it is a pure store.</remarks>
 internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
+
+	public event EventHandlerEx<byte[], byte[]> RootChanged;
+
 	private readonly CHF _hashAlgorithm;
 	private IMerkleTree _readOnlyMerkleTree;
 	private IDynamicMerkleTree _merkleTree;
@@ -77,11 +80,23 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 		 _dirtyRoot = true;
 	}
 
+	public void ClearListeners() => _merkleRootProperty.ClearListeners();
+
+	public void EnsureTreeCalculated() {
+		Guard.Ensure(Streams.IsLocked, $"Merkle-tree store must be locked before calling '{nameof(EnsureTreeCalculated)}' method");
+		
+		if (!_dirtyRoot) 
+			return;
+
+		_merkleRootProperty.Value = _merkleTree.Root;
+		_dirtyRoot = true;
+	}
+
 	protected override void AttachInternal() {
 		var flatTreeData = new StreamMappedBuffer(AttachmentStream);
 		var itemCount = Streams.Count - Streams.Header.ReservedStreams;
 		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, itemCount);
-		_readOnlyMerkleTree = new ContainerLockingMerkleTree(this, _merkleTree, Streams);
+		_readOnlyMerkleTree = new StreamLockingMerkleTree(this, _merkleTree, Streams);
 		var hashSize = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 		using (Streams.EnterAccessScope()) {
 			_merkleRootProperty = Streams.Header.MapExtensionProperty(
@@ -89,6 +104,9 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 				hashSize, 
 				new ConstantSizeByteArraySerializer(hashSize).WithNullSubstitution(Hashers.ZeroHash(_hashAlgorithm), ByteArrayEqualityComparer.Instance)
 			);
+
+			// When stream mapped root is changed, fire the root changed event (ensures not excessively triggered during dirty writes)
+			_merkleRootProperty.ValueChanged += (oldValue, newValue) => RootChanged?.Invoke(oldValue, newValue);
 		}
 	}
 
@@ -99,38 +117,37 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 		_merkleRootProperty = null;
 	}
 
-	private void EnsureTreeCalculated() {
-		// TODO: Guard ensure access scope is entered
 
-		if (!_dirtyRoot) 
-			return;
-
-		_merkleRootProperty.Value = _merkleTree.Root;
-		_dirtyRoot = true;
-	}
-
-	private class ContainerLockingMerkleTree : MerkleTreeDecorator  {
+	private class StreamLockingMerkleTree : MerkleTreeDecorator  {
 		private readonly MerkleTreeStore _merkleTreeStore;
-		private readonly ClusteredStreams _container;
+		private readonly ClusteredStreams _streams;
 
-		public ContainerLockingMerkleTree(MerkleTreeStore merkleTreeStore, IMerkleTree internalMerkleTree, ClusteredStreams container) 
+		public StreamLockingMerkleTree(MerkleTreeStore merkleTreeStore, IMerkleTree internalMerkleTree, ClusteredStreams streams) 
 			: base(internalMerkleTree) {
 			_merkleTreeStore = merkleTreeStore;
-			_container = container;
+			_streams = streams;
 		}
 
 		public override byte[] Root { 
 			get {
-				using var _ = _container.EnterAccessScope();
+				// Locks the streams
+				using var _ = _streams.EnterAccessScope();
+
+				// This call ensures that a dirty root is fully evaluated
 				_merkleTreeStore.EnsureTreeCalculated();
+
+				// Now that root is evaluated, we can fetch/return the root
 				var root = base.Root;;
+
+				// Sanity check: ensure the merkle-root of the tree matches the merkle-root property mapped onto the clustered stream header
 				Debug.Assert(ByteArrayEqualityComparer.Instance.Equals(root, _merkleTreeStore._merkleRootProperty.Value));
+
 				return base.Root;
 			}
 		}
 
 		public override ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate) {
-			using var _ = _container.EnterAccessScope();
+			using var _ = _streams.EnterAccessScope();
 			_merkleTreeStore.EnsureTreeCalculated();
 			return base.GetValue(coordinate);
 		}

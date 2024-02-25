@@ -9,6 +9,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
 
 namespace Hydrogen;
@@ -17,12 +19,12 @@ namespace Hydrogen;
 /// Base class for dictionary implementation. Implements index operator and misc.
 /// </summary>
 public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue> {
-	private readonly KeysCollection _keysCollectionProperty;
-	private readonly ValuesCollection _valuesCollectionProperty;
+	private readonly EnumerableCollectionAdapter<TKey> _keysCollectionProperty;
+	private readonly EnumerableCollectionAdapter<TValue> _valuesCollectionProperty;
 
 	protected DictionaryBase() {
-		_keysCollectionProperty = new KeysCollection(this);
-		_valuesCollectionProperty = new ValuesCollection(this);
+		_keysCollectionProperty = new EnumerableCollectionAdapter<TKey>(GetKeysEnumerator, () => ((ICollection<KeyValuePair<TKey, TValue>>)this).Count, ContainsKey );
+		_valuesCollectionProperty = new EnumerableCollectionAdapter<TValue>(GetValuesEnumerator, () => ((ICollection<KeyValuePair<TKey, TValue>>)this).Count);
 	}
 
 	public virtual ICollection<TKey> Keys => _keysCollectionProperty;
@@ -59,9 +61,9 @@ public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyV
 			Add(key, value);
 	}
 
-	protected virtual IEnumerator<TKey> GetKeysEnumerator() => Keys.GetEnumerator();
+	protected virtual IEnumerator<TKey> GetKeysEnumerator() => this.Select(x => x.Key).GetEnumerator();
 
-	protected virtual IEnumerator<TValue> GetValuesEnumerator() => Values.GetEnumerator();
+	protected virtual IEnumerator<TValue> GetValuesEnumerator() => this.Select(x => x.Value).GetEnumerator();
 
 	public override void AddRange(IEnumerable<KeyValuePair<TKey, TValue>> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
@@ -81,69 +83,5 @@ public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyV
 	}
 
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-	
-	private class KeysCollection : ICollection<TKey> {
-
-		private readonly DictionaryBase<TKey, TValue> _parent;
-
-		public KeysCollection(DictionaryBase<TKey, TValue> parent) {
-			_parent = parent;
-		}
-
-		public IEnumerator<TKey> GetEnumerator() => _parent.GetKeysEnumerator();
-
-		IEnumerator IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
-
-		public void Add(TKey item) => throw new NotSupportedException();
-
-		public void Clear() => _parent.Clear();
-
-		public bool Contains(TKey item) => _parent.ContainsKey(item);
-
-		public void CopyTo(TKey[] array, int arrayIndex) {
-			foreach (var key in this)
-				array[arrayIndex++] = key;
-		}
-
-		public bool Remove(TKey item) => _parent.Remove(item);
-
-		public int Count => checked((int)_parent.Count);
-
-		public bool IsReadOnly => _parent.IsReadOnly;
-	}
-	
-	private class ValuesCollection : ICollection<TValue> {
-
-		private readonly DictionaryBase<TKey, TValue> _parent;
-
-		public ValuesCollection(DictionaryBase<TKey, TValue> parent) {
-			_parent = parent;
-		}
-
-		public IEnumerator<TValue> GetEnumerator() => _parent.GetValuesEnumerator();
-
-		IEnumerator IEnumerable.GetEnumerator() {
-			return GetEnumerator();
-		}
-
-		public void Add(TValue item) => throw new NotSupportedException();
-
-		public void Clear() => _parent.Clear();
-
-		public bool Contains(TValue item) => throw new NotSupportedException();
-
-		public void CopyTo(TValue[] array, int arrayIndex) {
-			foreach (var value in this)
-				array[arrayIndex++] = value;
-		}
-
-		public bool Remove(TValue item) => throw new NotSupportedException();
-
-		public int Count => checked((int) _parent.Count);
-
-		public bool IsReadOnly => _parent.IsReadOnly;
-	}
 
 }

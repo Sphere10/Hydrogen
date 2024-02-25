@@ -73,6 +73,12 @@ public class IndexedValueDictionary<TKey, TVal> : DictionaryBase<TKey, TVal>, IR
 	public override IEnumerator<KeyValuePair<TKey, TVal>> GetEnumerator() 
 		=> _dictionary.Select(x => x.AsProjection(key => key, valueIndex => _list[valueIndex])).GetEnumerator();
 
+	protected override IEnumerator<TKey> GetKeysEnumerator() 
+		=> _dictionary.Keys.GetEnumerator();
+
+	protected override IEnumerator<TVal> GetValuesEnumerator() 
+		=> _list.GetEnumerator();
+
 	public override bool Remove(KeyValuePair<TKey, TVal> item) {
 		if (_dictionary.TryGetValue(item.Key, out var valueIndex) && _valueComparer.Equals(_list[valueIndex], item.Value)) {
 			RemoveInternal(item.Key, valueIndex);

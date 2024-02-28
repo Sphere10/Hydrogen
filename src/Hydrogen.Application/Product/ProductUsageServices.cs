@@ -109,9 +109,10 @@ public class ProductUsageServices : IProductUsageServices {
 
 	private IDictionary<string, object> TamperCheckLoad(string encryptedJson) {
 
-		if (string.IsNullOrWhiteSpace(encryptedJson))
-			if (NumberOfUsesBySystem > 1)
-				throw new ProductLicenseTamperedException();
+		// Removed 2024-02-29: causes license failures on edge-case scenarios involving usage of system > 1 but no encrypted settings written before
+		//if (string.IsNullOrWhiteSpace(encryptedJson))
+		//	if (NumberOfUsesBySystem > 1)
+		//		throw new ProductLicenseTamperedException();
 
 		var dict = encryptedJson != null ? Tools.Json.ReadFromString<IDictionary<string, object>>(encryptedJson) : new Dictionary<string, object> { [TamperCheckKey] = TamperCheckValue };
 

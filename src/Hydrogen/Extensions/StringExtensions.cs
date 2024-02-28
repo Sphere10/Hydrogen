@@ -556,6 +556,9 @@ public static class StringExtensions {
 		return builder.ToString();
 	}
 
+	public static string ToCamelCase(this string value)
+		=> Tools.Text.ToCasing(TextCasing.CamelCase, value);
+
 	public static string RemoveCamelCase(this string value) {
 		StringBuilder retval = new StringBuilder();
 		char lastChar = value[0];
@@ -570,6 +573,9 @@ public static class StringExtensions {
 		}
 		return retval.ToString();
 	}
+
+	public static string ToCasing(this string value, TextCasing style, string text, FirstCharacterPolicy firstCharacterPolicy = FirstCharacterPolicy.Anything, string prefixIfPolicyInvalid = null) 
+		=> Tools.Text.ToCasing(style, text, firstCharacterPolicy, prefixIfPolicyInvalid);
 
 	/// <summary>
 	/// Parses a camel cased or pascal cased string and returns a new 

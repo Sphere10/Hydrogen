@@ -7,7 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Text;
 
 namespace Hydrogen.Application;
 
@@ -107,5 +109,41 @@ public class ProductRights {
 		if (ExpiresAfterDate && ExpirationDateUTC <= DateTime.UtcNow)
 			ExpiresAfterDate = false;
 		HasFiniteInstances = false;
+	}
+
+	public override string ToString() 
+		=> ToString("Feature A", "Feature B", "Feature C", "Feature D");
+
+	public string ToString(string featureAName, string featureBName = "Feature B", string featureCName = "Feature C", string featureDName = "Feature D") {
+		var msgs = new List<string>();
+
+		msgs.Add($"Feature level permitted by license: {FeatureRights}");
+		
+		if (LimitFeatureA.HasValue) 
+			msgs.Add($"{featureAName?.ToCamelCase()} limit: {LimitFeatureA}");
+
+		if (LimitFeatureB.HasValue) 
+			msgs.Add($"{featureBName?.ToCamelCase()} limit: {LimitFeatureB}");
+
+		if (LimitFeatureC.HasValue) 
+			msgs.Add($"{featureCName?.ToCamelCase()} limit: {LimitFeatureC}");
+
+		if (LimitFeatureD.HasValue) 
+			msgs.Add($"{featureDName?.ToCamelCase()} limit: {LimitFeatureD}");
+
+		if (ExpiresAfterDate)
+			msgs.Add($"expires on {ExpirationDateUTC:yyyy-MM-dd}");
+
+		if (HasFiniteDays)
+			msgs.Add($"has {DaysRemaining} out of {TotalDaysAllowed} days left");
+
+		if (HasFiniteUses)
+			msgs.Add($"has {UsesRemaining} out of {TotalUsesAllowed} executions remaining");
+
+		if (HasFiniteInstances)
+			msgs.Add($"has {InstancesRemaining} out of {TotalInstancesAllowed} concurrent instances");
+
+		return msgs.ToDelimittedString(", ");
+
 	}
 }

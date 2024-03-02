@@ -105,7 +105,7 @@ public class RollingFileLogger : LoggerBase, IDisposable {
 	}
 
 	private void OpenLogFile(string logFilePath, Encoding encoding) {
-		_textWriter = new FileAppendTextWriter(logFilePath, encoding, false);
+		_textWriter = new FileAppendTextWriter(logFilePath, encoding, true);
 		_currentFileSizeBytes = File.Exists(logFilePath) ? (int)Tools.FileSystem.GetFileSize(logFilePath) : 0;
 		if (_currentFileSizeBytes > _effectiveMaxSize)
 			ArchiveLogFile();

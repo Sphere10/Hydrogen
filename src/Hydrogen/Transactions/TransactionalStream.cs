@@ -15,10 +15,10 @@ namespace Hydrogen;
 /// A stream that can be committed or rolled back.
 /// </summary>
 public class TransactionalStream<TInnerStream> : StreamDecorator<TInnerStream>, ITransactionalObject where TInnerStream : Stream {
-	public event EventHandlerEx<object> Committing { add => _innerTransactionalObject.Committing += value; remove => _innerTransactionalObject.Committing -= value; }
-	public event EventHandlerEx<object> Committed { add => _innerTransactionalObject.Committed += value; remove => _innerTransactionalObject.Committed -= value; }
-	public event EventHandlerEx<object> RollingBack { add => _innerTransactionalObject.RollingBack += value; remove => _innerTransactionalObject.RollingBack -= value; }
-	public event EventHandlerEx<object> RolledBack { add => _innerTransactionalObject.RolledBack += value; remove => _innerTransactionalObject.RolledBack -= value; }
+	public event EventHandlerEx Committing { add => _innerTransactionalObject.Committing += value; remove => _innerTransactionalObject.Committing -= value; }
+	public event EventHandlerEx Committed { add => _innerTransactionalObject.Committed += value; remove => _innerTransactionalObject.Committed -= value; }
+	public event EventHandlerEx RollingBack { add => _innerTransactionalObject.RollingBack += value; remove => _innerTransactionalObject.RollingBack -= value; }
+	public event EventHandlerEx RolledBack { add => _innerTransactionalObject.RolledBack += value; remove => _innerTransactionalObject.RolledBack -= value; }
 
 	private readonly ITransactionalObject _innerTransactionalObject;
 
@@ -26,9 +26,15 @@ public class TransactionalStream<TInnerStream> : StreamDecorator<TInnerStream>, 
 		_innerTransactionalObject = innerTransactionalObject;
 	}
 
-	public void Commit() => _innerTransactionalObject.Commit();
+	public void Commit() {
+		InnerStream.Flush();
+		_innerTransactionalObject.Commit();
+	}
 
-	public Task CommitAsync() => _innerTransactionalObject.CommitAsync();
+	public async Task CommitAsync() {
+		await InnerStream.FlushAsync();
+		await _innerTransactionalObject.CommitAsync();
+	}
 
 	public void Rollback() => _innerTransactionalObject.Rollback();
 

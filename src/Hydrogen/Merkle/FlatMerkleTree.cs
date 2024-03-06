@@ -62,13 +62,23 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 		Leafs.AddRange(initialLeafs ?? Enumerable.Empty<byte[]>());
 	}
 
-	public FlatMerkleTree(CHF hashAlgorithm, IBuffer nodeBuffer, long? leafCount = null) {
+	public FlatMerkleTree(CHF hashAlgorithm, IBuffer nodeBuffer, long? precomputedLeafCount = null) {
 		Guard.Argument(hashAlgorithm != CHF.ConcatBytes, nameof(hashAlgorithm), "Must be digest size CHF");
 		HashAlgorithm = hashAlgorithm;
+
 		_digestSize = Hashers.GetDigestSizeBytes(hashAlgorithm);
 		Guard.Argument(_digestSize > 0, nameof(hashAlgorithm), "Unsupported CHF");
+
+		// Determine the leaf count
+		var leafCount = precomputedLeafCount ?? MerkleMath.SlowCalculateLeafCountFromFlatNodes(nodeBuffer.Count / _digestSize);
+
+		// Check to ensure buffer has all the flat nodes
+		var expectedStoredNodes = checked((long)MerkleMath.CountFlatNodes(leafCount));
+		var actualStoredNodes = nodeBuffer.Count / _digestSize;
+		Guard.Ensure( expectedStoredNodes == actualStoredNodes, $"Corrupted merkle-tree: expected {expectedStoredNodes} flat-nodes but found {actualStoredNodes}.");
+
 		Leafs = new LeafList(this);
-		AttachBuffer(nodeBuffer, leafCount ?? MerkleMath.SlowCalculateLeafCountFromFlatNodes(nodeBuffer.Count / _digestSize));
+		AttachBuffer(nodeBuffer, leafCount);
 	}
 
 	public CHF HashAlgorithm { get; }

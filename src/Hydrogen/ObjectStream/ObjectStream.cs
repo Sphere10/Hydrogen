@@ -52,7 +52,7 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public long Count => Streams.Count - Streams.Header.ReservedStreams;
 
-	public bool OwnsStreamContainer { get; set; }
+	public bool OwnsStreams { get; set; }
 
 	public IItemSerializer ItemSerializer { get; }
 
@@ -66,7 +66,7 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 	public IDisposable EnterAccessScope() => Streams.EnterAccessScope();
 
 	public void Dispose() {
-		if (OwnsStreamContainer)
+		if (OwnsStreams)
 			Streams.Dispose();
 	}
 

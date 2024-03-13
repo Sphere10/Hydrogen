@@ -82,7 +82,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 			checksumIndexStreamIndex,
 			autoLoad
 		) {
-		InternalCollection.ObjectStream.OwnsStreamContainer = true;
+		InternalCollection.ObjectStream.OwnsStreams = true;
 	}
 
 	public TransactionalList(

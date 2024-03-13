@@ -289,7 +289,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 					CreateItemSerializer(dimensionDefinition.ObjectType),
 					false
 				) as ObjectStream;
-		dimension.OwnsStreamContainer = true;
+		dimension.OwnsStreams = true;
 
 		// construct indexes of the object stream
 		foreach (var (item, index) in dimensionDefinition.Indexes.WithIndex()) {

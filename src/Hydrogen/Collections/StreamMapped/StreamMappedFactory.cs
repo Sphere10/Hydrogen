@@ -43,7 +43,7 @@ public static class StreamMappedFactory {
 			checksumIndexStreamIndex,
 			autoLoad
 		);
-		list.ObjectStream.OwnsStreamContainer = true;
+		list.ObjectStream.OwnsStreams = true;
 		return list;
 	}
 
@@ -106,7 +106,7 @@ public static class StreamMappedFactory {
 			checksumIndexStreamIndex,
 			autoLoad
 		);
-		list.ObjectStream.OwnsStreamContainer = true;
+		list.ObjectStream.OwnsStreams = true;
 		return list;
 	}
 
@@ -261,7 +261,7 @@ public static class StreamMappedFactory {
 			freeIndexStoreStreamIndex,
 			keyChecksumIndexStreamIndex
 		);
-		dict.ObjectStream.OwnsStreamContainer = true;
+		dict.ObjectStream.OwnsStreams = true;
 		return dict;
 	}
 
@@ -336,7 +336,7 @@ public static class StreamMappedFactory {
 			keyChecksumIndexStreamIndex
 		);
 
-		dict.ObjectStream.OwnsStreamContainer = true;
+		dict.ObjectStream.OwnsStreams = true;
 		
 		return dict;
 	}

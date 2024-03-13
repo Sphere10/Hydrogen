@@ -16,10 +16,10 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase<TItem>, ITransactionalFile {
-	public event EventHandlerEx<object> Committing;
-	public event EventHandlerEx<object> Committed;
-	public event EventHandlerEx<object> RollingBack;
-	public event EventHandlerEx<object> RolledBack;
+	public event EventHandlerEx Committing;
+	public event EventHandlerEx Committed;
+	public event EventHandlerEx RollingBack;
+	public event EventHandlerEx RolledBack;
 
 	internal readonly MarkerRepository PageMarkerRepo;
 
@@ -58,8 +58,8 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	public void Commit() {
 		CheckLoaded();
 		CheckScopeInStatusIfExists(FileTransactionState.Committing);
-		Flush();
 		NotifyCommitting();
+		Flush(); // flushing after notification ensures any mutations by handlers are captured
 		PageMarkerRepo.Add(FileMarkerType.Committing);
 		// All page files are manually copied
 		Stream.SetLength(Count);
@@ -90,8 +90,8 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 	public void Rollback() {
 		CheckLoaded();
 		CheckScopeInStatusIfExists(FileTransactionState.RollingBack);
+		// Flush(); // 2024-03-11: removed since not needed theoretically
 		NotifyRollingBack();
-		Flush();
 		PageMarkerRepo.Add(FileMarkerType.RollingBack);
 		foreach (ITransactionalFilePage<TItem> page in InternalPages)
 			page.HasUncommittedData = false;
@@ -112,8 +112,10 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 			FlushOnDispose = false;
 		}
 
-		if (PageMarkerRepo.FileMarkers.Any() || PageMarkerRepo.PageMarkers.Any())
-			Rollback();
+		if (!Disposing && !Disposed) {
+			if (PageMarkerRepo.FileMarkers.Any() || PageMarkerRepo.PageMarkers.Any())
+				Rollback();
+		}
 
 		PageMarkerRepo.Dispose();
 
@@ -200,22 +202,22 @@ public abstract class TransactionalFileMappedListBase<TItem> : FilePagedListBase
 
 	private void NotifyCommitting() {
 		OnCommitting();
-		Committing?.Invoke(this);
+		Committing?.Invoke();
 	}
 
 	private void NotifyCommitted() {
 		OnCommitted();
-		Committed?.Invoke(this);
+		Committed?.Invoke();
 	}
 
 	private void NotifyRollingBack() {
 		OnRollingBack();
-		RollingBack?.Invoke(this);
+		RollingBack?.Invoke();
 	}
 
 	private void NotifyRolledBack() {
 		OnRolledBack();
-		RolledBack?.Invoke(this);
+		RolledBack?.Invoke();
 	}
 
 	public static Guid ComputeFileID(string caseCorrectFilePath) {

@@ -21,10 +21,10 @@ namespace Hydrogen;
 public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T>>, ITransactionalList<T> {
 	public event EventHandlerEx<object> Loading { add => InternalCollection.Loading += value; remove => InternalCollection.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => InternalCollection.Loaded += value; remove => InternalCollection.Loaded -= value; }
-	public event EventHandlerEx<object> Committing { add => _transactionalObject.Committing += value; remove => _transactionalObject.Committing -= value; }
-	public event EventHandlerEx<object> Committed { add => _transactionalObject.Committed += value; remove => _transactionalObject.Committed -= value; }
-	public event EventHandlerEx<object> RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
-	public event EventHandlerEx<object> RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
+	public event EventHandlerEx Committing { add => _transactionalObject.Committing += value; remove => _transactionalObject.Committing -= value; }
+	public event EventHandlerEx Committed { add => _transactionalObject.Committed += value; remove => _transactionalObject.Committed -= value; }
+	public event EventHandlerEx RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
+	public event EventHandlerEx RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
 
 	private readonly ITransactionalObject _transactionalObject;
 
@@ -114,9 +114,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		: base(streamMappedList) {
 		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
 		_transactionalObject = transactionalObject;
-		_transactionalObject.RolledBack += _ => {
-			streamMappedList.ObjectStream.Streams.Initialize();
-		};
+		_transactionalObject.RolledBack += streamMappedList.ObjectStream.Streams.Initialize;
 		
 		if (autoLoad && RequiresLoad)
 			Load();

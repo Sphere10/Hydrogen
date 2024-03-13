@@ -19,10 +19,10 @@ namespace Hydrogen;
 /// <typeparam name="TTransaction">Type of transaction</typeparam>
 public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITransactionalScope {
 
-	public event EventHandlerEx<object> Committing;
-	public event EventHandlerEx<object> Committed;
-	public event EventHandlerEx<object> RollingBack;
-	public event EventHandlerEx<object> RolledBack;
+	public event EventHandlerEx Committing;
+	public event EventHandlerEx Committed;
+	public event EventHandlerEx RollingBack;
+	public event EventHandlerEx RolledBack;
 
 	private bool _scopeOwnsTransaction;
 	private TransactionalScopeBase<TTransaction> _transactionOwner;
@@ -102,7 +102,6 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 		}
 		NotifyRolledBack();
 		CloseTransaction();
-
 	}
 
 	public virtual async Task RollbackAsync() {
@@ -275,42 +274,42 @@ public abstract class TransactionalScopeBase<TTransaction> : ContextScope, ITran
 
 	private void NotifyCommitting() {
 		OnCommitting();
-		Committing?.Invoke(this);
+		Committing?.Invoke();
 	}
 
 	private async Task NotifyCommittingAsync() {
 		await OnCommittingAsync();
-		Committing?.Invoke(this);
+		Committing?.Invoke();
 	}
 
 	private void NotifyCommitted() {
 		OnCommitted();
-		Committed?.Invoke(this);
+		Committed?.Invoke();
 	}
 
 	private async Task NotifyCommittedAsync() {
 		await OnCommittedAsync();
-		Committed?.Invoke(this);
+		Committed?.Invoke();
 	}
 
 	private void NotifyRollingBack() {
 		OnRollingBack();
-		RollingBack?.Invoke(this);
+		RollingBack?.Invoke();
 	}
 
 	private async Task NotifyRollingBackAsync() {
 		await OnRollingBackAsync();
-		RollingBack?.Invoke(this);
+		RollingBack?.Invoke();
 	}
 
 	private void NotifyRolledBack() {
 		OnRolledBack();
-		RolledBack?.Invoke(this);
+		RolledBack?.Invoke();
 	}
 
 	private async Task NotifyRolledBackAsync() {
 		await OnRolledBackAsync();
-		RolledBack?.Invoke(this);
+		RolledBack?.Invoke();
 	}
 
 	protected void CheckTransactionExists() {

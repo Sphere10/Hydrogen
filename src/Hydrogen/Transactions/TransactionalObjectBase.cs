@@ -12,10 +12,10 @@ namespace Hydrogen;
 
 public abstract class TransactionalObjectBase : ITransactionalObject {
 
-	public event EventHandlerEx<object> Committing;
-	public event EventHandlerEx<object> Committed;
-	public event EventHandlerEx<object> RollingBack;
-	public event EventHandlerEx<object> RolledBack;
+	public event EventHandlerEx Committing;
+	public event EventHandlerEx Committed;
+	public event EventHandlerEx RollingBack;
+	public event EventHandlerEx RolledBack;
 
 	public abstract void Commit();
 
@@ -38,31 +38,22 @@ public abstract class TransactionalObjectBase : ITransactionalObject {
 
 	protected void NotifyCommitting() {
 		OnCommitting();
-		if (Committing != null) {
-			Committing(this);
-		}
+		Committing?.Invoke();
 	}
 
 	protected void NotifyCommitted() {
 		OnCommitted();
-		if (Committed != null) {
-			Committed(this);
-		}
+		Committed?.Invoke();
 	}
 
 	protected void NotifyRollingBack() {
 		OnRollingBack();
-		if (RollingBack != null) {
-			RollingBack(this);
-		}
+		RollingBack?.Invoke();
 	}
 
 	protected void NotifyRolledBack() {
 		OnRolledBack();
-		if (RolledBack != null) {
-			RolledBack(this);
-		}
+		RolledBack?.Invoke();
 	}
-
 
 }

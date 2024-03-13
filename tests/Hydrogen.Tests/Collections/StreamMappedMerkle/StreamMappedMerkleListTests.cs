@@ -9,6 +9,7 @@
 using System;
 using NUnit.Framework;
 using System.IO;
+using ExtensionProperties;
 
 namespace Hydrogen.Tests;
 
@@ -60,6 +61,43 @@ public class StreamMappedMerkleListTests : MerkleListTestsBase {
 		clusteredList.RemoveAt(0);
 		Assert.That(clusteredList.MerkleTree.Root, Is.Null);
 	}
+
+	[Test]
+	public void EnsureLazyCalculatedRootIsFlushedToHeaderStream([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		var memStream = new MemoryStream();
+		using var clusteredList = new StreamMappedMerkleList<string>(memStream, chf, 256, autoLoad: true);
+		clusteredList.Add("alpha");
+		clusteredList.Add("beta");
+		clusteredList.Add("gamma");
+
+		var root = clusteredList.MerkleTree.Root; // this causes root to be calculated and written to stream
+
+		var digestLen = Hashers.GetDigestSizeBytes(chf);
+		using var _  = clusteredList.ObjectStream.Streams.EnterAccessScope();
+		var smRoot = clusteredList.ObjectStream.Streams.Header.MapExtensionProperty(0, digestLen, new ConstantSizeByteArraySerializer(digestLen)).Value;
+
+		Assert.That(smRoot, Is.EqualTo(root).Using(ByteArrayEqualityComparer.Instance));
+		
+	}
+
+	[Test]
+	public void EnsureLazyUncalculatedRootIsNotFlushedToHeaderStream([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		var memStream = new MemoryStream();
+		using var clusteredList = new StreamMappedMerkleList<string>(memStream, chf, 256, autoLoad: true);
+		clusteredList.Add("alpha");
+		clusteredList.Add("beta");
+		clusteredList.Add("gamma");
+		
+		// The root has not been calculated at this point, so stream header should not contain anything
+
+		var digestLen = Hashers.GetDigestSizeBytes(chf);
+		using var _  = clusteredList.ObjectStream.Streams.EnterAccessScope();
+		var smRoot = clusteredList.ObjectStream.Streams.Header.MapExtensionProperty(0, digestLen, new ConstantSizeByteArraySerializer(digestLen)).Value;
+
+		Assert.That(smRoot, Is.EqualTo(new byte[digestLen]).Using(ByteArrayEqualityComparer.Instance));
+		
+	}
+
 
 	protected override IDisposable CreateMerkleList([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf, out IMerkleList<string> merkleList) {
 		var memStream = new MemoryStream();

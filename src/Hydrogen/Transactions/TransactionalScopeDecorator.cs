@@ -11,25 +11,10 @@ using System.Threading.Tasks;
 namespace Hydrogen;
 
 public class TransactionalScopeDecorator<TTransactionalScope> : ContextScopeDecorator<TTransactionalScope>, ITransactionalScope where TTransactionalScope : ITransactionalScope {
-	public event EventHandlerEx<object> Committing {
-		add => Internal.Committing += value;
-		remove => Internal.Committing -= value;
-	}
-
-	public event EventHandlerEx<object> Committed {
-		add => Internal.Committed += value;
-		remove => Internal.Committed -= value;
-	}
-
-	public event EventHandlerEx<object> RollingBack {
-		add => Internal.RollingBack += value;
-		remove => Internal.RollingBack -= value;
-	}
-
-	public event EventHandlerEx<object> RolledBack {
-		add => Internal.RolledBack += value;
-		remove => Internal.RolledBack -= value;
-	}
+	public event EventHandlerEx Committing { add => Internal.Committing += value; remove => Internal.Committing -= value; }
+	public event EventHandlerEx Committed { add => Internal.Committed += value; remove => Internal.Committed -= value; }
+	public event EventHandlerEx RollingBack { add => Internal.RollingBack += value; remove => Internal.RollingBack -= value; }
+	public event EventHandlerEx RolledBack { add => Internal.RolledBack += value; remove => Internal.RolledBack -= value; }
 
 	public TransactionalScopeDecorator(TTransactionalScope internalScope) : base(internalScope) {
 	}

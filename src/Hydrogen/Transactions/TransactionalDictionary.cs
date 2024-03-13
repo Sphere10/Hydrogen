@@ -16,10 +16,10 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 
 	public event EventHandlerEx<object> Loading { add => InternalDictionary.Loading += value; remove => InternalDictionary.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => InternalDictionary.Loaded += value; remove => InternalDictionary.Loaded -= value; }
-	public event EventHandlerEx<object> Committing { add => _transactionalObject.Committing += value; remove => _transactionalObject.Committing -= value; }
-	public event EventHandlerEx<object> Committed { add => _transactionalObject.Committed += value; remove => _transactionalObject.Committed -= value; }
-	public event EventHandlerEx<object> RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
-	public event EventHandlerEx<object> RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
+	public event EventHandlerEx Committing { add => _transactionalObject.Committing += value; remove => _transactionalObject.Committing -= value; }
+	public event EventHandlerEx Committed { add => _transactionalObject.Committed += value; remove => _transactionalObject.Committed -= value; }
+	public event EventHandlerEx RollingBack { add => _transactionalObject.RollingBack += value; remove => _transactionalObject.RollingBack -= value; }
+	public event EventHandlerEx RolledBack { add => _transactionalObject.RolledBack += value; remove => _transactionalObject.RolledBack -= value; }
 
 	private readonly ITransactionalObject _transactionalObject;
 
@@ -103,9 +103,7 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 	) : base(internalDictionary) {
 		Guard.ArgumentNotNull(transactionalObject, nameof(transactionalObject));
 		_transactionalObject = transactionalObject;
-		_transactionalObject.RolledBack += _ => {
-			internalDictionary.ObjectStream.Streams.Initialize();
-		};
+		_transactionalObject.RolledBack += internalDictionary.ObjectStream.Streams.Initialize;
 
 		if (autoLoad && RequiresLoad)
 			Load();

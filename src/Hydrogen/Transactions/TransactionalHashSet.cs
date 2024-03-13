@@ -13,10 +13,10 @@ namespace Hydrogen;
 
 public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransactionalHashSet<TItem> {
 	
-	public event EventHandlerEx<object> Committing { add => InternalDictionary.Committing += value; remove => InternalDictionary.Committing -= value; }
-	public event EventHandlerEx<object> Committed { add => InternalDictionary.Committed += value; remove => InternalDictionary.Committed -= value; }
-	public event EventHandlerEx<object> RollingBack { add => InternalDictionary.RollingBack += value; remove => InternalDictionary.RollingBack -= value; }
-	public event EventHandlerEx<object> RolledBack { add => InternalDictionary.RolledBack += value; remove => InternalDictionary.RolledBack -= value; }
+	public event EventHandlerEx Committing { add => InternalDictionary.Committing += value; remove => InternalDictionary.Committing -= value; }
+	public event EventHandlerEx Committed { add => InternalDictionary.Committed += value; remove => InternalDictionary.Committed -= value; }
+	public event EventHandlerEx RollingBack { add => InternalDictionary.RollingBack += value; remove => InternalDictionary.RollingBack -= value; }
+	public event EventHandlerEx RolledBack { add => InternalDictionary.RolledBack += value; remove => InternalDictionary.RolledBack -= value; }
 
 	internal new readonly ITransactionalDictionary<byte[], TItem> InternalDictionary;
 

@@ -723,8 +723,8 @@ public class TransactionalFileMappedBufferTests {
 			var rollingBackCount = 0;
 			var rolledBackCount = 0;
 
-			file.Committing += _ => committingCount++;
-			file.Committed += _ => committedCount++;
+			file.Committing += () => committingCount++;
+			file.Committed += () => committedCount++;
 			file.AddRange(new Random(31337).NextBytes(100));
 			Assert.AreEqual(0, committingCount);
 			Assert.AreEqual(0, committedCount);
@@ -753,8 +753,8 @@ public class TransactionalFileMappedBufferTests {
 
 			var rollingBackCount = 0;
 			var rolledBackCount = 0;
-			file.RollingBack += _ => rollingBackCount++;
-			file.RolledBack += _ => rolledBackCount++;
+			file.RollingBack += () => rollingBackCount++;
+			file.RolledBack += () => rolledBackCount++;
 			file.AddRange(new Random(31337).NextBytes(100));
 			Assert.AreEqual(0, committingCount);
 			Assert.AreEqual(0, committedCount);

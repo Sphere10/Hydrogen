@@ -21,4 +21,6 @@ public interface IClusteredStreamsAttachment {
 	void Attach();
 
 	void Detach();
+
+	void Flush();
 }

@@ -64,6 +64,8 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	public event EventHandlerEx<long> StreamRemoved;
 	public event EventHandlerEx Cleared;
 	public event EventHandlerEx Clearing;
+	public event EventHandlerEx ReservedStreamsCreated;
+	public event EventHandlerEx ReservedStreamsCreating;
 
 	private StreamMappedClusterMap _clusters;
 	private ClusteredStreamFragmentProvider _streamDescriptorsFragmentProvider;
@@ -191,7 +193,6 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			_clusters.SuppressEvents = value;
 		}
 	}
-	
 
 	#region Streams
 
@@ -365,7 +366,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	#endregion
 
 	#region Stream Descriptors
-
+	
 	public ClusteredStreamDescriptor GetStreamDescriptor(long index) {
 		CheckInitialized();
 		using var accessScope = EnterAccessScope();
@@ -532,6 +533,8 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		// ClusterMap
 		// - stored in a StreamPagedList (single page, statically sized items)
 		// - when a start/end cluster is moved, we must update the descriptor that points to it (the descriptor is stored as the terminal values of a cluster chain)
+		if (_clusters is not null)
+			_clusters.Changed -= ClusterMapChangedHandler;
 		_clusters = new StreamMappedClusterMap(_rootStream, ClusteredStreamsHeader.ByteLength, clusterSerializer, Policy.HasFlag(ClusteredStreamsPolicy.CacheClusterHeaders), Endianness, autoLoad: true);
 		_clusters.Changed += ClusterMapChangedHandler;
 
@@ -540,7 +543,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		//  - the end cluster of the cluster chain is tracked in the header
 		//  - the descriptor count is also tracked in the header
 		//  - this list of records maintains all the other lists stored in the cluster objectStream
-		//var recordsCount = _header.StreamCount;
+		_streamDescriptorsFragmentProvider?.ClearEventHandlers();
 		_streamDescriptorsFragmentProvider = new ClusteredStreamFragmentProvider(
 			_clusters,
 			-1,
@@ -560,6 +563,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		};
 
 		// The actual records collection is stored is update optimized
+		_streamDescriptors?.InternalCollection.Stream.Dispose();
 		_streamDescriptors =
 			new StreamPagedList<ClusteredStreamDescriptor>(
 				recordSerializer,
@@ -576,6 +580,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			);
 
 		if (Policy.HasFlag(ClusteredStreamsPolicy.CacheDescriptors)) {
+			_streamDescriptorCache?.Flush();
 			_streamDescriptorCache = new ActionCache<long, ClusteredStreamDescriptor>(
 				FetchStreamDescriptor,
 				sizeEstimator: _ => recordSerializer.ConstantSize,
@@ -717,14 +722,14 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			attachment.Attach();
 	}
 
-	private void UnloadAttachments() {
-		foreach(var attachment in _attachments.Values.Where(x => x.IsAttached))
+	internal void UnloadAttachments() {
+		foreach(var attachment in _attachments.Values.Where(x => x.IsAttached)) {
 			attachment.Detach();
+			_streamDescriptorCache?.Invalidate(attachment.ReservedStreamIndex);
+		}
 
 		_attachments.Clear();
 	}
-
-
 
 	#endregion
 
@@ -756,9 +761,18 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	protected virtual void OnClearing() {
+		// Flush all the attachments
+		foreach(var attachment in _attachments) 
+			attachment.Value.Flush();
 	}
 
 	protected virtual void OnCleared() {
+	}
+
+	protected virtual void OnReservedStreamsCreating() {
+	}
+
+	protected virtual void OnReservedStreamsCreated() {
 	}
 
 	private void NotifyStreamCreated(ClusteredStreamDescriptor descriptor) {
@@ -832,6 +846,22 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		Cleared?.Invoke();
 	}
 
+	private void NotifyReservedStreamsCreating() {
+		if (_suppressEvents)
+			return;
+
+		OnReservedStreamsCreating();
+		ReservedStreamsCreating?.Invoke();
+	}
+
+	private void NotifyReservedStreamsCreated() {
+		if (_suppressEvents)
+			return;
+
+		OnReservedStreamsCreated();
+		ReservedStreamsCreated?.Invoke();
+	}
+
 	#endregion
 
 	#region Aux methods
@@ -851,7 +881,6 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		}
 	}
 		
-
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private void CheckInitialized() {
 		if (!Initialized)
@@ -874,10 +903,12 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	private void CreateReservedStreams() {
 		Guard.Ensure(Header.StreamCount == 0, "Records are already existing");
+		NotifyReservedStreamsCreating();
 		for (var i = 0; i < Header.ReservedStreams; i++) {
 			AddStreamDescriptor(out var index, NewStreamDescriptor());
 		}
 		Header.StreamCount = _streamDescriptors.Count; // this has to be done explicitly here since the handler which sets RecordCount may not be called in certain scenarios
+		NotifyReservedStreamsCreated();
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

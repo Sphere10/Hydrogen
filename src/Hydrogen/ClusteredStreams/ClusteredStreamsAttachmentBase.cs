@@ -70,10 +70,14 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 
 	public void Detach() {
 		CheckAttached();
+		Flush();
 		DetachInternal();
 		AttachmentStream.Dispose();
 		AttachmentStream = null;
 		_attached = false;
+	}
+
+	public virtual void Flush() {
 	}
 
 	protected abstract void DetachInternal();

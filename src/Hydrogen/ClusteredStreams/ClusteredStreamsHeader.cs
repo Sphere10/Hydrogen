@@ -33,6 +33,7 @@ public class ClusteredStreamsHeader {
 	internal const int ReservedStreamsOffset = StreamDescriptorsEndClusterOffset + StreamDescriptorsEndClusterLength;
 	internal const int ClusterSizeOffset = ReservedStreamsOffset + ReservedStreamsLength;
 	internal const int TotalClustersOffset = ClusterSizeOffset + ClusterSizeLength;
+	internal const int ExtensionPropertiesOffset = TotalClustersOffset + TotalClustersLength;
 
 
 	private readonly Stream _headerStream;
@@ -64,7 +65,7 @@ public class ClusteredStreamsHeader {
 		_reservedStreamsProperty = new StreamMappedProperty<long>(_headerStream, ReservedStreamsOffset, ReservedStreamsLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
 		_clusterSizeProperty = new StreamMappedProperty<int>(_headerStream, ClusterSizeOffset, ClusterSizeLength, PrimitiveSerializer<int>.Instance, _reader, _writer, @lock: _lock);
 		_totalClustersProperty = new StreamMappedProperty<long>(_headerStream, TotalClustersOffset, TotalClustersLength, PrimitiveSerializer<long>.Instance, _reader, _writer, @lock: _lock);
-		_extensionPropertiesStream = rootStream.AsBounded(TotalClustersOffset + TotalClustersLength, ByteLength - TotalClustersLength - ClusterSizeLength - ReservedStreamsLength /*- StreamDescriptorKeySizeLength*/ - StreamDescriptorsEndClusterLength - StreamCountLength - PolicyOffset - VersionLength, allowInnerResize: false, useRelativeOffset: true);
+		_extensionPropertiesStream = rootStream.AsBounded(ExtensionPropertiesOffset, ByteLength - VersionLength - PolicyLength - StreamCountLength - StreamDescriptorsEndClusterLength - ReservedStreamsLength - ClusterSizeLength - TotalClustersLength, allowInnerResize: false, useRelativeOffset: true);
 		_mappedExtensionPropertyFlushes = new List<Action>();
 	}
 

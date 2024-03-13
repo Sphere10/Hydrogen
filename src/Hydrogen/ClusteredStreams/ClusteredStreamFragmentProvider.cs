@@ -102,9 +102,13 @@ internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 		Seeker.ProcessStreamSwapped(stream1, stream1Descriptor, stream2, streamDescriptor2);
 	}
 
+	public void ClearEventHandlers() {
+		StreamLengthChanged = null;
+	}
 	private void CheckNotEmpty() {
 		Guard.Ensure(TotalBytes > 0, "Stream is empty.");
 	}
 
 	private void NotifyStreamLengthChanged(long newLength) => StreamLengthChanged?.Invoke(this, newLength);
+
 }

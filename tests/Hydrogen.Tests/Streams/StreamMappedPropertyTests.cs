@@ -32,16 +32,21 @@ public class StreamMappedPropertyTests {
 		var streamSize = leftPadding + serializer.ConstantSize + rightPadding;
 		var buffer = new byte[streamSize];
 
+		// Setup padding
 		for(var i = 0; i < leftPadding; i++)
 			buffer[i] = LeftPaddingValue;
 
 		for (var i = 0 + leftPadding + serializer.ConstantSize; i < streamSize; i++)
 			buffer[i] = RightPaddingValue;
 
+		// Setup stream mapped property
 		using var stream = new MemoryStream(buffer);
 		var smp = new StreamMappedProperty<long>(stream, leftPadding, leftPadding + serializer.ConstantSize + rightPadding, serializer, endianess: endianness);
 
+		// Check value is 0
 		Assert.That( smp.Value, Is.EqualTo(0));
+
+		// Check padding
 		if (leftPadding > 0)
 			Assert.That( buffer[0..leftPadding].All(x => x == LeftPaddingValue));
 		if (rightPadding > 0)
@@ -58,19 +63,25 @@ public class StreamMappedPropertyTests {
 		var streamSize = leftPadding + serializer.ConstantSize + rightPadding;
 		var buffer = new byte[streamSize];
 
+		// Setup padding
 		for(var i = 0; i < leftPadding; i++)
 			buffer[i] = LeftPaddingValue;
 
 		for (var i = 0 + leftPadding + serializer.ConstantSize; i < streamSize; i++)
 			buffer[i] = RightPaddingValue;
 
-		// Premap here
+		// Write value to buffer directly
 		var valueBytes = serializer.SerializeToBytes(value, endianness);
 		valueBytes.CopyTo(buffer, leftPadding);
 
+		// Setup stream mapped property
 		using var stream = new MemoryStream(buffer);
 		var smp = new StreamMappedProperty<long>(stream, leftPadding, leftPadding + serializer.ConstantSize + rightPadding, serializer, endianess: endianness);
+		
+		// Check loads correct value
 		Assert.That( smp.Value, Is.EqualTo(value));
+
+		// Check padding
 		if (leftPadding > 0)
 			Assert.That( buffer[0..leftPadding].All(x => x == LeftPaddingValue));
 		if (rightPadding > 0)
@@ -86,6 +97,7 @@ public class StreamMappedPropertyTests {
 		var streamSize = leftPadding + serializer.ConstantSize + rightPadding;
 		var buffer = new byte[streamSize];
 
+		// Setup padding
 		for(var i = 0; i < leftPadding; i++)
 			buffer[i] = LeftPaddingValue;
 
@@ -95,6 +107,8 @@ public class StreamMappedPropertyTests {
 		// Setup stream mapped property
 		using var stream = new MemoryStream(buffer);
 		var smp = new StreamMappedProperty<long>(stream, leftPadding, leftPadding + serializer.ConstantSize + rightPadding, serializer, endianess: endianness);
+		
+		// Assign value (should update buffer)
 		smp.Value = value;
 
 		// Check buffer is updated
@@ -103,7 +117,7 @@ public class StreamMappedPropertyTests {
 		// Check property is updated
 		Assert.That( smp.Value, Is.EqualTo(value));
 
-		// Checkpadding
+		// Check padding
 		if (leftPadding > 0)
 			Assert.That( () => buffer[0..leftPadding].All(x => x == LeftPaddingValue));
 		if (rightPadding > 0)
@@ -120,6 +134,7 @@ public class StreamMappedPropertyTests {
 		var streamSize = leftPadding + serializer.ConstantSize + rightPadding;
 		var buffer = new byte[streamSize];
 
+		// Setup padding
 		for(var i = 0; i < leftPadding; i++)
 			buffer[i] = LeftPaddingValue;
 
@@ -133,9 +148,11 @@ public class StreamMappedPropertyTests {
 		// write initial value
 		var initialValue = unchecked(value-1);
 		smp.Value = initialValue;
+
+		// Check buffer has initial value
 		Assert.That( buffer[leftPadding..^rightPadding], Is.EqualTo(serializer.SerializeToBytes(initialValue, endianness)));
 
-		// write value
+		// Set value
 		smp.Value = value;
 
 		// Check buffer is updated
@@ -144,7 +161,7 @@ public class StreamMappedPropertyTests {
 		// Check property is updated
 		Assert.That( smp.Value, Is.EqualTo(value));
 		
-		// Checkpadding
+		// Check padding
 		if (leftPadding > 0)
 			Assert.That( () => buffer[0..leftPadding].All(x => x == LeftPaddingValue));
 		if (rightPadding > 0)

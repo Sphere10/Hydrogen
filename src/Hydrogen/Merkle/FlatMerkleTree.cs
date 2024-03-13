@@ -111,6 +111,19 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 		SetDirty((int)MerkleMath.ToFlatIndex(MerkleCoordinate.LeafAt(index)), value);
 	}
 
+	public void EnsureComputed() {
+		if (_size.LeafCount == 0)
+			return;
+
+		var rootCoord =  MerkleCoordinate.Root(_size.LeafCount);
+		EnsureComputed(rootCoord, checked((long)MerkleMath.ToFlatIndex(rootCoord)));
+	}
+
+	public byte[] ToBytes() {
+		EnsureComputed();
+		return _nodeBuffer.ToArray();
+	}
+
 	private void EnsureComputed(MerkleCoordinate coordinate, long flatIndex) {
 		// leafs case
 		if (coordinate.Level == 0)

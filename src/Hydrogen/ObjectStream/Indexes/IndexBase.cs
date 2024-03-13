@@ -35,6 +35,9 @@ public abstract class IndexBase<TData, TStore> : ObjectStreamObserverBase, IClus
 	}
 
 	protected override void OnContainerClearing() {
+		// Inform the key store to clear
+		KeyStore.Clear();
+
 		// When the objectStream about to be cleared, we detach the observer
 		CheckAttached();
 		KeyStore.Detach();
@@ -67,6 +70,8 @@ public abstract class IndexBase<TData, TStore> : ObjectStreamObserverBase, IClus
 	void IClusteredStreamsAttachment.Attach() => KeyStore.Attach();
 
 	void IClusteredStreamsAttachment.Detach() => KeyStore.Detach();
+
+	void IClusteredStreamsAttachment.Flush() => KeyStore.Flush();
 
 	#endregion
 }

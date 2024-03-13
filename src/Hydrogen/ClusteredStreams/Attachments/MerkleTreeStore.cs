@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Hydrogen.Collections;
 
@@ -26,12 +27,24 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 	private IDynamicMerkleTree _merkleTree;
 	private StreamMappedProperty<byte[]> _merkleRootProperty;
 	private bool _dirtyRoot;
+	private bool _isFirstLoad;
 
 	// Migrate from MerkleTreeIndex stuff into here
-	public MerkleTreeStore(ClusteredStreams streams, long reservedStreamIndex, CHF hashAlgorithm) 
+	public MerkleTreeStore(ClusteredStreams streams, long reservedStreamIndex, CHF hashAlgorithm, bool isFirstLoad) 
 		: base(streams, reservedStreamIndex) {
 		_hashAlgorithm = hashAlgorithm;
 		_dirtyRoot = false;
+		_isFirstLoad = isFirstLoad;
+	}
+
+	/// <summary>
+	/// Generates a merkle-tree storage of <see cref="leafValues"/> and returns raw byte form.
+	/// </summary>
+	public static byte[] GenerateBytes(CHF chf, IEnumerable<byte[]> leafValues) {
+		var merkleTree = new FlatMerkleTree(chf);
+		leafValues.ForEach(merkleTree.Leafs.Add);
+		var result = merkleTree.ToBytes();
+		return result;
 	}
 
 	public IMerkleTree MerkleTree => _readOnlyMerkleTree;
@@ -45,6 +58,7 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 		=> _merkleTree.Leafs.Read(index);
 	
 	public override void Add(long index, byte[] data) {
+		Guard.ArgumentEquals(index, Count, nameof(index), $"Can only add at end of list");
 		using var _ = Streams.EnterAccessScope();
 		_merkleTree.Leafs.Add(data);
 		_dirtyRoot = true;
@@ -82,20 +96,15 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 
 	public void ClearListeners() => _merkleRootProperty.ClearListeners();
 
-	public void EnsureTreeCalculated() {
-		Guard.Ensure(Streams.IsLocked, $"Merkle-tree store must be locked before calling '{nameof(EnsureTreeCalculated)}' method");
-		
-		if (!_dirtyRoot) 
-			return;
-
-		_merkleRootProperty.Value = _merkleTree.Root;
-		_dirtyRoot = true;
+	public override void Flush() {
+		using (Streams.EnterAccessScope())
+			EnsureTreeCalculated();
 	}
 
 	protected override void AttachInternal() {
 		var flatTreeData = new StreamMappedBuffer(AttachmentStream);
-		var itemCount = Streams.Count - Streams.Header.ReservedStreams;
-		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, itemCount);
+		var leafCount = Streams.Count - Streams.Header.ReservedStreams;
+		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, leafCount);
 		_readOnlyMerkleTree = new StreamLockingMerkleTree(this, _merkleTree, Streams);
 		var hashSize = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 		using (Streams.EnterAccessScope()) {
@@ -107,6 +116,13 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 
 			// When stream mapped root is changed, fire the root changed event (ensures not excessively triggered during dirty writes)
 			_merkleRootProperty.ValueChanged += (oldValue, newValue) => RootChanged?.Invoke(oldValue, newValue);
+
+			// Integrity Check: ensure root property value matches actual merkle-root (or set it on first load)
+			if (_isFirstLoad) {
+				_merkleRootProperty.Value = _merkleTree.Root;
+			} else {
+				Guard.Ensure(ByteArrayEqualityComparer.Instance.Equals(_merkleTree.Root, _merkleRootProperty.Value), $"Merkle-tree inconsistency: header root '{_merkleRootProperty.Value?.ToHexString()}', computed root '{_merkleTree.Root?.ToHexString()}'.");
+			}
 		}
 	}
 
@@ -117,6 +133,15 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 		_merkleRootProperty = null;
 	}
 
+	private void EnsureTreeCalculated() {
+		Guard.Ensure(Streams.IsLocked, $"Merkle-tree store must be locked before calling '{nameof(EnsureTreeCalculated)}' method");
+
+		if (!_dirtyRoot)
+			return;
+
+		_merkleRootProperty.Value = _merkleTree.Root;
+		_dirtyRoot = false;
+	}
 
 	private class StreamLockingMerkleTree : MerkleTreeDecorator  {
 		private readonly MerkleTreeStore _merkleTreeStore;
@@ -148,10 +173,9 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 
 		public override ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate) {
 			using var _ = _streams.EnterAccessScope();
-			_merkleTreeStore.EnsureTreeCalculated();
+			_merkleTreeStore.Flush();
 			return base.GetValue(coordinate);
 		}
 
 	}
-
 }

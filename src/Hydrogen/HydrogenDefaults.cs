@@ -31,5 +31,8 @@ public static class HydrogenDefaults {
 
 	// Serialization
 	public const Endianness Endianness = Hydrogen.Endianness.LittleEndian;
+
+	// Hashing
+	public const CHF HashFunction = CHF.SHA2_256;
 	
 }

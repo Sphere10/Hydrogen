@@ -121,7 +121,10 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public bool IsReaped(long index) => GetItemDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Reaped);
 
-	public void Clear() => Streams.Clear();
+	public void Clear() {
+		using var _ = Streams.EnterAccessScope();
+		Streams.Clear();
+	}
 
 	internal ClusteredStream SaveItemAndReturnStream(long index, object item, ObjectStreamOperationType operationType) {
 		Guard.ArgumentGTE(index, 0, nameof(index));

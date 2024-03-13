@@ -141,7 +141,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		var merkleTreeIndex = new MerkleTreeIndex(
 			smDict.ObjectStream,
 			merkleTreeIndexStreamIndex,
-			x => DigestItem(smDict, x, hashAlgorithm),
+			new StreamMappedDictionaryKeyValueHasher(smDict, hashAlgorithm),
 			hashAlgorithm
 		);
 		smDict.ObjectStream.Streams.RegisterAttachment(merkleTreeIndex);
@@ -149,16 +149,4 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		return smDict;
 	}
 
-	private static byte[] DigestItem(IStreamMappedDictionary<TKey, TValue> dict, long index, CHF chf) {
-		var descriptor = dict.ObjectStream.GetItemDescriptor(index);
-		if (descriptor.Traits.HasFlag(ClusteredStreamTraits.Reaped))
-			return Hashers.ZeroHash(chf);
-
-		var keyBytes = dict.ReadKeyBytes(index);
-		var keyDigest = Hashers.HashWithNullSupport(chf, keyBytes);
-		var valueBytes = dict.ReadValueBytes(index);
-		var valueDigest = Hashers.HashWithNullSupport(chf, valueBytes);
-		return Hashers.JoinHash(chf, keyDigest, valueDigest);
-	}
-	
 }

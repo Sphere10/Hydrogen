@@ -93,18 +93,16 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 
 		private static ObjectSpaceDefinition BuildSpaceDefinition() {
 			var definition = new ObjectSpaceDefinition {
-				Containers = new ObjectSpaceDefinition.ContainerDefinition[] {
+				Dimensions = new ObjectSpaceDefinition.DimensionDefinition[] {
 					new() { 
 						ObjectType = typeof(Account),
 						Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
 							new() {
 								Type = ObjectSpaceDefinition.IndexType.FreeIndexStore,
-								ReservedStreamIndex = 0,
 							},
 							new() {
 								Type = ObjectSpaceDefinition.IndexType.UniqueKey,
 								KeyMember = Tools.Mapping.GetMember<Account, string>(x => x.Name),
-								ReservedStreamIndex = 1
 							}
 						}
 					},
@@ -113,12 +111,10 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 						Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
 							new() {
 								Type = ObjectSpaceDefinition.IndexType.FreeIndexStore,
-								ReservedStreamIndex = 0,
 							},
 							new() {
 								Type = ObjectSpaceDefinition.IndexType.UniqueKey,
 								KeyMember = Tools.Mapping.GetMember<Identity, byte[]>(x => x.Key),
-								ReservedStreamIndex = 0
 							}
 						}
 					},

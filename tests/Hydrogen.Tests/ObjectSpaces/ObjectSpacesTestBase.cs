@@ -16,7 +16,9 @@ using Hydrogen;
 namespace Hydrogen.Tests;
 
 [TestFixture, Timeout(60000)]
-public class ObjectSpacesTest {
+public abstract class ObjectSpacesTestBase {
+
+	protected abstract ObjectSpace CreateObjectSpace(string filePath);
 
 	#region Tests
 
@@ -25,15 +27,48 @@ public class ObjectSpacesTest {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var filePath = Path.Combine(folder, "app.db");
 		using var disposables = new Disposables(Tools.Scope.DeleteDirOnDispose(folder));
-		Assert.That(() => new ObjectSpace(BuildFileDefinition(filePath), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default), Throws.Nothing);
+		Assert.That(() => CreateObjectSpace(filePath), Throws.Nothing);
 	}
 
 	[Test]
-	public void Save() {
+	public void SaveDoesntThrow() {
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
 		var account = CreateAccount();
 		Assert.That(() => objectSpace.Save(account), Throws.Nothing);
+	}
+
+
+	[Test]
+	public void LoadEmptyDoesntThrow() {
+		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
+		using (var scope = CreateObjectSpaceScope(folder, true)) {
+			var objectSpace = scope.Item;
+			objectSpace.Commit();
+		}
+
+		Assert.That(() => { using var _ = CreateObjectSpaceScope(folder); }, Throws.Nothing);
+
+	}
+
+	[Test]
+	public void LoadDoesntThrow() {
+		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
+		using (var scope = CreateObjectSpaceScope(folder, true)) {
+			var objectSpace = scope.Item;
+			var savedAccount = CreateAccount();
+			objectSpace.Save(savedAccount);
+			objectSpace.Commit();
+
+			var dim1 = objectSpace.GetDimension(0);
+			var dim2 = objectSpace.GetDimension(1);
+
+			var xxx = dim1.ObjectStream.Streams.Header;
+			var yyy = dim2.ObjectStream.Streams.Header;
+		}
+		Tools.Debugger.BreakConditionD = true; 
+		Assert.That(() => { using var _ = CreateObjectSpaceScope(folder); }, Throws.Nothing);
+
 	}
 
 	[Test]
@@ -102,7 +137,7 @@ public class ObjectSpacesTest {
 
 	#region Aux
 
-	private static Account CreateAccount() {
+	protected static Account CreateAccount() {
 		var secret = "MyPassword";
 
 		var dss = DSS.PQC_WAMSSharp;
@@ -123,24 +158,24 @@ public class ObjectSpacesTest {
 		return account;
 	}
 
-	private static IEqualityComparer<Account> CreateAccountComparer() 
+	protected static IEqualityComparer<Account> CreateAccountComparer() 
 		=> EqualityComparerBuilder
 			.For<Account>()
 			.By(x => x.Name)
 			.ThenBy(x => x.Quantity)
 			.ThenBy(x => x.Identity, CreateIdentityComparer());
 
-	private static IEqualityComparer<Identity> CreateIdentityComparer() 
+	protected static IEqualityComparer<Identity> CreateIdentityComparer() 
 		=> EqualityComparerBuilder
 			.For<Identity>()
 			.By(x => x.DSS)
 			.ThenBy(x => x.Key, ByteArrayEqualityComparer.Instance);
 			
-	private static IScope<ObjectSpace> CreateObjectSpaceScope(string folder = null, bool keepFolder = false) {
+	protected IScope<ObjectSpace> CreateObjectSpaceScope(string folder = null, bool keepFolder = false) {
 		folder ??= Tools.FileSystem.GetTempEmptyDirectory(true);
 		var filePath = Path.Combine(folder, "app.db");
 		
-		var objectSpace = new ObjectSpace(BuildFileDefinition(filePath), BuildSpaceDefinition(), SerializerFactory.Default, CreateComparerFactory());
+		var objectSpace = CreateObjectSpace(filePath);
 		var disposables = new Disposables();
 		disposables.Add(objectSpace);
 		if (!keepFolder)
@@ -149,14 +184,14 @@ public class ObjectSpacesTest {
 		return new ActionScope<ObjectSpace>(objectSpace, _ => disposables.Dispose());
 	}
 
-	private static ComparerFactory CreateComparerFactory() {
+	protected static ComparerFactory CreateComparerFactory() {
 		var comparerFactory = new ComparerFactory(ComparerFactory.Default);
 		comparerFactory.RegisterEqualityComparer(CreateAccountComparer());
 		comparerFactory.RegisterEqualityComparer(CreateIdentityComparer());
 		return comparerFactory;
 	}
 
-	private static HydrogenFileDescriptor BuildFileDefinition(string filePath)
+	protected static HydrogenFileDescriptor BuildFileDefinition(string filePath)
 		=> HydrogenFileDescriptor.From(
 			filePath,
 			8192,
@@ -165,20 +200,18 @@ public class ObjectSpacesTest {
 			ClusteredStreamsPolicy.Default
 		);
 
-	private static ObjectSpaceDefinition BuildSpaceDefinition() {
+	protected static ObjectSpaceDefinition BuildSpaceDefinition() {
 		var definition = new ObjectSpaceDefinition {
-			Containers = new ObjectSpaceDefinition.ContainerDefinition[] {
+			Dimensions = new ObjectSpaceDefinition.DimensionDefinition[] {
 				new() {
 					ObjectType = typeof(Account),
 					Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
 						new() {
-							Type = ObjectSpaceDefinition.IndexType.FreeIndexStore,
-							ReservedStreamIndex = 0,
+							Type = ObjectSpaceDefinition.IndexType.FreeIndexStore
 						},
 						new() {
 							Type = ObjectSpaceDefinition.IndexType.UniqueKey,
-							KeyMember = Tools.Mapping.GetMember<Account, string>(x => x.Name),
-							ReservedStreamIndex = 1
+							KeyMember = Tools.Mapping.GetMember<Account, string>(x => x.Name)
 						}
 					}
 				},
@@ -186,13 +219,11 @@ public class ObjectSpacesTest {
 					ObjectType = typeof(Identity),
 					Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
 						new() {
-							Type = ObjectSpaceDefinition.IndexType.FreeIndexStore,
-							ReservedStreamIndex = 0,
+							Type = ObjectSpaceDefinition.IndexType.FreeIndexStore
 						},
 						new() {
 							Type = ObjectSpaceDefinition.IndexType.UniqueKey,
-							KeyMember = Tools.Mapping.GetMember<Identity, byte[]>(x => x.Key),
-							ReservedStreamIndex = 0
+							KeyMember = Tools.Mapping.GetMember<Identity, byte[]>(x => x.Key)
 						}
 					}
 				},

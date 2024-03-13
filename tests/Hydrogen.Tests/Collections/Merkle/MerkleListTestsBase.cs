@@ -34,6 +34,17 @@ public abstract class MerkleListTestsBase {
 	}
 
 	[Test]
+	public void TestSimple_0() {
+		var chf = CHF.SHA2_256;
+		var serializer = StringSerializer.UTF8;
+		using var memStream = new MemoryStream();
+		using var merkleList = new StreamMappedMerkleList<string>(memStream, chf, 256, serializer, autoLoad:true);
+		merkleList.Add("alpha");
+		var expected = MerkleTree.ComputeMerkleRoot(new[] { "alpha" }, chf, serializer);
+		Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(expected));
+	}
+
+	[Test]
 	public void TestSimple_1([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		using (CreateMerkleList(chf, out var merkleList)) {
 			Assert.That(merkleList.MerkleTree.Root, Is.Null);
@@ -49,8 +60,8 @@ public abstract class MerkleListTestsBase {
 
 	[Test]
 	public void TestSimple_2([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
-		var memStream = new MemoryStream();
-		var merkleList = new StreamMappedMerkleList<string>(memStream, chf, 256);
+		using var memStream = new MemoryStream();
+		using var merkleList = new StreamMappedMerkleList<string>(memStream, chf, 256);
 		merkleList.Load();
 
 		Assert.That(merkleList.MerkleTree.Root, Is.Null);

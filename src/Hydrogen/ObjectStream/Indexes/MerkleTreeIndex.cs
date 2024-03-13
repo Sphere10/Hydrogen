@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Reflection;
 
 namespace Hydrogen;
 
@@ -16,26 +17,26 @@ namespace Hydrogen;
 /// <remarks>When fetching item bytes for hashing, a key-value-pair with same key but empty/null value will result in the same digest.</remarks>
 internal class MerkleTreeIndex : IndexBase<byte[], MerkleTreeStore> {
 
-	private readonly Func<long, byte[]> _itemDigestor;
+	private readonly IItemHasher<long> _itemHasher;
 
 	public MerkleTreeIndex(
 		ObjectStream objectStream,
 		long reservedStreamIndex,
-		Func<long, byte[]> itemDigestor,
+		IItemHasher<long> itemHasher,
 		CHF chf
-	) : base(objectStream, new MerkleTreeStore(objectStream.Streams, reservedStreamIndex, chf)) {
-		_itemDigestor = itemDigestor;
+	) : base(objectStream, new MerkleTreeStore(objectStream.Streams, reservedStreamIndex, chf, false)) {
+		_itemHasher = itemHasher;
 	}
 
 	public IMerkleTree MerkleTree => KeyStore.MerkleTree;
 
 	protected override void OnAdded(object item, long index) 
-		=> KeyStore.Add(index, _itemDigestor(index));
+		=> KeyStore.Add(index, _itemHasher.Hash(index));
 
 	protected override void OnInserted(object item, long index) 
-		=> KeyStore.Insert(index, _itemDigestor(index));
+		=> KeyStore.Insert(index, _itemHasher.Hash(index));
 
 	protected override void OnUpdated(object item, long index) 
-		=> KeyStore.Update(index,  _itemDigestor(index));
+		=> KeyStore.Update(index,  _itemHasher.Hash(index));
 
 }

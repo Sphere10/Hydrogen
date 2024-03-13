@@ -11,15 +11,16 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IStreamMappedCollection, ILoadable, IDisposable {
+public interface IStreamMappedDictionary : IStreamMappedCollection {
+	internal byte[] ReadKeyBytes(long index);
+	internal byte[] ReadValueBytes(long index);
+}
+
+public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IStreamMappedDictionary, ILoadable, IDisposable  {
 
 	TKey ReadKey(long index);
 
-	internal byte[] ReadKeyBytes(long index);
-
 	TValue ReadValue(long index);
-
-	internal byte[] ReadValueBytes(long index);
 
 	bool TryFindKey(TKey key, out long index);
 

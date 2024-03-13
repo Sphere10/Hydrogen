@@ -26,6 +26,8 @@ internal abstract class MetaDataStoreDecorator<TData, TInner> : IMetaDataStore<T
 
 	public virtual void Detach() => InnerStore.Detach();
 
+	public virtual void Flush() => InnerStore.Flush();
+
 	public virtual long Count => InnerStore.Count;
 
 	public virtual TData Read(long index) => InnerStore.Read(index);

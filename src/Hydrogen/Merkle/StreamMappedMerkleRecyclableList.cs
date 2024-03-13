@@ -117,17 +117,12 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 		var merkleTreeIndex = new MerkleTreeIndex(
 			streamMappedList.ObjectStream,
 			merkleTreeIndexStreamIndex,
-			x => DigestItem(streamMappedList.ObjectStream, x, hashAlgorithm),
+			new ObjectStreamItemHasher(streamMappedList.ObjectStream, hashAlgorithm),
 			hashAlgorithm
 		);
 		streamMappedList.ObjectStream.Streams.RegisterAttachment(merkleTreeIndex);
 
 		return streamMappedList;
-	}
-
-	private static byte[] DigestItem(ObjectStream objectStream, long index, CHF chf) {
-		var bytes = objectStream.GetItemBytes(index);
-		return Hashers.HashWithNullSupport(chf, bytes);
 	}
 
 }

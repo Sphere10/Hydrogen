@@ -111,7 +111,7 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 		var merkleTreeIndex = new MerkleTreeIndex(
 			streamMappedList.ObjectStream,
 			merkleTreeStreamIndex,
-			x => DigestItem(streamMappedList.ObjectStream, x, hashAlgorithm),
+			new ObjectStreamItemHasher(streamMappedList.ObjectStream, hashAlgorithm),
 			hashAlgorithm
 		);
 		streamMappedList.ObjectStream.Streams.RegisterAttachment(merkleTreeIndex);

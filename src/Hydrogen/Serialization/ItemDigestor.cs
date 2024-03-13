@@ -27,13 +27,10 @@ public class ItemDigestor<TItem> : ItemSerializerDecorator<TItem>, IItemDigestor
 		DigestLength = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 	}
 
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public byte[] Hash(TItem item) {
-		//Guard.ArgumentNotNull(item, nameof(item));
-		return Hashers.Hash(_hashAlgorithm, item, this, _endianness);
-	}
-
 	public int DigestLength { get; }
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public byte[] Hash(TItem item) => Hashers.Hash(_hashAlgorithm, item, this, _endianness);
 
 	public int CalculateChecksum(TItem item) => _hashChecksummer.CalculateChecksum(Hash(item));
 }

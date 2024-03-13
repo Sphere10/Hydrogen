@@ -599,78 +599,80 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		
 		// Run sub-class initialization actions
 		_initActions.ForEach(x => x());
-	}
 
-	private void ClusterMapChangedHandler(object source, ClusterMapChangedEventArgs changedEvent) {
-		CheckLocked();
-		SuppressEvents = true;
-		try {
-			var movedChainTerminals = changedEvent.MovedTerminals.OrderBy(x => x.Key).ToArray();
+		void ClusterMapChangedHandler(object source, ClusterMapChangedEventArgs changedEvent) {
+			CheckLocked();
+			SuppressEvents = true;
+			try {
+				var movedChainTerminals = changedEvent.MovedTerminals.OrderBy(x => x.Key).ToArray();
 
-			// 1. Update header (no clusters affected)
-			Header.TotalClusters += changedEvent.ClusterCountDelta;
+				// 1. Update header (no clusters affected)
+				Header.TotalClusters += changedEvent.ClusterCountDelta;
 
-			// 2. Track descriptor's end cluster 
+				// 2. Track descriptor's end cluster 
 
-			// Was it moved?
-			if (movedChainTerminals.Length > 0 && movedChainTerminals[0].Key == Cluster.Null) {
-				var recordTerminalChanges = movedChainTerminals[0];
-				Guard.Against(recordTerminalChanges.Value.NewStart.HasValue, "Descriptor cluster chain start cannot be changed.");
-				Guard.Ensure(recordTerminalChanges.Value.NewEnd.HasValue, "Descriptor cluster chain new end was moved but not defined.");
-				Header.StreamDescriptorsEndCluster = recordTerminalChanges.Value.NewEnd.Value;
-			}
-
-			// Was it created/removed?
-			if (changedEvent.ChainTerminal == Cluster.Null) {
-				if (changedEvent.RemovedChain) {
-					Header.StreamDescriptorsEndCluster = Cluster.Null;
-				} else {
-					if (changedEvent.AddedChain)
-						Guard.Ensure(changedEvent.ChainNewStartCluster == 0, $"Descriptor chain created with invalid start cluster {changedEvent.ChainNewStartCluster.Value}.");
-					Guard.Ensure(changedEvent.ChainNewEndCluster.HasValue, "Descriptor cluster chain new end was moved but not defined.");
-					Header.StreamDescriptorsEndCluster = changedEvent.ChainNewEndCluster.Value;
+				// Was it moved?
+				if (movedChainTerminals.Length > 0 && movedChainTerminals[0].Key == Cluster.Null) {
+					var recordTerminalChanges = movedChainTerminals[0];
+					Guard.Against(recordTerminalChanges.Value.NewStart.HasValue, "Descriptor cluster chain start cannot be changed.");
+					Guard.Ensure(recordTerminalChanges.Value.NewEnd.HasValue, "Descriptor cluster chain new end was moved but not defined.");
+					Header.StreamDescriptorsEndCluster = recordTerminalChanges.Value.NewEnd.Value;
 				}
-			}
 
-			// 3. Inform descriptor's fragment provider and seeker of this event 
-			_streamDescriptorsFragmentProvider.ProcessClusterMapChanged(changedEvent);
-
-			// At this point the records collection should be usable, process all other streams
-
-			// 4. If descriptor terminal for this stream moved, update descriptor's cluster pointers
-			foreach (var movedTerminal in movedChainTerminals) {
-				if (movedTerminal.Key == Cluster.Null)
-					continue; // already processed special descriptor terminal above
-
-				if (movedTerminal.Value.NewStart.HasValue)
-					FastWriteStreamDescriptorStartCluster(movedTerminal.Key, movedTerminal.Value.NewStart.Value);
-
-				if (movedTerminal.Value.NewEnd.HasValue)
-					FastWriteStreamDescriptorEndCluster(movedTerminal.Key, movedTerminal.Value.NewEnd.Value);
-
-			}
-
-			// 5. For a changed stream, update cluster pointers in relevant descriptor 
-			if (changedEvent.ChainTerminal.HasValue && changedEvent.ChainTerminal.Value != Cluster.Null) {
-				if (changedEvent.AddedChain) {
-					FastWriteStreamDescriptorStartCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewStartCluster.Value);
-					FastWriteStreamDescriptorEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
-				} else if (changedEvent.RemovedChain) {
-					FastWriteStreamDescriptorStartCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
-					FastWriteStreamDescriptorEndCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
-					FastWriteStreamDescriptorSize(changedEvent.ChainTerminal.Value, 0);
-				} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
-					FastWriteStreamDescriptorEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
+				// Was it created/removed?
+				if (changedEvent.ChainTerminal == Cluster.Null) {
+					if (changedEvent.RemovedChain) {
+						Header.StreamDescriptorsEndCluster = Cluster.Null;
+					} else {
+						if (changedEvent.AddedChain)
+							Guard.Ensure(changedEvent.ChainNewStartCluster == 0, $"Descriptor chain created with invalid start cluster {changedEvent.ChainNewStartCluster.Value}.");
+						Guard.Ensure(changedEvent.ChainNewEndCluster.HasValue, "Descriptor cluster chain new end was moved but not defined.");
+						Header.StreamDescriptorsEndCluster = changedEvent.ChainNewEndCluster.Value;
+					}
 				}
+
+				// 3. Inform descriptor's fragment provider and seeker of this event 
+				_streamDescriptorsFragmentProvider.ProcessClusterMapChanged(changedEvent);
+
+				// At this point the records collection should be usable, process all other streams
+
+				// 4. If descriptor terminal for this stream moved, update descriptor's cluster pointers
+				foreach (var movedTerminal in movedChainTerminals) {
+					if (movedTerminal.Key == Cluster.Null)
+						continue; // already processed special descriptor terminal above
+
+					if (movedTerminal.Value.NewStart.HasValue)
+						FastWriteStreamDescriptorStartCluster(movedTerminal.Key, movedTerminal.Value.NewStart.Value);
+
+					if (movedTerminal.Value.NewEnd.HasValue)
+						FastWriteStreamDescriptorEndCluster(movedTerminal.Key, movedTerminal.Value.NewEnd.Value);
+
+				}
+
+				// 5. For a changed stream, update cluster pointers in relevant descriptor 
+				if (changedEvent.ChainTerminal.HasValue && changedEvent.ChainTerminal.Value != Cluster.Null) {
+					if (changedEvent.AddedChain) {
+						FastWriteStreamDescriptorStartCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewStartCluster.Value);
+						FastWriteStreamDescriptorEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
+					} else if (changedEvent.RemovedChain) {
+						FastWriteStreamDescriptorStartCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
+						FastWriteStreamDescriptorEndCluster(changedEvent.ChainTerminal.Value, Cluster.Null);
+						FastWriteStreamDescriptorSize(changedEvent.ChainTerminal.Value, 0);
+					} else if (changedEvent.IncreasedChainSize || changedEvent.DecreasedChainSize) {
+						FastWriteStreamDescriptorEndCluster(changedEvent.ChainTerminal.Value, changedEvent.ChainNewEndCluster.Value);
+					}
+				}
+
+				// 6. Notify all open stream about cluster map change
+				_openStreams.ForEach(x => x.Value.ProcessClusterMapChanged(changedEvent));
+
+			} finally {
+				SuppressEvents = false;
 			}
-
-			// 6. Notify all open stream about cluster map change
-			_openStreams.ForEach(x => x.Value.ProcessClusterMapChanged(changedEvent));
-
-		} finally {
-			SuppressEvents = false;
 		}
 	}
+
+
 
 	public void Dispose() {
 		UnloadAttachments();

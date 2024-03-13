@@ -67,13 +67,13 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 	}
 
 	public void ForceRefresh() {
-		Flush();
+		Purge();
 		BulkLoad(BulkFetch());
 		FetchCount++;
 	}
 
-	public override void Flush() {
-		base.Flush();
+	public override void Purge() {
+		base.Purge();
 		FetchCount = 0;
 	}
 

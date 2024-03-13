@@ -174,7 +174,7 @@ public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 		}
 	}
 
-	public virtual void Flush() {
+	public virtual void Purge() {
 		using (this.EnterWriteScope()) {
 			foreach (var key in InternalStorage.Keys.ToArray())
 				RemoveItemInternal(key);

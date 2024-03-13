@@ -103,7 +103,7 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 	public virtual void Flush() {
 		// Causes all dirty pages to be saved
 		// and all loaded pages to be unloaded
-		_loadedPages.Flush();
+		_loadedPages.Purge();
 	}
 
 	public virtual void Dispose() {

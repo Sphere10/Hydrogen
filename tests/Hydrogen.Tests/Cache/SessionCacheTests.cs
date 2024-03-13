@@ -107,7 +107,7 @@ public class SessionCacheTests {
 		var cache = new SessionCache<int, IDisposable>(TimeSpan.FromMilliseconds(100));
 		cache.ItemRemoved += (i, item) => item.Dispose();
 		cache.Set(1, Tools.Scope.ExecuteOnDispose(() => disposed = true));
-		cache.Flush();
+		cache.Purge();
 		Assert.IsTrue(disposed);
 	}
 

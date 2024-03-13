@@ -309,7 +309,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		SuppressEvents = true;
 		try {
 			_streamDescriptors.Clear();
-			_streamDescriptorCache?.Flush();
+			_streamDescriptorCache?.Purge();
 			_clusters.Clear();
 			Header.StreamCount = 0;
 			Header.TotalClusters = 0;
@@ -580,7 +580,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 			);
 
 		if (Policy.HasFlag(ClusteredStreamsPolicy.CacheDescriptors)) {
-			_streamDescriptorCache?.Flush();
+			_streamDescriptorCache?.Purge();
 			_streamDescriptorCache = new ActionCache<long, ClusteredStreamDescriptor>(
 				FetchStreamDescriptor,
 				sizeEstimator: _ => recordSerializer.ConstantSize,

@@ -233,8 +233,8 @@ public class SerializerFactory {
 		_registrations.Add(typeCode, registration);
 		_registrationsByType.Add(dataType, typeCode);
 
-		_getSerializerCache.Flush();
-		_fromSerializerHierarchyCache.Flush();
+		_getSerializerCache.Purge();
+		_fromSerializerHierarchyCache.Purge();
 	}
 
 	#endregion

@@ -52,7 +52,7 @@ public interface ICache : ISynchronizedObject {
 
 	void Remove(object key);
 
-	void Flush();
+	void Purge();
 
 	object this[object index] { get; set; }
 

@@ -37,7 +37,7 @@ public record SignedItem<T> : SignedItem {
 	public bool Verify(IItemSerializer<T> serializer, CHF chf, DSS dss, byte[] publicKey, ulong signerNonce = 0, Endianness endianness = Endianness.LittleEndian)
 		=> Verify(new ItemSigner<T>(new ItemDigestor<T>(chf, serializer, endianness), dss), publicKey);
 
-	public bool Verify(IItemDigestor<T> digestor, IDigitalSignatureScheme dss, IPublicKey publicKey)
+	public bool Verify(IItemHasher<T> digestor, IDigitalSignatureScheme dss, IPublicKey publicKey)
 		=> Verify(new ItemSigner<T>(digestor, dss), publicKey);
 
 	public bool Verify(IItemSigner<T> signer, byte[] publicKey)

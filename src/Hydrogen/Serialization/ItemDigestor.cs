@@ -7,10 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Runtime.CompilerServices;
-
+using static Hydrogen.AMS;
 namespace Hydrogen;
 
-public class ItemDigestor<TItem> : ItemSerializerDecorator<TItem>, IItemDigestor<TItem> {
+public class ItemDigestor<TItem> : ItemSerializerDecorator<TItem>, IItemHasher<TItem>, IItemChecksummer<TItem> {
 	private readonly CHF _hashAlgorithm;
 	private readonly Endianness _endianness;
 	private readonly HashChecksummer _hashChecksummer;

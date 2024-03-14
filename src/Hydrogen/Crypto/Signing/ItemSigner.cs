@@ -14,16 +14,16 @@ public class ItemSigner<TItem> : IItemSigner<TItem> {
 		: this(new ItemDigestor<TItem>(chf, serializer, endianness), Signers.Create(dss)) {
 	}
 
-	public ItemSigner(IItemDigestor<TItem> digestor, DSS dss)
+	public ItemSigner(IItemHasher<TItem> digestor, DSS dss)
 		: this(digestor, Signers.Create(dss)) {
 	}
 
-	public ItemSigner(IItemDigestor<TItem> digestor, IDigitalSignatureScheme digitalSignatureScheme) {
+	public ItemSigner(IItemHasher<TItem> digestor, IDigitalSignatureScheme digitalSignatureScheme) {
 		Digestor = digestor;
 		DigitalSignatureScheme = digitalSignatureScheme;
 	}
 
-	public IItemDigestor<TItem> Digestor { get; }
+	public IItemHasher<TItem> Digestor { get; }
 
 	public IDigitalSignatureScheme DigitalSignatureScheme { get; }
 

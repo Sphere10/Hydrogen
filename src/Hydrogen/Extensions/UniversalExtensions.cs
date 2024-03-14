@@ -26,7 +26,7 @@ public static class UniversalExtensions {
 		return AsSignedItem(item, signer, key, signerNonce);
 	}
 
-	public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item, IItemDigestor<TItem> digestor, IDigitalSignatureScheme dss, IPrivateKey privateKey, ulong signerNonce = 0)
+	public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item, IItemHasher<TItem> digestor, IDigitalSignatureScheme dss, IPrivateKey privateKey, ulong signerNonce = 0)
 		=> AsSignedItem(item, new ItemSigner<TItem>(digestor, dss), privateKey, signerNonce);
 
 	public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item, IItemSigner<TItem> signer, IPrivateKey privateKey, ulong signerNonce = 0)

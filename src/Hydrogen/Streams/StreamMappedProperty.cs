@@ -18,7 +18,6 @@ public class StreamMappedProperty<T> {
 
 	private readonly Stream _stream;
 	private readonly long _offset;
-	private readonly long _size;
 	private readonly IItemSerializer<T> _serializer;
 	private readonly ICriticalObject _lock;
 	private readonly IEqualityComparer<T> _equalityComparer;
@@ -38,7 +37,6 @@ public class StreamMappedProperty<T> {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		_stream = stream;
 		_offset = offset;
-		_size = size;
 		_serializer = serializer;
 		_lock = @lock ?? new CriticalObject(); 
 		_equalityComparer = comparer ?? EqualityComparer<T>.Default;

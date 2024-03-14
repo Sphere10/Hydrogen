@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 
 namespace Hydrogen.ObjectSpaces;
@@ -110,11 +111,21 @@ internal class ObjectSpaceMerkleTreeIndex : IClusteredStreamsAttachment {
 	}
 
 	public void VerifyConsistency() {
-		// TODO
-		for(var i = 0; i < _objectSpace.Dimensions; i++) {
-			var dimension = _objectSpace.GetDimension(i);
-
-			// Check 1
+		// TODO: refactor this into a pattern used across ObjectSpace, ObjectStream and attachments. Merge Results. Use Progress pattern
+		var result = Result.Default;
+		if (_objectSpace.Definition.Merkleized) {
+			// check merkle-trees match
+			var dimensionRoots = new List<byte[]>();
+			for(var i = 0; i < _objectSpace.Dimensions; i++) {
+				var dimension = _objectSpace.GetDimension(i);
+				if (!dimension.ObjectStream.Streams.TryFindAttachment<MerkleTreeIndex>(out var dimensionTree)) 
+					throw new InvalidDataException($"ObjectSpace dimension {i} did not contain a merkle-tree");
+				dimensionRoots.Add(dimensionTree.MerkleTree.Root ?? Hashers.ZeroHash(_objectSpace.Definition.HashFunction));
+			}
+			// check matches spatial root
+			var calculatedRoot = MerkleTree.ComputeMerkleRoot(dimensionRoots, _objectSpace.Definition.HashFunction);
+			if (!ByteArrayEqualityComparer.Instance.Equals(MerkleTreeStore.MerkleTree.Root, calculatedRoot))
+				throw new InvalidDataException($"Spatial merkle-tree root did not match expected dimension trees");
 		}
 	}
 

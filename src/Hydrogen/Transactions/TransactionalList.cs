@@ -35,7 +35,6 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		IItemChecksummer<T> itemChecksummer = null,
 		long reservedStreams = 0,
 		long checksumIndexStreamIndex = 0,
-		Endianness endianness = Endianness.LittleEndian,
 		FileAccessMode accessMode = FileAccessMode.Default
 	) : this( 
 			new TransactionalStream(
@@ -49,7 +48,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 			fileDescriptor.ContainerPolicy, 
 			reservedStreams,
 			checksumIndexStreamIndex,
-			endianness,
+			fileDescriptor.Endianness,
 			accessMode.HasFlag(FileAccessMode.AutoLoad)
 		) {
 		InternalCollection.ObjectStream.Streams.OwnsStream = true;

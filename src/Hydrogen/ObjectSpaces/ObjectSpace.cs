@@ -51,7 +51,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 			(int)File.ClusterSize,
 			File.ContainerPolicy,
 			objectSpaceMetaDataStreamCount,
-			Endianness.LittleEndian, // TODO: use File.Endianness when added
+			File.Endianness,
 			false
 		);
 		_streams.OwnsStream = true; // disposes _fileStream
@@ -274,7 +274,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 			SanitizeContainerClusterSize(dimensionDefinition.AverageObjectSizeBytes),
 			ClusteredStreamsPolicy.FastAllocate,
 			dimensionDefinition.Indexes.Length,
-			Endianness.LittleEndian,
+			File.Endianness,
 			false
 		) {
 			OwnsStream = true

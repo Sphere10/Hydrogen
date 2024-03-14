@@ -18,7 +18,7 @@ namespace Hydrogen;
 /// <remarks></remarks>
 public static class UniversalExtensions {
 
-	public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item, IItemSerializer<TItem> serializer, CHF chf, DSS dss, byte[] privateKey, ulong signerNonce = 0, Endianness endianness = Endianness.LittleEndian) {
+	public static SignedItem<TItem> AsSignedItem<TItem>(this TItem item, IItemSerializer<TItem> serializer, CHF chf, DSS dss, byte[] privateKey, ulong signerNonce = 0, Endianness endianness = HydrogenDefaults.Endianness) {
 		var scheme = Signers.Create(dss);
 		var key = scheme.ParsePrivateKey(privateKey);
 		var digestor = new ItemDigestor<TItem>(chf, serializer, endianness);

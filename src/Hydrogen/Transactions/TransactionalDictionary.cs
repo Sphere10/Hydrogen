@@ -33,7 +33,6 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		int reservedStreamCount = 2,
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1,
-		Endianness endianness = HydrogenDefaults.Endianness,
 		FileAccessMode accessMode = FileAccessMode.Default,
 		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
 	) : this(
@@ -48,7 +47,7 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		reservedStreamCount,
 		freeIndexStoreStreamIndex,
 		keyChecksumIndexStreamIndex,
-		endianness,
+		fileDescriptor.Endianness,
 		accessMode.IsReadOnly(),
 		accessMode.HasFlag(FileAccessMode.AutoLoad),
 		implementation

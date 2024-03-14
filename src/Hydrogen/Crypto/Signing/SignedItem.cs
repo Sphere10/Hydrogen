@@ -34,7 +34,7 @@ public record SignedItem<T> : SignedItem {
 		set => base.Item = value;
 	}
 
-	public bool Verify(IItemSerializer<T> serializer, CHF chf, DSS dss, byte[] publicKey, ulong signerNonce = 0, Endianness endianness = Endianness.LittleEndian)
+	public bool Verify(IItemSerializer<T> serializer, CHF chf, DSS dss, byte[] publicKey, ulong signerNonce = 0, Endianness endianness = HydrogenDefaults.Endianness)
 		=> Verify(new ItemSigner<T>(new ItemDigestor<T>(chf, serializer, endianness), dss), publicKey);
 
 	public bool Verify(IItemHasher<T> digestor, IDigitalSignatureScheme dss, IPublicKey publicKey)

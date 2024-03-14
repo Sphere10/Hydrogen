@@ -29,11 +29,11 @@ public class MerkleListAdapter<TItem, TList> : ExtendedListDecorator<TItem, TLis
 		: this(internalList, CHF.SHA2_256) {
 	}
 
-	public MerkleListAdapter(TList internalList, CHF hashAlgorithm, Endianness endianness = Endianness.LittleEndian)
+	public MerkleListAdapter(TList internalList, CHF hashAlgorithm, Endianness endianness = HydrogenDefaults.Endianness)
 		: this(internalList, ItemSerializer<TItem>.Default, hashAlgorithm, endianness) {
 	}
 
-	public MerkleListAdapter(TList internalList, IItemSerializer<TItem> serializer, CHF hashAlgorithm, Endianness endianness = Endianness.LittleEndian)
+	public MerkleListAdapter(TList internalList, IItemSerializer<TItem> serializer, CHF hashAlgorithm, Endianness endianness = HydrogenDefaults.Endianness)
 		: this(internalList, new ItemDigestor<TItem>(hashAlgorithm, serializer, endianness), new FlatMerkleTree(hashAlgorithm)) {
 	}
 

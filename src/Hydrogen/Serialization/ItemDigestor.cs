@@ -15,11 +15,11 @@ public class ItemDigestor<TItem> : ItemSerializerDecorator<TItem>, IItemHasher<T
 	private readonly Endianness _endianness;
 	private readonly HashChecksummer _hashChecksummer;
 
-	public ItemDigestor(IItemSerializer<TItem> internalSerializer, Endianness endianness = Endianness.LittleEndian)
+	public ItemDigestor(IItemSerializer<TItem> internalSerializer, Endianness endianness = HydrogenDefaults.Endianness)
 		: this(CHF.SHA2_256, internalSerializer, endianness) {
 	}
 
-	public ItemDigestor(CHF hashAlgorithm, IItemSerializer<TItem> internalSerializer = null, Endianness endianness = Endianness.LittleEndian)
+	public ItemDigestor(CHF hashAlgorithm, IItemSerializer<TItem> internalSerializer = null, Endianness endianness = HydrogenDefaults.Endianness)
 		: base(internalSerializer ?? ItemSerializer<TItem>.Default) {
 		_hashAlgorithm = hashAlgorithm;
 		_endianness = endianness;

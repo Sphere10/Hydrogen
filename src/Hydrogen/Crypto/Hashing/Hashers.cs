@@ -49,7 +49,7 @@ public static class Hashers {
 
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static byte[] Hash<TItem>(CHF algorithm, TItem item, IItemSerializer<TItem> serializer, Endianness endianness = Endianness.LittleEndian) {
+	public static byte[] Hash<TItem>(CHF algorithm, TItem item, IItemSerializer<TItem> serializer, Endianness endianness = HydrogenDefaults.Endianness) {
 		var bytes = serializer.SerializeToBytes(item, endianness);
 		return Hash(algorithm, bytes);
 }

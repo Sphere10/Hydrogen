@@ -29,7 +29,7 @@ public class StreamMappedProperty<T> {
 		
 	private T _lastValue;
 
-	public StreamMappedProperty(Stream stream, long offset, long size, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, ICriticalObject @lock = null, Endianness endianess = Endianness.LittleEndian) 
+	public StreamMappedProperty(Stream stream, long offset, long size, IItemSerializer<T> serializer, IEqualityComparer<T> comparer = null, ICriticalObject @lock = null, Endianness endianess = HydrogenDefaults.Endianness) 
 		: this(stream, offset, size, serializer, new EndianBinaryReader(EndianBitConverter.For(endianess), stream), new EndianBinaryWriter(EndianBitConverter.For(endianess), stream), comparer, @lock) {
 	}
 

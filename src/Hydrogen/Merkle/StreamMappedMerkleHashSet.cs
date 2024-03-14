@@ -57,7 +57,7 @@ public class StreamMappedMerkleHashSet<TItem> : StreamMappedMerkleHashSet<TItem,
 		long merkleTreeStreamIndex = 0,
 		long freeIndexStoreStreamIndex = 1,
 		long keyChecksumIndexStreamIndex = 2,
-		Endianness endianness = Endianness.LittleEndian,
+		Endianness endianness = HydrogenDefaults.Endianness,
 		bool autoLoad = false
 	) : this(
 		rootStream,

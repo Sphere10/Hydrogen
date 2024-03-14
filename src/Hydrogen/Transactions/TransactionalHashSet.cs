@@ -29,7 +29,6 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		int reservedStreamCount = 2,
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1, 
-		Endianness endianness = HydrogenDefaults.Endianness, 
 		FileAccessMode accessMode = FileAccessMode.Default
 	) : this(
 		new TransactionalStream(fileDescriptor, accessMode),
@@ -42,7 +41,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		reservedStreamCount,
 		freeIndexStoreStreamIndex,
 		keyChecksumIndexStreamIndex,
-		endianness,
+		fileDescriptor.Endianness,
 		accessMode.IsReadOnly(),
 		accessMode.HasFlag(FileAccessMode.AutoLoad)
 	) {
@@ -58,7 +57,6 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		int reservedStreamCount = 2,
 		long freeIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1, 
-		Endianness endianness = HydrogenDefaults.Endianness,
 		FileAccessMode accessMode = FileAccessMode.Default
 	) : this(
 		new TransactionalStream(fileDescriptor, accessMode),
@@ -71,7 +69,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		reservedStreamCount,
 		freeIndexStoreStreamIndex,
 		keyChecksumIndexStreamIndex,
-		endianness,
+		fileDescriptor.Endianness,
 		accessMode.IsReadOnly(),
 		accessMode.HasFlag(FileAccessMode.AutoLoad)
 	) {

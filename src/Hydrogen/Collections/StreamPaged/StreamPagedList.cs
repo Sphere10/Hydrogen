@@ -61,7 +61,7 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 	public const byte FormatVersion = 1;
 	public const int ListHeaderSize = 256;
 
-	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, Endianness endianness = Endianness.LittleEndian, bool includeListHeader = true, bool autoLoad = false)
+	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, Endianness endianness = HydrogenDefaults.Endianness, bool includeListHeader = true, bool autoLoad = false)
 		: this(
 			serializer.IsConstantSize ? StreamPagedListType.Static : throw new ArgumentException(nameof(serializer), $"This constructor only supports {nameof(StreamPagedListType.Static)} items"),
 			serializer,
@@ -73,11 +73,11 @@ public class StreamPagedList<TItem> : PagedListBase<TItem> {
 		) {
 	}
 
-	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian, bool includeListHeader = true, bool autoLoad = false)
+	public StreamPagedList(IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = HydrogenDefaults.Endianness, bool includeListHeader = true, bool autoLoad = false)
 		: this(serializer.IsConstantSize ? StreamPagedListType.Static : StreamPagedListType.Dynamic, serializer, stream, pageSize, endianness, includeListHeader, autoLoad) {
 	}
 
-	public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = Endianness.LittleEndian, bool includeListHeader = true,  bool autoLoad = false) 
+	public StreamPagedList(StreamPagedListType type, IItemSerializer<TItem> serializer, Stream stream, long pageSize, Endianness endianness = HydrogenDefaults.Endianness, bool includeListHeader = true,  bool autoLoad = false) 
 		: base(false) {
 		PageSize = pageSize;
 		Serializer = serializer;

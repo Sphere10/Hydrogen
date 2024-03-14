@@ -25,7 +25,8 @@ public sealed class TransactionalDictionaryTests : TransactionalDictionaryTestsB
 		IEqualityComparer<TKey> keyComparer, 
 		IEqualityComparer<TValue> valueComparer, 
 		ClusteredStreamsPolicy policy,
-		out ITransactionalDictionary<TKey, TValue> clustered, out string file
+		out ITransactionalDictionary<TKey, TValue> clustered, 
+		out string file
 	) {
 		file = Tools.FileSystem.GenerateTempFilename();
 		var dir = Tools.FileSystem.GetTempEmptyDirectory(true);

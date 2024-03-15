@@ -61,12 +61,18 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 			// be used to store header information (i.e. factory info to decide what type of index to load)
 			if (AttachmentStream.Position < 0)
 				AttachmentStream.SetLength(0);
-
+			
+			// User-defined attachment done now
 			AttachInternal();
+
+			// Integrity check
+			VerifyIntegrity();
 		}
 	}
 
 	protected abstract void AttachInternal();
+
+	protected abstract void VerifyIntegrity();
 
 	public void Detach() {
 		CheckAttached();

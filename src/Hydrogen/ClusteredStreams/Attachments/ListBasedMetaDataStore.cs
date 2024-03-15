@@ -42,6 +42,14 @@ internal class ListBasedMetaDataStore<TData> : MetaDataStoreBase<TData> {
 		);
 	}
 
+	protected override void VerifyIntegrity() {
+		var errorHeader = $"{nameof(ListBasedMetaDataStore<TData>)} (reserved stream: {this.ReservedStreamIndex}) integrity failure";
+
+		// Verify leaf-count matches item count
+		var itemCount = Streams.Count - Streams.Header.ReservedStreams;
+		Guard.Ensure(_inStreamIndex.Count == itemCount, $"{errorHeader}: item count {itemCount} mismatch with {nameof(StreamPagedList<TData>)} count {_inStreamIndex.Count}");
+	}
+
 	protected override void DetachInternal() {
 		_inStreamIndex = null;		
 	}

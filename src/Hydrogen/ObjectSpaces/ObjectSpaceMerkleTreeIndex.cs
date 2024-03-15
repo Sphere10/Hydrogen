@@ -19,41 +19,34 @@ namespace Hydrogen.ObjectSpaces;
 /// When a dimension merkle-tree root is changed, it triggers a leaf-update on this tree.  
 /// </summary>
 /// <remarks>A dimension of an object space is a <see cref="ObjectStream"/> of a specific type of object.</remarks>
-internal class ObjectSpaceMerkleTreeIndex : IClusteredStreamsAttachment {
+internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<MerkleTreeStore> {
 	private readonly ObjectSpace _objectSpace;
-	private readonly MerkleTreeStore _objectSpaceTreeStore;
 	private readonly IList<(MerkleTreeStore, EventHandlerEx<byte[], byte[]>)> _collectionTreeListeners;
 
-	public ObjectSpaceMerkleTreeIndex(ObjectSpace objectSpace, long reservedStreamIndex, CHF chf, bool isFirstLoad) {
+	public ObjectSpaceMerkleTreeIndex(ObjectSpace objectSpace, long reservedStreamIndex, CHF chf, bool isFirstLoad) 
+		: base (new MerkleTreeStore(objectSpace.InternalStreams, reservedStreamIndex, chf, isFirstLoad) ){
 		Guard.ArgumentNotNull(objectSpace, nameof(objectSpace));
 		_objectSpace = objectSpace;
-		_objectSpaceTreeStore = new MerkleTreeStore(objectSpace.InternalStreams, reservedStreamIndex, chf, isFirstLoad);
 		_collectionTreeListeners = new List<(MerkleTreeStore, EventHandlerEx<byte[], byte[]>)>();
 	}
 
-	public ClusteredStreams Streams => _objectSpaceTreeStore.Streams;
+	public IMerkleTree MerkleTree => Inner.MerkleTree;
 
-	public MerkleTreeStore MerkleTreeStore => _objectSpaceTreeStore;
+	public override void Attach() {
+		base.Attach();
 
-	public long ReservedStreamIndex => _objectSpaceTreeStore.ReservedStreamIndex;
-
-	public bool IsAttached => _objectSpaceTreeStore.IsAttached;
-
-	public void Attach() {
-		Guard.Ensure(!IsAttached, "Already attached");
-		_objectSpaceTreeStore.Attach();
+		VerifyIntegrity();
 
 		// Ensure when dimension added/removed, that spatial tree listens
 		SubscribeToDimensionMutationEvents();
 	}
 
-	public void Detach() {
-		Guard.Ensure(IsAttached, "Not attached");
+	public override void Detach() {
+		// Unsub from dimension changes, since detach may trigger them
 		UnsubscribeToDimensionMutationEvents();
-		_objectSpaceTreeStore.Detach();
-	}
 
-	public void Flush() => _objectSpaceTreeStore.Flush();
+		base.Detach();
+	}
 
 	private void SubscribeToDimensionMutationEvents() {
 		Streams.StreamAdded += HandleDimensionAdded;
@@ -73,28 +66,14 @@ internal class ObjectSpaceMerkleTreeIndex : IClusteredStreamsAttachment {
 	private void SubscribeToDimensionTreeChanges(int i) {
 		var dimension = _objectSpace.GetDimension(i);
 		var dimensionMerkleTree = dimension.ObjectStream.Streams.FindAttachment<MerkleTreeIndex>();
-		var dimensionRoot = dimensionMerkleTree.MerkleTree.Root;
-
-		// Deprecate below check since merkle-tree must always be at correct leaf-count
-		//// If object space tree isn't tracking this container yet, add it to tree now
-		//if (_objectSpaceTreeStore.Count <= i)
-		//	_objectSpaceTreeStore.Add(i, dimensionRoot);
-
-		// sanity check: ensure container root matches the leaf hash in the object space tree
-		var dimensionTreeRoot = _objectSpaceTreeStore.MerkleTree.GetValue(MerkleCoordinate.LeafAt(i)).ToArray();
-		Debug.Assert(
-			dimensionTreeRoot.All(x => x == 0) && dimensionRoot is null ||
-			ByteArrayEqualityComparer.Instance.Equals(dimensionTreeRoot, dimensionRoot)
-		);
 
 		// Listen to underlying collection root changes (and track the handler for unsub later)
 		var capturedIndex = i;
 		void CollectionRootListener(byte[] oldValue, byte[] newValue) {
-			_objectSpaceTreeStore.Update(capturedIndex, newValue);
+			Inner.Update(capturedIndex, newValue);
 		}
 		dimensionMerkleTree.KeyStore.RootChanged += CollectionRootListener;
 		_collectionTreeListeners.Add((dimensionMerkleTree.KeyStore, CollectionRootListener));
-
 	}
 
 	private void UnsubscribeToDimensionMutationEvents() {
@@ -110,23 +89,34 @@ internal class ObjectSpaceMerkleTreeIndex : IClusteredStreamsAttachment {
 
 	}
 
-	public void VerifyConsistency() {
-		// TODO: refactor this into a pattern used across ObjectSpace, ObjectStream and attachments. Merge Results. Use Progress pattern
-		var result = Result.Default;
-		if (_objectSpace.Definition.Merkleized) {
-			// check merkle-trees match
-			var dimensionRoots = new List<byte[]>();
-			for(var i = 0; i < _objectSpace.Dimensions; i++) {
-				var dimension = _objectSpace.GetDimension(i);
-				if (!dimension.ObjectStream.Streams.TryFindAttachment<MerkleTreeIndex>(out var dimensionTree)) 
-					throw new InvalidDataException($"ObjectSpace dimension {i} did not contain a merkle-tree");
-				dimensionRoots.Add(dimensionTree.MerkleTree.Root ?? Hashers.ZeroHash(_objectSpace.Definition.HashFunction));
-			}
-			// check matches spatial root
-			var calculatedRoot = MerkleTree.ComputeMerkleRoot(dimensionRoots, _objectSpace.Definition.HashFunction);
-			if (!ByteArrayEqualityComparer.Instance.Equals(MerkleTreeStore.MerkleTree.Root, calculatedRoot))
-				throw new InvalidDataException($"Spatial merkle-tree root did not match expected dimension trees");
+	public void VerifyIntegrity() {
+		// re-compute spatial root from dimensional merkle tree roots
+		var dimensionRoots = new List<byte[]>();
+		for (var i = 0; i < _objectSpace.Dimensions; i++) {
+			// Get the object dimension and it's root
+			var dimension = _objectSpace.GetDimension(i);
+			if (!dimension.ObjectStream.Streams.TryFindAttachment<MerkleTreeIndex>(out var dimensionTree))
+				throw new InvalidDataException($"{nameof(ObjectSpace)} dimension {i} missing a {nameof(MerkleTreeIndex)}");
+			var dimensionRoot = dimensionTree.MerkleTree.Root;
+			
+			// Check that corresponding spatial-tree leaf matches root of dimension tree
+			var spatialLeafValue = MerkleTree.GetValue(MerkleCoordinate.LeafAt(i)).ToArray();
+			Guard.Ensure(
+				spatialLeafValue.All(x => x == 0) && dimensionRoot is null ||
+				ByteArrayEqualityComparer.Instance.Equals(spatialLeafValue, dimensionRoot),
+				$"{nameof(ObjectSpace)} dimension {i} root does not match corresponding leaf value in spatial-tree"
+			);
+
+			// Track this dimension root as a leaf (for later)
+			dimensionRoots.Add(dimensionTree.MerkleTree.Root ?? Hashers.ZeroHash(_objectSpace.Definition.HashFunction));
 		}
+
+		// check expected matches stored spatial root
+		var calculatedRoot = Hydrogen.MerkleTree.ComputeMerkleRoot(dimensionRoots, _objectSpace.Definition.HashFunction);
+		if (!ByteArrayEqualityComparer.Instance.Equals(MerkleTree.Root, calculatedRoot))
+			throw new InvalidDataException($"{nameof(ObjectSpace)} merkle-tree root did not match roots of dimension trees");
+
+		// NOTE: the checking of spatial-tree root matches the stream mapped property root is done by Inner.Attach() -> VerifyIntegrity()
 	}
 
 

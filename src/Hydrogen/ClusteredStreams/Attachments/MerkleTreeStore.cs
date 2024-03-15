@@ -103,8 +103,8 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 
 	protected override void AttachInternal() {
 		var flatTreeData = new StreamMappedBuffer(AttachmentStream);
-		var leafCount = Streams.Count - Streams.Header.ReservedStreams;
-		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, leafCount);
+		var itemCount = Streams.Count - Streams.Header.ReservedStreams;
+		_merkleTree = new FlatMerkleTree(_hashAlgorithm, flatTreeData, itemCount);
 		_readOnlyMerkleTree = new StreamLockingMerkleTree(this, _merkleTree, Streams);
 		var hashSize = Hashers.GetDigestSizeBytes(_hashAlgorithm);
 		using (Streams.EnterAccessScope()) {
@@ -120,10 +120,22 @@ internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 			// Integrity Check: ensure root property value matches actual merkle-root (or set it on first load)
 			if (_isFirstLoad) {
 				_merkleRootProperty.Value = _merkleTree.Root;
-			} else {
-				Guard.Ensure(ByteArrayEqualityComparer.Instance.Equals(_merkleTree.Root, _merkleRootProperty.Value), $"Merkle-tree inconsistency: header root '{_merkleRootProperty.Value?.ToHexString()}', computed root '{_merkleTree.Root?.ToHexString()}'.");
-			}
+			} 
 		}
+	}
+
+	protected override void VerifyIntegrity() {
+		var errorHeader = $"{nameof(MerkleTreeStore)} (reserved stream: {this.ReservedStreamIndex}) integrity failure";
+
+		// Verify leaf-count matches item count
+		var itemCount = Streams.Count - Streams.Header.ReservedStreams;
+		Guard.Ensure(_merkleTree.Size.LeafCount == itemCount, $"{errorHeader}: item count {itemCount} mismatch with tree leaf-count {_merkleTree.Size.LeafCount}");
+
+		// Verify merkle-root of header matches that of the tree
+		Guard.Ensure(
+			ByteArrayEqualityComparer.Instance.Equals(_merkleTree.Root, _merkleRootProperty.Value), 
+			$"{errorHeader}: header root '{_merkleRootProperty.Value?.ToHexString()}', computed root '{_merkleTree.Root?.ToHexString()}'."
+		);
 	}
 
 	protected override void DetachInternal() {

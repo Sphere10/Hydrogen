@@ -242,7 +242,6 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 			var spaceTree = new ObjectSpaceMerkleTreeIndex(this, ObjectSpaceMerkleTreeReservedStreamIndex, Definition.HashFunction, isFirstTimeLoad);
 			_streams.RegisterAttachment(spaceTree);
 
-			spaceTree.VerifyConsistency();
 		}
 
 		_loaded = true;
@@ -372,13 +371,13 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		foreach(var collection in _dimensions.Values) {
 			if (collection.ObjectStream.Streams.TryFindAttachment<MerkleTreeIndex>(out var merkleTreeIndex)) {
 				// fetching the root ensures the stream-mapped merkle-tree is fully calculated
-				merkleTreeIndex.KeyStore.Flush();
+				merkleTreeIndex.Flush();
 			}
 		}
 
 		// ensure the global merkle-tree is updated
 		if (_streams.TryFindAttachment<ObjectSpaceMerkleTreeIndex>(out var objectSpaceMerkleTreeIndex)) {
-			objectSpaceMerkleTreeIndex.MerkleTreeStore.Flush();
+			objectSpaceMerkleTreeIndex.Flush();
 		}
 	}
 

@@ -24,6 +24,18 @@ public abstract class IndexBase<TData, TStore> : ObjectStreamObserverBase, IClus
 
 	public TStore KeyStore { get; }
 
+	public virtual ClusteredStreams Streams => KeyStore.Streams;
+
+	public virtual long ReservedStreamIndex => KeyStore.ReservedStreamIndex; 
+
+	public virtual bool IsAttached => KeyStore.IsAttached;
+
+	public virtual void Attach() => KeyStore.Attach();
+
+	public virtual void Detach() => KeyStore.Detach();
+
+	public virtual void Flush() => KeyStore.Flush();
+
 	protected override void OnRemoved(long index) {
 		CheckAttached();
 		KeyStore.Remove(index);
@@ -57,21 +69,4 @@ public abstract class IndexBase<TData, TStore> : ObjectStreamObserverBase, IClus
 	protected void CheckDetached()
 		=> Guard.Ensure(!KeyStore.IsAttached, "Index is attached");
 
-	#region IObjectContainerAttachment Implementation
-
-	// NOTE: use of backing field _keyStore to avoid attached check
-
-	ClusteredStreams IClusteredStreamsAttachment.Streams => KeyStore.Streams;
-
-	long IClusteredStreamsAttachment.ReservedStreamIndex => KeyStore.ReservedStreamIndex; 
-
-	bool IClusteredStreamsAttachment.IsAttached => KeyStore.IsAttached;
-
-	void IClusteredStreamsAttachment.Attach() => KeyStore.Attach();
-
-	void IClusteredStreamsAttachment.Detach() => KeyStore.Detach();
-
-	void IClusteredStreamsAttachment.Flush() => KeyStore.Flush();
-
-	#endregion
 }

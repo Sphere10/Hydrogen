@@ -45,6 +45,10 @@ internal class StackBasedMetaDataStore<TData> : MetaDataStoreBase<TData>, IStack
 		);
 	}
 
+	protected override void VerifyIntegrity() {
+		// nothing to check
+	}
+
 	protected override void DetachInternal() {
 		_inStreamIndex = null;		
 	}

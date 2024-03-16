@@ -63,7 +63,7 @@ public static class StringFormatter {
 				var split = splits.Pop();
 				switch (split) {
 					case "{":
-						if (splits.Count > 0 && splits.Peek() == "{" /*&& splits.Last() != "}"*/) {
+						if (splits.Count > 0 && splits.Peek() == "{") {
 							// Escaped {{
 							splits.Pop();
 							if (inFormatItem)
@@ -165,7 +165,8 @@ public static class StringFormatter {
 
 		// This is a formatted item that needs to be looked up
 		var tokenSplits = token.Split(':');
-		if (tokenSplits.Length > 1 && token.CountSubstring("://") != 1) {
+		var tokenIsUriLink = token.CountSubstring("://") == 1;
+		if (tokenSplits.Length > 1 && !tokenIsUriLink) {
 			// Note :// is used for url-looking tokens (i.e. https://www.sphere10.com);
 			token = tokenSplits[0].TrimEnd();
 			formatOptions = ":" + tokenSplits.Skip(1).Select(s => s.Trim()).ToDelimittedString(":");
@@ -191,7 +192,7 @@ public static class StringFormatter {
 			var modifiedToken = FormatEx(token, resolver, recursive, formatArgs);
 			if (!TryResolveFormatItem(alreadyVisited, modifiedToken, out value, recursive, resolver, formatArgs) || modifiedToken.Equals(value)) {
 				// resolved token name didn't resolve to anything (or resolved to itself), but since token contained token names, return the resolved token name
-				var snippedOutFormatArgs = tokenSplits.Length > 1 ? ":" + tokenSplits.Skip(1).ToDelimittedString(":") : string.Empty;
+				var snippedOutFormatArgs = !tokenIsUriLink && tokenSplits.Length > 1 ? ":" + tokenSplits.Skip(1).ToDelimittedString(":") : string.Empty;
 				value = "{" + trimmedStart + modifiedToken + snippedOutFormatArgs + trimmedEnd + "}" ;
 			}
 			alreadyVisited[token] = value;

@@ -290,6 +290,13 @@ public class StringFormatterTests {
 	}
 
 	[Test]
+	public void HandlesFormatArgs_4() {
+		var input =
+			"{ {://} }";
+		Assert.That(StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"] = "bar" }, true), Is.EqualTo(input));
+	}
+
+	[Test]
 	public void LocalNotionBugCase_1() {
 		var tokens = new Dictionary<string, object> {
 			["object_id"] = "309c96b2-5ac0-48d0-b75e-502ce962baf2",
@@ -400,6 +407,90 @@ public class StringFormatterTests {
 				var sig = builder.ToArray();
 				return sig;
 			}
+			""";
+		Assert.That(StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"] = "bar" }, true), Is.EqualTo(input));
+	}
+
+	[Test]
+	public void LocalNotionBugCase_4() {
+		var input =
+			"""
+			<script language="javascript">
+				function MakeDownloadLink(target) {
+					var text = $(target).html().toUpperCase();
+					var isWindows = text === "WINDOWS";
+					var isWindowsStore = text === "WINDOWS STORE";
+					var isMacOS = text === "MACOS";
+					var isAppleStore = text === "APPLE STORE";
+					var isLinux = text == "LINUX";
+					var isGooglePlay = text === "GOOGLE STORE";
+					var isPlatform = isWindows || isMacOS || isLinux;
+					var isStore = isWindowsStore || isAppleStore || isGooglePlay;
+			        var isDownload = isPlatform || isStore;
+					if (!isDownload)
+						return;
+			
+					// remove <p> envelope
+					var parent = $(target).parent();
+					$(target).insertAfter(parent);
+					parent.remove();
+			
+					if (isPlatform) {
+						// Minify all links adjacent to download button
+						$(target).nextAll(':not(:empty)').attr('class', 'fs-6 fs-light text-center');
+			
+						// add btn styling
+						$(target).attr('class', 'btn btn-sm btn-pill btn-danger text-start');
+						$(target).css('width', '8em');
+						$(target).css('font-weight', 'bold');
+					}
+			
+					if (isStore) {
+						$(target).removeAttr('class');
+						$(target).text('');
+					}
+			
+					// add OS icon
+					var platformImageStyle = "width: 16px; height: 16px; fill: currentcolor; margin-bottom: 0.27em;margin-right:0.5em; filter:  brightness(0) invert(1);";
+			        var storeImageStyle = "width:7.5em";
+			
+					if (isWindows) {
+			            $(target).prepend('<img src="{theme://resources/img/windows.svg}" style="' + platformImageStyle + '">');
+					}
+					if (isWindowsStore) {
+			            $(target).prepend('<img src="{theme://resources/img/microsoft-store.svg}" style="' + storeImageStyle + '">');
+					}
+					if (isMacOS) {
+			            $(target).prepend('<img src="{theme://resources/img/apple.svg}" style="' + platformImageStyle + '">');
+					}
+					if (isAppleStore) {
+			            $(target).prepend('<img src="{theme://resources/img/apple-store.svg}" style="' + storeImageStyle + '">');
+					}
+					if (isLinux) {
+			            $(target).prepend('<img src="{theme://resources/img/linux.svg}" style="' + platformImageStyle + '">');
+					}
+					if (isGooglePlay) {
+			            $(target).prepend('<img src="{theme://resources/img/google-play.svg}" style="' + storeImageStyle + '">');
+					}
+					
+				}
+			
+				$(document).ready(function() {
+					$("a").each( function() {
+						MakeDownloadLink(this);
+					});
+				});
+			</script>
+			
+			
+			<div id="{object_id}" class="position-relative pt-8 pt-md-11">
+			    <div id="{page_name}" class="container-xxl pt-10 pb-5">
+				{thumbnail}
+			        <div class="ln-block-children ln-page-children mt-8">
+			            {children}
+			        </div>
+			    </div>
+			</div>
 			""";
 		Assert.That(StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"] = "bar" }, true), Is.EqualTo(input));
 	}
@@ -555,9 +646,7 @@ public class StringFormatterTests {
 			var expected = input;
 			var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"] = "bar" }, true);
 			Assert.That(actual, Is.EqualTo(expected));
-
 		}
-
 	}
 
 	[Test]
@@ -575,9 +664,7 @@ public class StringFormatterTests {
 			var expected = input;
 			var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"] = "bar" }, true);
 			Assert.That(actual, Is.EqualTo(expected));
-
 		}
-
 	}
 
 	[Test]
@@ -596,7 +683,6 @@ public class StringFormatterTests {
 			var expected = input;
 			var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"] = "bar" }, true);
 			Assert.That(actual, Is.EqualTo(expected));
-
 		}
 	}
 
@@ -617,7 +703,6 @@ public class StringFormatterTests {
 			var expected = input;
 			var actual = StringFormatter.FormatWithDictionary(expected, new Dictionary<string, object> { ["foo"] = "bar" }, true);
 			Assert.That(actual, Is.EqualTo(expected));
-
 		}
 	}
 

@@ -5,6 +5,7 @@ namespace Hydrogen;
 
 public interface IStreamMappedCollection {
 	ObjectStream ObjectStream { get; }
+	
 }
 
 public interface IStreamMappedCollection<TItem> : IStreamMappedCollection {

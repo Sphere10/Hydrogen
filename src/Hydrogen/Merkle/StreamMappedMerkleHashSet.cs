@@ -42,6 +42,8 @@ public class StreamMappedMerkleHashSet<TItem, TInner> : SetDecorator<TItem, TInn
 	public Task LoadAsync() => InternalSet.LoadAsync();
 
 	public void Dispose() => InternalSet.Dispose();
+
+	
 }
 
 /// <inheritdoc />

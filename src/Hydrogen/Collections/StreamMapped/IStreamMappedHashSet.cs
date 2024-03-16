@@ -12,6 +12,5 @@ using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
-public interface IStreamMappedHashSet<TItem> : ISet<TItem>, ILoadable, IDisposable {
-	ObjectStream ObjectStream { get; }
+public interface IStreamMappedHashSet<TItem> : ISet<TItem>, IStreamMappedCollection, ILoadable, IDisposable {
 }

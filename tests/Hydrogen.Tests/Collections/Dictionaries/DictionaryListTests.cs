@@ -14,13 +14,13 @@ using NUnit.Framework;
 namespace Hydrogen.Tests;
 
 [Parallelizable]
-public class IndexedValueDictionaryTests {
+public class DictionaryListTests {
 
 
 	[Test]
 	public void WalkthroughTests() {
 
-		var ivd = new IndexedValueDictionary<string, string>(StringComparer.InvariantCultureIgnoreCase, StringComparer.InvariantCulture);
+		var ivd = new DictionaryList<string, string>(StringComparer.InvariantCultureIgnoreCase, StringComparer.InvariantCulture);
 
 		Assert.That(ivd.Count, Is.EqualTo(0));
 
@@ -52,7 +52,7 @@ public class IndexedValueDictionaryTests {
 	[Test]
 	public void Integration() {
 		var keyGens = 0;
-		var dict = new IndexedValueDictionary<string, string>();
+		var dict = new DictionaryList<string, string>();
 			AssertEx.DictionaryIntegrationTest(
 				dict,
 				1000,

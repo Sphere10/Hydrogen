@@ -12,16 +12,16 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public class IndexedValueDictionary<TKey, TVal> : DictionaryBase<TKey, TVal>, IReadOnlyList<TVal> {
+public class DictionaryList<TKey, TVal> : DictionaryBase<TKey, TVal>, IReadOnlyList<TVal> {
 	private readonly IEqualityComparer<TVal> _valueComparer;
 	private readonly IList<TVal> _list;
 	private readonly IDictionary<TKey, int> _dictionary;
 
-	public IndexedValueDictionary() 
+	public DictionaryList() 
 		: this(EqualityComparer<TKey>.Default, EqualityComparer<TVal>.Default) {
 	}
 
-	public IndexedValueDictionary(IEqualityComparer<TKey> keyComparer, IEqualityComparer<TVal> valueComparer) {
+	public DictionaryList(IEqualityComparer<TKey> keyComparer, IEqualityComparer<TVal> valueComparer) {
 		keyComparer ??= EqualityComparer<TKey>.Default;
 		valueComparer ??= EqualityComparer<TVal>.Default;
 		_list = new List<TVal>();

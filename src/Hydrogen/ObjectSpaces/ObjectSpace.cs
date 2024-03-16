@@ -26,7 +26,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 	private ClusteredStreams _streams;
 	private readonly SerializerFactory _serializerFactory;
 	private readonly ComparerFactory _comparerFactory;
-	private readonly IndexedValueDictionary<Type, IStreamMappedCollection> _dimensions;
+	private readonly DictionaryList<Type, IStreamMappedCollection> _dimensions;
 	private readonly InstanceTracker _instanceTracker;
 	private bool _loaded;
 
@@ -56,7 +56,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		);
 		_streams.OwnsStream = true; // disposes _fileStream
 		_loaded = false;
-		_dimensions = new IndexedValueDictionary<Type, IStreamMappedCollection>(TypeEquivalenceComparer.Instance, ReferenceEqualityComparer.Instance);
+		_dimensions = new DictionaryList<Type, IStreamMappedCollection>(TypeEquivalenceComparer.Instance, ReferenceEqualityComparer.Instance);
 		_instanceTracker = new InstanceTracker();
 		if (AccessMode.HasFlag(FileAccessMode.AutoLoad))
 			Load();

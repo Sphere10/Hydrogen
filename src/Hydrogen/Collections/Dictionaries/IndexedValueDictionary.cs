@@ -33,6 +33,8 @@ public class IndexedValueDictionary<TKey, TVal> : DictionaryBase<TKey, TVal>, IR
 
 	int IReadOnlyCollection<TVal>.Count => _dictionary.Count;
 
+	public override ICollection<TVal> Values => _list;
+
 	public override bool IsReadOnly => _dictionary.IsReadOnly;
 
 	public override bool Remove(TKey item) {
@@ -111,5 +113,5 @@ public class IndexedValueDictionary<TKey, TVal> : DictionaryBase<TKey, TVal>, IR
 			if (pair.Value > index)
 				_dictionary[pair.Key] = pair.Value - 1;
 	}
-
+	
 }

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Hydrogen;
@@ -25,6 +26,7 @@ public class DictionaryList<TKey, TVal> : DictionaryBase<TKey, TVal>, IReadOnlyL
 		keyComparer ??= EqualityComparer<TKey>.Default;
 		valueComparer ??= EqualityComparer<TVal>.Default;
 		_list = new List<TVal>();
+		Values = new ReadOnlyCollection<TVal>(_list);
 		_dictionary = new Dictionary<TKey, int>(keyComparer);
 		_valueComparer = valueComparer;
 	}
@@ -33,7 +35,7 @@ public class DictionaryList<TKey, TVal> : DictionaryBase<TKey, TVal>, IReadOnlyL
 
 	int IReadOnlyCollection<TVal>.Count => _dictionary.Count;
 
-	public override ICollection<TVal> Values => _list;
+	public override ICollection<TVal> Values { get; }
 
 	public override bool IsReadOnly => _dictionary.IsReadOnly;
 

@@ -38,7 +38,6 @@ public abstract class ObjectSpacesTestBase {
 		Assert.That(() => objectSpace.Save(account), Throws.Nothing);
 	}
 
-
 	[Test]
 	public void LoadEmptyDoesntThrow() {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -237,7 +236,6 @@ public abstract class ObjectSpacesTestBase {
 	}
 
 	#endregion
-
 
 	#region Inner Types
 

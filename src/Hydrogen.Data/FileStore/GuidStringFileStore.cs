@@ -25,4 +25,5 @@ public class GuidStringFileStore : KeyTransformedFileStore<Guid, string> {
 
 	public string FileExtension => ((GuidFileStore)InternalFileStore).FileExtension;
 
+
 }

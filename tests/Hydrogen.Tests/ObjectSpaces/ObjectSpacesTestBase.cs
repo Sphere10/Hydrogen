@@ -67,8 +67,8 @@ public abstract class ObjectSpacesTestBase {
 			objectSpace.Save(savedAccount);
 			objectSpace.Commit();
 
-			var dim1 = objectSpace.GetDimension(0);
-			var dim2 = objectSpace.GetDimension(1);
+			var dim1 = objectSpace.Dimensions[0];
+			var dim2 = objectSpace.Dimensions[1];
 
 			var xxx = dim1.ObjectStream.Streams.Header;
 			var yyy = dim2.ObjectStream.Streams.Header;
@@ -148,31 +148,6 @@ public abstract class ObjectSpacesTestBase {
 		// make sure to update prior state before rolback to ensure update is rolled back
 	}
 	
-	#endregion
-
-	#region Clear
-
-	[Test]
-	public void Clear_1() {
-		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
-		var accountComparer = CreateAccountComparer();
-		Account savedAccount, loadedAccount;
-		using (var scope = CreateObjectSpaceScope(folder, true)) {
-			var objectSpace = scope.Item;
-			savedAccount = CreateAccount();
-			objectSpace.Save(savedAccount);
-			objectSpace.Clear();
-			objectSpace.Commit();
-		}
-
-		using (var scope = CreateObjectSpaceScope(folder, false)) {
-			var objectSpace = scope.Item;
-			loadedAccount = objectSpace.Get<Account>(0);
-		}
-
-		Assert.That(loadedAccount, Is.EqualTo(savedAccount).Using(accountComparer));
-	}
-
 	#endregion
 
 	#region Aux

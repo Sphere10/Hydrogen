@@ -59,12 +59,12 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 		// we simply listen to that dimensions merkle root property changed event
 		// which allows us to lazily update
 		// For dimensions already existing, subscribe to their merkle-tree change events
-		for(var i = 0; i < _objectSpace.Dimensions; i++)
+		for(var i = 0; i < _objectSpace.Dimensions.Count; i++)
 			SubscribeToDimensionTreeChanges(i);
 	}
 
 	private void SubscribeToDimensionTreeChanges(int i) {
-		var dimension = _objectSpace.GetDimension(i);
+		var dimension = _objectSpace.Dimensions[i];
 		var dimensionMerkleTree = dimension.ObjectStream.Streams.FindAttachment<MerkleTreeIndex>();
 
 		// Listen to underlying collection root changes (and track the handler for unsub later)
@@ -92,9 +92,9 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 	public void VerifyIntegrity() {
 		// re-compute spatial root from dimensional merkle tree roots
 		var dimensionRoots = new List<byte[]>();
-		for (var i = 0; i < _objectSpace.Dimensions; i++) {
+		for (var i = 0; i < _objectSpace.Dimensions.Count; i++) {
 			// Get the object dimension and it's root
-			var dimension = _objectSpace.GetDimension(i);
+			var dimension = _objectSpace.Dimensions[i];
 			if (!dimension.ObjectStream.Streams.TryFindAttachment<MerkleTreeIndex>(out var dimensionTree))
 				throw new InvalidDataException($"{nameof(ObjectSpace)} dimension {i} missing a {nameof(MerkleTreeIndex)}");
 			var dimensionRoot = dimensionTree.MerkleTree.Root;

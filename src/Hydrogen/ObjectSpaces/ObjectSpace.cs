@@ -80,7 +80,9 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 	
 	public bool IsLocked => _streams.IsLocked;
 
-	public int Dimensions => checked((int)_dimensions.Count);
+	public long DimensionCount => _dimensions.Count;
+
+	internal IReadOnlyList<IStreamMappedCollection> Dimensions => _dimensions;
 
 	internal ClusteredStreams InternalStreams => _streams;
 
@@ -190,8 +192,6 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		Unload();
 		_streams.Dispose();
 	}
-
-	internal IStreamMappedCollection GetDimension(int number) => _dimensions[number];
 
 	protected override void LoadInternal() {
 		const int ObjectSpaceMerkleTreeReservedStreamIndex = 0;

@@ -54,8 +54,8 @@ public class MerkleizedObjectSpacesTest : ObjectSpacesTestBase {
 
 			objectSpace.Commit();
 
-			var dim1 = objectSpace.GetDimension(0);
-			var dim2 = objectSpace.GetDimension(1);
+			var dim1 = objectSpace.Dimensions[0];
+			var dim2 = objectSpace.Dimensions[1];
 
 
 			// Verify account dimension has single item root

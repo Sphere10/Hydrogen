@@ -20,8 +20,8 @@ public abstract class ObjectSpacesTestBase {
 
 	protected abstract ObjectSpace CreateObjectSpace(string filePath);
 
-	#region Tests
-
+	#region Activation
+	
 	[Test]
 	public void ConstructorDoesntThrow() {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
@@ -30,6 +30,10 @@ public abstract class ObjectSpacesTestBase {
 		Assert.That(() => CreateObjectSpace(filePath), Throws.Nothing);
 	}
 
+	#endregion	
+
+	#region Save
+
 	[Test]
 	public void SaveDoesntThrow() {
 		using var scope = CreateObjectSpaceScope();
@@ -37,6 +41,10 @@ public abstract class ObjectSpacesTestBase {
 		var account = CreateAccount();
 		Assert.That(() => objectSpace.Save(account), Throws.Nothing);
 	}
+
+	#endregion
+
+	#region Load
 
 	[Test]
 	public void LoadEmptyDoesntThrow() {
@@ -70,6 +78,10 @@ public abstract class ObjectSpacesTestBase {
 
 	}
 
+	#endregion
+
+	#region Commit
+
 	[Test]
 	public void CommitNotThrows() {
 		using var scope = CreateObjectSpaceScope();
@@ -97,8 +109,11 @@ public abstract class ObjectSpacesTestBase {
 		}
 
 		Assert.That(loadedAccount, Is.EqualTo(savedAccount).Using(accountComparer));
-
 	}
+
+	#endregion
+
+	#region Rollback
 
 	[Test]
 	public void RollbackNotThrows() {
@@ -108,6 +123,7 @@ public abstract class ObjectSpacesTestBase {
 		objectSpace.Save(account);
 		Assert.That(objectSpace.Rollback, Throws.Nothing);
 	}
+
 
 	[Test]
 	public void Rollback() {
@@ -132,6 +148,31 @@ public abstract class ObjectSpacesTestBase {
 		// make sure to update prior state before rolback to ensure update is rolled back
 	}
 	
+	#endregion
+
+	#region Clear
+
+	[Test]
+	public void Clear_1() {
+		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var accountComparer = CreateAccountComparer();
+		Account savedAccount, loadedAccount;
+		using (var scope = CreateObjectSpaceScope(folder, true)) {
+			var objectSpace = scope.Item;
+			savedAccount = CreateAccount();
+			objectSpace.Save(savedAccount);
+			objectSpace.Clear();
+			objectSpace.Commit();
+		}
+
+		using (var scope = CreateObjectSpaceScope(folder, false)) {
+			var objectSpace = scope.Item;
+			loadedAccount = objectSpace.Get<Account>(0);
+		}
+
+		Assert.That(loadedAccount, Is.EqualTo(savedAccount).Using(accountComparer));
+	}
+
 	#endregion
 
 	#region Aux

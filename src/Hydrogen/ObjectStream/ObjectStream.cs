@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using Tools;
 
 namespace Hydrogen;
 
@@ -25,15 +26,14 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 	public event EventHandlerEx Cleared { add => Streams.Cleared += value; remove => Streams.Cleared -= value; }
 
 	private readonly bool _preAllocateOptimization;
-	private readonly Type _objectType;
-	
+
 
 	public ObjectStream(Type objectType, ClusteredStreams streams, IItemSerializer objectSerializer, bool preAllocateOptimization) {
 		Guard.ArgumentNotNull(objectType, nameof(objectType));
 		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(objectSerializer, nameof(objectSerializer));
 		Streams = streams;
-		_objectType = objectType;
+		ItemType = objectType;
 		ItemSerializer = objectSerializer;
 		_preAllocateOptimization = preAllocateOptimization;
 		streams.Loading += _ => NotifyLoading();
@@ -49,6 +49,8 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 	public override bool RequiresLoad => Streams.RequiresLoad;
 
 	public ClusteredStreams Streams { get; }
+
+	public Type ItemType { get; }
 
 	public long Count => Streams.Count - Streams.Header.ReservedStreams;
 
@@ -216,7 +218,7 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	private void CheckType(Type type) {
-		if (type != _objectType)
+		if (type != ItemType)
 			throw new InvalidOperationException($@"This objectStream does not support type '{type}'");
 	}
 

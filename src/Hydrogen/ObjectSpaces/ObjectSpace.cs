@@ -82,6 +82,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 
 	public long DimensionCount => _dimensions.Count;
 
+	public IEnumerable<Type> DimensionTypes => ((IList<IStreamMappedCollection>)_dimensions).Select(x => x.ObjectStream.ItemType);
+
 	internal IReadOnlyList<IStreamMappedCollection> Dimensions => _dimensions;
 
 	internal ClusteredStreams InternalStreams => _streams;

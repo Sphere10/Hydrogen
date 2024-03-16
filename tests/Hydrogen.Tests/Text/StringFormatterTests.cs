@@ -125,6 +125,7 @@ public class StringFormatterTests {
 		Assert.AreEqual(string.Format("{{}}", 1), Tools.Text.FormatEx("{{}}", 1));
 	}
 
+
 	[Test]
 	public void EscapedTest_8() {
 		Func<string, string> resolver = (token) => {
@@ -168,6 +169,12 @@ public class StringFormatterTests {
 	public void DanglingBraces_5() {
 		Assert.Throws<FormatException>(() => string.Format("{{}}}"));
 		Assert.DoesNotThrow(() => Tools.Text.FormatEx("{{{}}"));
+	}
+
+	[Test]
+	public void EmptyBraces_1() {
+		Assert.Throws<FormatException>(() => string.Format("{}"));
+		Assert.DoesNotThrow(() => Tools.Text.FormatEx("{}"));
 	}
 
 	[Test]
@@ -258,13 +265,29 @@ public class StringFormatterTests {
 
 	}
 
-
-	/*
-	 {"stringsElement": "#typed-strings-{object_id}", "startDelay": 500, "backSpeed": 15, "backDelay":5000}
+	[Test]
+	public void HandlesEmptyBraces_1() {
+		var input = "{}";
+		Assert.That(StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"] = "bar" }, true), Is.EqualTo(input));
+	}
 	
-	{"stringsElement": "#typed-strings-{object_id}", "startDelay": 500, "backSpeed": 15, "backDelay":5000, "stringsElement2": "#typed-strings2-{object_id}"}
+	[Test]
+	public void HandlesEmptyBraces_2() {
+		var input = "{}:{}";
+		Assert.That(StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"] = "bar" }, true), Is.EqualTo(input));
+	}
 
-	 */
+	[Test]
+	public void HandlesEmptyBraces_3() {
+		var input = "{ {}:{} }";
+		Assert.That(StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"] = "bar" }, true), Is.EqualTo(input));
+	}
+
+	[Test]
+	public void HandlesEmptyBraces_4() {
+		var input = "{ { }:{ } }";
+		Assert.That(StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"] = "bar" }, true), Is.EqualTo(input));
+	}
 
 	[Test]
 	public void LocalNotionBugCase_1() {
@@ -337,12 +360,50 @@ public class StringFormatterTests {
 	}
 
 	[Test]
-	public void LocalNotionBugCase_2_Variant_1() {
-		var input = "{ { } }";
+	public void LocalNotionBugCase_3() {
+		var input =
+			"""
+			public byte[] SignDigest(PrivateKey privateKey, ReadOnlySpan<byte> messageDigest, ulong batchNo, int otsIndex) {
+				var builder = new ByteArrayBuilder();
+				// Append header
+				builder.Append(privateKey.Height);
+				builder.Append(EndianBitConverter.Little.GetBytes((ushort)otsIndex));
+			
+				// Get/Calc the OTS batch
+				if (!privateKey.DerivedKeys.TryGetValue(batchNo, out var publicKeyWithBatch)) {
+					DerivePublicKeyForBatch(privateKey, batchNo, true);
+					publicKeyWithBatch = privateKey.DerivedKeys[batchNo];
+				}
+				var otsPubKey =
+					Config.OTS.UsePublicKeyHashOptimization ?
+					publicKeyWithBatch.Batch.GetValue(MerkleCoordinate.LeafAt(otsIndex)): 
+					this.GetOTSKeys(privateKey, batchNo, otsIndex).PublicKey.AsFlatSpan();
+			
+				Debug.Assert(otsPubKey.Length == Config.OTS.PublicKeySize.Length * Config.OTS.PublicKeySize.Width);
+				builder.Append(otsPubKey);
+			
+				// Derive the individual private key again
+				// NOTE: possibility to optimize here if we want to cache ephemeral OTS private key, but large in memory
+				var otsKey = GetOTSKeys(privateKey, batchNo, otsIndex);
+			
+				// Perform the OTS sig
+				var otsSig = _ots.SignDigest(otsKey.PrivateKey, messageDigest).ToFlatArray();
+				Debug.Assert(otsSig.Length == _ots.Config.SignatureSize.Length * _ots.Config.SignatureSize.Width);
+				builder.Append(otsSig);
+			
+				// Append merkle-existence proof of pubKey in Batch (will always be 2^h hashes)
+				var authPath = publicKeyWithBatch.Batch.GenerateExistenceProof(otsIndex).ToArray();
+				foreach (var bytes in authPath) {
+					builder.Append(bytes);
+				}
+			
+				var sig = builder.ToArray();
+				return sig;
+			}
+			""";
 		Assert.That(StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"] = "bar" }, true), Is.EqualTo(input));
 	}
-
-
+	
 	[Test]
 	public void LocalNotionBugCase_2_Variant_2() {
 		var input = "{ }";

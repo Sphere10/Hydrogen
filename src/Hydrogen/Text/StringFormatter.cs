@@ -63,7 +63,7 @@ public static class StringFormatter {
 				var split = splits.Pop();
 				switch (split) {
 					case "{":
-						if (splits.Count > 0 && splits.Peek() == "{") {
+						if (splits.Count > 0 && splits.Peek() == "{" /*&& splits.Last() != "}"*/) {
 							// Escaped {{
 							splits.Pop();
 							if (inFormatItem)
@@ -152,6 +152,7 @@ public static class StringFormatter {
 			return true;
 
 		value = null;
+		var origToken = token;
 		token = token.TrimWithCapture(out var trimmedStart, out var trimmedEnd);
 
 		// This is an indexed .NET format argument (e.g. {0:yyyy-MM-dd}), so do not try to resolve this
@@ -182,14 +183,16 @@ public static class StringFormatter {
 		// Token not found, if recursive mode is on and token name has nested tokens, try to resolve them and try again
 		var indexTokenStartChar = token.IndexOf(TokenStartChar);
 		var indexTokenEndChar = token.IndexOf(TokenEndChar);
-		if (recursive && indexTokenStartChar >= 0 && indexTokenStartChar < indexTokenEndChar) {
+		var isEmptyBracePair = indexTokenEndChar - indexTokenStartChar == 1;
+		if (recursive && indexTokenStartChar >= 0 && indexTokenStartChar < indexTokenEndChar && !isEmptyBracePair) {
 			// token itself contains tokens, to recursively resolve the token name itself
 			//alreadyVisited.Add(token, token); // infinite recursion short circuit
 			alreadyVisited[token] = token;
 			var modifiedToken = FormatEx(token, resolver, recursive, formatArgs);
 			if (!TryResolveFormatItem(alreadyVisited, modifiedToken, out value, recursive, resolver, formatArgs) || modifiedToken.Equals(value)) {
 				// resolved token name didn't resolve to anything (or resolved to itself), but since token contained token names, return the resolved token name
-				value = "{" + trimmedStart + modifiedToken + trimmedEnd + "}";
+				var snippedOutFormatArgs = tokenSplits.Length > 1 ? ":" + tokenSplits.Skip(1).ToDelimittedString(":") : string.Empty;
+				value = "{" + trimmedStart + modifiedToken + snippedOutFormatArgs + trimmedEnd + "}" ;
 			}
 			alreadyVisited[token] = value;
 			return true;

@@ -66,16 +66,8 @@ public abstract class ObjectSpacesTestBase {
 			var savedAccount = CreateAccount();
 			objectSpace.Save(savedAccount);
 			objectSpace.Commit();
-
-			var dim1 = objectSpace.Dimensions[0];
-			var dim2 = objectSpace.Dimensions[1];
-
-			var xxx = dim1.ObjectStream.Streams.Header;
-			var yyy = dim2.ObjectStream.Streams.Header;
 		}
-		Tools.Debugger.BreakConditionD = true; 
 		Assert.That(() => { using var _ = CreateObjectSpaceScope(folder); }, Throws.Nothing);
-
 	}
 
 	#endregion

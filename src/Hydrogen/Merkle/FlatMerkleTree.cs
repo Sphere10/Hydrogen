@@ -231,7 +231,6 @@ public class FlatMerkleTree : IDynamicMerkleTree {
 		}
 
 		public override void UpdateRange(long index, IEnumerable<byte[]> items) {
-			Tools.Debugger.CounterA++;
 			Guard.ArgumentNotNull(items, nameof(items));
 			var itemsArr = items as byte[][] ?? items.ToArray();
 			Guard.Argument(itemsArr.All(x => x.Length == _parent._digestSize), nameof(items), "Improper digest size(s)");

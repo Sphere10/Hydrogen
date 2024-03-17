@@ -306,7 +306,6 @@ public class SerializerFactory {
 
 	#endregion
 
-
 	#region Aux
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -536,6 +535,8 @@ public class SerializerFactory {
 
 	#endregion
 
+	#region Inner Types
+
 	public class Registration {
 		public long TypeCode { get; set; }
 		public Type DataType { get; set; }
@@ -543,4 +544,6 @@ public class SerializerFactory {
 		public Func<Registration, Type, IItemSerializer> Factory { get; set; }
 		public SerializerFactory SerializerFactory { get; set; }
 	}
+
+	#endregion
 }

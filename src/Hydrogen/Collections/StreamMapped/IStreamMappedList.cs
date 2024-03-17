@@ -11,10 +11,12 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public interface IStreamMappedList<TItem> : IExtendedList<TItem>,  IStreamMappedCollection<TItem>, ILoadable, IDisposable {
+public interface IStreamMappedList<TItem> : IExtendedList<TItem>, IStreamMappedCollection<TItem>, ILoadable, IDisposable {
 
 	IItemSerializer<TItem> ItemSerializer { get; }
 
 	IEqualityComparer<TItem> ItemComparer { get; }
+
+	new void Clear();
 
 }

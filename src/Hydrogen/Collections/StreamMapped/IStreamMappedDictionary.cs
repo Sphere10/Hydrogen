@@ -28,4 +28,6 @@ public interface IStreamMappedDictionary<TKey, TValue> : IDictionary<TKey, TValu
 
 	void RemoveAt(long index);
 
+	new void Clear();
+
 }

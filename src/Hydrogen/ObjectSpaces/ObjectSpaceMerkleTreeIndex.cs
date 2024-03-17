@@ -70,6 +70,7 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 		// Listen to underlying collection root changes (and track the handler for unsub later)
 		var capturedIndex = i;
 		void CollectionRootListener(byte[] oldValue, byte[] newValue) {
+			newValue ??= Hashers.ZeroHash(Inner.MerkleTree.HashAlgorithm); // merkle-root property will return null when changed to zero's
 			Inner.Update(capturedIndex, newValue);
 		}
 		dimensionMerkleTree.KeyStore.RootChanged += CollectionRootListener;

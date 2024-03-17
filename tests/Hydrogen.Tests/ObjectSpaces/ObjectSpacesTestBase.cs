@@ -80,6 +80,28 @@ public abstract class ObjectSpacesTestBase {
 
 	#endregion
 
+	#region Clear
+
+	[Test]
+	public void Clear_1() {
+		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
+		var accountComparer = CreateAccountComparer();
+		Account savedAccount, loadedAccount;
+		using (var scope = CreateObjectSpaceScope(folder, true)) {
+			var objectSpace = scope.Item;
+			savedAccount = CreateAccount();
+			objectSpace.Save(savedAccount);
+			objectSpace.Clear();
+			objectSpace.Commit();
+
+			foreach(var dim in objectSpace.Dimensions)
+				Assert.That(dim.ObjectStream.Count, Is.EqualTo(0));
+		}
+
+	}
+
+	#endregion
+
 	#region Commit
 
 	[Test]
@@ -123,7 +145,6 @@ public abstract class ObjectSpacesTestBase {
 		objectSpace.Save(account);
 		Assert.That(objectSpace.Rollback, Throws.Nothing);
 	}
-
 
 	[Test]
 	public void Rollback() {

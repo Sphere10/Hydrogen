@@ -172,6 +172,14 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		}
 	}
 
+	public void Clear() {
+		using (EnterAccessScope()) {
+			foreach(var dimension in Dimensions) {
+				dimension.Clear();
+			}
+		}
+	}
+
 	public void Commit()  {
 		using (EnterAccessScope()) {
 			// flush all cached changes
@@ -308,7 +316,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		// Get a comparer
 		var comparer = _comparerFactory.GetEqualityComparer(dimensionDefinition.ObjectType);
 
-		// construct the the collection
+		// construct the collection
 		var list = (IStreamMappedCollection)typeof(StreamMappedRecyclableList<>)
 			.MakeGenericType(dimensionDefinition.ObjectType)
 			.ActivateWithCompatibleArgs(

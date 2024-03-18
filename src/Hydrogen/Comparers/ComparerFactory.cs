@@ -193,10 +193,15 @@ public class ComparerFactory {
 
 		return defaultComparer;
 	}
-		
+
+	public void RegisterComparer<T, TComparer>() where TComparer : IComparer<T>, new()
+		=> RegisterComparer(new TComparer());		
 
 	public void RegisterComparer<T>(IComparer<T> comparer)
 		=> _comparers.Add(typeof(T), comparer);
+
+	public void RegisterEqualityComparer<T, TEqualityComparer>() where TEqualityComparer : IEqualityComparer<T>, new()
+		=> RegisterEqualityComparer(new TEqualityComparer());
 
 	public void RegisterEqualityComparer<T>(IEqualityComparer<T> equalityComparer)
 		=> _equalityComparers.Add(typeof(T), equalityComparer);

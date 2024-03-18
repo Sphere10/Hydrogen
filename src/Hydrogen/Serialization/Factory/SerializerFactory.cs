@@ -488,7 +488,7 @@ public class SerializerFactory {
 			compositeSerializer
 				.GetType()
 				.GetMethod(nameof(CompositeSerializer<object>.Configure), BindingFlags.Instance | BindingFlags.NonPublic)
-				.Invoke(compositeSerializer, new object[] {  () => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray() });
+				.Invoke(compositeSerializer, [() => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray()]);
 			
 			return serializer;
 		}

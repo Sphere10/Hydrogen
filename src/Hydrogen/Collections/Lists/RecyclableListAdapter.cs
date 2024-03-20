@@ -13,7 +13,7 @@ namespace Hydrogen;
 ///<remarks>It is based on a singular-access list.</remarks>
 public class RecyclableListAdapter<T> : RecyclableListBase<T> {
 	private readonly IExtendedList<T> _list;
-	private readonly IStack<long> _freeIndexStore;
+	private readonly IStack<long> _recycledIndexStore;
 	private readonly Func<long, bool> _isRecycledFunc;
 
 	public RecyclableListAdapter(IEqualityComparer<T> comparer = null)
@@ -21,13 +21,13 @@ public class RecyclableListAdapter<T> : RecyclableListBase<T> {
 	}
 
 
-	public RecyclableListAdapter(IExtendedList<T> list, IStack<long> freeIndexStore) 
-		: this(list, freeIndexStore, freeIndexStore.Contains) {
+	public RecyclableListAdapter(IExtendedList<T> list, IStack<long> recycledIndexStore) 
+		: this(list, recycledIndexStore, recycledIndexStore.Contains) {
 	}
 
-	public RecyclableListAdapter(IExtendedList<T> list, IStack<long> freeIndexStore, Func<long, bool> isRecycledFunc) {
+	public RecyclableListAdapter(IExtendedList<T> list, IStack<long> recycledIndexStore, Func<long, bool> isRecycledFunc) {
 		_list = list;
-		_freeIndexStore = freeIndexStore;
+		_recycledIndexStore = recycledIndexStore;
 		_isRecycledFunc = isRecycledFunc;
 	}
 
@@ -35,7 +35,7 @@ public class RecyclableListAdapter<T> : RecyclableListBase<T> {
 
 	public override long ListCount => _list.Count;
 
-	public override long RecycledCount => _freeIndexStore.Count;
+	public override long RecycledCount => _recycledIndexStore.Count;
 	
 	protected override long IndexOfInternal(T item) => _list.IndexOfL(item);
 
@@ -51,15 +51,15 @@ public class RecyclableListAdapter<T> : RecyclableListBase<T> {
 
 	protected override void RecycleInternal(long index) {
 		_list.Update(index, default);
-		_freeIndexStore.Push(index);
+		_recycledIndexStore.Push(index);
 	}
 
 	protected override bool IsRecycledInternal(long index) => _isRecycledFunc(index);
 
-	protected override long ConsumeRecycledIndexInternal() => _freeIndexStore.Pop();
+	protected override long ConsumeRecycledIndexInternal() => _recycledIndexStore.Pop();
 
 	protected override void ClearInternal() {
-		_freeIndexStore.Clear();
+		_recycledIndexStore.Clear();
 		_list.Clear();
 	}
 

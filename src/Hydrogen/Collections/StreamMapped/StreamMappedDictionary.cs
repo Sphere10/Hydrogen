@@ -30,13 +30,13 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	private readonly IEqualityComparer<TValue> _valueComparer;
 	private readonly KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _keyChecksumIndex;
-	private readonly RecyclableIndexIndex _freeIndexStore;
+	private readonly RecyclableIndexIndex _recyclableIndexStore;
 
 	internal StreamMappedDictionary(ObjectStream objectStream, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
 		Guard.ArgumentIsAssignable<ObjectStream<KeyValuePair<TKey, TValue>>>(objectStream, nameof(objectStream));
 		ObjectStream = (ObjectStream<KeyValuePair<TKey, TValue>>)objectStream;
-		_freeIndexStore = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
+		_recyclableIndexStore = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
 		_keyChecksumIndex = objectStream.Streams.FindAttachment<KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
@@ -56,7 +56,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override long Count {
 		get {
 			CheckLoaded();
-			return ObjectStream.Count - _freeIndexStore.Stack.Count;
+			return ObjectStream.Count - _recyclableIndexStore.Stack.Count;
 		}
 	}
 
@@ -286,11 +286,11 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		CheckLoaded();
 		using (ObjectStream.EnterAccessScope()) {
 			var sortedList = new SortedList<long>(SortDirection.Descending);
-			_freeIndexStore.Stack.ForEach(sortedList.Add);
-			foreach (var freeIndex in sortedList) {
-				ObjectStream.RemoveItem(freeIndex);
+			_recyclableIndexStore.Stack.ForEach(sortedList.Add);
+			foreach (var recycledIndex in sortedList) {
+				ObjectStream.RemoveItem(recycledIndex);
 			}
-			_freeIndexStore.Stack.Clear();
+			_recyclableIndexStore.Stack.Clear();
 			UpdateVersion();
 		}
 	}
@@ -335,8 +335,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	private void AddInternal(KeyValuePair<TKey, TValue> item) {
 		long index;
-		if (_freeIndexStore.Stack.Any()) {
-			index = _freeIndexStore.Stack.Pop();
+		if (_recyclableIndexStore.Stack.Any()) {
+			index = _recyclableIndexStore.Stack.Pop();
 			ObjectStream.SaveItem(index, item, ObjectStreamOperationType.Update);
 		} else {
 			index = Count;

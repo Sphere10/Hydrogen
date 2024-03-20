@@ -34,7 +34,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 2,
 		long merkleTreeStreamIndex = 0,
-		long freeIndexStoreStreamIndex = 1,
+		long recyclableIndexStoreStreamIndex = 1,
 		long checksumIndexStreamIndex = 2,
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false
@@ -48,7 +48,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 			itemChecksummer,
 			policy,
 			reservedStreams,
-			freeIndexStoreStreamIndex,
+			recyclableIndexStoreStreamIndex,
 			checksumIndexStreamIndex,
 			merkleTreeStreamIndex,
 			endianness
@@ -95,7 +95,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 		IItemChecksummer<TItem> itemChecksummer,
 		ClusteredStreamsPolicy policy,
 		long reservedStreams,
-		long freeIndexStoreStreamIndex,
+		long recyclableIndexStoreStreamIndex,
 		long checksumIndexStreamIndex,
 		long merkleTreeIndexStreamIndex,
 		Endianness endianness
@@ -108,7 +108,7 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 			itemChecksummer,
 			policy,
 			reservedStreams,
-			freeIndexStoreStreamIndex,
+			recyclableIndexStoreStreamIndex,
 			checksumIndexStreamIndex,
 			endianness,
 			false

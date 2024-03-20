@@ -98,7 +98,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 						ObjectType = typeof(Account),
 						Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
 							new() {
-								Type = ObjectSpaceDefinition.IndexType.FreeIndexStore,
+								Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore,
 							},
 							new() {
 								Type = ObjectSpaceDefinition.IndexType.UniqueKey,
@@ -110,7 +110,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 						ObjectType = typeof(Identity),
 						Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
 							new() {
-								Type = ObjectSpaceDefinition.IndexType.FreeIndexStore,
+								Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore,
 							},
 							new() {
 								Type = ObjectSpaceDefinition.IndexType.UniqueKey,

@@ -276,8 +276,8 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		using (ObjectStream.EnterAccessScope()) {
 			var sortedList = new SortedList<long>(SortDirection.Descending);
 			_recyclableIndexIndex.Stack.ForEach(sortedList.Add);
-			foreach (var freeIndex in sortedList) {
-				ObjectStream.RemoveItem(freeIndex);
+			foreach (var recycableIndex in sortedList) {
+				ObjectStream.RemoveItem(recycableIndex);
 			}
 			_recyclableIndexIndex.Stack.Clear();
 			UpdateVersion();

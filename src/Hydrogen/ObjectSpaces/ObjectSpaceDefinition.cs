@@ -43,12 +43,12 @@ public class ObjectSpaceDefinition {
 
 			if (dimension.Indexes is { Length: > 0 }) {
 				// Ensure has 1 recyclable free-index store
-				var freeIndexStores = dimension.Indexes.Count(x => x.Type == IndexType.FreeIndexStore);
-				if (freeIndexStores == 0)
-					result.AddError($"{dimensionErrorPrefix} requires a {nameof(IndexType.FreeIndexStore)}");
+				var recyclableIndexStores = dimension.Indexes.Count(x => x.Type == IndexType.RecyclableIndexStore);
+				if (recyclableIndexStores == 0)
+					result.AddError($"{dimensionErrorPrefix} requires a {nameof(IndexType.RecyclableIndexStore)}");
 
-				if (freeIndexStores > 1)
-					result.AddError($"{dimensionErrorPrefix} has more than one {nameof(IndexType.FreeIndexStore)} defined");
+				if (recyclableIndexStores > 1)
+					result.AddError($"{dimensionErrorPrefix} has more than one {nameof(IndexType.RecyclableIndexStore)} defined");
 
 				var dimensionMerkleTrees = dimension.Indexes.Count(x => x.Type == IndexType.MerkleTree);
 
@@ -89,7 +89,7 @@ public class ObjectSpaceDefinition {
 				IndexType.Identifier => true,
 				IndexType.UniqueKey => true,
 				IndexType.Index => true,
-				IndexType.FreeIndexStore => false,
+				IndexType.RecyclableIndexStore => false,
 				IndexType.MerkleTree => false,
 				_ => throw new NotSupportedException(type.ToString())
 			};
@@ -117,7 +117,7 @@ public class ObjectSpaceDefinition {
 		Identifier,
 		UniqueKey,
 		Index,
-		FreeIndexStore,
+		RecyclableIndexStore,
 		MerkleTree
 	}
 

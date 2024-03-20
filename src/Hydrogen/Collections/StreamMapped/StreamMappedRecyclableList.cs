@@ -17,13 +17,13 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
-	private readonly RecyclableIndexIndex _freeIndexStore;
+	private readonly RecyclableIndexIndex _recylableIndexIndex;
 	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
 
 	public StreamMappedRecyclableList(ObjectStream<TItem> objectStream, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
 		ObjectStream = objectStream;
-		_freeIndexStore = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
+		_recylableIndexIndex = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
 		objectStream.Streams.TryFindAttachment<KeyIndex<TItem, int>>(out _checksumKeyIndex); // this index is optional
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 
@@ -35,7 +35,7 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 
 	public override long ListCount => ObjectStream.Count;
 
-	public override long RecycledCount => _freeIndexStore.Stack.Count;
+	public override long RecycledCount => _recylableIndexIndex.Stack.Count;
 	
 	public bool RequiresLoad => ObjectStream.RequiresLoad;
 	
@@ -139,16 +139,16 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 		=> ObjectStream.GetItemDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Reaped);
 
 	protected override void RecycleInternal(long index) {
-		ObjectStream.ReapItem(index); // note: _freeIndexStore listens to recycle's in ObjectStream
+		ObjectStream.ReapItem(index); // note: _recylableIndexIndex listens to recycle's in ObjectStream
 	}
 
 	protected override long ConsumeRecycledIndexInternal() 
-		=> _freeIndexStore.Stack.Pop();
+		=> _recylableIndexIndex.Stack.Pop();
 
 	protected override void ClearInternal() {
 		using (ObjectStream.EnterAccessScope()) {
 			ObjectStream.Clear();
-			_freeIndexStore.Stack.Clear();
+			_recylableIndexIndex.Stack.Clear();
 		}
 	}
 

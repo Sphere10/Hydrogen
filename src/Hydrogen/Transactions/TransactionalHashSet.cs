@@ -27,7 +27,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		IItemChecksummer<byte[]> keyChecksum = null, 
 		IEqualityComparer<TItem> comparer = null,
 		int reservedStreamCount = 2,
-		long freeIndexStoreStreamIndex = 0,
+		long recyclableIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1, 
 		FileAccessMode accessMode = FileAccessMode.Default
 	) : this(
@@ -39,7 +39,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		comparer,
 		fileDescriptor.ContainerPolicy,
 		reservedStreamCount,
-		freeIndexStoreStreamIndex,
+		recyclableIndexStoreStreamIndex,
 		keyChecksumIndexStreamIndex,
 		fileDescriptor.Endianness,
 		accessMode.IsReadOnly(),
@@ -55,7 +55,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		IEqualityComparer<TItem> comparer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default, 
 		int reservedStreamCount = 2,
-		long freeIndexStoreStreamIndex = 0,
+		long recyclableIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1, 
 		FileAccessMode accessMode = FileAccessMode.Default
 	) : this(
@@ -67,7 +67,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		comparer,
 		policy,
 		reservedStreamCount,
-		freeIndexStoreStreamIndex,
+		recyclableIndexStoreStreamIndex,
 		keyChecksumIndexStreamIndex,
 		fileDescriptor.Endianness,
 		accessMode.IsReadOnly(),
@@ -84,7 +84,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 		IEqualityComparer<TItem> comparer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		int reservedStreamCount = 2,
-		long freeIndexStoreStreamIndex = 0,
+		long recyclableIndexStoreStreamIndex = 0,
 		long keyChecksumIndexStreamIndex = 1,
 		Endianness endianness = HydrogenDefaults.Endianness,
 		bool readOnly = false,
@@ -100,7 +100,7 @@ public class TransactionalHashSet<TItem> : StreamMappedHashSet<TItem>, ITransact
 			clusterSize,
 			policy,
 			reservedStreamCount,
-			freeIndexStoreStreamIndex,
+			recyclableIndexStoreStreamIndex,
 			keyChecksumIndexStreamIndex,
 			endianness,
 			readOnly,

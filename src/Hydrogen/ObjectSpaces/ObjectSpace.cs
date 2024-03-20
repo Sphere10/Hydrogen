@@ -306,7 +306,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 				ObjectSpaceDefinition.IndexType.Identifier => BuildIdentifier(dimension, dimensionDefinition, item, index),
 				ObjectSpaceDefinition.IndexType.UniqueKey => BuildUniqueKey(dimension, dimensionDefinition, item, index),
 				ObjectSpaceDefinition.IndexType.Index => BuildIndex(dimension, dimensionDefinition, item, index),
-				ObjectSpaceDefinition.IndexType.FreeIndexStore => BuildFreeIndexStore(dimension, dimensionDefinition, item, index),
+				ObjectSpaceDefinition.IndexType.RecyclableIndexStore => BuildRecyclableIndexStore(dimension, dimensionDefinition, item, index),
 				ObjectSpaceDefinition.IndexType.MerkleTree => BuildMerkleTreeIndex(dimension, dimensionDefinition, item, index),
 				_ => throw new ArgumentOutOfRangeException()
 			};
@@ -361,7 +361,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 				IndexFactory.CreateKeyChecksumIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildFreeIndexStore(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IClusteredStreamsAttachment BuildRecyclableIndexStore(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
 		return new RecyclableIndexIndex(dimension, streamIndex);
 	}
 

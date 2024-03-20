@@ -76,7 +76,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 	}
 
 	public ObjectSpaceDimensionBuilder<T> WithRecyclableIndexes() {
-		_indexes.Add(new ObjectSpaceDefinition.IndexDefinition { Type = ObjectSpaceDefinition.IndexType.FreeIndexStore });
+		_indexes.Add(new ObjectSpaceDefinition.IndexDefinition { Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore });
 		return this;
 
 	}

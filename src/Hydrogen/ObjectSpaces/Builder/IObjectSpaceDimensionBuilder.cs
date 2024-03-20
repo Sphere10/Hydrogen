@@ -5,7 +5,7 @@ namespace Hydrogen.ObjectSpaces;
 public interface IObjectSpaceDimensionBuilder {
 	IEnumerable<ObjectSpaceDefinition.IndexDefinition> Indexes { get; }
 
-	IObjectSpaceDimensionBuilder WithRecyclableIndicies();
+	IObjectSpaceDimensionBuilder WithRecyclableIndexes();
 
 	IObjectSpaceDimensionBuilder Merkleized();
 

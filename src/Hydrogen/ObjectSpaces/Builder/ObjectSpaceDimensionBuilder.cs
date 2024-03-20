@@ -17,7 +17,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		_indexes = new List<ObjectSpaceDefinition.IndexDefinition>();
 
 		// Add recyclable free index store by default
-		WithRecyclableIndicies();
+		WithRecyclableIndexes();
 	}
 
 	public IEnumerable<ObjectSpaceDefinition.IndexDefinition> Indexes => _indexes;
@@ -75,7 +75,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> WithRecyclableIndicies() {
+	public ObjectSpaceDimensionBuilder<T> WithRecyclableIndexes() {
 		_indexes.Add(new ObjectSpaceDefinition.IndexDefinition { Type = ObjectSpaceDefinition.IndexType.FreeIndexStore });
 		return this;
 
@@ -103,8 +103,8 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		};
 	}
 
-	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithRecyclableIndicies() 
-		=> WithRecyclableIndicies();
+	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithRecyclableIndexes() 
+		=> WithRecyclableIndexes();
 
 
 	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.Merkleized()

@@ -39,16 +39,35 @@ public class ObjectSpaceDefinition {
 		for(var ix = 0; ix < Dimensions.Length; ix++) {
 			var dimension = Dimensions[ix];
 
-			if (dimension.Indexes is { Length: > 0 }) {
-				// Ensure has 1 free-index store
-				var freeIndexStores = dimension.Indexes.Count(x => x.Type == IndexType.FreeIndexStore);
-				if (freeIndexStores != 1)
-					result.AddError($"Dimension {ix} ({dimension.ObjectType.ToStringCS()}) had {freeIndexStores} FreeIndexStore's defined, required {1}.");
+			var dimensionErrorPrefix = $"Dimension {ix} ({dimension.ObjectType.ToStringCS()})";
 
-				// Ensure has 0 or 1 merkle-trees
+			if (dimension.Indexes is { Length: > 0 }) {
+				// Ensure has 1 recyclable free-index store
+				var freeIndexStores = dimension.Indexes.Count(x => x.Type == IndexType.FreeIndexStore);
+				if (freeIndexStores == 0)
+					result.AddError($"{dimensionErrorPrefix} requires a {nameof(IndexType.FreeIndexStore)}");
+
+				if (freeIndexStores > 1)
+					result.AddError($"{dimensionErrorPrefix} has more than one {nameof(IndexType.FreeIndexStore)} defined");
+
 				var dimensionMerkleTrees = dimension.Indexes.Count(x => x.Type == IndexType.MerkleTree);
-				if (Merkleized && dimensionMerkleTrees != 1)
-					result.AddError($"Dimension is required to have 1 merkle-tree index but there are {dimensionMerkleTrees}");
+
+				// Ensure has not more than 1 merkle-tree
+				if (dimensionMerkleTrees > 1)
+					result.AddError($"{dimensionErrorPrefix} has more than one {nameof(IndexType.MerkleTree)} defined");
+
+				// Ensure has merkle-tree if object space is merkelized
+				if (Merkleized && dimensionMerkleTrees < 1)
+					result.AddError($"{dimensionErrorPrefix} requires a {nameof(IndexType.MerkleTree)} as the parent {nameof(ObjectSpace)} is merkleized");
+
+				// Ensure indexes which require a property member that one is specified
+				var indexAtLocation = dimension.Indexes.Select( (index, loc) => (Index: index, Loc: loc));
+				foreach(var indexLoc in indexAtLocation.Where(x => RequiresMember(x.Index.Type) && x.Index.KeyMember is null))
+					result.AddError($"{dimensionErrorPrefix} contains an {nameof(indexLoc.Index.Type)} (at {indexLoc.Loc}) which requires a member");
+
+				// Ensure not over-indexing properties
+				foreach(var duplicateProperty in indexAtLocation.Where(x => x.Index.KeyMember is not null).GroupBy(x => x.Index.KeyMember.MemberInfo).Where(x => x.Count() > 1))
+					result.AddError($"{dimensionErrorPrefix} contains {duplicateProperty.Count()} index's on property {duplicateProperty.Key.Name}");
 
 			} else {
 				result.AddError("Dimension requires index definition");
@@ -64,6 +83,16 @@ public class ObjectSpaceDefinition {
 		// Each objectStream index correctly maps to an object property
 
 		return result;
+
+		bool RequiresMember(IndexType type) 
+			=> type switch {
+				IndexType.Identifier => true,
+				IndexType.UniqueKey => true,
+				IndexType.Index => true,
+				IndexType.FreeIndexStore => false,
+				IndexType.MerkleTree => false,
+				_ => throw new NotSupportedException(type.ToString())
+			};
 	}
 
 	public class DimensionDefinition {
@@ -72,19 +101,15 @@ public class ObjectSpaceDefinition {
 
 		public IndexDefinition[] Indexes { get; set; } = Array.Empty<IndexDefinition>();
 
-		public int AverageObjectSizeBytes { get; set; } = 0;
+		public int? AverageObjectSizeBytes { get; set; } = null;
 
 	}
 
 	public class IndexDefinition {
 		
-		//public int ReservedStreamIndex { get; set; }
-
 		public IndexType Type { get; set; }
 
 		public Member KeyMember { get; set; }
-
-		public int MaxLength { get; set; }
 
 	}
 

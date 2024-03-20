@@ -165,6 +165,22 @@ public abstract class ObjectSpacesTestBase {
 
 	#region Aux
 
+	protected static ObjectSpaceBuilder PrepareObjectSpaceBuilder() {
+		var builder = new ObjectSpaceBuilder();
+		builder
+			.AutoLoad()
+			.AddDimension<Account>()
+				.WithUniqueKeyOn(x => x.Name)
+				.UsingEqualityComparer(CreateAccountComparer())
+				.Done()
+			.AddDimension<Identity>()
+				.WithUniqueKeyOn(x => x.Key)
+				.UsingEqualityComparer(CreateIdentityComparer())
+				.Done();
+
+		return builder;
+	}
+
 	protected static Account CreateAccount() {
 		var secret = "MyPassword";
 
@@ -212,57 +228,6 @@ public abstract class ObjectSpacesTestBase {
 		return new ActionScope<ObjectSpace>(objectSpace, _ => disposables.Dispose());
 	}
 
-	protected static ComparerFactory CreateComparerFactory() {
-		var comparerFactory = new ComparerFactory(ComparerFactory.Default);
-		comparerFactory.RegisterEqualityComparer(CreateAccountComparer());
-		comparerFactory.RegisterEqualityComparer(CreateIdentityComparer());
-		return comparerFactory;
-	}
-
-	protected static HydrogenFileDescriptor BuildFileDefinition(string filePath)
-		=> HydrogenFileDescriptor.From(
-			filePath,
-			8192,
-			Tools.Memory.ToBytes(50, MemoryMetric.Megabyte),
-			512,
-			ClusteredStreamsPolicy.Default
-		);
-
-	protected static ObjectSpaceDefinition BuildSpaceDefinition() {
-		var definition = new ObjectSpaceDefinition {
-			Dimensions = new ObjectSpaceDefinition.DimensionDefinition[] {
-				new() {
-					ObjectType = typeof(Account),
-					Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
-						new() {
-							Type = ObjectSpaceDefinition.IndexType.FreeIndexStore
-						},
-						new() {
-							Type = ObjectSpaceDefinition.IndexType.UniqueKey,
-							KeyMember = Tools.Mapping.GetMember<Account, string>(x => x.Name)
-						}
-					}
-				},
-				new() {
-					ObjectType = typeof(Identity),
-					Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
-						new() {
-							Type = ObjectSpaceDefinition.IndexType.FreeIndexStore
-						},
-						new() {
-							Type = ObjectSpaceDefinition.IndexType.UniqueKey,
-							KeyMember = Tools.Mapping.GetMember<Identity, byte[]>(x => x.Key)
-						}
-					}
-				},
-
-
-			}
-		};
-
-
-		return definition;
-	}
 
 	#endregion
 

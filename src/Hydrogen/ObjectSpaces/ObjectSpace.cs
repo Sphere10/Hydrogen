@@ -9,8 +9,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Hydrogen.ObjectSpaces;
@@ -22,8 +20,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 	public event EventHandlerEx RollingBack { add => _fileStream.RollingBack += value; remove => _fileStream.RollingBack -= value; }
 	public event EventHandlerEx RolledBack { add => _fileStream.RolledBack += value; remove => _fileStream.RolledBack -= value; }
 
-	private TransactionalStream _fileStream;
-	private ClusteredStreams _streams;
+	private readonly TransactionalStream _fileStream;
+	private readonly ClusteredStreams _streams;
 	private readonly SerializerFactory _serializerFactory;
 	private readonly ComparerFactory _comparerFactory;
 	private readonly DictionaryList<Type, IStreamMappedCollection> _dimensions;
@@ -33,6 +31,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 	public ObjectSpace(HydrogenFileDescriptor file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default) {
 		Guard.ArgumentNotNull(file, nameof(file));
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
+		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
+		Guard.ArgumentNotNull(comparerFactory, nameof(comparerFactory));
 
 		File = file;
 		AccessMode = accessMode;
@@ -334,6 +334,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 	}
 
 	protected virtual IClusteredStreamsAttachment BuildIdentifier(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+		// NOTE: same as BuildUniqueKey, but may have differentiating functionality in future
 		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
@@ -372,8 +373,12 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		return _serializerFactory.GetSerializer(objectType);
 	}
 
-	protected virtual int SanitizeContainerClusterSize(int clusterSizeB)
-		=> Tools.Values.ClipValue(clusterSizeB, 256, 8192);
+	protected virtual int SanitizeContainerClusterSize(int? clusterSizeB)
+		=> Tools.Values.ClipValue(
+			clusterSizeB.GetValueOrDefault(), 
+			HydrogenDefaults.SmallestRecommendedClusterSize, 
+			HydrogenDefaults.LargestRecommendedClusterSize
+		);
 
 	protected virtual void OnCommitting() {
 		// TODO: potentially move this up to Consensus Space

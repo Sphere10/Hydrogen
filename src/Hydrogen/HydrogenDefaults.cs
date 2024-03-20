@@ -26,6 +26,8 @@ public static class HydrogenDefaults {
 
 	// Clustered
 	public const int ClusterSize = 4096; // 4kb
+	public const int SmallestRecommendedClusterSize = 256;
+	public const int LargestRecommendedClusterSize = 8192;
 	public const long RecordCacheSize = 1048576; // 1mb
 	public const ClusteredStreamsPolicy ContainerPolicy = ClusteredStreamsPolicy.Default;
 
@@ -34,5 +36,8 @@ public static class HydrogenDefaults {
 
 	// Hashing
 	public const CHF HashFunction = CHF.SHA2_256;
+
 	
+
+
 }

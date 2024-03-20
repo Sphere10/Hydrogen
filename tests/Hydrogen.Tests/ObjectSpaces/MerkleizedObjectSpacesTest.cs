@@ -18,27 +18,11 @@ namespace Hydrogen.Tests;
 [TestFixture, Timeout(60000)]
 public class MerkleizedObjectSpacesTest : ObjectSpacesTestBase {
 
-	protected override ObjectSpace CreateObjectSpace(string filePath) {
-		var fileDefinition = BuildFileDefinition(filePath);
-		var spaceDefinition = BuildMerkleizedSpaceDefinition();
-		var serializerFactory = new SerializerFactory(SerializerFactory.Default);
-		var comparerFactory = new ComparerFactory(ComparerFactory.Default);
-		comparerFactory.RegisterEqualityComparer(CreateAccountComparer());
-		return new ObjectSpace(fileDefinition, spaceDefinition, serializerFactory, comparerFactory);
-	}
-
-	private ObjectSpaceDefinition BuildMerkleizedSpaceDefinition() {
-		var spaceDefinition = BuildSpaceDefinition();
-		spaceDefinition.Merkleized = true;
-		foreach(var dimension in spaceDefinition.Dimensions)
-			dimension.Indexes = new ObjectSpaceDefinition.IndexDefinition {
-				Type = ObjectSpaceDefinition.IndexType.MerkleTree
-			}
-			.ConcatWith(dimension.Indexes)
-			.ToArray();
-		
-		return spaceDefinition;	
-	}
+	protected override ObjectSpace CreateObjectSpace(string filePath) 
+		=> PrepareObjectSpaceBuilder()
+			.UseFile(filePath)
+			.Merkleized()
+			.Build();
 	
 	[Test]
 	public void CheckRootsChanged() {

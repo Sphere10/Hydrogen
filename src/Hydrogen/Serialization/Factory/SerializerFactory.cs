@@ -483,7 +483,7 @@ public class SerializerFactory {
 				memberBindings.Add(new(member, memberSerializer.AsReferenceSerializer()));
 			}
 			
-			// Configure the composite serializer instance (which is already registered)
+			// AddDimension the composite serializer instance (which is already registered)
 			var itemTypeLocal = itemType;
 			compositeSerializer
 				.GetType()

@@ -20,10 +20,17 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		WithRecyclableIndexes();
 	}
 
+	public Type ItemType => typeof(T);
+
 	public IEnumerable<ObjectSpaceDefinition.IndexDefinition> Indexes => _indexes;
 
 	public ObjectSpaceDimensionBuilder<T> UsingSerializer<TSerializer>() where TSerializer : IItemSerializer<T>, new() {
 		_parent.UsingSerializer<T, TSerializer>();
+		return this;
+	}
+
+	public ObjectSpaceDimensionBuilder<T> UsingSerializer(IItemSerializer<T> serializer) {
+		_parent.UsingSerializer(serializer);
 		return this;
 	}
 

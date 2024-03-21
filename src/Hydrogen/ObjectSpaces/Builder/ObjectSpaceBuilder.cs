@@ -1,6 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 
 namespace Hydrogen.ObjectSpaces;
@@ -173,9 +173,15 @@ public class ObjectSpaceBuilder {
 	public ObjectSpaceDimensionBuilder<T> AddDimension<T>() {
 		var dimensionBuilder = new ObjectSpaceDimensionBuilder<T>(this);
 		_dimensions.Add(dimensionBuilder);
-		return dimensionBuilder;
+		return Configure<T>();
 	}
-	
+
+	public ObjectSpaceDimensionBuilder<T> Configure<T>() {
+		var dim = _dimensions.FirstOrDefault(x => x.ItemType == typeof(T));
+		if (dim is null)
+			throw new InvalidOperationException($"No dimension for type {typeof(T).ToStringCS()} was found");
+		return (ObjectSpaceDimensionBuilder<T>)dim;
+	}	
 	public ObjectSpaceDefinition BuildDefinition() {
 		var definition = new ObjectSpaceDefinition {
 			Merkleized = _merkleized,

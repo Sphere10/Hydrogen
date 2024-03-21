@@ -228,29 +228,6 @@ public abstract class ObjectSpacesTestBase {
 		return new ActionScope<ObjectSpace>(objectSpace, _ => disposables.Dispose());
 	}
 
-
 	#endregion
 
-	#region Inner Types
-
-	public class Account {
-
-		[UniqueProperty]
-		public string Name { get; set; }
-
-		public decimal Quantity { get; set; }
-
-		public Identity Identity { get; set; }
-
-	}
-
-	public class Identity {
-
-		public DSS DSS { get; set; }
-
-		[UniqueProperty]
-		public byte[] Key { get; set; }
-	}
-
-	#endregion
 }

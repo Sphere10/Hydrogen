@@ -25,7 +25,7 @@ public class ObjectSpacesBuilderTests {
 
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
-			.UseSerializerFactory(customSerializerFactory)
+			.UsingSerializerFactory(customSerializerFactory)
 			.AddDimension<Account>();
 
 		var serializer = SerializerBuilder.For<Account>().Build();
@@ -38,7 +38,7 @@ public class ObjectSpacesBuilderTests {
 
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
-			.UseSerializerFactory(customSerializerFactory)
+			.UsingSerializerFactory(customSerializerFactory)
 			.AddDimension<Account>();
 
 		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingSerializer<DummyAccountSerializer>(), Throws.InvalidOperationException);
@@ -53,7 +53,7 @@ public class ObjectSpacesBuilderTests {
 			
 		var customSerializerFactory = new SerializerFactory(SerializerFactory.Default);
 
-		Assert.That(() => objectSpaceBuilder.UseSerializerFactory(customSerializerFactory), Throws.InvalidOperationException);
+		Assert.That(() => objectSpaceBuilder.UsingSerializerFactory(customSerializerFactory), Throws.InvalidOperationException);
 	}
 
 

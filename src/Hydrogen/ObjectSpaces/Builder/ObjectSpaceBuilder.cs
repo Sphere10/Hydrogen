@@ -114,7 +114,7 @@ public class ObjectSpaceBuilder {
 		return this;
 	}
 
-	public ObjectSpaceBuilder UseSerializerFactory(SerializerFactory factory) {
+	public ObjectSpaceBuilder UsingSerializerFactory(SerializerFactory factory) {
 		Guard.ArgumentNotNull(factory, nameof(factory));
 		Guard.Against(_specifiedCustomSerializer, ErrMsgUseSerializerFactory);
 		_usingCustomSerializerFactory = true;

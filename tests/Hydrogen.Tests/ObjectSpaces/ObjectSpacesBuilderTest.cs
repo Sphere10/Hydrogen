@@ -63,7 +63,7 @@ public class ObjectSpacesBuilderTests {
 
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
-			.UseComparerFactory(customComparerFactory)
+			.UsingComparerFactory(customComparerFactory)
 			.AddDimension<Account>();
 
 		var comparer = ComparerBuilder.For<Account>();
@@ -76,7 +76,7 @@ public class ObjectSpacesBuilderTests {
 
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
-			.UseComparerFactory(customComparerFactory)
+			.UsingComparerFactory(customComparerFactory)
 			.AddDimension<Account>();
 
 		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingComparer<DummyAccountComparer>(), Throws.InvalidOperationException);
@@ -88,7 +88,7 @@ public class ObjectSpacesBuilderTests {
 
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
-			.UseComparerFactory(customComparerFactory)
+			.UsingComparerFactory(customComparerFactory)
 			.AddDimension<Account>();
 
 		var comparer = EqualityComparerBuilder.For<Account>();
@@ -101,7 +101,7 @@ public class ObjectSpacesBuilderTests {
 
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
-			.UseComparerFactory(customComparerFactory)
+			.UsingComparerFactory(customComparerFactory)
 			.AddDimension<Account>();
 
 		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingEqualityComparer<DummyAccountEqualityComparer>(), Throws.InvalidOperationException);

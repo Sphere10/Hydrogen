@@ -43,7 +43,6 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		_parent.UsingComparer(comparer);
 		return this;
 	}
-
 	
 	public ObjectSpaceDimensionBuilder<T> UsingEqualityComparer<TComparer>() where TComparer : IEqualityComparer<T>, new() {
 		_parent.UsingEqualityComparer<T, TComparer>();

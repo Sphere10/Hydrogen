@@ -135,7 +135,7 @@ public class ObjectSpaceBuilder {
 		return this;
 	}
 
-	public ObjectSpaceBuilder UseComparerFactory(ComparerFactory factory) {
+	public ObjectSpaceBuilder UsingComparerFactory(ComparerFactory factory) {
 		Guard.ArgumentNotNull(factory, nameof(factory));
 		Guard.Against(_specifiedCustomComparer, ErrMsgUseComparerFactory);
 		_usingCustomComparerFactory = true;

@@ -8,12 +8,63 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core.Mapping;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace Hydrogen;
 
 public static class RandomExtensions {
+
+	/// <summary>
+	/// Generate a random decimal between 0 (inclusive) and 1 (exclusive)
+	/// </summary>
+	public static decimal NextDecimal(this Random rng) {
+		// Combine four random integers to fill the decimal's 128 bits.
+		Span<int> parts = stackalloc int[4];
+		parts[0] = rng.Next();
+		parts[1] = rng.Next();
+		parts[2] = rng.Next();
+		parts[3] = rng.Next();
+		
+		// Construct a decimal from parts, with scaling to ensure it's between 0 and 1.
+		// Note: Adjust the scaling factor based on how you combine the parts.
+		return new decimal(parts[0], parts[1], parts[2], false, 28) / decimal.MaxValue;
+	}
+
+
+	/// <summary>
+	/// Generates a random long, ensuring selected value approximates a 1/2^64 probability.
+	/// </summary>
+	public static long NextLong(this Random random) {
+		Span<byte> buffer = stackalloc byte[8];
+		random.NextBytes(buffer);
+		return EndianBitConverter.Little.ToInt64(buffer);
+	}
+
+	/// <summary>
+	/// Generates a random long, within a range, attempting uniform distribution by scaling a random normalized decimal (<see cref="NextDecimal"/>). Both arguments are inclusive.
+	/// </summary>
+	/// <remarks>Distribution is not uniform for very large ranges between <see cref="minValue"/> and <see cref="maxValue"/>.</remarks>
+	public static long NextLong(this Random rng, long minValue, long maxValue) {
+		Guard.ArgumentLT(minValue, maxValue, nameof(minValue), $"Must be less than or equal to argument '{nameof(maxValue)}'");
+
+		// If no range, 
+		if (minValue == maxValue)
+			return minValue;
+
+		// Generate a random decimal between 0 (inclusive) and 1 (exclusive)
+		var randomValue = rng.NextDecimal();
+
+		// Calculate range and scale
+		var range = (decimal)maxValue - minValue + 1;
+		var scaled = randomValue * range;
+
+		// Result
+		return minValue + (long)scaled;
+	}
+
 	public static int NextIn(this Random random, int minInclusive, int maxInclusive) {
 		if (minInclusive == int.MinValue && maxInclusive == int.MaxValue) {
 			return random.Next();
@@ -37,6 +88,7 @@ public static class RandomExtensions {
 	public static string NextString(this Random random, int minSize, int maxSize) {
 		return Encoding.ASCII.GetString(random.NextBytes(random.Next(minSize, maxSize)));
 	}
+
 
 	/// <summary>
 	/// Generates a byte array filled with random bytes.

@@ -132,7 +132,10 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 		Guard.ArgumentGTE(index, 0, nameof(index));
 		Guard.Argument(operationType != ObjectStreamOperationType.Remove, nameof(operationType), "Remove operation not supported in this method");
 		CheckItemType(item);
-
+	
+		// Pre-notify before opening any streams
+		NotifyPreItemOperation(index, item, operationType);
+		
 		var streamIndex = index + Streams.Header.ReservedStreams;
 		// initialized and re-entrancy checks done by one of below called methods
 		var stream = operationType switch {
@@ -145,7 +148,6 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 			stream.IsReaped = false;
 			using var writer = new EndianBinaryWriter(EndianBitConverter.For(Streams.Endianness), stream);
 			if (item != null) {
-				NotifyPreItemOperation(index, item, operationType);
 				stream.IsNull = false;
 				if (_preAllocateOptimization) {
 					// pre-setting the stream length before serialization improves performance since it avoids
@@ -162,6 +164,8 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 				stream.IsNull = true;
 				stream.SetLength(0); // open descriptor will save when closed
 			}
+
+			// Ensure post-operation fired when stream owner disposes 
 			stream.AddFinalizer(() => NotifyPostItemOperation(index, item, operationType));
 			return stream;
 		} catch {

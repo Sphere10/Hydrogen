@@ -19,6 +19,7 @@ namespace Hydrogen;
 /// <typeparam name="TItem"></typeparam>
 /// <typeparam name="TKey"></typeparam>
 internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKeyStore<int>> {
+	private readonly Func<TItem, TKey> _projection;
 	private readonly IItemChecksummer<TKey> _keyChecksummer;
 	private readonly Func<long, TKey> _keyFetcher;
 	private readonly IEqualityComparer<TKey> _keyComparer;
@@ -30,6 +31,13 @@ internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUn
 			x => keyChecksummer.CalculateChecksum(projection.Invoke(x)),
 			new NonUniqueKeyStore<int>(objectStream.Streams, reservedStreamIndex, EqualityComparer<int>.Default, PrimitiveSerializer<int>.Instance)
 		) {
+		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
+		Guard.ArgumentNotNull(projection, nameof(projection));
+		Guard.ArgumentNotNull(keyChecksummer, nameof(keyChecksummer));
+		Guard.ArgumentNotNull(keyFetcher, nameof(keyFetcher));
+		Guard.ArgumentNotNull(keyComparer, nameof(keyComparer));
+
+		_projection = projection;
 		_keyChecksummer = keyChecksummer;
 		_keyFetcher = keyFetcher;
 		_keyComparer = keyComparer;
@@ -41,6 +49,36 @@ internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUn
 			CheckAttached();
 			return _checksummedDictionary;
 		}
+	}
+
+	protected override void OnAdding(TItem item, long index, int checksum) {
+		base.OnAdding(item, index, checksum);
+		if (!IsUnique(item, checksum, null, out var clashIndex)) 
+			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique key (checksummed) violation occurs with item at {clashIndex}");
+	}
+
+	protected override void OnUpdating(TItem item, long index, int checksum) {
+		base.OnUpdating(item, index, checksum);
+		if (!IsUnique(item, checksum, index, out var clashIndex)) 
+			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} at {index} as a unique key (checksummed) violation occurs with item at {clashIndex}");
+	}
+
+	protected override void OnInserting(TItem item, long index, int checksum) {
+		base.OnInserting(item, index, checksum);
+		if (!IsUnique(item, checksum, index, out var clashIndex)) 
+			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} at {index} as a unique key (checksummed) violation occurs with item at {clashIndex}");
+	}
+
+	private bool IsUnique(TItem item, int checksum, long? exemptIndex, out long clashIndex) {
+		var key = _projection(item);
+		if (_checksummedDictionary.TryGetValue(key, checksum, out var foundIndex)) {
+			if (foundIndex != exemptIndex) {
+				clashIndex = foundIndex;
+				return false;
+			}
+		}
+		clashIndex = default;
+		return true;
 	}
 
 	private class KeyChecksumDictionary : IReadOnlyDictionary<TKey, long> {
@@ -66,6 +104,10 @@ internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUn
 
 		public bool TryGetValue(TKey key, out long value) {
 			var keyChecksum = _parent._keyChecksummer.CalculateChecksum(key);
+			return TryGetValue(key, keyChecksum, out value);
+		}
+
+		public bool TryGetValue(TKey key, int keyChecksum, out long value) {
 			var candidates = _parent.KeyStore.Lookup[keyChecksum];
 			var matches = candidates.Where(x => _parent._keyComparer.Equals(_parent._keyFetcher(x), key)).ToArray();
 			switch (matches.Length) {

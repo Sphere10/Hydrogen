@@ -163,6 +163,69 @@ public abstract class ObjectSpacesTestBase {
 	
 	#endregion
 
+	#region Indexes
+
+	#region Unique Key (Checksummed)
+
+	[Test]
+	public void UniqueKey_ChecksumBased_ProhibitsDuplicate_1() {
+		// note: string based property will use a checksum-based index since not constant length key
+		using var scope = CreateObjectSpaceScope();
+		var objectSpace = scope.Item;
+		var rng = new Random();
+		var account1 = CreateAccount(rng);
+		var account2 = CreateAccount(rng);
+		account1.Name = account2.Name = "alpha";
+		objectSpace.Save(account1);
+		Assert.That( () => objectSpace.Save(account2), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void UniqueKey_ChecksumBased_ReSave_1() {
+		// note: string based property will use a checksum-based index since not constant length key
+		using var scope = CreateObjectSpaceScope();
+		var objectSpace = scope.Item;
+		var rng = new Random();
+		var account1 = CreateAccount(rng);
+		account1.Name = "alpha";
+		objectSpace.Save(account1);
+		Assert.That( () => objectSpace.Save(account1), Throws.Nothing);
+	}
+
+	#endregion
+
+	#region Unique Key
+
+	[Test]
+	public void UniqueKey_ProhibitsDuplicate_1() {
+		// note: long based property will index the property value (not checksum) since constant length key
+		using var scope = CreateObjectSpaceScope();
+		var objectSpace = scope.Item;
+		var rng = new Random();
+		var account1 = CreateAccount(rng);
+		var account2 = CreateAccount(rng);
+		account1.Name = "alpha";
+		account2.Name = "beta";
+		account2.UniqueNumber = account1.UniqueNumber;
+		objectSpace.Save(account1);
+		Assert.That( () => objectSpace.Save(account2), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void UniqueKey_ReSave_1() {
+		// note: long based property will index the property value (not checksum) since constant length key
+		using var scope = CreateObjectSpaceScope();
+		var objectSpace = scope.Item;
+		var rng = new Random();
+		var account1 = CreateAccount(rng);
+		objectSpace.Save(account1);
+		Assert.That( () => objectSpace.Save(account1), Throws.Nothing);
+	}
+
+	#endregion
+
+	#endregion
+
 	#region Aux
 
 	protected static ObjectSpaceBuilder PrepareObjectSpaceBuilder() {
@@ -171,6 +234,7 @@ public abstract class ObjectSpacesTestBase {
 			.AutoLoad()
 			.AddDimension<Account>()
 				.WithUniqueKeyOn(x => x.Name)
+				.WithUniqueKeyOn(x => x.UniqueNumber)
 				.UsingEqualityComparer(CreateAccountComparer())
 				.Done()
 			.AddDimension<Identity>()
@@ -181,7 +245,8 @@ public abstract class ObjectSpacesTestBase {
 		return builder;
 	}
 
-	protected static Account CreateAccount() {
+	protected static Account CreateAccount(Random rng = null) {
+		rng ??= new Random(31337);
 		var secret = "MyPassword";
 
 		var dss = DSS.PQC_WAMSSharp;
@@ -196,6 +261,7 @@ public abstract class ObjectSpacesTestBase {
 		var account = new Account {
 			Identity = identity,
 			Name = "Savings",
+			UniqueNumber = rng.NextInt64(),
 			Quantity = 0
 		};
 

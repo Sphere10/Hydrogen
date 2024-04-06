@@ -11,7 +11,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading.Tasks;
+using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
 
@@ -125,6 +127,30 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 
 			// Track item instance
 			_instanceTracker.Track(item, index);
+
+			return true;
+		}
+	}
+
+	public bool TryGet<TItem, TMember>(Expression<Func<TItem, TMember>> memberExpression, TMember memberValue, out TItem item) {
+		using (EnterAccessScope()) {
+
+			// Get underlying stream mapped collection
+			var objectList = GetDimension<TItem>();
+
+			// Get index for member
+			var index = objectList.ObjectStream.GetUniqueIndexFor(memberExpression);
+
+			// Find the item in the index
+			if (!index.Dictionary.TryGetValue(memberValue, out var itemIndex)) {
+				item = default;
+				return false;
+			}
+
+			// Get the item referenced by the index
+			// NOTE: the item could be cached and contain an unsaved update to the member
+			if (!TryGet(itemIndex, out item))
+				throw new InvalidOperationException($"Index for {memberExpression.ToMember()} referenced a non-existent item at {itemIndex}");
 
 			return true;
 		}

@@ -12,7 +12,7 @@ using System.Linq;
 
 namespace Hydrogen;
 
-internal class KeyIndex<TItem, TKey> : IndexBase<TItem, TKey, NonUniqueKeyStore<TKey>> {
+internal class KeyIndex<TItem, TKey> : IndexBase<TItem, TKey, NonUniqueKeyStore<TKey>>, IKeyIndex<TKey> {
 
 	public KeyIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
 		: base(

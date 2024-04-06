@@ -8,7 +8,7 @@ namespace Hydrogen;
 
 internal static class IndexFactory {
 	
-	#region UniqueKey Index
+	#region Key Index
 
 	internal static IClusteredStreamsAttachment CreateKeyIndexAttachment(ObjectStream objectStream, long streamIndex, Member member, IItemSerializer keySerializer = null, object keyComparer = null) {
 		Guard.Ensure(objectStream.GetType() == typeof(ObjectStream<>).MakeGenericType(member.DeclaringType));

@@ -21,6 +21,7 @@ public abstract class IndexBase<TItem, TKey, TStore> : IndexBase<TKey, TStore> w
 
 	protected IndexBase(ObjectStream<TItem> objectStream, Func<TItem, TKey> projection, TStore keyStore)
 		: base(objectStream, keyStore) {
+		
 		Guard.ArgumentNotNull(projection, nameof(projection));
 		_projection = projection;
 	}

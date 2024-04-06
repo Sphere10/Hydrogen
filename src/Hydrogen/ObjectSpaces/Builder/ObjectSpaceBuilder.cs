@@ -182,6 +182,7 @@ public class ObjectSpaceBuilder {
 			throw new InvalidOperationException($"No dimension for type {typeof(T).ToStringCS()} was found");
 		return (ObjectSpaceDimensionBuilder<T>)dim;
 	}	
+	
 	public ObjectSpaceDefinition BuildDefinition() {
 		var definition = new ObjectSpaceDefinition {
 			Merkleized = _merkleized,

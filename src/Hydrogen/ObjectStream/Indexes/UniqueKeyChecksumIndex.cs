@@ -18,7 +18,7 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 /// <typeparam name="TKey"></typeparam>
-internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKeyStore<int>> {
+internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKeyStore<int>>, IUniqueKeyIndex<TKey> {
 	private readonly Func<TItem, TKey> _projection;
 	private readonly IItemChecksummer<TKey> _keyChecksummer;
 	private readonly Func<long, TKey> _keyFetcher;

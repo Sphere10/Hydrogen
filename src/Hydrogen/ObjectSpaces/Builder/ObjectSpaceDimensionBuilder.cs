@@ -72,7 +72,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> WithUniqueKeyOn<TMember>(Expression<Func<T, TMember>> memberExpression) {
+	public ObjectSpaceDimensionBuilder<T> WithUniqueIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression) {
 		var index = new ObjectSpaceDefinition.IndexDefinition {
 			Type = ObjectSpaceDefinition.IndexType.UniqueKey,
 			KeyMember = memberExpression.ToMember()

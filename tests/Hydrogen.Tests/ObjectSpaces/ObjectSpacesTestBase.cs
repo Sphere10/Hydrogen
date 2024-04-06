@@ -345,12 +345,12 @@ public abstract class ObjectSpacesTestBase {
 		builder
 			.AutoLoad()
 			.AddDimension<Account>()
-				.WithUniqueMemberOn(x => x.Name)
-				.WithUniqueMemberOn(x => x.UniqueNumber)
+				.WithUniqueIndexOn(x => x.Name)
+				.WithUniqueIndexOn(x => x.UniqueNumber)
 				.UsingEqualityComparer(CreateAccountComparer())
 				.Done()
 			.AddDimension<Identity>()
-				.WithUniqueMemberOn(x => x.Key)
+				.WithUniqueIndexOn(x => x.Key)
 				.UsingEqualityComparer(CreateIdentityComparer())
 				.Done();
 

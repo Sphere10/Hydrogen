@@ -56,10 +56,6 @@ public class MerkleizedObjectSpacesTest : ObjectSpacesTestBase {
 			var spaceRoot = objectSpace.InternalStreams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
 			Assert.That(spaceRoot, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { accountRoot, identityRoot }, chf)).Using(ByteArrayEqualityComparer.Instance));
 		}
-		
-		
 
 	}
-
-	
 }

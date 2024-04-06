@@ -2,6 +2,6 @@
 
 namespace Hydrogen;
 
-public interface IKeyIndex<TKey> {
+public interface IMemberIndex<TKey> {
 	ILookup<TKey, long> Lookup { get ; }
 }

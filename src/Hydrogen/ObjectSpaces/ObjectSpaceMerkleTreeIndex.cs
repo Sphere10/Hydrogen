@@ -73,8 +73,8 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 			newValue ??= Hashers.ZeroHash(Inner.MerkleTree.HashAlgorithm); // merkle-root property will return null when changed to zero's
 			Inner.Update(capturedIndex, newValue);
 		}
-		dimensionMerkleTree.KeyStore.RootChanged += CollectionRootListener;
-		_collectionTreeListeners.Add((dimensionMerkleTree.KeyStore, CollectionRootListener));
+		dimensionMerkleTree.Store.RootChanged += CollectionRootListener;
+		_collectionTreeListeners.Add((dimensionMerkleTree.Store, CollectionRootListener));
 	}
 
 	private void UnsubscribeToDimensionMutationEvents() {

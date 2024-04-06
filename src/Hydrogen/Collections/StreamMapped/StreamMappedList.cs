@@ -22,13 +22,13 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 	public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
-	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
+	private readonly MemberIndex<TItem, int> _memberChecksumIndex;
 
 	internal StreamMappedList(ObjectStream<TItem> objectStream, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
 		ObjectStream = objectStream;
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
-		objectStream.Streams.TryFindAttachment(out _checksumKeyIndex); // _checksumKeyIndex may be null in this impl
+		objectStream.Streams.TryFindAttachment(out _memberChecksumIndex); // _memberChecksumIndex may be null in this impl
 		
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -64,8 +64,8 @@ public class StreamMappedList<TItem> : SingularListBase<TItem>, IStreamMappedLis
 
 	public override long IndexOfL(TItem item) {
 		var indicesToCheck =
-			_checksumKeyIndex != null ?
-			_checksumKeyIndex.Lookup[_checksumKeyIndex.CalculateKey(item)] :
+			_memberChecksumIndex != null ?
+			_memberChecksumIndex.Lookup[_memberChecksumIndex.CalculateKey(item)] :
 			Tools.Collection.RangeL(0L, Count);
 
 		foreach (var index in indicesToCheck) {

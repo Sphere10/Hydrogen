@@ -3,7 +3,7 @@ using Hydrogen.Mapping;
 
 namespace Hydrogen;
 
-public interface IUniqueKeyIndex<TKey> {
+public interface IUniqueMemberIndex<TKey> {
 
 	
 	IReadOnlyDictionary<TKey, long> Dictionary { get ; }

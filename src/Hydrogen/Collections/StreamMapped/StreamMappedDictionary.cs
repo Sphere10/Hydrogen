@@ -29,7 +29,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
 	private readonly IEqualityComparer<TValue> _valueComparer;
-	private readonly KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _keyChecksumIndex;
+	private readonly MemberChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _memberChecksumIndex;
 	private readonly RecyclableIndexIndex _recyclableIndexStore;
 
 	internal StreamMappedDictionary(ObjectStream objectStream, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
@@ -37,7 +37,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		Guard.ArgumentIsAssignable<ObjectStream<KeyValuePair<TKey, TValue>>>(objectStream, nameof(objectStream));
 		ObjectStream = (ObjectStream<KeyValuePair<TKey, TValue>>)objectStream;
 		_recyclableIndexStore = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
-		_keyChecksumIndex = objectStream.Streams.FindAttachment<KeyChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
+		_memberChecksumIndex = objectStream.Streams.FindAttachment<MemberChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
 		if (autoLoad && RequiresLoad) 
@@ -176,7 +176,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
 		using (ObjectStream.EnterAccessScope()) {
-			return _keyChecksumIndex.Lookup[key].Any();
+			return _memberChecksumIndex.Lookup[key].Any();
 		}
 	}
 
@@ -203,7 +203,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public bool TryFindKey(TKey key, out long index) {
 		Debug.Assert(key != null);
 		using (ObjectStream.EnterAccessScope()) {
-			var matches = _keyChecksumIndex.Lookup[key].ToArray();
+			var matches = _memberChecksumIndex.Lookup[key].ToArray();
 			if (matches.Length == 0) {
 				index = -1;
 				return false;
@@ -217,7 +217,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public bool TryFindValue(TKey key, out long index, out TValue value) {
 		Debug.Assert(key != null);
 		using (ObjectStream.EnterAccessScope()) {
-			var matches = _keyChecksumIndex.Lookup[key].ToArray();
+			var matches = _memberChecksumIndex.Lookup[key].ToArray();
 			if (matches.Length == 0) {
 				index = -1;
 				value = default;

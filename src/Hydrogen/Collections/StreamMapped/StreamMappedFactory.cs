@@ -494,7 +494,7 @@ public static class StreamMappedFactory {
 		);
 		container.Streams.RegisterAttachment(recyclableIndexIndex);
 
-		var keyStore = new UniqueKeyStore<TKey>(
+		var keyStore = new UniqueMemberStore<TKey>(
 			container.Streams,
 			keyStoreStreamIndex,
 			keyComparer,
@@ -519,7 +519,7 @@ public static class StreamMappedFactory {
 		);
 
 		if (itemChecksummer is not null) {
-			var checksumKeyIndex = new KeyIndex<TItem, int>(
+			var checksumKeyIndex = new MemberIndex<TItem, int>(
 				container,
 				checksumIndexStreamIndex,
 				itemChecksummer.CalculateChecksum,
@@ -554,7 +554,7 @@ public static class StreamMappedFactory {
 
 		// Create item checksum index (if applicable)
 		if (itemChecksummer is not null) {
-			var checksumKeyIndex = new KeyIndex<TItem, int>(
+			var checksumKeyIndex = new MemberIndex<TItem, int>(
 				container,
 				checksumIndexStreamIndex,
 				itemChecksummer.CalculateChecksum,

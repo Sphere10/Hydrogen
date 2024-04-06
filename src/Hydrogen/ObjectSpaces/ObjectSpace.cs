@@ -367,8 +367,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
-				IndexFactory.CreateUniqueKeyIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
-				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
+				IndexFactory.CreateUniqueMemberIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
+				IndexFactory.CreateUniqueMemberChecksumIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 
 	protected virtual IClusteredStreamsAttachment BuildUniqueKey(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
@@ -376,8 +376,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
-				IndexFactory.CreateUniqueKeyIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
-				IndexFactory.CreateUniqueKeyChecksumIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
+				IndexFactory.CreateUniqueMemberIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
+				IndexFactory.CreateUniqueMemberChecksumIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 
 	protected virtual IClusteredStreamsAttachment BuildIndex(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
@@ -385,7 +385,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
-				IndexFactory.CreateKeyIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
+				IndexFactory.CreateMemberIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
 				IndexFactory.CreateKeyChecksumIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
 	}
 

@@ -19,8 +19,8 @@ namespace Hydrogen;
 public abstract class IndexBase<TItem, TKey, TStore> : IndexBase<TKey, TStore> where TStore : IMetaDataStore<TKey> {
 	private readonly Func<TItem, TKey> _projection;
 
-	protected IndexBase(ObjectStream<TItem> objectStream, Func<TItem, TKey> projection, TStore keyStore)
-		: base(objectStream, keyStore) {
+	protected IndexBase(ObjectStream<TItem> objectStream, Func<TItem, TKey> projection, TStore store)
+		: base(objectStream, store) {
 		
 		Guard.ArgumentNotNull(projection, nameof(projection));
 		_projection = projection;
@@ -70,7 +70,7 @@ public abstract class IndexBase<TItem, TKey, TStore> : IndexBase<TKey, TStore> w
 
 	protected virtual void OnAdded(TItem item, long index, TKey key) {
 		CheckAttached();
-		KeyStore.Add(index, _projection(item));
+		Store.Add(index, _projection(item));
 	}
 
 	protected virtual void OnInserting(TItem item, long index, TKey key) {
@@ -78,7 +78,7 @@ public abstract class IndexBase<TItem, TKey, TStore> : IndexBase<TKey, TStore> w
 
 	protected virtual void OnInserted(TItem item, long index, TKey key) {
 		CheckAttached();
-		KeyStore.Insert(index, _projection(item));
+		Store.Insert(index, _projection(item));
 	}
 
 	protected virtual void OnUpdating(TItem item, long index, TKey key) {
@@ -86,19 +86,19 @@ public abstract class IndexBase<TItem, TKey, TStore> : IndexBase<TKey, TStore> w
 
 	protected virtual void OnUpdated(TItem item, long index, TKey key) {
 		CheckAttached();
-		KeyStore.Update(index, _projection(item));
+		Store.Update(index, _projection(item));
 	}
 
 	protected override void OnContainerClearing() {
 		// When the objectStream about to be cleared, we detach the observer
 		CheckAttached();
-		KeyStore.Detach();
+		Store.Detach();
 	}
 
 	protected override void OnContainerCleared() {
 		// After objectStream was cleared, we reboot the index
 		CheckDetached();
-		KeyStore.Attach();
+		Store.Attach();
 	}
 
 }

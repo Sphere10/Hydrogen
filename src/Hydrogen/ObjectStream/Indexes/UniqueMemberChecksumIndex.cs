@@ -18,18 +18,18 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 /// <typeparam name="TKey"></typeparam>
-internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKeyStore<int>>, IUniqueKeyIndex<TKey> {
+internal class UniqueMemberChecksumIndex<TItem, TKey> : IndexBase<TItem, int, MemberStore<int>>, IUniqueMemberIndex<TKey> {
 	private readonly Func<TItem, TKey> _projection;
 	private readonly IItemChecksummer<TKey> _keyChecksummer;
 	private readonly Func<long, TKey> _keyFetcher;
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly KeyChecksumDictionary _checksummedDictionary;
 
-	public UniqueKeyChecksumIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IItemChecksummer<TKey> keyChecksummer, Func<long, TKey> keyFetcher, IEqualityComparer<TKey> keyComparer)
+	public UniqueMemberChecksumIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IItemChecksummer<TKey> keyChecksummer, Func<long, TKey> keyFetcher, IEqualityComparer<TKey> keyComparer)
 		: base(
 			objectStream,
 			x => keyChecksummer.CalculateChecksum(projection.Invoke(x)),
-			new NonUniqueKeyStore<int>(objectStream.Streams, reservedStreamIndex, EqualityComparer<int>.Default, PrimitiveSerializer<int>.Instance)
+			new MemberStore<int>(objectStream.Streams, reservedStreamIndex, EqualityComparer<int>.Default, PrimitiveSerializer<int>.Instance)
 		) {
 		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
 		Guard.ArgumentNotNull(projection, nameof(projection));
@@ -82,9 +82,9 @@ internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUn
 	}
 
 	private class KeyChecksumDictionary : IReadOnlyDictionary<TKey, long> {
-		private readonly UniqueKeyChecksumIndex<TItem, TKey> _parent;
+		private readonly UniqueMemberChecksumIndex<TItem, TKey> _parent;
 		
-		public KeyChecksumDictionary(UniqueKeyChecksumIndex<TItem, TKey> parent) {
+		public KeyChecksumDictionary(UniqueMemberChecksumIndex<TItem, TKey> parent) {
 			_parent = parent;
 		}
 
@@ -97,7 +97,7 @@ internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUn
 			return GetEnumerator();
 		}
 
-		public int Count => _parent.KeyStore.Lookup.Count;
+		public int Count => _parent.Store.Lookup.Count;
 
 		public bool ContainsKey(TKey key) 
 			=> TryGetValue(key, out _);
@@ -108,7 +108,7 @@ internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUn
 		}
 
 		public bool TryGetValue(TKey key, int keyChecksum, out long value) {
-			var candidates = _parent.KeyStore.Lookup[keyChecksum];
+			var candidates = _parent.Store.Lookup[keyChecksum];
 			var matches = candidates.Where(x => _parent._keyComparer.Equals(_parent._keyFetcher(x), key)).ToArray();
 			switch (matches.Length) {
 				case 0:
@@ -131,13 +131,13 @@ internal class UniqueKeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUn
 		}
 
 		public IEnumerable<TKey> Keys => _parent
-			.KeyStore
+			.Store
 			.Lookup
 			.GetEnumerator()
 			.AsEnumerable()
 			.Select(x => _parent._keyFetcher(x.Key));
 
-		public IEnumerable<long> Values => _parent.KeyStore.Lookup.GetEnumerator().AsEnumerable().Select(x => x.Single());
+		public IEnumerable<long> Values => _parent.Store.Lookup.GetEnumerator().AsEnumerable().Select(x => x.Single());
 	}
 
 }

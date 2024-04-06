@@ -7,7 +7,6 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Hydrogen;
 
@@ -15,15 +14,15 @@ namespace Hydrogen;
 /// Used to store keys of an item in an <see cref="ObjectStream"/>. Used primarily for <see cref="StreamMappedDictionaryCLK{TKey,TValue}"/>"/> which
 /// stores only the value part in the objectStream, the keys are stored in these (mapped to a reserved stream).
 /// </summary>
-/// <remarks>Unlike <see cref="KeyIndex{TItem,TKey}"/> which automatically extracts the key from the item and stores it, this is used as a primary storage for the key itself. Thus it is not an index, it is a pure store.</remarks>
+/// <remarks>Unlike <see cref="MemberIndex{TItem,TKey}"/> which automatically extracts the key from the item and stores it, this is used as a primary storage for the key itself. Thus it is not an index, it is a pure store.</remarks>
 /// <typeparam name="TKey"></typeparam>
-internal class NonUniqueKeyStore<TKey> : MetaDataStoreDecorator<TKey> {
+internal class UniqueMemberStore<TKey> : MetaDataStoreDecorator<TKey> {
 
-	public NonUniqueKeyStore(ClusteredStreams streams, long reservedStreamIndex, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
+	public UniqueMemberStore(ClusteredStreams container, long reservedStreamIndex, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
 		: base(
-			new MemoryCachedMetaDataLookup<TKey>(
+			new MemoryCachedMetaDataDictionary<TKey>(
 				new ListBasedMetaDataStore<TKey>(
-					streams,
+					container,
 					reservedStreamIndex,
 					keySerializer
 				),
@@ -32,11 +31,11 @@ internal class NonUniqueKeyStore<TKey> : MetaDataStoreDecorator<TKey> {
 		) {
 	}
 
-	public ILookup<TKey, long> Lookup {
+	public IReadOnlyDictionary<TKey, long> Dictionary {
 		get {
-			var store = ((MemoryCachedMetaDataLookup<TKey>)InnerStore);
+			var store = ((MemoryCachedMetaDataDictionary<TKey>)InnerStore);
 			Guard.Ensure(store.IsAttached, "Key store is not attached");
-			return store.Lookup;
+			return store.Dictionary;
 		}
 	}
 }

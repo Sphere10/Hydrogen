@@ -12,20 +12,20 @@ using System.Linq;
 
 namespace Hydrogen;
 
-internal class KeyIndex<TItem, TKey> : IndexBase<TItem, TKey, NonUniqueKeyStore<TKey>>, IKeyIndex<TKey> {
+internal class MemberIndex<TItem, TKey> : IndexBase<TItem, TKey, MemberStore<TKey>>, IMemberIndex<TKey> {
 
-	public KeyIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
+	public MemberIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
 		: base(
 			objectStream,
 			projection,
-			new NonUniqueKeyStore<TKey>(objectStream.Streams, reservedStreamIndex, keyComparer, keySerializer)
+			new MemberStore<TKey>(objectStream.Streams, reservedStreamIndex, keyComparer, keySerializer)
 		) {
 	}
 
 	public virtual ILookup<TKey, long> Lookup {
 		get {
 			CheckAttached();
-			return KeyStore.Lookup;
+			return Store.Lookup;
 		}
 	}
 

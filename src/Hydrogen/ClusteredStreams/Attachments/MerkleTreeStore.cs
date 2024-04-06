@@ -17,7 +17,7 @@ namespace Hydrogen;
 /// Used to store keys of an item in an <see cref="ObjectStream"/>. Used primarily for <see cref="StreamMappedDictionaryCLK{TKey,TValue}"/>"/> which
 /// stores only the value part in the objectStream, the keys are stored in these (mapped to a reserved stream).
 /// </summary>
-/// <remarks>Unlike <see cref="KeyIndex{TItem,TKey}"/> which automatically extracts the key from the item and stores it, this is used as a primary storage for the key itself. Thus it is not an index, it is a pure store.</remarks>
+/// <remarks>Unlike <see cref="MemberIndex{TItem,TKey}"/> which automatically extracts the key from the item and stores it, this is used as a primary storage for the key itself. Thus it is not an index, it is a pure store.</remarks>
 internal class MerkleTreeStore : MetaDataStoreBase<byte[]> {
 
 	public event EventHandlerEx<byte[], byte[]> RootChanged;

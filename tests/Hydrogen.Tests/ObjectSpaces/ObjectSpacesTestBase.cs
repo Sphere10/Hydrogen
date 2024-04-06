@@ -180,10 +180,10 @@ public abstract class ObjectSpacesTestBase {
 
 	#region Indexes
 
-	#region Unique Key (Checksummed)
+	#region Unique Member (Checksummed)
 
 	[Test]
-	public void UniqueKey_Checksummed_ProhibitsDuplicate_ViaAdd() {
+	public void UniqueMember_Checksummed_ProhibitsDuplicate_ViaAdd() {
 		// note: string based property will use a checksum-based index since not constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -196,7 +196,7 @@ public abstract class ObjectSpacesTestBase {
 	}
 
 	[Test]
-	public void UniqueKey_Checksummed_ProhibitsDuplicate_ViaUpdate_1() {
+	public void UniqueMember_Checksummed_ProhibitsDuplicate_ViaUpdate_1() {
 		// note: string based property will use a checksum-based index since not constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -212,7 +212,7 @@ public abstract class ObjectSpacesTestBase {
 	}
 
 	[Test]
-	public void UniqueKey_Checksummed_ProhibitsDuplicate_ViaUpdate_2() {
+	public void UniqueMember_Checksummed_ProhibitsDuplicate_ViaUpdate_2() {
 		// note: string based property will use a checksum-based index since not constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -228,7 +228,7 @@ public abstract class ObjectSpacesTestBase {
 	}
 	
 	[Test]
-	public void UniqueKey_Checksummed_SaveThenSave_ThrowsNothing() {
+	public void UniqueMember_Checksummed_SaveThenSave_ThrowsNothing() {
 		// note: string based property will use a checksum-based index since not constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -241,7 +241,7 @@ public abstract class ObjectSpacesTestBase {
 
 
 	[Test]
-	public void UniqueKey_Checksummed_SaveThenDeleteThenSave_ThrowsNothing() {
+	public void UniqueMember_Checksummed_SaveThenDeleteThenSave_ThrowsNothing() {
 		// note: string based property will use a checksum-based index since not constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -260,10 +260,10 @@ public abstract class ObjectSpacesTestBase {
 
 	#endregion
 
-	#region Unique Key
+	#region Unique Member
 
 	[Test]
-	public void UniqueKey_ProhibitsDuplicate_ViaAdd() {
+	public void UniqueMember_ProhibitsDuplicate_ViaAdd() {
 		// note: long based property will index the property value (not checksum) since constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -276,7 +276,7 @@ public abstract class ObjectSpacesTestBase {
 	}
 
 	[Test]
-	public void UniqueKey_ProhibitsDuplicate_ViaUpdate_1() {
+	public void UniqueMember_ProhibitsDuplicate_ViaUpdate_1() {
 		// note: long based property will index the property value (not checksum) since constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -291,7 +291,7 @@ public abstract class ObjectSpacesTestBase {
 	}
 
 	[Test]
-	public void UniqueKey_ProhibitsDuplicate_ViaUpdate_2() {
+	public void UniqueMember_ProhibitsDuplicate_ViaUpdate_2() {
 		// note: long based property will index the property value (not checksum) since constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -306,7 +306,7 @@ public abstract class ObjectSpacesTestBase {
 	}
 
 	[Test]
-	public void UniqueKey_SaveThenSave_ThrowsNothing() {
+	public void UniqueMember_SaveThenSave_ThrowsNothing() {
 		// note: long based property will index the property value (not checksum) since constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -317,7 +317,7 @@ public abstract class ObjectSpacesTestBase {
 	}
 	
 	[Test]
-	public void UniqueKey_SaveThenDeleteThenSave_ThrowsNothing() {
+	public void UniqueMember_SaveThenDeleteThenSave_ThrowsNothing() {
 		// note: string based property will use a checksum-based index since not constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -345,12 +345,12 @@ public abstract class ObjectSpacesTestBase {
 		builder
 			.AutoLoad()
 			.AddDimension<Account>()
-				.WithUniqueKeyOn(x => x.Name)
-				.WithUniqueKeyOn(x => x.UniqueNumber)
+				.WithUniqueMemberOn(x => x.Name)
+				.WithUniqueMemberOn(x => x.UniqueNumber)
 				.UsingEqualityComparer(CreateAccountComparer())
 				.Done()
 			.AddDimension<Identity>()
-				.WithUniqueKeyOn(x => x.Key)
+				.WithUniqueMemberOn(x => x.Key)
 				.UsingEqualityComparer(CreateIdentityComparer())
 				.Done();
 

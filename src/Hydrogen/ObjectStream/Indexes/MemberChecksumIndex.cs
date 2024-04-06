@@ -18,17 +18,17 @@ namespace Hydrogen;
 /// </summary>
 /// <typeparam name="TItem"></typeparam>
 /// <typeparam name="TKey"></typeparam>
-internal class KeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKeyStore<int>>, IKeyIndex<TKey> {
+internal class MemberChecksumIndex<TItem, TKey> : IndexBase<TItem, int, MemberStore<int>>, IMemberIndex<TKey> {
 	private readonly IItemChecksummer<TKey> _keyChecksummer;
 	private readonly Func<long, TKey> _keyFetcher;
 	private readonly IEqualityComparer<TKey> _keyComparer;
 	private readonly KeyChecksumLookup _checksummedLookup;
 
-	public KeyChecksumIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IItemChecksummer<TKey> keyChecksummer, Func<long, TKey> keyFetcher, IEqualityComparer<TKey> keyComparer)
+	public MemberChecksumIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IItemChecksummer<TKey> keyChecksummer, Func<long, TKey> keyFetcher, IEqualityComparer<TKey> keyComparer)
 		: base(
 			objectStream,
 			x => keyChecksummer.CalculateChecksum(projection.Invoke(x)),
-			new NonUniqueKeyStore<int>(objectStream.Streams, reservedStreamIndex, EqualityComparer<int>.Default, PrimitiveSerializer<int>.Instance)
+			new MemberStore<int>(objectStream.Streams, reservedStreamIndex, EqualityComparer<int>.Default, PrimitiveSerializer<int>.Instance)
 		) {
 		_keyChecksummer = keyChecksummer;
 		_keyFetcher = keyFetcher;
@@ -44,9 +44,9 @@ internal class KeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKe
 	}
 
 	private class KeyChecksumLookup : ILookup<TKey, long> {
-		private readonly KeyChecksumIndex<TItem, TKey> _parent;
+		private readonly MemberChecksumIndex<TItem, TKey> _parent;
 		
-		public KeyChecksumLookup(KeyChecksumIndex<TItem, TKey> parent) {
+		public KeyChecksumLookup(MemberChecksumIndex<TItem, TKey> parent) {
 			_parent = parent;
 		}
 
@@ -59,15 +59,15 @@ internal class KeyChecksumIndex<TItem, TKey> : IndexBase<TItem, int, NonUniqueKe
 
 		public bool Contains(TKey key)
 			=> _parent
-			.KeyStore
+			.Store
 			.Lookup[_parent._keyChecksummer.CalculateChecksum(key)]
 			.Any(x => _parent._keyComparer.Equals(key, _parent._keyFetcher(x)));
 
-		public int Count => _parent.KeyStore.Lookup.Count;
+		public int Count => _parent.Store.Lookup.Count;
 
 		public IEnumerable<long> this[TKey key]
 			=> _parent
-				.KeyStore
+				.Store
 				.Lookup[_parent._keyChecksummer.CalculateChecksum(key)]
 				.Where(x => _parent._keyComparer.Equals(key, _parent._keyFetcher(x)));
 

@@ -20,7 +20,7 @@ internal class RecyclableIndexIndex : IndexBase<long, StackBasedMetaDataStore<lo
 		: base(objectStream, new StackBasedMetaDataStore<long>(objectStream.Streams, reservedStreamIndex, PrimitiveSerializer<long>.Instance)) {
 	}
 
-	public IStack<long> Stack => KeyStore.Stack;
+	public IStack<long> Stack => Store.Stack;
 
 	protected override void OnInserted(object item, long index) {
 		throw new InvalidOperationException($"A {typeof(RecyclableIndexIndex).ToStringCS()} cannot be used on a objectStream which inserts items. Items can only be reaped when using this index");

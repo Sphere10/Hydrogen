@@ -18,13 +18,13 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
 	private readonly RecyclableIndexIndex _recylableIndexIndex;
-	private readonly KeyIndex<TItem, int> _checksumKeyIndex;
+	private readonly MemberIndex<TItem, int> _memberChecksumIndex;
 
 	public StreamMappedRecyclableList(ObjectStream<TItem> objectStream, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
 		ObjectStream = objectStream;
 		_recylableIndexIndex = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
-		objectStream.Streams.TryFindAttachment<KeyIndex<TItem, int>>(out _checksumKeyIndex); // this index is optional
+		objectStream.Streams.TryFindAttachment<MemberIndex<TItem, int>>(out _memberChecksumIndex); // this index is optional
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 
 		if (autoLoad && RequiresLoad)
@@ -109,8 +109,8 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	protected override long IndexOfInternal(TItem item)  {
 		using (ObjectStream.EnterAccessScope()) {
 			var indicesToCheck =
-				_checksumKeyIndex != null ?
-					_checksumKeyIndex.Lookup[_checksumKeyIndex.CalculateKey(item)] :
+				_memberChecksumIndex != null ?
+					_memberChecksumIndex.Lookup[_memberChecksumIndex.CalculateKey(item)] :
 					Tools.Collection.RangeL(0L, ListCount);
 
 			foreach (var index in indicesToCheck) {

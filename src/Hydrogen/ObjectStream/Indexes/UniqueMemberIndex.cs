@@ -11,13 +11,13 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
-internal class UniqueKeyIndex<TItem, TKey> : IndexBase<TItem, TKey, UniqueKeyStore<TKey>>, IUniqueKeyIndex<TKey> {
+internal class UniqueMemberIndex<TItem, TKey> : IndexBase<TItem, TKey, UniqueMemberStore<TKey>>, IUniqueMemberIndex<TKey> {
 
-	public UniqueKeyIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
-		: base( objectStream, projection, new UniqueKeyStore<TKey>(objectStream.Streams, reservedStreamIndex, keyComparer, keySerializer)) {
+	public UniqueMemberIndex(ObjectStream<TItem> objectStream, long reservedStreamIndex, Func<TItem, TKey> projection, IEqualityComparer<TKey> keyComparer, IItemSerializer<TKey> keySerializer)
+		: base( objectStream, projection, new UniqueMemberStore<TKey>(objectStream.Streams, reservedStreamIndex, keyComparer, keySerializer)) {
 	}
 
-	public IReadOnlyDictionary<TKey, long> Dictionary => KeyStore.Dictionary;
+	public IReadOnlyDictionary<TKey, long> Dictionary => Store.Dictionary;
 
 	protected override void OnAdding(TItem item, long index, TKey key) {
 		base.OnAdding(item, index, key);

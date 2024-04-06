@@ -28,15 +28,15 @@ internal class MerkleTreeIndex : IndexBase<byte[], MerkleTreeStore> {
 		_itemHasher = itemHasher;
 	}
 
-	public IMerkleTree MerkleTree => KeyStore.MerkleTree;
+	public IMerkleTree MerkleTree => Store.MerkleTree;
 
 	protected override void OnAdded(object item, long index) 
-		=> KeyStore.Add(index, _itemHasher.Hash(index));
+		=> Store.Add(index, _itemHasher.Hash(index));
 
 	protected override void OnInserted(object item, long index) 
-		=> KeyStore.Insert(index, _itemHasher.Hash(index));
+		=> Store.Insert(index, _itemHasher.Hash(index));
 
 	protected override void OnUpdated(object item, long index) 
-		=> KeyStore.Update(index,  _itemHasher.Hash(index));
+		=> Store.Update(index,  _itemHasher.Hash(index));
 
 }

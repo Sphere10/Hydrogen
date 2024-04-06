@@ -52,8 +52,7 @@ public abstract class Member : IEquatable<Member> {
 	public Func<TItem, TProperty> AsFunc<TItem, TProperty>() {
 		Guard.Ensure(DeclaringType == typeof(TItem) && PropertyType == typeof(TProperty), "Generic types TItem and TProperty must match the member's declaring type and property type.");
 		return item => {
-			if (item == null)
-				throw new ArgumentNullException(nameof(item));
+			Guard.ArgumentNotNull(item, nameof(item));
 			var value = GetValue(item);
 			return (TProperty)value;
 		};

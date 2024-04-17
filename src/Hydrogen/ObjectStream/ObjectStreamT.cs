@@ -31,14 +31,14 @@ public class ObjectStream<T> : ObjectStream {
 
 	public new T LoadItem(long index) => (T)base.LoadItem(index);
 
-	public bool TryGetUniqueIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression, out IUniqueMemberIndex<TMember> index) {
+	public bool TryGetUniqueIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression, out IUniqueProjectionIndex<TMember> index) {
 		throw new NotImplementedException();
-		//if (Streams.TryFindAttachment<UniqueMemberChecksumIndex<T, TMember>>(out var uniqueKeyChecksumIndex)) {
+		//if (Streams.TryFindAttachment<UniqueProjectionChecksumIndex<T, TMember>>(out var uniqueKeyChecksumIndex)) {
 		//	index = uniqueKeyChecksumIndex;
 		//	return true;
 		//}
 
-		//if (Streams.TryFindAttachment<UniqueMemberIndex<T, TMember>>(out var uniqueKeyIndex)) {
+		//if (Streams.TryFindAttachment<UniqueProjectionIndex<T, TMember>>(out var uniqueKeyIndex)) {
 		//	index = uniqueKeyIndex;
 		//	return true;
 		//}
@@ -46,21 +46,21 @@ public class ObjectStream<T> : ObjectStream {
 		//return false;
 	}
 
-	public IUniqueMemberIndex<TMember>  GetUniqueIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression) {
+	public IUniqueProjectionIndex<TMember>  GetUniqueIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression) {
 		if (!TryGetUniqueIndexFor(memberExpression, out var index))  
 			throw new InvalidOperationException($"No unique member index was found for {memberExpression.ToMember()}");
 
 		return index;
 	}
 	
-	public bool TryGetIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression, out IMemberIndex<TMember> index) {
+	public bool TryGetIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression, out IProjectionIndex<TMember> index) {
 		throw new NotImplementedException();
-		//if (Streams.TryFindAttachment<MemberChecksumIndex<T, TMember>>(out var keyChecksumIndex)) {
+		//if (Streams.TryFindAttachment<ProjectionChecksumIndex<T, TMember>>(out var keyChecksumIndex)) {
 		//	index = keyChecksumIndex;
 		//	return true;
 		//}
 
-		//if (Streams.TryFindAttachment<MemberIndex<T, TMember>>(out var keyIndex)) {
+		//if (Streams.TryFindAttachment<ProjectionIndex<T, TMember>>(out var keyIndex)) {
 		//	index = keyIndex;
 		//	return true;
 		//}
@@ -68,7 +68,7 @@ public class ObjectStream<T> : ObjectStream {
 		//return false;
 	}
 
-	public IMemberIndex<TMember> GetIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression) {
+	public IProjectionIndex<TMember> GetIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression) {
 		if (!TryGetIndexFor(memberExpression, out var index))  
 			throw new InvalidOperationException($"No member index was found for {memberExpression.ToMember()}");
 

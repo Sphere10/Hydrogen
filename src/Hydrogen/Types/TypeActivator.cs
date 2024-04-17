@@ -7,8 +7,10 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Hydrogen.FastReflection;
 
 namespace Hydrogen;
 
@@ -97,14 +99,16 @@ public static class TypeActivator {
 		// Determine the correct order of arguments.
 		var constructorParameters = constructor.GetParameters();
 		var orderedArgs = new object[constructorParameters.Length];
+		var usedIndexes = new HashSet<int>(); // To keep track of already used arguments
 
 		for (var i = 0; i < constructorParameters.Length; i++) {
-			// Try to find a matching argument.
-			foreach (var arg in args) {
-				if (!constructorParameters[i].ParameterType.IsInstanceOfType(arg))
-					continue;
-				orderedArgs[i] = arg;
-				break;
+			for (var j = 0; j < args.Length; j++) {
+				// Check if the argument has not been used and is of the correct type
+				if (!usedIndexes.Contains(j) && constructorParameters[i].ParameterType.IsInstanceOfType(args[j])) {
+					orderedArgs[i] = args[j];
+					usedIndexes.Add(j); // Mark this argument index as used
+					break;
+				}
 			}
 
 			// If no argument is found, and the parameter has a default value, use that.
@@ -114,12 +118,50 @@ public static class TypeActivator {
 		}
 
 #if USE_FAST_REFLECTION
-		instance = constructor.Invoke(orderedArgs);
+		instance = constructor.FastInvoke(orderedArgs);
 #else
 		instance = constructor.Invoke(orderedArgs); // using standard Reflection
 #endif
 		return true;
 	}
+
+//	public static bool TryActivateWithCompatibleArgs(Type type, object[] args, out object instance) {
+//		Guard.ArgumentNotNull(type, nameof(type));
+//		Guard.ArgumentNotNull(args, nameof(args));
+//		Guard.Ensure(args.All(a => a != null), "All arguments must be non-null");
+
+//		var constructor = FindCompatibleConstructor(type, args.Select(a => a.GetType()).ToArray());
+//		if (constructor == null) {
+//			instance = null;
+//			return false;
+//		}
+
+//		// Determine the correct order of arguments.
+//		var constructorParameters = constructor.GetParameters();
+//		var orderedArgs = new object[constructorParameters.Length];
+
+//		for (var i = 0; i < constructorParameters.Length; i++) {
+//			// Try to find a matching argument.
+//			foreach (var arg in args) {
+//				if (!constructorParameters[i].ParameterType.IsInstanceOfType(arg))
+//					continue;
+//				orderedArgs[i] = arg;
+//				break;
+//			}
+
+//			// If no argument is found, and the parameter has a default value, use that.
+//			if (orderedArgs[i] == null && constructorParameters[i].HasDefaultValue) {
+//				orderedArgs[i] = constructorParameters[i].DefaultValue;
+//			}
+//		}
+
+//#if USE_FAST_REFLECTION
+//		instance = constructor.Invoke(orderedArgs);
+//#else
+//		instance = constructor.Invoke(orderedArgs); // using standard Reflection
+//#endif
+//		return true;
+//	}
 
 
 	public static T ActivateWithCompatibleArgs<T>(Type type, object[] args) 

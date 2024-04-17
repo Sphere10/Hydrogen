@@ -69,9 +69,15 @@ public static partial class DecoratorExtensions {
 
 	#region AsStack
 
-	public static StackList<T, TInnerList> AsStack<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
+	public static StackAdapter<T> AsStack<T>(this IExtendedList<T> list) => new(list);
 
-	public static StackList<T> AsStack<T>(this IExtendedList<T> list) => new(list);
+	#endregion
+
+	#region AsStackList
+
+	public static StackList<T, TInnerList> AsStackList<T, TInnerList>(this TInnerList list) where TInnerList : IExtendedList<T> => new(list);
+
+	public static StackList<T> AsStackList<T>(this IExtendedList<T> list) => new(list);
 
 	#endregion
 

@@ -14,23 +14,32 @@ namespace Hydrogen;
 /// Tracks and maintains a list of of spare indices in an <see cref="ObjectStream"/> so they can be re-used in
 /// subsequent operations. This is needed by a <see cref="StreamMappedRecyclableList{TItem}"/>
 /// </summary>
-internal class RecyclableIndexIndex : IndexBase<long, StackBasedMetaDataStore<long>> {
+internal class RecyclableIndexIndex : IndexBase<StackStorageAttachment<long>> {
 
-	public RecyclableIndexIndex(ObjectStream objectStream, long reservedStreamIndex) 
-		: base(objectStream, new StackBasedMetaDataStore<long>(objectStream.Streams, reservedStreamIndex, PrimitiveSerializer<long>.Instance)) {
+	public RecyclableIndexIndex(ObjectStream objectStream, string indexName) 
+		: base(objectStream, new StackStorageAttachment<long>(objectStream.Streams, indexName, PrimitiveSerializer<long>.Instance)) {
 	}
 
-	public IStack<long> Stack => Store.Stack;
-
 	protected override void OnInserted(object item, long index) {
-		throw new InvalidOperationException($"A {typeof(RecyclableIndexIndex).ToStringCS()} cannot be used on a objectStream which inserts items. Items can only be reaped when using this index");
+		throw new NotSupportedException($"{typeof(RecyclableIndexIndex).ToStringCS()}'s cannot be used when inserting items into an {nameof(ObjectStream)}");
 	}
 
 	protected override void OnRemoved(long index) {
-		throw new InvalidOperationException($"A {typeof(RecyclableIndexIndex).ToStringCS()} cannot be used on a objectStream which removes items. Items can only be reaped when using this index");
+		throw new NotSupportedException($"{typeof(RecyclableIndexIndex).ToStringCS()}'s cannot be used when removing items into an {nameof(ObjectStream)}");
 	}
 
 	protected override void OnReaped(long index) {
-		Stack.Push(index);
+		Store.Push(index);
+	}
+
+	protected override void OnContainerClearing() {
+		CheckAttached();
+		Store.Clear();
+		Store.Detach();
+	}
+
+	protected override void OnContainerCleared() {
+		CheckDetached();
+		Store.Attach();
 	}
 }

@@ -37,9 +37,9 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		IEqualityComparer<TValue> valueComparer = null,
 		CHF hashAlgorithm = CHF.SHA2_256,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
-		long merkleTreeStreamIndex = 0,
-		long recyclableIndexStoreStreamIndex = 1,
-		long keyChecksumIndexStreamIndex = 2,
+		string merkleTreeIndexName = HydrogenDefaults.DefaultMerkleTreeIndexName,
+		string reyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName,
 		Endianness endianness = Endianness.LittleEndian,
 		bool readOnly = false,
 		bool autoLoad = false,
@@ -55,21 +55,22 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 			valueComparer,
 			clusterSize,
 			policy,
-			keyChecksumIndexStreamIndex,
-			recyclableIndexStoreStreamIndex,
-			merkleTreeStreamIndex,
+			keyChecksumIndexName,
+			reyclableIndexIndexName,
+			merkleTreeIndexName,
 			endianness,
 			readOnly,
 			implementation
 		),
+		merkleTreeIndexName,
 		autoLoad
 	) {
 	}
 
-	internal StreamMappedMerkleDictionary(IStreamMappedDictionary<TKey, TValue> innerDictionary, bool autoLoad = false) 
+	internal StreamMappedMerkleDictionary(IStreamMappedDictionary<TKey, TValue> innerDictionary, string merkleTreeIndexName, bool autoLoad = false) 
 		: base(innerDictionary) {
 		Guard.ArgumentNotNull(innerDictionary, nameof(innerDictionary));
-		_merkleTreeIndex = innerDictionary.ObjectStream.Streams.FindAttachment<MerkleTreeIndex>();
+		_merkleTreeIndex = (MerkleTreeIndex)innerDictionary.ObjectStream.Streams.Attachments[merkleTreeIndexName];
 
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -113,9 +114,9 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 		IEqualityComparer<TValue> valueComparer,
 		int clusterSize,
 		ClusteredStreamsPolicy policy,
-		long recyclableIndexStoreStreamIndex,
-		long keyChecksumIndexStreamIndex,
-		long merkleTreeIndexStreamIndex,
+		string recyclableIndexIndexName,
+		string checksumIndexName,
+		string merkleTreeIndexName,
 		Endianness endianness,
 		bool readOnly,
 		StreamMappedDictionaryImplementation implementation
@@ -130,8 +131,8 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 			clusterSize,
 			policy,
 			3L,
-			recyclableIndexStoreStreamIndex,
-			keyChecksumIndexStreamIndex,
+			recyclableIndexIndexName,
+			checksumIndexName,
 			endianness,
 			readOnly,
 			false,
@@ -140,7 +141,7 @@ public class StreamMappedMerkleDictionary<TKey, TValue> : DictionaryDecorator<TK
 
 		var merkleTreeIndex = new MerkleTreeIndex(
 			smDict.ObjectStream,
-			merkleTreeIndexStreamIndex,
+			merkleTreeIndexName,
 			new StreamMappedDictionaryKeyValueHasher(smDict, hashAlgorithm),
 			hashAlgorithm
 		);

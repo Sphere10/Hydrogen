@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder.Spatial;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -142,7 +143,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 			var index = objectList.ObjectStream.GetUniqueIndexFor(memberExpression);
 
 			// Find the item in the index
-			if (!index.Dictionary.TryGetValue(memberValue, out var itemIndex)) {
+			if (!index.Values.TryGetValue(memberValue, out var itemIndex)) {
 				item = default;
 				return false;
 			}
@@ -270,14 +271,20 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 				// but safe since the merkle-tree and it's mapped stream are kept 1-1 consistent at all times.
 				_streams.UpdateBytes(
 					ObjectSpaceMerkleTreeReservedStreamIndex, 
-					MerkleTreeStore.GenerateBytes(
+					MerkleTreeStorageAttachment.GenerateBytes(
 						Definition.HashFunction, 
 						Tools.Collection.RepeatValue(Hashers.ZeroHash(Definition.HashFunction), dimensionStreams)
 					)
 				);
 			}
 
-			var spaceTree = new ObjectSpaceMerkleTreeIndex(this, ObjectSpaceMerkleTreeReservedStreamIndex, Definition.HashFunction, isFirstTimeLoad);
+			var spaceTree = new ObjectSpaceMerkleTreeIndex(
+				this, 
+				HydrogenDefaults.DefaultSpatialMerkleTreeIndexName,
+				HydrogenDefaults.DefaultMerkleTreeIndexName,
+				Definition.HashFunction, 
+				isFirstTimeLoad
+			);
 			_streams.RegisterAttachment(spaceTree);
 
 		}
@@ -329,13 +336,13 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		dimension.OwnsStreams = true;
 
 		// construct indexes of the object stream
-		foreach (var (item, index) in dimensionDefinition.Indexes.WithIndex()) {
-			IClusteredStreamsAttachment metaDataObserver = item.Type switch {
-				ObjectSpaceDefinition.IndexType.Identifier => BuildIdentifier(dimension, dimensionDefinition, item, index),
-				ObjectSpaceDefinition.IndexType.UniqueKey => BuildUniqueKey(dimension, dimensionDefinition, item, index),
-				ObjectSpaceDefinition.IndexType.Index => BuildIndex(dimension, dimensionDefinition, item, index),
-				ObjectSpaceDefinition.IndexType.RecyclableIndexStore => BuildRecyclableIndexStore(dimension, dimensionDefinition, item, index),
-				ObjectSpaceDefinition.IndexType.MerkleTree => BuildMerkleTreeIndex(dimension, dimensionDefinition, item, index),
+		foreach (var index in dimensionDefinition.Indexes) {
+			IClusteredStreamsAttachment metaDataObserver = index.Type switch {
+				ObjectSpaceDefinition.IndexType.Identifier => BuildIdentifier(dimension, dimensionDefinition, index),
+				ObjectSpaceDefinition.IndexType.UniqueKey => BuildUniqueKey(dimension, dimensionDefinition, index),
+				ObjectSpaceDefinition.IndexType.Index => BuildIndex(dimension, dimensionDefinition, index),
+				ObjectSpaceDefinition.IndexType.RecyclableIndexStore => BuildRecyclableIndexStore(dimension, dimensionDefinition, index),
+				ObjectSpaceDefinition.IndexType.MerkleTree => BuildMerkleTreeIndex(dimension, dimensionDefinition, index),
 				_ => throw new ArgumentOutOfRangeException()
 			};
 			dimension.Streams.RegisterAttachment(metaDataObserver);
@@ -349,6 +356,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 			.MakeGenericType(dimensionDefinition.ObjectType)
 			.ActivateWithCompatibleArgs(
 				dimension,
+				dimensionDefinition.Indexes.First(x => x.Type == ObjectSpaceDefinition.IndexType.RecyclableIndexStore).Name,
 				comparer,
 				false
 			);
@@ -361,40 +369,40 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		return list;
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildIdentifier(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
+	protected virtual IClusteredStreamsAttachment BuildIdentifier(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
 		// NOTE: same as BuildUniqueKey, but may have differentiating functionality in future
-		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
-		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
+		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.Member.PropertyType);
+		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.Member.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
-				IndexFactory.CreateUniqueMemberIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
-				IndexFactory.CreateUniqueMemberChecksumIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
+				IndexFactory.CreateUniqueMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer) :
+				IndexFactory.CreateUniqueMemberChecksumIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildUniqueKey(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
-		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
-		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
+	protected virtual IClusteredStreamsAttachment BuildUniqueKey(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
+		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.Member.PropertyType);
+		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.Member.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
-				IndexFactory.CreateUniqueMemberIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
-				IndexFactory.CreateUniqueMemberChecksumIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
+				IndexFactory.CreateUniqueMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer) :
+				IndexFactory.CreateUniqueMemberChecksumIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildIndex(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
-		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.KeyMember.PropertyType);
-		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.KeyMember.PropertyType);
+	protected virtual IClusteredStreamsAttachment BuildIndex(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
+		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.Member.PropertyType);
+		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.Member.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
-				IndexFactory.CreateMemberIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, keyComparer) :
-				IndexFactory.CreateKeyChecksumIndexAttachment(dimension, streamIndex, indexDefinition.KeyMember, keySerializer, null, null, keyComparer);
+				IndexFactory.CreateMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer) :
+				IndexFactory.CreateMemberChecksumIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, null, null, keyComparer);
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildRecyclableIndexStore(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
-		return new RecyclableIndexIndex(dimension, streamIndex);
+	protected virtual IClusteredStreamsAttachment BuildRecyclableIndexStore(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
+		return new RecyclableIndexIndex(dimension, indexDefinition.Name);
 	}
 
-	protected virtual IClusteredStreamsAttachment BuildMerkleTreeIndex(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition, int streamIndex) {
-		return new MerkleTreeIndex(dimension, streamIndex, new ObjectStreamItemHasher(dimension, Definition.HashFunction), Definition.HashFunction);
+	protected virtual IClusteredStreamsAttachment BuildMerkleTreeIndex(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
+		return new MerkleTreeIndex(dimension, indexDefinition.Name, new ObjectStreamItemHasher(dimension, Definition.HashFunction), Definition.HashFunction);
 	}
 	
 	protected virtual IItemSerializer CreateItemSerializer(Type objectType) {
@@ -409,19 +417,15 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		);
 
 	protected virtual void OnCommitting() {
-		// TODO: potentially move this up to Consensus Space
-		// need to ensure all merkle-trees are committed 
-		foreach(var collection in _dimensions.Values) {
-			if (collection.ObjectStream.Streams.TryFindAttachment<MerkleTreeIndex>(out var merkleTreeIndex)) {
-				// fetching the root ensures the stream-mapped merkle-tree is fully calculated
-				merkleTreeIndex.Flush();
-			}
-		}
 
-		// ensure the global merkle-tree is updated
-		if (_streams.TryFindAttachment<ObjectSpaceMerkleTreeIndex>(out var objectSpaceMerkleTreeIndex)) {
-			objectSpaceMerkleTreeIndex.Flush();
-		}
+		// ensure all dirty merkle-trees are fully calculated
+		foreach(var dimension in _dimensions.Values) 
+			foreach(var merkleTreeIndex in dimension.ObjectStream.Streams.Attachments.Values.Where(x => x is MerkleTreeIndex).Cast<MerkleTreeIndex>())
+				merkleTreeIndex.Flush();
+
+		// ensure any spatial merkle-trees are fully calculated
+		foreach (var spatialTreeIndex in _streams.Attachments.Values.Where(x => x is ObjectSpaceMerkleTreeIndex).Cast<ObjectSpaceMerkleTreeIndex>())
+			spatialTreeIndex.Flush();
 	}
 
 	protected virtual void OnCommitted() {

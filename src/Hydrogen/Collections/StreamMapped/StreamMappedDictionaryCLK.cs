@@ -33,14 +33,14 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
 	private readonly IEqualityComparer<TValue> _valueComparer;
-	private readonly UniqueMemberStore<TKey> _memberStore;
+	private readonly UniqueKeyStorageAttachment<TKey> _uniqueKeyStore;
 	private readonly RecyclableIndexIndex _recyclableIndexIndex;
 
-	internal StreamMappedDictionaryCLK(ObjectStream objectStream, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
+	internal StreamMappedDictionaryCLK(ObjectStream objectStream, string recyclableIndexName, string keyStoreName, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
 		ObjectStream = (ObjectStream<TValue>)objectStream;
-		_recyclableIndexIndex = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
-		_memberStore = objectStream.Streams.FindAttachment<UniqueMemberStore<TKey>>();
+		_recyclableIndexIndex = (RecyclableIndexIndex)objectStream.Streams.Attachments[recyclableIndexName];
+		_uniqueKeyStore = (UniqueKeyStorageAttachment<TKey>)objectStream.Streams.Attachments[keyStoreName];
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
 		if (autoLoad && RequiresLoad)
@@ -59,7 +59,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		get {
 			CheckLoaded();
 			using (ObjectStream.EnterAccessScope())
-				return ObjectStream.Count - _recyclableIndexIndex.Stack.Count;
+				return ObjectStream.Count - _recyclableIndexIndex.Store.Count;
 		}	
 	}
 
@@ -82,7 +82,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			return _memberStore.Read(index);
+			return _uniqueKeyStore.Read(index);
 		}
 	}
 
@@ -92,7 +92,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 			if (traits.HasFlag(ClusteredStreamTraits.Reaped))
 				throw new InvalidOperationException($"Object {index} has been reaped");
 
-			return _memberStore.ReadBytes(index);
+			return _uniqueKeyStore.ReadBytes(index);
 		}
 	}
 
@@ -168,16 +168,16 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
 		using (ObjectStream.EnterAccessScope())
-			return _memberStore.Dictionary.ContainsKey(key);
+			return _uniqueKeyStore.ContainsKey(key);
 	}
 
 	public override void Clear() {
 		// Load not required
 		using (ObjectStream.EnterAccessScope()) {
-			_memberStore.Clear();
-			_memberStore.Detach();
+			_uniqueKeyStore.Clear();
+			_uniqueKeyStore.Detach();
 			ObjectStream.Clear();
-			_memberStore.Attach();
+			_uniqueKeyStore.Attach();
 			UpdateVersion();
 		}
 	}
@@ -197,7 +197,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public bool TryFindKey(TKey key, out long index) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		using (ObjectStream.EnterAccessScope()) {
-			if (_memberStore.Dictionary.TryGetValue(key, out index)) {
+			if (_uniqueKeyStore.TryGetValue(key, out index)) {
 				return true;
 			}
 			index = -1;
@@ -208,7 +208,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 	public bool TryFindValue(TKey key, out long index, out TValue value) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		using (ObjectStream.EnterAccessScope()) {
-			if (_memberStore.Dictionary.TryGetValue(key, out index)) {
+			if (_uniqueKeyStore.TryGetValue(key, out index)) {
 				value = ReadValue(index);
 				return true;
 			}
@@ -246,7 +246,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		CheckLoaded();
 		// We don't delete the instance, we mark is as unused. Use Shrink to intelligently remove unused records.
 		using (ObjectStream.EnterAccessScope()) {
-			_memberStore.Reap(index);
+			_uniqueKeyStore.Reap(index);
 			ObjectStream.ReapItem(index);
 			UpdateVersion();
 		}
@@ -275,11 +275,11 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 		CheckLoaded();
 		using (ObjectStream.EnterAccessScope()) {
 			var sortedList = new SortedList<long>(SortDirection.Descending);
-			_recyclableIndexIndex.Stack.ForEach(sortedList.Add);
+			_recyclableIndexIndex.Store.ForEach(sortedList.Add);
 			foreach (var recyclableIndex in sortedList) {
 				ObjectStream.RemoveItem(recyclableIndex);
 			}
-			_recyclableIndexIndex.Stack.Clear();
+			_recyclableIndexIndex.Store.Clear();
 			UpdateVersion();
 		}
 	}
@@ -328,13 +328,13 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	private void AddInternal(TKey key, TValue value) {
 		long index;
-		if (_recyclableIndexIndex.Stack.Any()) {
-			index = _recyclableIndexIndex.Stack.Pop();
-			_memberStore.Update(index, key);
+		if (_recyclableIndexIndex.Store.Any()) {
+			index = _recyclableIndexIndex.Store.Pop();
+			_uniqueKeyStore.Update(index, key);
 			ObjectStream.SaveItem(index, value, ObjectStreamOperationType.Update);
 		} else {
 			index = Count;
-			_memberStore.Add(index, key);
+			_uniqueKeyStore.Add(index, key);
 			ObjectStream.SaveItem(index, value, ObjectStreamOperationType.Add);
 		}
 		UpdateVersion();
@@ -342,7 +342,7 @@ public class StreamMappedDictionaryCLK<TKey, TValue> : DictionaryBase<TKey, TVal
 
 	private void UpdateInternal(long index, TKey key, TValue value) {
 		// Updating value only, records (and checksum) don't change  when updating
-		_memberStore.Update(index, key);
+		_uniqueKeyStore.Update(index, key);
 		ObjectStream.SaveItem(index, value, ObjectStreamOperationType.Update);
 		UpdateVersion();
 	}

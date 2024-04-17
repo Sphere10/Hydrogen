@@ -7,9 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
@@ -34,7 +32,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		IEqualityComparer<T> comparer = null,
 		IItemChecksummer<T> itemChecksummer = null,
 		long reservedStreams = 0,
-		long checksumIndexStreamIndex = 0,
+		string optionalItemChecksumIndexName = null,
 		FileAccessMode accessMode = FileAccessMode.Default
 	) : this( 
 			new TransactionalStream(
@@ -47,7 +45,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 			fileDescriptor.ClusterSize, 
 			fileDescriptor.ContainerPolicy, 
 			reservedStreams,
-			checksumIndexStreamIndex,
+			optionalItemChecksumIndexName,
 			fileDescriptor.Endianness,
 			accessMode.HasFlag(FileAccessMode.AutoLoad)
 		) {
@@ -62,7 +60,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		int clusterSize = HydrogenDefaults.ClusterSize, 
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default, 
 		long reservedStreams = 0,
-		long checksumIndexStreamIndex = 0,
+		string optionalItemChecksumIndexName = null,
 		Endianness endianness = HydrogenDefaults.Endianness,
 		bool autoLoad = false
 	) : this(
@@ -78,7 +76,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 			serializer, 
 			comparer,
 			itemChecksummer,
-			checksumIndexStreamIndex,
+			optionalItemChecksumIndexName, 
 			autoLoad
 		) {
 		InternalCollection.ObjectStream.OwnsStreams = true;
@@ -90,7 +88,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 		IItemSerializer<T> serializer = null, 
 		IEqualityComparer<T> comparer = null,
 		IItemChecksummer<T> itemChecksummer = null,
-		long checksumIndexStreamIndex = 0,
+		string optionalItemChecksumIndexName = null,
 		bool autoLoad = false
 	) : this(
 			StreamMappedFactory.CreateList(
@@ -98,7 +96,7 @@ public class TransactionalList<T> : ExtendedListDecorator<T, IStreamMappedList<T
 				serializer,
 				comparer,
 				itemChecksummer,
-				checksumIndexStreamIndex,
+				optionalItemChecksumIndexName,
 				false
 			),
 			transactionalObject,

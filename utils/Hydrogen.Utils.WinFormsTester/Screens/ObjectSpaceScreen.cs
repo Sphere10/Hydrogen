@@ -102,7 +102,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 							},
 							new() {
 								Type = ObjectSpaceDefinition.IndexType.UniqueKey,
-								KeyMember = Tools.Mapping.GetMember<Account, string>(x => x.Name),
+								Member = Tools.Mapping.GetMember<Account, string>(x => x.Name),
 							}
 						}
 					},
@@ -114,7 +114,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 							},
 							new() {
 								Type = ObjectSpaceDefinition.IndexType.UniqueKey,
-								KeyMember = Tools.Mapping.GetMember<Identity, byte[]>(x => x.Key),
+								Member = Tools.Mapping.GetMember<Identity, byte[]>(x => x.Key),
 							}
 						}
 					},

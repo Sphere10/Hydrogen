@@ -27,7 +27,6 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	private readonly bool _preAllocateOptimization;
 
-
 	public ObjectStream(Type objectType, ClusteredStreams streams, IItemSerializer objectSerializer, bool preAllocateOptimization) {
 		Guard.ArgumentNotNull(objectType, nameof(objectType));
 		Guard.ArgumentNotNull(streams, nameof(streams));
@@ -225,7 +224,5 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 		if (type != ItemType)
 			throw new InvalidOperationException($@"This objectStream does not support type '{type}'");
 	}
-
-
 	
 }

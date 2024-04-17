@@ -16,12 +16,13 @@ using System.Runtime.CompilerServices;
 namespace Hydrogen;
 
 /// <summary>
-/// A objectStream of <see cref="Stream"/>'s whose contents are stored in a clustered manner over a root <see cref="Stream"/> (similar in principle to how a file-system works).
-/// Fundamentally, this class can function as a "virtual file system" allowing an arbitrary number of <see cref="Stream"/>'s to be stored (and changed). This class
-/// also serves as the base objectStream for implementations of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s.
+/// A collection of <see cref="Stream"/>'s which are multiplexed onto a single <see cref="Stream"/> using a cluster-based approach similar in principle to how a file-system works.
+/// This stream permits the basis of a "virtual file system" allowing any arbitrary number of <see cref="Stream"/>'s to be stored in a sequential manner, and arbitrarily updated both in content
+/// and size. This class (and <see cref="ObjectStream{T}"/>) serve a vital component of <see cref="IStreamMappedList{TItem}"/>'s, <see cref="IStreamMappedDictionary{TKey,TValue}"/>'s and <see cref="IStreamMappedHashSet{TItem}"/>'s
+/// implementations.
 /// <remarks>
-/// The structure of the underlying stream is depicted below:
-/// [ClusteredStreamsHeader] Version: 1, ClusterSize: 4, TotalClusters: 17, StreamCount: 2, StreamDescriptorsEndCluster: 14, ReservedStreams: 0, Policy: 0, MerkleRoot: 0000000000000000000000000000000000000000000000000000000000000000
+/// The structure of the root clustered stream is depicted below:
+/// [ClusteredStreamsHeader] Version: 1, ClusterSize: 4, TotalClusters: 17, StreamCount: 2, StreamDescriptorsEndCluster: 14, ReservedStreams: 0, Policy: 0
 /// [Stream Descriptors]:
 /// 0: [ClusteredStreamDescriptor] Size: 5, StartCluster: 7, EndCluster: 8, Traits: Default, KeyChecksum: 0, Key: 
 /// 1: [ClusteredStreamDescriptor] Size: 5, StartCluster: 15, EndCluster: 16, Traits: Default, KeyChecksum: 0, Key: 
@@ -45,13 +46,15 @@ namespace Hydrogen;
 /// 16: [Cluster] Traits: End, Prev: 15, Next: 1, Data: 09000000
 ///  
 ///  Notes:
-///  - Header is fixed 256b and has fields for merkle-root and a key for encryption.
+///  - Header is fixed 256b and has space for user-defined fields, such as merkle-root's and encryption keys.
+///  - Has pluggable <see cref="IClusteredStreamsAttachment"/> which mutate with stream operations (used for indexing, merkle-tree's, etc)
+///  - Meta-data based streams are saved as "Reserved Streams" which are always open.
 ///  - Cluster chains start with a cluster marked Start and end with a cluster marked End.
 ///  - Cluster chains are bi-directionally linked, for forward/backward seeking.
-///  - A Start cluster's "previous" link is called a "Terminal" value and is used used to denote the index of the stream.
-///  - An End cluster's "end" pointer is also a Terminal.
+///  - A Start cluster's "previous" link, since it is unused, is called a "Terminal" value instead denotes the index of the stream within the collection.
+///  - Similarly, an End cluster's "end" pointer is also a Terminal value and instead denotes index of the stream within the index .
 ///  - All streams are stored in a single cluster chain.
-///  - Stream Descriptors are metadata describing a Stream, where they start/end and other info.
+///  - Stream Descriptors are meta-data describing a Stream, where they start/end and other info.
 ///  - Stream Descriptors are are stored in a cluster chain starting at cluster 0 having Terminal -1.
 /// </remarks>
 public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
@@ -73,7 +76,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	private ICache<long, ClusteredStreamDescriptor> _streamDescriptorCache;
 	private ClusteredStreamsHeader _header;
 	private readonly IDictionary<long, ClusteredStream> _openStreams;
-	private readonly IDictionary<long, IClusteredStreamsAttachment> _attachments;
+	private readonly DictionaryList<string, IClusteredStreamsAttachment> _attachments;
 	private readonly List<Action> _initActions;
 
 	private readonly ConcurrentStream _rootStream;
@@ -101,7 +104,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		_streamDescriptorCache = null;
 		_header = null;
 		_openStreams = new Dictionary<long, ClusteredStream>();
-		_attachments = new Dictionary<long, IClusteredStreamsAttachment>();
+		_attachments = new DictionaryList<string, IClusteredStreamsAttachment>();
 		_initActions = new List<Action>();
 		Initialized = false;
 		_rootStream = rootStream.AsConcurrent();
@@ -170,7 +173,7 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 		}
 	}
 
-	public int AttachmentCount => _attachments.Count;
+	public IReadOnlyDictionaryList<string, IClusteredStreamsAttachment> Attachments => _attachments;
 
 	internal ClusterMap ClusterMap {
 		get {
@@ -688,36 +691,27 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	#region Attachment Management
 	
-	internal void RegisterAttachment(IClusteredStreamsAttachment attachment) {
+	public void RegisterAttachment(IClusteredStreamsAttachment attachment) {
+		// NOTE: we cannot lock the streams since it's not initialized yet, nor can we verify 
+		// the Header.ReservedStreams for same reason.
+
 		Guard.ArgumentNotNull(attachment, nameof(attachment));
-		//Guard.Against(StreamContainer.Initialized, "Cannot register meta-data provider after objectStream has been initialized");
-		Guard.Against(_attachments.ContainsKey(attachment.ReservedStreamIndex), $"Meta-data provider for reserved stream {attachment.ReservedStreamIndex} already registered");
-		_attachments.Add(attachment.ReservedStreamIndex, attachment);
+		Guard.Argument(attachment.AttachmentID is not null, nameof(attachment.AttachmentID), "Attachment did not specify an ID");
+//		Guard.Against(Initialized, "Cannot register attachments after initialization");
+
+		Guard.Argument(!_attachments.ContainsKey(attachment.AttachmentID), nameof(attachment), $" An attachment with ID '{attachment.AttachmentID}' was already attached to clustered streams instance");
+		//Guard.Ensure(Header.ReservedStreams > _attachments.Count, $"Insufficient reserved streams available to register attachment '{attachment.ID}'") ;
+
+
+		// track attachment
+		_attachments.Add(attachment.AttachmentID, attachment);
 
 		// If objectStream is already loaded, then attach now
 		if (!RequiresLoad)
 			attachment.Attach();
+	
 	}
 
-	internal IClusteredStreamsAttachment GetAttachment(long reservedStream) => _attachments[reservedStream];
-
-	internal T FindAttachment<T>() where T : IClusteredStreamsAttachment {
-		if (!TryFindAttachment<T>(out var attachment)) 
-			throw new InvalidOperationException($"No attachment of type '{typeof(T).ToStringCS()}'");
-		return attachment;
-	}
-
-	internal bool TryFindAttachment<T>(out T attachment) where T : IClusteredStreamsAttachment {
-		foreach (var attch in _attachments) {
-			var ix = attch.Key;
-			if (_attachments[ix].GetType() == typeof(T)) {
-				attachment = (T)GetAttachment(ix);
-				return true;
-			}
-		}
-		attachment = default;
-		return false;
-	}
 
 	private void LoadAttachments() {
 		foreach(var attachment in _attachments.Values.Where(x => !x.IsAttached))
@@ -725,9 +719,9 @@ public class ClusteredStreams : SyncLoadableBase, ICriticalObject, IDisposable {
 	}
 
 	internal void UnloadAttachments() {
-		foreach(var attachment in _attachments.Values.Where(x => x.IsAttached)) {
+		foreach(var (attachment, ix) in _attachments.Values.Where(x => x.IsAttached).WithIndex()) {
 			attachment.Detach();
-			_streamDescriptorCache?.Invalidate(attachment.ReservedStreamIndex);
+			_streamDescriptorCache?.Invalidate(ix);
 		}
 
 		_attachments.Clear();

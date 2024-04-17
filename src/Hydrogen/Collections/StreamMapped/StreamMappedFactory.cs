@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
-using System.Net.Http.Headers;
-using System.Runtime.CompilerServices;
-using Hydrogen.ObjectSpaces;
-using static Hydrogen.AMS;
-using Tools;
 
 namespace Hydrogen;
 
@@ -22,7 +16,7 @@ public static class StreamMappedFactory {
 		IItemChecksummer<TItem> itemChecksummer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 0,
-		long checksumIndexStreamIndex = 0,
+		string optionalItemChecksumIndexName = null,
 		Endianness endianness = Endianness.LittleEndian, 
 		bool autoLoad = false
 	) {
@@ -40,7 +34,7 @@ public static class StreamMappedFactory {
 			itemSerializer, 
 			itemComparer, 
 			itemChecksummer,
-			checksumIndexStreamIndex,
+			optionalItemChecksumIndexName,
 			autoLoad
 		);
 		list.ObjectStream.OwnsStreams = true;
@@ -52,18 +46,19 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> itemSerializer = null,
 		IEqualityComparer<TItem> itemComparer = null,
 		IItemChecksummer<TItem> itemChecksummer = null,
-		long checksumIndexStreamIndex = 0,
+		string optionalItemChecksumIndexName = null,
 		bool autoLoad = false
 	) {
 		var container = CreateListContainer(
 			streams,
 			itemSerializer,
 			itemChecksummer,
-			checksumIndexStreamIndex
+			optionalItemChecksumIndexName
 		);
 
 		var list = new StreamMappedList<TItem>(
 			container,
+			optionalItemChecksumIndexName,
 			itemComparer,
 			autoLoad
 		) {
@@ -85,8 +80,8 @@ public static class StreamMappedFactory {
 		IItemChecksummer<TItem> itemChecksummer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 1,
-		long recyclableIndexStoreStreamIndex = 0,
-		long checksumIndexStreamIndex = 1,
+		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string optionalItemChecksumIndexName = null,
 		Endianness endianness = Endianness.LittleEndian, 
 		bool autoLoad = false
 	) {
@@ -102,8 +97,8 @@ public static class StreamMappedFactory {
 			itemSerializer, 
 			itemComparer, 
 			itemChecksummer,
-			recyclableIndexStoreStreamIndex,
-			checksumIndexStreamIndex,
+			recyclableIndexIndexName,
+			optionalItemChecksumIndexName,
 			autoLoad
 		);
 		list.ObjectStream.OwnsStreams = true;
@@ -115,8 +110,8 @@ public static class StreamMappedFactory {
 		IItemSerializer<TItem> itemSerializer = null,
 		IEqualityComparer<TItem> itemComparer = null,
 		IItemChecksummer<TItem> itemChecksummer = null,
-		long recyclableIndexStoreStreamIndex = 0,
-		long checksumIndexStreamIndex = 1,
+		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string optionalItemChecksumIndexName = null,
 		bool autoLoad = false
 	) {
 		var list = new StreamMappedRecyclableList<TItem>(
@@ -124,9 +119,11 @@ public static class StreamMappedFactory {
 				streams,
 				itemSerializer,
 				itemChecksummer,
-				recyclableIndexStoreStreamIndex,
-				checksumIndexStreamIndex
+				recyclableIndexIndexName,
+				optionalItemChecksumIndexName
 			),
+			recyclableIndexIndexName,
+			optionalItemChecksumIndexName,
 			itemComparer,
 			autoLoad
 		);
@@ -148,8 +145,8 @@ public static class StreamMappedFactory {
 		int clusterSize = HydrogenDefaults.ClusterSize,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 2,
-		long recyclableIndexStoreStreamIndex = 0,
-		long keyChecksumIndexStreamIndex = 1,
+		string recylableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string keyIndexName = null,
 		Endianness endianness = HydrogenDefaults.Endianness,
 		bool readOnly = false,
 		bool autoLoad = false,
@@ -200,8 +197,8 @@ public static class StreamMappedFactory {
 				endianness,
 				autoLoad,
 				reservedStreams,
-				recyclableIndexStoreStreamIndex,
-				keyChecksumIndexStreamIndex
+				recylableIndexIndexName,
+				keyIndexName ?? HydrogenDefaults.DefaultKeyStoreAttachmentName
 			);
 		} else {
 			return CreateDictionaryKvp(
@@ -216,8 +213,8 @@ public static class StreamMappedFactory {
 				endianness,
 				autoLoad,
 				reservedStreams,
-				recyclableIndexStoreStreamIndex,
-				keyChecksumIndexStreamIndex
+				recylableIndexIndexName,
+				keyIndexName ?? HydrogenDefaults.DefaultKeyChecksumIndexName
 			);
 		}
 
@@ -240,8 +237,8 @@ public static class StreamMappedFactory {
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false,
 		long reservedStreamCount = 2,
-		long recyclableIndexStoreStreamIndex = 0,
-		long keyChecksumIndexStreamIndex = 1
+		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName
 	) {
 		var dict = CreateDictionaryKvp (
 			new ClusteredStreams(
@@ -258,8 +255,8 @@ public static class StreamMappedFactory {
 			valueComparer,
 			keyChecksummer,
 			autoLoad,
-			recyclableIndexStoreStreamIndex,
-			keyChecksumIndexStreamIndex
+			recyclableIndexIndexName,
+			keyChecksumIndexName
 		);
 		dict.ObjectStream.OwnsStreams = true;
 		return dict;
@@ -273,8 +270,8 @@ public static class StreamMappedFactory {
 		IEqualityComparer<TValue> valueComparer = null,
 		IItemChecksummer<TKey> keyChecksummer = null,
 		bool autoLoad = false,
-		long recyclableIndexStoreStreamIndex = 0,
-		long keyChecksumIndexStreamIndex = 1
+		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string keyChecksumIndexName = HydrogenDefaults.DefaultKeyChecksumIndexName
 	) {
 
 		var container = CreateKvpObjectContainer(
@@ -283,12 +280,14 @@ public static class StreamMappedFactory {
 				valueSerializer ?? ItemSerializer<TValue>.Default,
 				keyChecksummer ?? new ItemDigestor<TKey>(keySerializer, streams.Endianness),
 				keyComparer ?? EqualityComparer<TKey>.Default,
-				recyclableIndexStoreStreamIndex,
-				keyChecksumIndexStreamIndex
+				recyclableIndexIndexName,
+				keyChecksumIndexName
 			);
 
 		var dict = new StreamMappedDictionary<TKey, TValue>(
 			container,
+			recyclableIndexIndexName,
+			keyChecksumIndexName,
 			valueComparer,
 			autoLoad
 		);
@@ -313,8 +312,8 @@ public static class StreamMappedFactory {
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false,
 		long reservedStreamCount = 2,
-		long recyclableIndexStoreStreamIndex = 0,
-		long keyChecksumIndexStreamIndex = 1
+		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string keyStoreName = HydrogenDefaults.DefaultKeyStoreAttachmentName
 	) {
 		var container = new ClusteredStreams(
 			rootStream,
@@ -332,8 +331,8 @@ public static class StreamMappedFactory {
 			keyComparer,
 			valueComparer,
 			autoLoad,
-			recyclableIndexStoreStreamIndex,
-			keyChecksumIndexStreamIndex
+			recyclableIndexIndexName,
+			keyStoreName
 		);
 
 		dict.ObjectStream.OwnsStreams = true;
@@ -348,20 +347,22 @@ public static class StreamMappedFactory {
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
 		bool autoLoad = false,
-		long recyclableIndexStoreStreamIndex = 0,
-		long keyStoreStreamIndex = 1
+		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string keyStoreName = HydrogenDefaults.DefaultKeyStoreAttachmentName
 	) {
 		var container = CreateClkContainer(
 			streams,
 			constantLengthKeySerializer,
 			valueSerializer ?? ItemSerializer<TValue>.Default,
 			keyComparer ?? EqualityComparer<TKey>.Default,
-			recyclableIndexStoreStreamIndex,
-			keyStoreStreamIndex
+			recyclableIndexIndexName,
+			keyStoreName
 		);
 		
 		var dict = new StreamMappedDictionaryCLK<TKey, TValue>(
 			container,
+			recyclableIndexIndexName,
+			keyStoreName,
 			valueComparer,
 			autoLoad
 		);
@@ -423,8 +424,8 @@ public static class StreamMappedFactory {
 		IItemSerializer<TValue> valueSerializer,
 		IItemChecksummer<TKey> keyChecksummer,
 		IEqualityComparer<TKey> keyComparer,
-		long recyclableIndexStoreStreamIndex,
-		long keyChecksumIndexStreamIndex
+		string recyclableIndexIndexName,
+		string keyChecksumIndexName
 	) {
 		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(keySerializer, nameof(keySerializer));
@@ -444,12 +445,20 @@ public static class StreamMappedFactory {
 		// Create free-index store
 		var recyclableIndexIndex = new RecyclableIndexIndex(
 			container,
-			recyclableIndexStoreStreamIndex
+			recyclableIndexIndexName
 		);
 		container.Streams.RegisterAttachment(recyclableIndexIndex);
 
 		// Create key checksum index (for fast key lookups)
-		var keyChecksumKeyIndex = IndexFactory.CreateChecksumKeyIndex(container, keyChecksumIndexStreamIndex, kvp => kvp.Key, keySerializer, keyChecksummer, ReadKey, keyComparer);
+		var keyChecksumKeyIndex = IndexFactory.CreateProjectionChecksumIndex(
+			container, 
+			keyChecksumIndexName, 
+			kvp => kvp.Key, 
+			keySerializer, 
+			keyChecksummer, 
+			ReadKey, 
+			keyComparer
+		);
 		container.Streams.RegisterAttachment(keyChecksumKeyIndex);
 
 		return container;
@@ -473,8 +482,8 @@ public static class StreamMappedFactory {
 		IItemSerializer<TKey> constantLengthKeySerializer,
 		IItemSerializer<TValue> valueSerializer,
 		IEqualityComparer<TKey> keyComparer,
-		long recyclableIndexStoreStreamIndex,
-		long keyStoreStreamIndex
+		string recyclableIndexIndexName,
+		string keyStoreName
 	) {
 		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(constantLengthKeySerializer, nameof(constantLengthKeySerializer));
@@ -490,15 +499,15 @@ public static class StreamMappedFactory {
 
 		var recyclableIndexIndex = new RecyclableIndexIndex(
 			container,
-			recyclableIndexStoreStreamIndex
+			recyclableIndexIndexName
 		);
 		container.Streams.RegisterAttachment(recyclableIndexIndex);
 
-		var keyStore = new UniqueMemberStore<TKey>(
+		var keyStore = new UniqueKeyStorageAttachment<TKey>(
 			container.Streams,
-			keyStoreStreamIndex,
-			keyComparer,
-			constantLengthKeySerializer
+			keyStoreName,
+			constantLengthKeySerializer,
+			keyComparer
 		);
 		container.Streams.RegisterAttachment(keyStore);
 		
@@ -510,23 +519,27 @@ public static class StreamMappedFactory {
 		ClusteredStreams streams,
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
-		long checksumIndexStreamIndex
+		string optionalItemChecksumIndexName
 	) {
+		if (!string.IsNullOrEmpty(optionalItemChecksumIndexName)) 
+			Guard.Argument(itemChecksummer is not null, nameof(itemChecksummer), $"Must be provided when specifying a checksum index"); 
+
 		var container = new ObjectStream<TItem>(
 			streams, 
 			itemSerializer, 
 			streams.Policy.HasFlag(ClusteredStreamsPolicy.FastAllocate)
 		);
 
-		if (itemChecksummer is not null) {
-			var checksumKeyIndex = new MemberIndex<TItem, int>(
+		if (!string.IsNullOrEmpty(optionalItemChecksumIndexName)) {
+			Guard.Ensure(itemChecksummer is not null);
+			var itemChecksumIndex = new ProjectionIndex<TItem, int>(
 				container,
-				checksumIndexStreamIndex,
+				optionalItemChecksumIndexName,
 				itemChecksummer.CalculateChecksum,
-				EqualityComparer<int>.Default,
-				PrimitiveSerializer<int>.Instance
+				PrimitiveSerializer<int>.Instance,
+				EqualityComparer<int>.Default
 			);
-			container.Streams.RegisterAttachment( checksumKeyIndex);
+			container.Streams.RegisterAttachment(itemChecksumIndex);
 		} 
 
 		return container;
@@ -536,9 +549,12 @@ public static class StreamMappedFactory {
 		ClusteredStreams streams,
 		IItemSerializer<TItem> itemSerializer,
 		IItemChecksummer<TItem> itemChecksummer,
-		long recyclableIndexStoreStreamIndex,
-		long checksumIndexStreamIndex
+		string recyclableIndexName,
+		string optionalItemChecksumIndexName
 	) {
+		if (!string.IsNullOrEmpty(optionalItemChecksumIndexName)) 
+			Guard.Argument(itemChecksummer is not null, nameof(itemChecksummer), $"Must be provided when specifying a checksum index"); 
+
 		var container = new ObjectStream<TItem>(
 			streams, 
 			itemSerializer, 
@@ -548,20 +564,21 @@ public static class StreamMappedFactory {
 		// Create free-index store
 		var recyclableIndexIndex = new RecyclableIndexIndex(
 			container,
-			recyclableIndexStoreStreamIndex
+			recyclableIndexName
 		);
 		container.Streams.RegisterAttachment(recyclableIndexIndex);
 
 		// Create item checksum index (if applicable)
-		if (itemChecksummer is not null) {
-			var checksumKeyIndex = new MemberIndex<TItem, int>(
+		if (!string.IsNullOrEmpty(optionalItemChecksumIndexName)) {
+			Guard.Ensure(itemChecksummer is not null); 
+			var checksumKeyIndex = new ProjectionIndex<TItem, int>(
 				container,
-				checksumIndexStreamIndex,
+				optionalItemChecksumIndexName,
 				itemChecksummer.CalculateChecksum,
-				EqualityComparer<int>.Default,
-				PrimitiveSerializer<int>.Instance
+				PrimitiveSerializer<int>.Instance,
+				EqualityComparer<int>.Default
 			);
-			container.Streams.RegisterAttachment( checksumKeyIndex);
+			container.Streams.RegisterAttachment(checksumKeyIndex);
 		}
 
 		return container;

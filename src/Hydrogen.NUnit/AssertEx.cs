@@ -594,7 +594,7 @@ public static class AssertEx {
 			} while (expectedMoveNext);
 		}
 
-		// Ensure adding duplicate fails
+		// Ensure adding duplicate kvp fails
 		if (newItems.Length > 0) {
 			var existing = newItems[0];
 			var newItem = randomItemGenerator(rng).ToKeyValuePair();

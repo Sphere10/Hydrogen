@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public class DictionaryList<TKey, TVal> : DictionaryBase<TKey, TVal>, IReadOnlyList<TVal> {
+public class DictionaryList<TKey, TVal> : DictionaryBase<TKey, TVal>, IReadOnlyDictionaryList<TKey, TVal> {
 	private readonly IEqualityComparer<TVal> _valueComparer;
 	private readonly IList<TVal> _list;
 	private readonly IDictionary<TKey, int> _dictionary;
@@ -46,6 +46,8 @@ public class DictionaryList<TKey, TVal> : DictionaryBase<TKey, TVal>, IReadOnlyL
 		}
 		return false;
 	}
+
+	public int IndexOf(TKey key) => _dictionary.TryGetValue(key, out var index) ? index : -1;
 
 	public override bool TryGetValue(TKey key, out TVal value) {
 		if (!_dictionary.TryGetValue(key, out var valueIndex)) {

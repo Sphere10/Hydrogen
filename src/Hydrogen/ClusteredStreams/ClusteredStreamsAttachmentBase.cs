@@ -21,16 +21,21 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 	private readonly long _streamOffset;
 	private bool _attached;
 
-	protected ClusteredStreamsAttachmentBase(ClusteredStreams streams, long reservedStreamIndex) {
+	protected ClusteredStreamsAttachmentBase(ClusteredStreams streams, string attachmentID) {
+		Guard.ArgumentNotNull(streams, nameof(streams));
+		Guard.ArgumentNotNull(attachmentID, nameof(attachmentID));
+		AttachmentID = attachmentID;
 		Streams = streams;
-		ReservedStreamIndex = reservedStreamIndex;
 		_attached = false;
 		_streamOffset = 0;
+		ReservedStreamIndex = -1;
 	}
+
+	public string AttachmentID { get; }
 
 	public ClusteredStreams Streams { get; }
 
-	public long ReservedStreamIndex { get; }
+	public int ReservedStreamIndex { get; private set; }
 
 	protected Stream AttachmentStream {
 		get {
@@ -46,9 +51,13 @@ public abstract class ClusteredStreamsAttachmentBase : IDisposable, IClusteredSt
 		CheckNotAttached();
 		Guard.Ensure(!Streams.RequiresLoad, "Unable to attach to an unloaded Object Container");
 		Guard.Ensure(Streams.Header.ReservedStreams > 0, "Stream Container has no reserved streams available");
-		Guard.Ensure(ReservedStreamIndex < Streams.Header.ReservedStreams, $"Stream at index {ReservedStreamIndex} is not reserved");
+		//Guard.Ensure(ReservedStreamIndex < Streams.Header.ReservedStreams, $"Stream at index {ReservedStreamIndex} is not reserved");
 		using (Streams.EnterAccessScope()) {
 			_attached = true;
+
+			// Figure out the index of the stream which this attachment is bound to
+			ReservedStreamIndex = Streams.Attachments.IndexOf(AttachmentID);
+			Guard.Against(ReservedStreamIndex == -1, $"{GetType().ToStringCS()} was not registered with {nameof(ClusteredStreams)} owner");
 
 			// Open the stream used by the index. No access scope is acquired for the stream
 			// and thus all use of the index must take place within an explicit access scope.

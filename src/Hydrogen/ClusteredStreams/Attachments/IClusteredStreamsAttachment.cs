@@ -12,9 +12,10 @@ namespace Hydrogen;
 /// An auxillary component that attaches to a reserved stream within a <see cref="ClusteredStreams"/>.
 /// </summary>
 public interface IClusteredStreamsAttachment {
-	ClusteredStreams Streams { get; }
 
-	long ReservedStreamIndex { get; }
+	public string AttachmentID { get; }
+
+	ClusteredStreams Streams { get; }
 
 	bool IsAttached { get; }
 

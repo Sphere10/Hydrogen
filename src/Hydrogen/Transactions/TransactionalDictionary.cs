@@ -8,7 +8,6 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
@@ -31,8 +30,8 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		IEqualityComparer<TKey> keyComparer = null,
 		IEqualityComparer<TValue> valueComparer = null,
 		int reservedStreamCount = 2,
-		long recyclableIndexStoreStreamIndex = 0,
-		long keyChecksumIndexStreamIndex = 1,
+		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string keyIndexName = null,
 		FileAccessMode accessMode = FileAccessMode.Default,
 		StreamMappedDictionaryImplementation implementation = StreamMappedDictionaryImplementation.Auto
 	) : this(
@@ -45,8 +44,8 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		fileDescriptor.ClusterSize, 
 		fileDescriptor.ContainerPolicy,
 		reservedStreamCount,
-		recyclableIndexStoreStreamIndex,
-		keyChecksumIndexStreamIndex,
+		recyclableIndexIndexName,
+		keyIndexName,
 		fileDescriptor.Endianness,
 		accessMode.IsReadOnly(),
 		accessMode.HasFlag(FileAccessMode.AutoLoad),
@@ -65,8 +64,8 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 		int clusterSize = HydrogenDefaults.ClusterSize,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default, 
 		int reservedStreamCount = 2,
-		long recyclableIndexStoreStreamIndex = 0,
-		long keyChecksumIndexStreamIndex = 1,
+		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string keyIndexName = null,
 		Endianness endianness = HydrogenDefaults.Endianness,
 		bool readOnly = false,
 		bool autoLoad = false,
@@ -82,8 +81,8 @@ public class TransactionalDictionary<TKey, TValue> : DictionaryDecorator<TKey, T
 			clusterSize, 
 			policy,
 			reservedStreamCount,
-			recyclableIndexStoreStreamIndex,
-			keyChecksumIndexStreamIndex,
+			recyclableIndexIndexName,
+			keyIndexName,
 			endianness, 
 			readOnly,
 			false,

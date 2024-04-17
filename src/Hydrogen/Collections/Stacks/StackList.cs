@@ -17,7 +17,7 @@ public class StackList<T, TInner> : ExtendedListDecorator<T, TInner>, IStack<T> 
 
 	public bool TryPeek(out T value) => TryPeek(out value, 1);
 
-	public bool TryPeek(out T value, int depth) {
+	public virtual bool TryPeek(out T value, int depth) {
 		var count = Count;
 		var itemIX = count - depth;
 		if (itemIX < 0) {
@@ -28,8 +28,7 @@ public class StackList<T, TInner> : ExtendedListDecorator<T, TInner>, IStack<T> 
 		return true;
 	}
 
-
-	public bool TryPop(out T value) {
+	public virtual bool TryPop(out T value) {
 		var count = Count;
 		if (count <= 0) {
 			value = default(T);
@@ -40,14 +39,13 @@ public class StackList<T, TInner> : ExtendedListDecorator<T, TInner>, IStack<T> 
 		return true;
 	}
 
-
 	public T Peek(int depth) {
 		if (!TryPeek(out var value, depth))
 			throw new InvalidOperationException($"Unable to peek stack at depth {depth}");
 		return value;
 	}
 
-	public void Push(T item) => base.Add(item);
+	public virtual void Push(T item) => base.Add(item);
 }
 
 public class StackList<T> : StackList<T, IExtendedList<T>> {

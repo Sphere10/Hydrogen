@@ -65,9 +65,9 @@ public sealed class ExtendedLookup<TKey, TValue> : ILookup<TKey, TValue> {
 		FetchValuesCollection(key).Add(value);
 	}
 
-	public void Remove(TKey key, TValue value) {
-		FetchValuesCollection(key).Remove(value);
-	}
+	public bool Remove(TKey key, TValue value) 
+		=> FetchValuesCollection(key).Remove(value);
+	
 
 	public void AddRange(TKey key, IEnumerable<TValue> values) {
 		FetchValuesCollection(key).AddRange(values);

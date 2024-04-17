@@ -13,7 +13,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
@@ -33,8 +32,8 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 		IItemChecksummer<TItem> itemChecksummer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 1,
-		long merkleTreeStreamIndex = 0,
-		long checksumIndexStreamIndex = 1,
+		string merkleTreeIndexName = HydrogenDefaults.DefaultMerkleTreeIndexName,
+		string optionalItemChecksumIndexName = null,
 		Endianness endianness = Endianness.LittleEndian, 
 		bool autoLoad = false
 	) : this(
@@ -47,17 +46,22 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 				itemChecksummer,
 				policy,
 				reservedStreams,
-				merkleTreeStreamIndex,
-				checksumIndexStreamIndex,
+				merkleTreeIndexName,
+				optionalItemChecksumIndexName,
 				endianness
 			),
+			merkleTreeIndexName,
 			autoLoad
-	) {
+		) {
 	}
 
-	internal StreamMappedMerkleList(IStreamMappedList<TItem> streamMappedList, bool autoLoad = false) : base(streamMappedList) {
+	internal StreamMappedMerkleList(
+		IStreamMappedList<TItem> streamMappedList, 
+		string merkleTreeIndexName, 
+		bool autoLoad = false
+	) : base(streamMappedList) {
 		Guard.ArgumentNotNull(streamMappedList, nameof(streamMappedList));
-		_merkleTreeIndex = streamMappedList.ObjectStream.Streams.FindAttachment<MerkleTreeIndex>();
+		_merkleTreeIndex = (MerkleTreeIndex)streamMappedList.ObjectStream.Streams.Attachments[merkleTreeIndexName];
 		if (autoLoad && RequiresLoad) 
 			Load();
 	}
@@ -91,11 +95,11 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 		IItemChecksummer<TItem> itemChecksummer,
 		ClusteredStreamsPolicy policy,
 		long reservedStreams,
-		long merkleTreeStreamIndex,
-		long checksumIndexStreamIndex,
+		string merkleTreeIndexName,
+		string optionalItemChecksumIndexName,
 		Endianness endianness
 	) {
-		var streamMappedList =  StreamMappedFactory.CreateList(
+		var streamMappedList = StreamMappedFactory.CreateList(
 			rootStream,
 			clusterSize,
 			itemSerializer,
@@ -103,14 +107,14 @@ public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStrea
 			itemChecksummer,
 			policy,
 			reservedStreams,
-			checksumIndexStreamIndex,
+			optionalItemChecksumIndexName,
 			endianness,
 			false
 		);
 
 		var merkleTreeIndex = new MerkleTreeIndex(
 			streamMappedList.ObjectStream,
-			merkleTreeStreamIndex,
+			merkleTreeIndexName,
 			new ObjectStreamItemHasher(streamMappedList.ObjectStream, hashAlgorithm),
 			hashAlgorithm
 		);

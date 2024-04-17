@@ -14,19 +14,19 @@ namespace Hydrogen;
 /// <summary>
 /// Base implementation for an index on an <see cref="ObjectStream{T}"/>.
 /// </summary>
-public abstract class IndexBase<TData, TStore> : ObjectStreamObserverBase, IClusteredStreamsAttachment where TStore : IMetaDataStore<TData> {
+public abstract class IndexBase<TStore> : ObjectStreamObserverBase, IClusteredStreamsAttachment where TStore : IClusteredStreamsAttachment {
 
 	protected IndexBase(ObjectStream objectStream, TStore store)
 		: base(objectStream) {
-		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
+		Guard.ArgumentNotNull(store, nameof(store));
 		Store = store;
 	}
+
+	public string AttachmentID => Store.AttachmentID;
 
 	public TStore Store { get; }
 
 	public virtual ClusteredStreams Streams => Store.Streams;
-
-	public virtual long ReservedStreamIndex => Store.ReservedStreamIndex; 
 
 	public virtual bool IsAttached => Store.IsAttached;
 
@@ -35,31 +35,6 @@ public abstract class IndexBase<TData, TStore> : ObjectStreamObserverBase, IClus
 	public virtual void Detach() => Store.Detach();
 
 	public virtual void Flush() => Store.Flush();
-
-	protected override void OnRemoved(long index) {
-		CheckAttached();
-		Store.Remove(index);
-	}
-
-	protected override void OnReaped(long index) {
-		CheckAttached();
-		Store.Reap(index);
-	}
-
-	protected override void OnContainerClearing() {
-		// Inform the key store to clear
-		Store.Clear();
-
-		// When the objectStream about to be cleared, we detach the observer
-		CheckAttached();
-		Store.Detach();
-	}
-
-	protected override void OnContainerCleared() {
-		// After objectStream was cleared, we reboot the index
-		CheckDetached();
-		Store.Attach();
-	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	protected void CheckAttached()

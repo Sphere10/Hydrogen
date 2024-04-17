@@ -11,12 +11,16 @@ using System;
 namespace Hydrogen;
 
 public abstract class ObjectStreamObserverBase  {
+	protected ObjectStream Objects;
 
 	protected ObjectStreamObserverBase(ObjectStream objectStream) {
-		objectStream.PreItemOperation += OnPreItemOperation;
-		objectStream.PostItemOperation += OnPostItemOperation;
-		objectStream.Clearing += OnContainerClearing;
-		objectStream.Cleared += OnContainerCleared;
+		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
+		Objects = objectStream;
+		Objects.PreItemOperation += OnPreItemOperation;
+		Objects.PostItemOperation += OnPostItemOperation;
+		Objects.Clearing += OnContainerClearing;
+		Objects.Cleared += OnContainerCleared;
+
 	}
 
 	protected virtual void OnAdding(object item, long index) {
@@ -47,6 +51,12 @@ public abstract class ObjectStreamObserverBase  {
 	}
 
 	protected virtual void OnReaped(long index) {
+	}
+
+	protected virtual void OnContainerClearing() {
+	}
+
+	protected virtual void OnContainerCleared() {
 	}
 
 	protected virtual void OnPreItemOperation(long index, object item, ObjectStreamOperationType operationType) {
@@ -95,12 +105,6 @@ public abstract class ObjectStreamObserverBase  {
 			default:
 				throw new ArgumentOutOfRangeException(nameof(operationType), operationType, null);
 		}
-	}
-
-	protected virtual void OnContainerClearing() {
-	}
-
-	protected virtual void OnContainerCleared() {
 	}
 
 }

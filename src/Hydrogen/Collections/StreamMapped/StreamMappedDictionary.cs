@@ -29,15 +29,15 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
 	private readonly IEqualityComparer<TValue> _valueComparer;
-	private readonly MemberChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _memberChecksumIndex;
+	private readonly ProjectionChecksumIndex<KeyValuePair<TKey, TValue>, TKey> _projectionChecksumIndex;
 	private readonly RecyclableIndexIndex _recyclableIndexStore;
 
-	internal StreamMappedDictionary(ObjectStream objectStream, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
+	internal StreamMappedDictionary(ObjectStream objectStream, string recyclableIndexName, string keyChecksumIndexName, IEqualityComparer<TValue> valueComparer = null, bool autoLoad = false) {
 		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
 		Guard.ArgumentIsAssignable<ObjectStream<KeyValuePair<TKey, TValue>>>(objectStream, nameof(objectStream));
 		ObjectStream = (ObjectStream<KeyValuePair<TKey, TValue>>)objectStream;
-		_recyclableIndexStore = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
-		_memberChecksumIndex = objectStream.Streams.FindAttachment<MemberChecksumIndex<KeyValuePair<TKey, TValue>, TKey>>();
+		_recyclableIndexStore = (RecyclableIndexIndex)objectStream.Streams.Attachments[recyclableIndexName];
+		_projectionChecksumIndex = (ProjectionChecksumIndex<KeyValuePair<TKey, TValue>, TKey>)objectStream.Streams.Attachments[keyChecksumIndexName];
 		_valueComparer = valueComparer ?? EqualityComparer<TValue>.Default;
 		
 		if (autoLoad && RequiresLoad) 
@@ -56,7 +56,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public override long Count {
 		get {
 			CheckLoaded();
-			return ObjectStream.Count - _recyclableIndexStore.Stack.Count;
+			return ObjectStream.Count - _recyclableIndexStore.Store.Count;
 		}
 	}
 
@@ -176,7 +176,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		Guard.ArgumentNotNull(key, nameof(key));
 		CheckLoaded();
 		using (ObjectStream.EnterAccessScope()) {
-			return _memberChecksumIndex.Lookup[key].Any();
+			return _projectionChecksumIndex.Values[key].Any();
 		}
 	}
 
@@ -203,7 +203,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public bool TryFindKey(TKey key, out long index) {
 		Debug.Assert(key != null);
 		using (ObjectStream.EnterAccessScope()) {
-			var matches = _memberChecksumIndex.Lookup[key].ToArray();
+			var matches = _projectionChecksumIndex.Values[key].ToArray();
 			if (matches.Length == 0) {
 				index = -1;
 				return false;
@@ -217,7 +217,7 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 	public bool TryFindValue(TKey key, out long index, out TValue value) {
 		Debug.Assert(key != null);
 		using (ObjectStream.EnterAccessScope()) {
-			var matches = _memberChecksumIndex.Lookup[key].ToArray();
+			var matches = _projectionChecksumIndex.Values[key].ToArray();
 			if (matches.Length == 0) {
 				index = -1;
 				value = default;
@@ -286,11 +286,11 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 		CheckLoaded();
 		using (ObjectStream.EnterAccessScope()) {
 			var sortedList = new SortedList<long>(SortDirection.Descending);
-			_recyclableIndexStore.Stack.ForEach(sortedList.Add);
+			_recyclableIndexStore.Store.ForEach(sortedList.Add);
 			foreach (var recycledIndex in sortedList) {
 				ObjectStream.RemoveItem(recycledIndex);
 			}
-			_recyclableIndexStore.Stack.Clear();
+			_recyclableIndexStore.Store.Clear();
 			UpdateVersion();
 		}
 	}
@@ -335,8 +335,8 @@ public class StreamMappedDictionary<TKey, TValue> : DictionaryBase<TKey, TValue>
 
 	private void AddInternal(KeyValuePair<TKey, TValue> item) {
 		long index;
-		if (_recyclableIndexStore.Stack.Any()) {
-			index = _recyclableIndexStore.Stack.Pop();
+		if (_recyclableIndexStore.Store.Any()) {
+			index = _recyclableIndexStore.Store.Pop();
 			ObjectStream.SaveItem(index, item, ObjectStreamOperationType.Update);
 		} else {
 			index = Count;

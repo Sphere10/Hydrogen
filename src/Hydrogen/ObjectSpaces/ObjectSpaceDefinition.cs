@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
@@ -36,10 +37,10 @@ public class ObjectSpaceDefinition {
 		}
 
 		// Verify all dimensions
-		for(var ix = 0; ix < Dimensions.Length; ix++) {
-			var dimension = Dimensions[ix];
+		for(var i = 0; i < Dimensions.Length; i++) {
+			var dimension = Dimensions[i];
 
-			var dimensionErrorPrefix = $"Dimension {ix} ({dimension.ObjectType.ToStringCS()})";
+			var dimensionErrorPrefix = $"Dimension {i} ({dimension.ObjectType.ToStringCS()})";
 
 			if (dimension.Indexes is { Length: > 0 }) {
 				// Ensure has 1 recyclable free-index store
@@ -60,15 +61,28 @@ public class ObjectSpaceDefinition {
 				if (Merkleized && dimensionMerkleTrees < 1)
 					result.AddError($"{dimensionErrorPrefix} requires a {nameof(IndexType.MerkleTree)} as the parent {nameof(ObjectSpace)} is merkleized");
 
-				// Ensure indexes which require a property member that one is specified
-				var indexAtLocation = dimension.Indexes.Select( (index, loc) => (Index: index, Loc: loc));
-				foreach(var indexLoc in indexAtLocation.Where(x => RequiresMember(x.Index.Type) && x.Index.KeyMember is null))
-					result.AddError($"{dimensionErrorPrefix} contains an {nameof(indexLoc.Index.Type)} (at {indexLoc.Loc}) which requires a member");
+				// Verify all indexes
+				var alreadyProcessedMembers = new HashSet<Member>();
+				for (var j = 0; j < dimension.Indexes.Length; j++) {
+					var index = dimension.Indexes[j];
 
-				// Ensure not over-indexing properties
-				foreach(var duplicateProperty in indexAtLocation.Where(x => x.Index.KeyMember is not null).GroupBy(x => x.Index.KeyMember.MemberInfo).Where(x => x.Count() > 1))
-					result.AddError($"{dimensionErrorPrefix} contains {duplicateProperty.Count()} index's on property {duplicateProperty.Key.Name}");
+					// Ensure all indexes have a unique name within the container
+					if (string.IsNullOrWhiteSpace(index.Name)) 
+						result.AddError($"{dimensionErrorPrefix} contains an {nameof(index.Type)} (at {j}) which does not specify a unique name");
+					else if (dimension.Indexes.Count(x => x.Name == index.Name) > 1)
+						result.AddError($"{dimensionErrorPrefix} contains an {nameof(index.Type)} (at {j}) which uses a null or duplicated name '{index.Name}'");
 
+					// Ensure indexes which require a property member that one is specified
+					if (RequiresMember(index.Type) && index.Member is null)
+						result.AddError($"{dimensionErrorPrefix} contains an {nameof(index.Type)} (at {j}) which requires a member");
+
+					// Ensure not over-indexing members
+					if (index.Member is not null && !alreadyProcessedMembers.Contains(index.Member) && dimension.Indexes.Count(x => x.Member == index.Member) > 1) {
+						result.AddError($"{dimensionErrorPrefix} contains multiple index's on member {index.Member.Name}");
+						alreadyProcessedMembers.Add(index.Member);
+					}
+					
+				}
 			} else {
 				result.AddError("Dimension requires index definition");
 			}
@@ -93,6 +107,7 @@ public class ObjectSpaceDefinition {
 				IndexType.MerkleTree => false,
 				_ => throw new NotSupportedException(type.ToString())
 			};
+
 	}
 
 	public class DimensionDefinition {
@@ -109,7 +124,9 @@ public class ObjectSpaceDefinition {
 		
 		public IndexType Type { get; set; }
 
-		public Member KeyMember { get; set; }
+		public string Name { get; set; }
+
+		public Member Member { get; set; }
 
 	}
 

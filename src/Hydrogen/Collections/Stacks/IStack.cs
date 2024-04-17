@@ -14,6 +14,8 @@ namespace Hydrogen;
 
 public interface IStack<T> : ICollection<T> {
 
+	new long Count { get; }
+
 	public bool TryPeek(out T value);
 
 	public bool TryPop(out T value);

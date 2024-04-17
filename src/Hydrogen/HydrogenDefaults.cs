@@ -19,7 +19,6 @@ public static class HydrogenDefaults {
 	// Paged
 	public const int MaxMemoryPerCollection = int.MaxValue; // Use all available memory
 
-
 	// Transactional
 	public const int TransactionalPageSize = 262144; // 256kb
 	public const string TransactionalPageFolder = ".txn"; 
@@ -37,7 +36,14 @@ public static class HydrogenDefaults {
 	// Hashing
 	public const CHF HashFunction = CHF.SHA2_256;
 
-	
+	// Object Streams
+	public const string DefaultReyclableIndexIndexName = "Recylable Index";
+	public const string DefaultMerkleTreeIndexName = "Merkle Tree";
+	public const string DefaultItemChecksumIndexName = "Item Checksum";
+	public const string DefaultKeyChecksumIndexName = "Key Checksum";
+	public const string DefaultKeyStoreAttachmentName = "Key Store";
 
+	// Object Spaces
+	public const string DefaultSpatialMerkleTreeIndexName = "Spatial Tree";
 
 }

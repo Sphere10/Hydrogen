@@ -33,9 +33,9 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 		IItemChecksummer<TItem> itemChecksummer = null,
 		ClusteredStreamsPolicy policy = ClusteredStreamsPolicy.Default,
 		long reservedStreams = 2,
-		long merkleTreeStreamIndex = 0,
-		long recyclableIndexStoreStreamIndex = 1,
-		long checksumIndexStreamIndex = 2,
+		string merkleTreeIndexName = HydrogenDefaults.DefaultMerkleTreeIndexName,
+		string recyclableIndexIndexName = HydrogenDefaults.DefaultReyclableIndexIndexName,
+		string optionalItemChecksumIndexName = null,
 		Endianness endianness = Endianness.LittleEndian,
 		bool autoLoad = false
 	) : this(
@@ -48,19 +48,24 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 			itemChecksummer,
 			policy,
 			reservedStreams,
-			recyclableIndexStoreStreamIndex,
-			checksumIndexStreamIndex,
-			merkleTreeStreamIndex,
+			recyclableIndexIndexName,
+			optionalItemChecksumIndexName,
+			merkleTreeIndexName,
 			endianness
 		),
+		merkleTreeIndexName,
 		autoLoad
 	) {
 	}
 	
-	internal StreamMappedMerkleRecyclableList(IStreamMappedRecyclableList<TItem> streamMappedList, bool autoLoad = false) 
+	internal StreamMappedMerkleRecyclableList(
+		IStreamMappedRecyclableList<TItem> streamMappedList, 
+		string merkleTreeIndexName,
+		bool autoLoad = false
+	) 
 		: base(streamMappedList) {
 		Guard.ArgumentNotNull(streamMappedList, nameof(streamMappedList));
-		_merkleTreeIndex = streamMappedList.ObjectStream.Streams.FindAttachment<MerkleTreeIndex>();
+		_merkleTreeIndex = (MerkleTreeIndex)streamMappedList.ObjectStream.Streams.Attachments[merkleTreeIndexName];
 
 		if (autoLoad && RequiresLoad)
 			Load();
@@ -95,9 +100,9 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 		IItemChecksummer<TItem> itemChecksummer,
 		ClusteredStreamsPolicy policy,
 		long reservedStreams,
-		long recyclableIndexStoreStreamIndex,
-		long checksumIndexStreamIndex,
-		long merkleTreeIndexStreamIndex,
+		string recyclableIndexIndexName,
+		string optionalItemChecksumIndexName,
+		string merkleTreeIndexName,
 		Endianness endianness
 	) {
 		var streamMappedList = StreamMappedFactory.CreateRecyclableList(
@@ -108,15 +113,15 @@ public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<T
 			itemChecksummer,
 			policy,
 			reservedStreams,
-			recyclableIndexStoreStreamIndex,
-			checksumIndexStreamIndex,
+			recyclableIndexIndexName,
+			optionalItemChecksumIndexName,
 			endianness,
 			false
 		);
 
 		var merkleTreeIndex = new MerkleTreeIndex(
 			streamMappedList.ObjectStream,
-			merkleTreeIndexStreamIndex,
+			merkleTreeIndexName,
 			new ObjectStreamItemHasher(streamMappedList.ObjectStream, hashAlgorithm),
 			hashAlgorithm
 		);

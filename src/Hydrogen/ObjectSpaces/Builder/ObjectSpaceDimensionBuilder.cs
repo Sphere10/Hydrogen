@@ -54,41 +54,56 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> WithIdentifier<TMember>(Expression<Func<T, TMember>> memberExpression) {
+	public ObjectSpaceDimensionBuilder<T> WithIdentifier<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null) {
+		var member = memberExpression.ToMember();
 		var index = new ObjectSpaceDefinition.IndexDefinition {
 			Type = ObjectSpaceDefinition.IndexType.Identifier,
-			KeyMember = memberExpression.ToMember()
+			Name = indexName ?? member.Name,
+			Member = member,
 		};
 		_indexes.Add(index);
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> WithIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression) {
+	public ObjectSpaceDimensionBuilder<T> WithIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null) {
+		var member = memberExpression.ToMember();
 		var index = new ObjectSpaceDefinition.IndexDefinition {
 			Type = ObjectSpaceDefinition.IndexType.Index,
-			KeyMember = memberExpression.ToMember()
+			Name = indexName ?? member.Name,
+			Member = member,
 		};
 		_indexes.Add(index);
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> WithUniqueIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression) {
+	public ObjectSpaceDimensionBuilder<T> WithUniqueIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null) {
+		var member = memberExpression.ToMember();
 		var index = new ObjectSpaceDefinition.IndexDefinition {
 			Type = ObjectSpaceDefinition.IndexType.UniqueKey,
-			KeyMember = memberExpression.ToMember()
+			Name = indexName ?? member.Name,
+			Member = member,
 		};
 		_indexes.Add(index);
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> WithRecyclableIndexes() {
-		_indexes.Add(new ObjectSpaceDefinition.IndexDefinition { Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore });
+	public ObjectSpaceDimensionBuilder<T> WithRecyclableIndexes(string indexName = null) {
+		_indexes.Add(
+			new ObjectSpaceDefinition.IndexDefinition { 
+				Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore,
+				Name = indexName ?? HydrogenDefaults.DefaultReyclableIndexIndexName
+			}
+		);
 		return this;
-
 	}
 
-	public ObjectSpaceDimensionBuilder<T> Merkleized() {
-		_indexes.Add(new ObjectSpaceDefinition.IndexDefinition { Type = ObjectSpaceDefinition.IndexType.MerkleTree });
+	public ObjectSpaceDimensionBuilder<T> Merkleized(string indexName = null) {
+		_indexes.Add(
+			new ObjectSpaceDefinition.IndexDefinition { 
+				Type = ObjectSpaceDefinition.IndexType.MerkleTree,
+				Name = indexName ?? HydrogenDefaults.DefaultMerkleTreeIndexName
+			}
+		);
 		return this;
 	}
 

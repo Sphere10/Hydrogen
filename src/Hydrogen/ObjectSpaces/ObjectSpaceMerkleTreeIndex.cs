@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -19,18 +18,20 @@ namespace Hydrogen.ObjectSpaces;
 /// When a dimension merkle-tree root is changed, it triggers a leaf-update on this tree.  
 /// </summary>
 /// <remarks>A dimension of an object space is a <see cref="ObjectStream"/> of a specific type of object.</remarks>
-internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<MerkleTreeStore> {
+internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<MerkleTreeStorageAttachment> {
 	private readonly ObjectSpace _objectSpace;
-	private readonly IList<(MerkleTreeStore, EventHandlerEx<byte[], byte[]>)> _collectionTreeListeners;
+	private readonly IList<(MerkleTreeStorageAttachment, EventHandlerEx<byte[], byte[]>)> _collectionTreeListeners;
+	private readonly string _childTreeIndexName;
 
-	public ObjectSpaceMerkleTreeIndex(ObjectSpace objectSpace, long reservedStreamIndex, CHF chf, bool isFirstLoad) 
-		: base (new MerkleTreeStore(objectSpace.InternalStreams, reservedStreamIndex, chf, isFirstLoad) ){
+	public ObjectSpaceMerkleTreeIndex(ObjectSpace objectSpace, string indexName, string childTreeIndexName, CHF chf, bool isFirstLoad) 
+		: base (new MerkleTreeStorageAttachment(objectSpace.InternalStreams, indexName, chf, isFirstLoad) ){
 		Guard.ArgumentNotNull(objectSpace, nameof(objectSpace));
 		_objectSpace = objectSpace;
-		_collectionTreeListeners = new List<(MerkleTreeStore, EventHandlerEx<byte[], byte[]>)>();
+		_collectionTreeListeners = new List<(MerkleTreeStorageAttachment, EventHandlerEx<byte[], byte[]>)>();
+		_childTreeIndexName = childTreeIndexName;
 	}
 
-	public IMerkleTree MerkleTree => Inner.MerkleTree;
+	public IMerkleTree MerkleTree => Inner;
 
 	public override void Attach() {
 		base.Attach();
@@ -57,7 +58,7 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 
 		// NOTE: rather than listen to Streams.StreamUpdated event, 
 		// we simply listen to that dimensions merkle root property changed event
-		// which allows us to lazily update
+		// which allows us to lazily update spatial tree.
 		// For dimensions already existing, subscribe to their merkle-tree change events
 		for(var i = 0; i < _objectSpace.Dimensions.Count; i++)
 			SubscribeToDimensionTreeChanges(i);
@@ -65,13 +66,13 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 
 	private void SubscribeToDimensionTreeChanges(int i) {
 		var dimension = _objectSpace.Dimensions[i];
-		var dimensionMerkleTree = dimension.ObjectStream.Streams.FindAttachment<MerkleTreeIndex>();
+		var dimensionMerkleTree = (MerkleTreeIndex)dimension.ObjectStream.Streams.Attachments[_childTreeIndexName];
 
 		// Listen to underlying collection root changes (and track the handler for unsub later)
 		var capturedIndex = i;
 		void CollectionRootListener(byte[] oldValue, byte[] newValue) {
-			newValue ??= Hashers.ZeroHash(Inner.MerkleTree.HashAlgorithm); // merkle-root property will return null when changed to zero's
-			Inner.Update(capturedIndex, newValue);
+			newValue ??= Hashers.ZeroHash(Inner.HashAlgorithm); // merkle-root property will return null when changed to zero's
+			Inner.Leafs.Update(capturedIndex, newValue);
 		}
 		dimensionMerkleTree.Store.RootChanged += CollectionRootListener;
 		_collectionTreeListeners.Add((dimensionMerkleTree.Store, CollectionRootListener));
@@ -96,8 +97,8 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 		for (var i = 0; i < _objectSpace.Dimensions.Count; i++) {
 			// Get the object dimension and it's root
 			var dimension = _objectSpace.Dimensions[i];
-			if (!dimension.ObjectStream.Streams.TryFindAttachment<MerkleTreeIndex>(out var dimensionTree))
-				throw new InvalidDataException($"{nameof(ObjectSpace)} dimension {i} missing a {nameof(MerkleTreeIndex)}");
+			if (!dimension.ObjectStream.Streams.Attachments.TryGetValue(_childTreeIndexName, out var treeAttachment) || treeAttachment is not MerkleTreeIndex dimensionTree)
+				throw new InvalidDataException($"{nameof(ObjectSpace)} dimension {i} requires a {nameof(MerkleTreeIndex)} called '{nameof(MerkleTreeIndex)}' for the spatial tree to track");
 			var dimensionRoot = dimensionTree.MerkleTree.Root;
 			
 			// Check that corresponding spatial-tree leaf matches root of dimension tree
@@ -105,7 +106,7 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 			Guard.Ensure(
 				spatialLeafValue.All(x => x == 0) && dimensionRoot is null ||
 				ByteArrayEqualityComparer.Instance.Equals(spatialLeafValue, dimensionRoot),
-				$"{nameof(ObjectSpace)} dimension {i} root does not match corresponding leaf value in spatial-tree"
+				$"{nameof(ObjectSpace)} dimension {i} ({dimension.GetType().ToStringCS()}) has a merkle-root that does not match corresponding leaf value of the spatial-tree"
 			);
 
 			// Track this dimension root as a leaf (for later)

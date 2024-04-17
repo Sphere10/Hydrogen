@@ -20,9 +20,9 @@ public interface IExtendedList<T> : IExtendedCollection<T>, IReadOnlyExtendedLis
 
 	new int IndexOf(T item);
 
-	new void Insert(int index, T item);
+	new void Insert(long index, T item);
 
-	new void RemoveAt(int index);
+	new void RemoveAt(long index);
 }
 
 

@@ -7,24 +7,31 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 using Hydrogen;
-using Hydrogen.ObjectSpaces;
-
 
 public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, IStreamMappedRecyclableList<TItem> {
 	public event EventHandlerEx<object> Loading { add => ObjectStream.Loading += value; remove => ObjectStream.Loading -= value; }
 	public event EventHandlerEx<object> Loaded { add => ObjectStream.Loaded += value; remove => ObjectStream.Loaded -= value; }
 
 	private readonly RecyclableIndexIndex _recylableIndexIndex;
-	private readonly MemberIndex<TItem, int> _memberChecksumIndex;
+	private readonly ProjectionIndex<TItem, int> _projectionChecksumIndex;
 
-	public StreamMappedRecyclableList(ObjectStream<TItem> objectStream, IEqualityComparer<TItem> itemComparer = null, bool autoLoad = false) {
+	public StreamMappedRecyclableList(
+		ObjectStream<TItem> objectStream,
+		string recylcableIndexIndexName, 
+		string optionalItemChecksumIndexName = null,
+		IEqualityComparer<TItem> itemComparer = null, 
+		bool autoLoad = false 
+	) {
 		Guard.ArgumentNotNull(objectStream, nameof(objectStream));
 		ObjectStream = objectStream;
-		_recylableIndexIndex = objectStream.Streams.FindAttachment<RecyclableIndexIndex>();
-		objectStream.Streams.TryFindAttachment<MemberIndex<TItem, int>>(out _memberChecksumIndex); // this index is optional
+		_recylableIndexIndex = (RecyclableIndexIndex)objectStream.Streams.Attachments[recylcableIndexIndexName];
+
+		Guard.Against(!string.IsNullOrEmpty(optionalItemChecksumIndexName) && !objectStream.Streams.Attachments.ContainsKey(optionalItemChecksumIndexName), $"No index '{optionalItemChecksumIndexName}' was found in object stream"); 
+		if (!string.IsNullOrEmpty(optionalItemChecksumIndexName)) 
+			_projectionChecksumIndex = (ProjectionIndex<TItem, int>)objectStream.Streams.Attachments[optionalItemChecksumIndexName]; // use for O(1) exists
+
 		ItemComparer = itemComparer ?? EqualityComparer<TItem>.Default;
 
 		if (autoLoad && RequiresLoad)
@@ -35,7 +42,7 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 
 	public override long ListCount => ObjectStream.Count;
 
-	public override long RecycledCount => _recylableIndexIndex.Stack.Count;
+	public override long RecycledCount => _recylableIndexIndex.Store.Count;
 	
 	public bool RequiresLoad => ObjectStream.RequiresLoad;
 	
@@ -109,8 +116,8 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	protected override long IndexOfInternal(TItem item)  {
 		using (ObjectStream.EnterAccessScope()) {
 			var indicesToCheck =
-				_memberChecksumIndex != null ?
-					_memberChecksumIndex.Lookup[_memberChecksumIndex.CalculateKey(item)] :
+				_projectionChecksumIndex != null ?
+					_projectionChecksumIndex.Values[_projectionChecksumIndex.ApplyProjection(item)] :
 					Tools.Collection.RangeL(0L, ListCount);
 
 			foreach (var index in indicesToCheck) {
@@ -143,12 +150,12 @@ public class StreamMappedRecyclableList<TItem> :  RecyclableListBase<TItem>, ISt
 	}
 
 	protected override long ConsumeRecycledIndexInternal() 
-		=> _recylableIndexIndex.Stack.Pop();
+		=> _recylableIndexIndex.Store.Pop();
 
 	protected override void ClearInternal() {
 		using (ObjectStream.EnterAccessScope()) {
 			ObjectStream.Clear();
-			_recylableIndexIndex.Stack.Clear();
+			_recylableIndexIndex.Store.Clear();
 		}
 	}
 

@@ -18,7 +18,7 @@ namespace Hydrogen;
 /// <summary>
 /// Base class for dictionary implementation. Implements index operator and misc.
 /// </summary>
-public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue> {
+public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyValuePair<TKey, TValue>>, IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> {
 	private readonly EnumerableCollectionAdapter<TKey> _keysCollectionProperty;
 	private readonly EnumerableCollectionAdapter<TValue> _valuesCollectionProperty;
 
@@ -28,6 +28,10 @@ public abstract class DictionaryBase<TKey, TValue> : ExtendedCollectionBase<KeyV
 	}
 
 	public virtual ICollection<TKey> Keys => _keysCollectionProperty;
+	
+	IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values => Values;
+
+	IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys => Keys;
 
 	public virtual ICollection<TValue> Values => _valuesCollectionProperty;
 

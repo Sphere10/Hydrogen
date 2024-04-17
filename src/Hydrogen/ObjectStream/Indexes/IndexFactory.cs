@@ -8,9 +8,14 @@ namespace Hydrogen;
 
 internal static class IndexFactory {
 	
-	#region Member Index
+	#region Prjection Index
 
-	internal static IClusteredStreamsAttachment CreateMemberIndexAttachment(ObjectStream objectStream, long streamIndex, Member member, IItemSerializer keySerializer = null, object keyComparer = null) {
+	internal static IClusteredStreamsAttachment CreateMemberIndex(
+		ObjectStream objectStream, 
+		string indexName,
+		Member member, 
+		IItemSerializer keySerializer = null,
+		object keyComparer = null) {
 		Guard.Ensure(objectStream.GetType() == typeof(ObjectStream<>).MakeGenericType(member.DeclaringType));
 		
 		var projection = member.AsDelegate();
@@ -22,25 +27,29 @@ internal static class IndexFactory {
 
 		// Use MakeGenericMethod to call the generic method with the specific types
 		var method = typeof(IndexFactory)
-			.GetMethod(nameof(CreateMemberIndex), BindingFlags.NonPublic | BindingFlags.Static)
+			.GetMethod(nameof(CreateProjectionIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(member.DeclaringType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, streamIndex, projection, keySerializer, keyComparer });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyComparer });
 
 	}
 
-	internal static MemberIndex<TItem, TKey> CreateMemberIndex<TItem, TKey>(ObjectStream<TItem> objectStream, long streamIndex, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer = null, IEqualityComparer<TKey> keyComparer= null) {
+	internal static ProjectionIndex<TItem, TKey> CreateProjectionIndex<TItem, TKey>(
+		ObjectStream<TItem> objectStream,
+		string indexName,
+		Func<TItem, TKey> projection,
+		IItemSerializer<TKey> keySerializer = null,
+		IEqualityComparer<TKey> keyComparer = null) {
 		keySerializer ??= ItemSerializer<TKey>.Default;
-		keyComparer ??= EqualityComparer<TKey>.Default;
-		var keyChecksumKeyIndex = new MemberIndex<TItem, TKey>(objectStream, streamIndex, projection, keyComparer, keySerializer);
+		var keyChecksumKeyIndex = new ProjectionIndex<TItem, TKey>(objectStream, indexName, projection, keySerializer, keyComparer);
 		return keyChecksumKeyIndex;
 	}
 
 	#endregion
 
-	#region Unique Memeber Index
+	#region Unique Projection Index
 
-	internal static IClusteredStreamsAttachment CreateUniqueMemberIndexAttachment(ObjectStream objectStream, long streamIndex, Member member, IItemSerializer keySerializer = null, object keyComparer = null) {
+	internal static IClusteredStreamsAttachment CreateUniqueMemberIndex(ObjectStream objectStream, string indexName, Member member, IItemSerializer keySerializer = null, object keyComparer = null) {
 		Guard.Ensure(objectStream.GetType() == typeof(ObjectStream<>).MakeGenericType(member.DeclaringType));
 		
 		var projection = member.AsDelegate();
@@ -52,25 +61,33 @@ internal static class IndexFactory {
 
 		// Use MakeGenericMethod to call the generic method with the specific types
 		var method = typeof(IndexFactory)
-			.GetMethod(nameof(CreateUniqueMemberIndex), BindingFlags.NonPublic | BindingFlags.Static)
+			.GetMethod(nameof(CreateUniqueProjectionIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(member.DeclaringType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, streamIndex, projection, keySerializer, keyComparer });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyComparer });
 
 	}
 
-	internal static UniqueMemberIndex<TItem, TKey> CreateUniqueMemberIndex<TItem, TKey>(ObjectStream<TItem> objectStream, long streamIndex, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer = null, IEqualityComparer<TKey> keyComparer= null) {
+	internal static UniqueProjectionIndex<TItem, TKey> CreateUniqueProjectionIndex<TItem, TKey>(ObjectStream<TItem> objectStream, string indexName, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer = null, IEqualityComparer<TKey> keyComparer = null) {
 		keySerializer ??= ItemSerializer<TKey>.Default;
-		keyComparer ??= EqualityComparer<TKey>.Default;
-		var keyChecksumKeyIndex = new UniqueMemberIndex<TItem, TKey>(objectStream, streamIndex, projection, keyComparer, keySerializer);
+		keyComparer ??= EqualityComparer<TKey>.Default; // TODO: should this use a ComparerFactory?
+		var keyChecksumKeyIndex = new UniqueProjectionIndex<TItem, TKey>(objectStream, indexName, projection, keySerializer, keyComparer);
 		return keyChecksumKeyIndex;
 	}
 
 	#endregion
 
-	#region Checksum Index
+	#region Projection Checksum Index
 
-	internal static IClusteredStreamsAttachment CreateKeyChecksumIndexAttachment(ObjectStream objectStream, long streamIndex, Member member, IItemSerializer keySerializer = null, object keyChecksummer = null, object keyFetcher = null, object keyComparer = null) {
+	internal static IClusteredStreamsAttachment CreateMemberChecksumIndex(
+		ObjectStream objectStream, 
+		string indexName, 
+		Member member, 
+		IItemSerializer keySerializer = null, 
+		object keyChecksummer = null, 
+		object keyFetcher = null, 
+		object keyComparer = null
+	) {
 		Guard.Ensure(objectStream.GetType() == typeof(ObjectStream<>).MakeGenericType(member.DeclaringType));
 		
 		var projection = member.AsDelegate();
@@ -81,21 +98,29 @@ internal static class IndexFactory {
 
 		// Use MakeGenericMethod to call the generic method with the specific types
 		var method = typeof(IndexFactory)
-			.GetMethod(nameof(CreateChecksumKeyIndex), BindingFlags.NonPublic | BindingFlags.Static)
+			.GetMethod(nameof(CreateProjectionChecksumIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(member.DeclaringType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, streamIndex, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer });
 
 	}
 
-	internal static MemberChecksumIndex<TItem, TKey> CreateChecksumKeyIndex<TItem, TKey>(ObjectStream<TItem> objectStream, long streamIndex, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer = null, IItemChecksummer<TKey> keyChecksummer= null, Func<long, TKey> keyFetcher= null, IEqualityComparer<TKey> keyComparer= null) {
+	internal static ProjectionChecksumIndex<TItem, TKey> CreateProjectionChecksumIndex<TItem, TKey>(
+		ObjectStream<TItem> objectStream,
+		string indexName, 
+		Func<TItem, TKey> projection, 
+		IItemSerializer<TKey> keySerializer = null, 
+		IItemChecksummer<TKey> keyChecksummer = null, 
+		Func<long, TKey> keyFetcher = null, 
+		IEqualityComparer<TKey> keyComparer= null) {
+
 		keySerializer ??= ItemSerializer<TKey>.Default;
 		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, objectStream.Streams.Endianness);
 		keyFetcher ??= x => projection(objectStream.LoadItem(x));
 		keyComparer ??= EqualityComparer<TKey>.Default;
-		var keyChecksumKeyIndex = new MemberChecksumIndex<TItem, TKey>(
+		var keyChecksumKeyIndex = new ProjectionChecksumIndex<TItem, TKey>(
 			objectStream,
-			streamIndex,
+			indexName,
 			projection,
 			keyChecksummer,
 			keyFetcher,
@@ -107,9 +132,17 @@ internal static class IndexFactory {
 
 	#endregion
 
-	#region Checksum Unique Key
+	#region Unique Projection Checksum Index
 
-	internal static IClusteredStreamsAttachment CreateUniqueMemberChecksumIndexAttachment(ObjectStream objectStream, long streamIndex, Member member, IItemSerializer keySerializer = null, object keyChecksummer = null, object keyFetcher = null, object keyComparer = null) {
+	internal static IClusteredStreamsAttachment CreateUniqueMemberChecksumIndex(
+		ObjectStream objectStream, 
+		string indexName, 
+		Member member, 
+		IItemSerializer keySerializer = null,
+		object keyChecksummer = null, 
+		object keyFetcher = null, 
+		object keyComparer = null
+	) {
 		Guard.Ensure(objectStream.GetType() == typeof(ObjectStream<>).MakeGenericType(member.DeclaringType));
 		
 		var projection = member.AsDelegate();
@@ -120,21 +153,29 @@ internal static class IndexFactory {
 
 		// Use MakeGenericMethod to call the generic method with the specific types
 		var method = typeof(IndexFactory)
-			.GetMethod(nameof(CreateUniqueMemberChecksumIndex), BindingFlags.NonPublic | BindingFlags.Static)
+			.GetMethod(nameof(CreateUniqueProjectionChecksumIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(member.DeclaringType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, streamIndex, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer });
 
 	}
 
-	internal static UniqueMemberChecksumIndex<TItem, TKey> CreateUniqueMemberChecksumIndex<TItem, TKey>(ObjectStream<TItem> objectStream, long streamIndex, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer = null, IItemChecksummer<TKey> keyChecksummer= null, Func<long, TKey> keyFetcher= null, IEqualityComparer<TKey> keyComparer= null) {
+	internal static UniqueProjectionChecksumIndex<TItem, TKey> CreateUniqueProjectionChecksumIndex<TItem, TKey>(
+		ObjectStream<TItem> objectStream,
+		string indexName, 
+		Func<TItem, TKey> projection, 
+		IItemSerializer<TKey> keySerializer = null, 
+		IItemChecksummer<TKey> keyChecksummer = null, 
+		Func<long, TKey> keyFetcher = null, 
+		IEqualityComparer<TKey> keyComparer= null
+	) {
 		keySerializer ??= ItemSerializer<TKey>.Default;
 		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, objectStream.Streams.Endianness);
 		keyFetcher ??= x => projection(objectStream.LoadItem(x));
 		keyComparer ??= EqualityComparer<TKey>.Default;
-		var uniqueKeyChecksumIndex = new UniqueMemberChecksumIndex<TItem, TKey>(
+		var uniqueKeyChecksumIndex = new UniqueProjectionChecksumIndex<TItem, TKey>(
 			objectStream,
-			streamIndex,
+			indexName,
 			projection,
 			keyChecksummer,
 			keyFetcher,
@@ -148,8 +189,8 @@ internal static class IndexFactory {
 
 	#region RecyclableIndex Index
 
-	internal static RecyclableIndexIndex CreateRecyclableIndexIndex(ObjectStream objectStream, long streamIndex) {
-		var keyChecksumKeyIndex = new RecyclableIndexIndex(objectStream, streamIndex);
+	internal static RecyclableIndexIndex CreateRecyclableIndexIndex(ObjectStream objectStream, string indexName) {
+		var keyChecksumKeyIndex = new RecyclableIndexIndex(objectStream, indexName);
 		return keyChecksumKeyIndex;
 	}
 

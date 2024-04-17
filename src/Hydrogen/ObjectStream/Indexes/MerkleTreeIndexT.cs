@@ -12,10 +12,10 @@ namespace Hydrogen;
 
 /// <inheritdoc />
 internal class MerkleTreeIndex<TItem> : MerkleTreeIndex {
-	public MerkleTreeIndex(ObjectStream<TItem> objectStream, IItemHasher<long> itemHasher, CHF hashAlgorithm, long reservedStreamIndex)
+	public MerkleTreeIndex(ObjectStream<TItem> objectStream, string indexName, IItemHasher<long> itemHasher, CHF hashAlgorithm)
 		: base(
 			objectStream,
-			reservedStreamIndex,
+			indexName,
 			itemHasher,
 			hashAlgorithm
 		) {

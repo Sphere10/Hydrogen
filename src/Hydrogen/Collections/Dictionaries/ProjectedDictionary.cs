@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Hydrogen;
 
-public class ProjectedDictionary<TKey, TValue, TProjectedKey, TProjectedValue> : IDictionary<TProjectedKey, TProjectedValue> {
+public sealed class ProjectedDictionary<TKey, TValue, TProjectedKey, TProjectedValue> : IDictionary<TProjectedKey, TProjectedValue> {
 	private readonly IDictionary<TKey, TValue> _source;
 	private readonly Func<TKey, TProjectedKey> _keyProjection;
 	private readonly Func<TProjectedKey, TKey> _inverseKeyProjection;
@@ -21,19 +21,19 @@ public class ProjectedDictionary<TKey, TValue, TProjectedKey, TProjectedValue> :
 		_inverseValueProjection = inverseValueProjection;
 	}
 
-	public virtual int Count => _source.Count;
+	public int Count => _source.Count;
 
-	public virtual bool IsReadOnly => _source.IsReadOnly;
+	public bool IsReadOnly => _source.IsReadOnly;
 
-	public virtual ICollection<TProjectedKey> Keys => _source.Keys.AsProjection(_keyProjection, _inverseKeyProjection);
+	public ICollection<TProjectedKey> Keys => _source.Keys.AsProjection(_keyProjection, _inverseKeyProjection);
 
-	public virtual ICollection<TProjectedValue> Values => _source.Values.AsProjection(_valueProjection, _inverseValueProjection);
+	public ICollection<TProjectedValue> Values => _source.Values.AsProjection(_valueProjection, _inverseValueProjection);
 
-	public virtual void Add(TProjectedKey key, TProjectedValue value) => _source.Add(_inverseKeyProjection(key), _inverseValueProjection(value));
+	public void Add(TProjectedKey key, TProjectedValue value) => _source.Add(_inverseKeyProjection(key), _inverseValueProjection(value));
 
-	public virtual bool ContainsKey(TProjectedKey key) => _source.ContainsKey(_inverseKeyProjection(key));
+	public bool ContainsKey(TProjectedKey key) => _source.ContainsKey(_inverseKeyProjection(key));
 
-	public virtual bool TryGetValue(TProjectedKey key, out TProjectedValue value) {
+	public bool TryGetValue(TProjectedKey key, out TProjectedValue value) {
 		if (!_source.TryGetValue(_inverseKeyProjection(key), out var sourceValue)) {
 			value = default!;
 			return false;
@@ -42,19 +42,19 @@ public class ProjectedDictionary<TKey, TValue, TProjectedKey, TProjectedValue> :
 		return true;
 	}
 
-	public virtual void Add(KeyValuePair<TProjectedKey, TProjectedValue> item) => _source.Add(item.AsProjection(_inverseKeyProjection, _inverseValueProjection));
+	public void Add(KeyValuePair<TProjectedKey, TProjectedValue> item) => _source.Add(item.AsProjection(_inverseKeyProjection, _inverseValueProjection));
 
-	public virtual bool Contains(KeyValuePair<TProjectedKey, TProjectedValue> item) => _source.Contains(item.AsProjection(_inverseKeyProjection, _inverseValueProjection));
+	public bool Contains(KeyValuePair<TProjectedKey, TProjectedValue> item) => _source.Contains(item.AsProjection(_inverseKeyProjection, _inverseValueProjection));
 
-	public virtual void CopyTo(KeyValuePair<TProjectedKey, TProjectedValue>[] array, int arrayIndex) => _source.Select(kvp => kvp.AsProjection(_keyProjection, _valueProjection)).ToArray().CopyTo(array, arrayIndex);
+	public void CopyTo(KeyValuePair<TProjectedKey, TProjectedValue>[] array, int arrayIndex) => _source.Select(kvp => kvp.AsProjection(_keyProjection, _valueProjection)).ToArray().CopyTo(array, arrayIndex);
 
-	public virtual bool Remove(KeyValuePair<TProjectedKey, TProjectedValue> item) => _source.Remove(item.AsProjection(_inverseKeyProjection, _inverseValueProjection));
+	public bool Remove(KeyValuePair<TProjectedKey, TProjectedValue> item) => _source.Remove(item.AsProjection(_inverseKeyProjection, _inverseValueProjection));
 
-	public virtual bool Remove(TProjectedKey item) => _source.Remove(_inverseKeyProjection(item));
+	public bool Remove(TProjectedKey item) => _source.Remove(_inverseKeyProjection(item));
 
-	public virtual void Clear() => _source.Clear();
+	public void Clear() => _source.Clear();
 
-	public virtual IEnumerator<KeyValuePair<TProjectedKey, TProjectedValue>> GetEnumerator() {
+	public IEnumerator<KeyValuePair<TProjectedKey, TProjectedValue>> GetEnumerator() {
 		foreach (var kvp in _source) {
 			yield return kvp.AsProjection(_keyProjection, _valueProjection);
 		}
@@ -62,7 +62,7 @@ public class ProjectedDictionary<TKey, TValue, TProjectedKey, TProjectedValue> :
 
 	IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-	public virtual TProjectedValue this[TProjectedKey key] {
+	public TProjectedValue this[TProjectedKey key] {
 		get => _valueProjection(_source[_inverseKeyProjection(key)]);
 		set => _source[_inverseKeyProjection(key)] = _inverseValueProjection(value);
 	}

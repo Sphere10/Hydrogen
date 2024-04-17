@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 
 namespace Hydrogen;
 
@@ -145,6 +146,27 @@ public static partial class DecoratorExtensions {
 
 	#endregion
 
+	#region IReadOnlyDictionary
+
+	#region AsProjection
+
+	public static IReadOnlyDictionary<TProjectedKey, TProjectedValue> WithProjection<TKey, TValue, TProjectedKey, TProjectedValue>(
+		this IReadOnlyDictionary<TKey, TValue> dictionary,
+		Func<TKey, TProjectedKey> keyProjection,
+		Func<TProjectedKey, TKey> inverseKeyProjection,
+		Func<TValue, TProjectedValue> valueProjection
+	) => new ProjectedReadOnlyDictionary<TKey, TValue, TProjectedKey, TProjectedValue>(dictionary, keyProjection, inverseKeyProjection, valueProjection);
+
+	public static IReadOnlyDictionary<TProjectedKey, TValue> WithKeyProjection<TKey, TValue, TProjectedKey>(this IReadOnlyDictionary<TKey, TValue> dictionary, Func<TKey, TProjectedKey> keyProjection, Func<TProjectedKey, TKey> inverseKeyProjection) 
+		=> dictionary.WithProjection(keyProjection, inverseKeyProjection, v => v);
+
+	public static IReadOnlyDictionary<TKey, TProjectedValue> WithValueProjection<TKey, TValue, TProjectedValue>(this IReadOnlyDictionary<TKey, TValue> dictionary, Func<TValue, TProjectedValue> valueProjection) 
+		=> dictionary.WithProjection(k => k, k => k, valueProjection);
+
+	#endregion
+
+	#endregion
+
 	#region IDictionary
 	
 	#region AsSynchronized
@@ -195,6 +217,27 @@ public static partial class DecoratorExtensions {
 	public static BijectiveDictionary<TKey, TValue > AsBijection<TKey, TValue>(this IDictionary<TKey, TValue> dictionary) => dictionary.AsBijection(new Dictionary<TValue, TKey>());
 
 	public static BijectiveDictionary<TKey, TValue > AsBijection<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, IDictionary<TValue, TKey> internalBijectiveDictionary) => new(dictionary, internalBijectiveDictionary);
+
+	#endregion
+
+	#endregion
+
+	#region ILookup
+
+	#region AsProjection
+
+	public static ILookup<TProjectedKey, TProjectedValue> WithProjection<TKey, TValue, TProjectedKey, TProjectedValue>(
+		this ILookup<TKey, TValue> dictionary,
+		Func<TKey, TProjectedKey> keyProjection,
+		Func<TProjectedKey, TKey> inverseKeyProjection,
+		Func<TValue, TProjectedValue> valueProjection
+	) => new ProjectedLookup<TKey,TValue,TProjectedKey,TProjectedValue>(dictionary, keyProjection, inverseKeyProjection, valueProjection);
+
+	public static ILookup<TProjectedKey, TValue> WithKeyProjection<TKey, TValue, TProjectedKey>(this ILookup<TKey, TValue> dictionary, Func<TKey, TProjectedKey> keyProjection, Func<TProjectedKey, TKey> inverseKeyProjection) 
+		=> dictionary.WithProjection(keyProjection, inverseKeyProjection, v => v);
+
+	public static ILookup<TKey, TProjectedValue> WithValueProjection<TKey, TValue, TProjectedValue>(this ILookup<TKey, TValue> dictionary, Func<TValue, TProjectedValue> valueProjection) 
+		=> dictionary.WithProjection(k => k, k => k, valueProjection);
 
 	#endregion
 

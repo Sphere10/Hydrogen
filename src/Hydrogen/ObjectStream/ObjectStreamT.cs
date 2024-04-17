@@ -10,8 +10,10 @@
 using Hydrogen.Mapping;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Hydrogen;
 
@@ -31,50 +33,44 @@ public class ObjectStream<T> : ObjectStream {
 
 	public new T LoadItem(long index) => (T)base.LoadItem(index);
 
-	public bool TryGetUniqueIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression, out IUniqueProjectionIndex<TMember> index) {
-		throw new NotImplementedException();
-		//if (Streams.TryFindAttachment<UniqueProjectionChecksumIndex<T, TMember>>(out var uniqueKeyChecksumIndex)) {
-		//	index = uniqueKeyChecksumIndex;
-		//	return true;
-		//}
+	public bool TryGetUniqueIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression, out IUniqueProjectionIndex<TMember> index) 
+		=> TryGetUniqueIndex(memberExpression.ToMember().Name, out index);
 
-		//if (Streams.TryFindAttachment<UniqueProjectionIndex<T, TMember>>(out var uniqueKeyIndex)) {
-		//	index = uniqueKeyIndex;
-		//	return true;
-		//}
-		//index = default;
-		//return false;
+	public bool TryGetUniqueIndex<TMember>(string indexName, out IUniqueProjectionIndex<TMember> index) {
+		if (!Streams.Attachments.TryGetValue(indexName, out var attachment)) {
+			index = default;
+			return false;
+		}
+		index = (IUniqueProjectionIndex<TMember>)attachment;
+		return true;
 	}
 
-	public IUniqueProjectionIndex<TMember>  GetUniqueIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression) {
+	public IUniqueProjectionIndex<TMember> GetUniqueIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression) {
 		if (!TryGetUniqueIndexFor(memberExpression, out var index))  
-			throw new InvalidOperationException($"No unique member index was found for {memberExpression.ToMember()}");
+			throw new InvalidOperationException($"No unique index was found for {memberExpression.ToMember()}");
 
 		return index;
 	}
-	
-	public bool TryGetIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression, out IProjectionIndex<TMember> index) {
-		throw new NotImplementedException();
-		//if (Streams.TryFindAttachment<ProjectionChecksumIndex<T, TMember>>(out var keyChecksumIndex)) {
-		//	index = keyChecksumIndex;
-		//	return true;
-		//}
 
-		//if (Streams.TryFindAttachment<ProjectionIndex<T, TMember>>(out var keyIndex)) {
-		//	index = keyIndex;
-		//	return true;
-		//}
-		//index = default;
-		//return false;
+
+	public bool TryGetIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression, out IProjectionIndex<TMember> index) 
+		=> TryGetIndex(memberExpression.ToMember().Name, out index);
+
+	public bool TryGetIndex<TMember>(string indexName, out IProjectionIndex<TMember> index) {
+		if (!Streams.Attachments.TryGetValue(indexName, out var attachment)) {
+			index = default;
+			return false;
+		}
+		index = (IProjectionIndex<TMember>)attachment;
+		return true;
 	}
 
 	public IProjectionIndex<TMember> GetIndexFor<TMember>(Expression<Func<T, TMember>> memberExpression) {
 		if (!TryGetIndexFor(memberExpression, out var index))  
-			throw new InvalidOperationException($"No member index was found for {memberExpression.ToMember()}");
+			throw new InvalidOperationException($"No index was found for {memberExpression.ToMember()}");
 
 		return index;
 	}
-	
 
 	internal ClusteredStream SaveItemAndReturnStream(long index, T item, ObjectStreamOperationType operationType) 
 		=> SaveItemAndReturnStream(index, item as object, operationType);

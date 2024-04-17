@@ -105,6 +105,12 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		return item;
 	}
 
+	public TItem Get<TItem, TMember>(Expression<Func<TItem, TMember>> memberExpression, TMember memberValue) {
+		if (!TryGet(memberExpression, memberValue, out var item))
+			throw new InvalidOperationException($"No {typeof(TItem).ToStringCS()} item found with member '{memberExpression.ToMember().Name}' matching '{memberValue}'");
+		return item;
+	}
+
 	public bool TryGet<TItem>(long index, out TItem item) {
 		using (EnterAccessScope()) {
 

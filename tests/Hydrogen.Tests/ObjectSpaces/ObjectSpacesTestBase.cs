@@ -183,6 +183,30 @@ public abstract class ObjectSpacesTestBase {
 	#region Unique Member (Checksummed)
 
 	[Test]
+	public void UniqueMember_Checksummed_GetViaIndex() {
+		// note: string based property will use a checksum-based index since not constant length key
+		using var scope = CreateObjectSpaceScope();
+		var objectSpace = scope.Item;
+		var rng = new Random();
+		var account1 = CreateAccount(rng);
+		account1.Name = "alpha";
+
+		var account2 = CreateAccount(rng);
+		account2.Name = "beta";
+
+		objectSpace.Save(account1);
+		objectSpace.Save(account2);
+		
+		var fetch1 = objectSpace.Get((Account x) => x.Name, "alpha");
+		Assert.That(fetch1, Is.SameAs(account1));
+
+		var fetch2 = objectSpace.Get((Account x) => x.Name, "beta");
+		Assert.That(fetch2, Is.SameAs(account2));
+
+		Assert.That(() => objectSpace.Get((Account x) => x.Name, "gamma"), Throws.InvalidOperationException);
+	}
+
+	[Test]
 	public void UniqueMember_Checksummed_ProhibitsDuplicate_ViaAdd() {
 		// note: string based property will use a checksum-based index since not constant length key
 		using var scope = CreateObjectSpaceScope();
@@ -228,7 +252,7 @@ public abstract class ObjectSpacesTestBase {
 	}
 	
 	[Test]
-	public void UniqueMember_Checksummed_SaveThenSave_ThrowsNothing() {
+	public void UniqueMember_Checksummed_AllowsUpdate_ThrowsNothing() {
 		// note: string based property will use a checksum-based index since not constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;
@@ -238,7 +262,6 @@ public abstract class ObjectSpacesTestBase {
 		objectSpace.Save(account1);
 		Assert.That( () => objectSpace.Save(account1), Throws.Nothing);
 	}
-
 
 	[Test]
 	public void UniqueMember_Checksummed_SaveThenDeleteThenSave_ThrowsNothing() {
@@ -261,6 +284,31 @@ public abstract class ObjectSpacesTestBase {
 	#endregion
 
 	#region Unique Member
+
+	[Test]
+	public void UniqueMember_GetViaIndex() {
+		// note: string based property will use a checksum-based index since not constant length key
+		using var scope = CreateObjectSpaceScope();
+		var objectSpace = scope.Item;
+		var rng = new Random();
+		var account1 = CreateAccount(rng);
+		account1.UniqueNumber = 1;
+
+		var account2 = CreateAccount(rng);
+		account2.UniqueNumber = 2;
+
+		objectSpace.Save(account1);
+		objectSpace.Save(account2);
+		
+		var fetch1 = objectSpace.Get((Account x) => x.UniqueNumber, 1);
+		Assert.That(fetch1, Is.SameAs(account1));
+
+		var fetch2 = objectSpace.Get((Account x) => x.UniqueNumber, 2);
+		Assert.That(fetch2, Is.SameAs(account2));
+
+		Assert.That(() => objectSpace.Get((Account x) => x.UniqueNumber, 3), Throws.InvalidOperationException);
+	}
+
 
 	[Test]
 	public void UniqueMember_ProhibitsDuplicate_ViaAdd() {
@@ -306,7 +354,7 @@ public abstract class ObjectSpacesTestBase {
 	}
 
 	[Test]
-	public void UniqueMember_SaveThenSave_ThrowsNothing() {
+	public void UniqueMember_AllowsUpdate_ThrowsNothing() {
 		// note: long based property will index the property value (not checksum) since constant length key
 		using var scope = CreateObjectSpaceScope();
 		var objectSpace = scope.Item;

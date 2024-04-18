@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Hydrogen.NUnit;
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.Merkle;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]

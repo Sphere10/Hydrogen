@@ -11,8 +11,9 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using System.Linq;
 using System.Text;
+using Hydrogen;
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.Merkle;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]

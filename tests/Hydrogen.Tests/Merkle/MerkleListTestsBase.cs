@@ -11,6 +11,7 @@ using NUnit.Framework;
 using System.IO;
 using System.Linq;
 using Hydrogen.NUnit;
+using Hydrogen;
 
 namespace Hydrogen.Tests;
 
@@ -18,7 +19,7 @@ public abstract class MerkleListTestsBase {
 
 	protected abstract IDisposable CreateMerkleList(CHF chf, out IMerkleList<string> merkleList);
 
-	
+
 	[Test]
 	public void EmptyHasZeroLeafs([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		using (CreateMerkleList(chf, out var merkleList)) {
@@ -38,7 +39,7 @@ public abstract class MerkleListTestsBase {
 		var chf = CHF.SHA2_256;
 		var serializer = StringSerializer.UTF8;
 		using var memStream = new MemoryStream();
-		using var merkleList = new StreamMappedMerkleList<string>(memStream, chf, 256, serializer, autoLoad:true);
+		using var merkleList = new StreamMappedMerkleList<string>(memStream, chf, 256, serializer, autoLoad: true);
 		merkleList.Add("alpha");
 		var expected = MerkleTree.ComputeMerkleRoot(new[] { "alpha" }, chf, serializer);
 		Assert.That(merkleList.MerkleTree.Root, Is.EqualTo(expected));
@@ -149,7 +150,7 @@ public abstract class MerkleListTestsBase {
 			Assert.That(merkleList.MerkleTree.Root, Is.Null);
 		}
 	}
-	
+
 	[Test]
 	public void NullAndEmptyNotSame([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
 		using var _ = CreateMerkleList(chf, out var merkleList1);
@@ -159,7 +160,7 @@ public abstract class MerkleListTestsBase {
 		Assert.That(merkleList1.MerkleTree.Root, Is.EqualTo(Hashers.ZeroHash(chf)));
 
 		merkleList2.Add("");
-		Assert.That(merkleList2.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { string.Empty }, chf)));
+		Assert.That(merkleList2.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { string.Empty }, chf)));
 	}
 
 	[Test]
@@ -227,7 +228,7 @@ public abstract class MerkleListTestsBase {
 			AssertEx.ListIntegrationTest(
 				merkleList,
 				100,
-				(rng, i) => Tools.Collection.GenerateArray<string>(i, _ => rng.NextString(100)),
+				(rng, i) => Tools.Collection.GenerateArray(i, _ => rng.NextString(100)),
 				false,
 				iterations,
 				expectedList,

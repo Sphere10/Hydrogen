@@ -10,6 +10,7 @@ using System;
 using NUnit.Framework;
 using System.IO;
 using ExtensionProperties;
+using Hydrogen.Tests.Merkle;
 
 namespace Hydrogen.Tests;
 

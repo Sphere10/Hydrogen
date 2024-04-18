@@ -10,7 +10,7 @@ using System;
 using NUnit.Framework;
 using Hydrogen.NUnit;
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.Merkle;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -29,7 +29,7 @@ public class MerkleListAdapterTests : MerkleListTestsBase {
 			AssertEx.ListIntegrationTest(
 				merkleList,
 				1000,
-				(rng, i) => Tools.Collection.GenerateArray<string>(i, _ => rng.NextString(100)),
+				(rng, i) => Tools.Collection.GenerateArray(i, _ => rng.NextString(100)),
 				false,
 				iterations,
 				expectedList,

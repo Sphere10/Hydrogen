@@ -9,8 +9,9 @@
 using System;
 using NUnit.Framework;
 using System.Linq;
+using Hydrogen;
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.Merkle;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]

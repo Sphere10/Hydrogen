@@ -11,8 +11,9 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using System.Linq;
 using Hydrogen.NUnit;
+using Hydrogen;
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.Merkle;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
@@ -81,7 +82,7 @@ public class FlatMerkleTreeTests {
 			// add a random amount
 			var remainingCapacity = maxLeafs - tree.Leafs.Count;
 			var newItemsCount = RNG.Next(0, (int)remainingCapacity + 1);
-			byte[][] newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), newItemsCount);
+			var newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), newItemsCount);
 			tree.Leafs.AddRange(newItems);
 			expected.Leafs.AddRange(newItems);
 			AssertEx.AreEqual(expected, tree);
@@ -124,7 +125,7 @@ public class FlatMerkleTreeTests {
 			// add a random amount
 			var remainingCapacity = maxLeafs - tree.Leafs.Count;
 			var newItemsCount = RNG.Next(0, (int)remainingCapacity + 1);
-			byte[][] newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), newItemsCount);
+			var newItems = RNG.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), newItemsCount);
 			tree.Leafs.AddRange(newItems);
 			expected.Leafs.AddRange(newItems);
 

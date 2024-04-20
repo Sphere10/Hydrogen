@@ -375,8 +375,8 @@ public static class MerkleMath {
 
 	}
 
-	public static IEnumerable<MerkleCoordinate> CalculateContainsProofPath(MerkleSize size, IEnumerable<long> leafsIndices) {
-		var leafs = leafsIndices.Select(MerkleCoordinate.LeafAt).ToArray();
+	public static IEnumerable<MerkleCoordinate> CalculateContainsProofPath(MerkleSize size, IEnumerable<long> orderedLeafsIndices) {
+		var leafs = orderedLeafsIndices.Select(MerkleCoordinate.LeafAt).ToArray();
 		var path = leafs.Aggregate(
 			Enumerable.Empty<MerkleCoordinate>(),
 			(aggr, leaf) => aggr.Union(CalculateExistenceProofPath(size, leaf))
@@ -384,8 +384,8 @@ public static class MerkleMath {
 		return path.Except(leafs);
 	}
 
-	public static IEnumerable<MerkleCoordinate> CalculateUpdateProofPath(MerkleSize size, IEnumerable<long> leafsIndices) {
-		var leafs = leafsIndices.Select(MerkleCoordinate.LeafAt).ToArray();
+	public static IEnumerable<MerkleCoordinate> CalculateUpdateProofPath(MerkleSize size, IEnumerable<long> orderedLeafsIndices) {
+		var leafs = orderedLeafsIndices.Select(MerkleCoordinate.LeafAt).ToArray();
 		var path = leafs.Aggregate(
 			Enumerable.Empty<MerkleCoordinate>(),
 			(aggr, leaf) => aggr.Union(CalculateExistenceProofPath(size, leaf))
@@ -405,11 +405,11 @@ public static class MerkleMath {
 	public static byte[][] GenerateConsistencyProof(IMerkleTree tree, long priorLeafCount, out bool[] flags)
 		=> GenerateProof(tree, CalculateConsistencyProofPath(priorLeafCount, tree.Size.LeafCount, out _), out flags);
 
-	public static byte[][] GenerateContainsProof(IMerkleTree tree, IEnumerable<long> leafIndices, out bool[] flags)
-		=> GenerateProof(tree, CalculateContainsProofPath(tree.Size, leafIndices), out flags);
+	public static byte[][] GenerateContainsProof(IMerkleTree tree, IEnumerable<long> orderedLeafIndices, out bool[] flags)
+		=> GenerateProof(tree, CalculateContainsProofPath(tree.Size, orderedLeafIndices), out flags);
 
-	public static byte[][] GenerateUpdateProof(IMerkleTree tree, IEnumerable<long> leafIndices, out bool[] flags)
-		=> GenerateProof(tree, CalculateUpdateProofPath(tree.Size, leafIndices), out flags);
+	public static byte[][] GenerateUpdateProof(IMerkleTree tree, IEnumerable<long> orderedLeafIndices, out bool[] flags)
+		=> GenerateProof(tree, CalculateUpdateProofPath(tree.Size, orderedLeafIndices), out flags);
 
 	public static byte[][] GenerateAppendProof(IMerkleTree tree)
 		=> GenerateProof(tree, CalculateSubRoots(tree.Size.LeafCount), out _);

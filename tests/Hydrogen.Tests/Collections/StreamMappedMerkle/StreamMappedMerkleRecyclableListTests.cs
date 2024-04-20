@@ -171,11 +171,19 @@ public class StreamMappedMerkleRecyclableListTests : RecyclableListTestsBase {
 	}
 
 
-	
+	[Test]
+	public void Remove_Bug_1([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		var serializer = new StringSerializer();
+		using var disposables = CreateList(chf, serializer, StringComparer.InvariantCultureIgnoreCase, out var list);
+		list.Add("alpha");
+		list.RemoveAt(0);
+		Assert.That(list.MerkleTree.Root, Is.EqualTo(Hashers.ZeroHash(chf)));
+	}
 	
 	[Test]
 	public void Special_Remove([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
-		using var disposables = CreateList(chf, new StringSerializer(), StringComparer.InvariantCultureIgnoreCase, out var list);
+		var serializer = new StringSerializer();
+		using var disposables = CreateList(chf, serializer, StringComparer.InvariantCultureIgnoreCase, out var list);
 		list.Add("alpha");
 		list.Add("beta");
 		list.Add("gamma");
@@ -183,12 +191,13 @@ public class StreamMappedMerkleRecyclableListTests : RecyclableListTestsBase {
 		list.Add("delta");
 		list.RemoveAt(1);
 		list.RemoveAt(2);
-		Assert.That(list.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "delta", null, null }, chf)));
+		Assert.That(list.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new[] { "delta", null, null }, chf, serializer)));
 	}
 
 
 	[Test]
 	public void Special_RemoveAll([Values(CHF.SHA2_256, CHF.Blake2b_128)] CHF chf) {
+		var serializer = new StringSerializer();
 		using var disposables = CreateList(chf, new StringSerializer(), StringComparer.InvariantCultureIgnoreCase, out var list);
 		list.Add("alpha");
 		list.Add("beta");
@@ -198,6 +207,6 @@ public class StreamMappedMerkleRecyclableListTests : RecyclableListTestsBase {
 		list.RemoveAt(0);
 		list.RemoveAt(1);
 		list.RemoveAt(2);
-		Assert.That(list.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new string[] { null, null, null }, chf)));
+		Assert.That(list.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new string[] { null, null, null }, chf, serializer)));
 	}
 }

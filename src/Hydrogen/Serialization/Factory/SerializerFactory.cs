@@ -440,8 +440,18 @@ public class SerializerFactory {
 				AssembleRecursively(factory, genericType);
 
 			// If serializer already exists for this type in factory, use that
-			if (factory.HasSerializer(itemType))
-				return factory.GetCachedSerializer(itemType);
+			if (factory.HasSerializer(itemType)) {
+				//return factory.GetCachedSerializer(itemType);
+				var typeSerializer = factory.GetCachedSerializer(itemType);
+				if (!itemType.IsValueType && !typeSerializer.SupportsNull) {
+					return (IItemSerializer)typeof(ReferenceSerializer<>)
+						.MakeGenericType(itemType)
+						.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(IItemSerializer<>)
+						.MakeGenericType(itemType) }, null).Invoke(new object[] { typeSerializer });
+				} else {
+					return typeSerializer;
+				}
+			}
 
 			// Special Case: if we're serializing an enum (or nullable enum), we register it with the factory now and return
 			if (itemType.IsEnum || itemType.IsConstructedGenericTypeOf(typeof(Nullable<>)) && itemType.GenericTypeArguments[0].IsEnum) {

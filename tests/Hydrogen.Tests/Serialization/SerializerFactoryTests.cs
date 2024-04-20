@@ -218,9 +218,18 @@ public class SerializerFactoryTests {
 		var factory = new SerializerFactory();
 		factory.Register<ArrayList, ArrayListSerializer>(() => new ArrayListSerializer(SerializerFactory.Default));
 		var serializer = factory.GetSerializer<ArrayList>();
-		Assert.That(serializer, Is.TypeOf<ArrayListSerializer>());
+		Assert.That(serializer, Is.TypeOf<ReferenceSerializer<ArrayList>>());
+		Assert.That(((ReferenceSerializer<ArrayList>)serializer).Internal, Is.TypeOf<ArrayListSerializer>());
 	}
 
+
+	[Test]
+	public void Register_NullableInt() {
+		var factory = new SerializerFactory();
+		factory.Register(NullableSerializer<int>.Instance);
+		var serializer = factory.GetSerializer<int?>();
+		Assert.That(serializer, Is.TypeOf<NullableSerializer<int>>());
+	}
 	[Test]
 	public void ResolveNotSpecializedByteArray() {
 		var factory = new SerializerFactory();

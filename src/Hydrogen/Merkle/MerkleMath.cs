@@ -393,28 +393,28 @@ public static class MerkleMath {
 		return path.Union(leafs);
 	}
 
-	public static IEnumerable<byte[]> GenerateProof(IMerkleTree merkleTree, IEnumerable<MerkleCoordinate> path, out IEnumerable<bool> flags) {
+	public static byte[][] GenerateProof(IMerkleTree merkleTree, IEnumerable<MerkleCoordinate> path, out bool[] flags) {
 		var pathArr = path as MerkleCoordinate[] ?? path.ToArray();
-		flags = CalculateDirFlags(merkleTree.Size, pathArr);
-		return pathArr.Select(x => merkleTree.GetValue(x).ToArray());
+		flags = CalculateDirFlags(merkleTree.Size, pathArr).ToArray();
+		return pathArr.Select(x => merkleTree.GetValue(x).ToArray()).ToArray();
 	}
 
-	public static IEnumerable<byte[]> GenerateExistenceProof(IMerkleTree merkleTree, MerkleCoordinate node, out IEnumerable<bool> flags)
+	public static byte[][] GenerateExistenceProof(IMerkleTree merkleTree, MerkleCoordinate node, out bool[] flags)
 		=> GenerateProof(merkleTree, CalculateExistenceProofPath(merkleTree.Size, node), out flags);
 
-	public static IEnumerable<byte[]> GenerateConsistencyProof(IMerkleTree tree, long priorLeafCount, out IEnumerable<bool> flags)
+	public static byte[][] GenerateConsistencyProof(IMerkleTree tree, long priorLeafCount, out bool[] flags)
 		=> GenerateProof(tree, CalculateConsistencyProofPath(priorLeafCount, tree.Size.LeafCount, out _), out flags);
 
-	public static IEnumerable<byte[]> GenerateContainsProof(IMerkleTree tree, IEnumerable<long> leafIndices, out IEnumerable<bool> flags)
+	public static byte[][] GenerateContainsProof(IMerkleTree tree, IEnumerable<long> leafIndices, out bool[] flags)
 		=> GenerateProof(tree, CalculateContainsProofPath(tree.Size, leafIndices), out flags);
 
-	public static IEnumerable<byte[]> GenerateUpdateProof(IMerkleTree tree, IEnumerable<long> leafIndices, out IEnumerable<bool> flags)
+	public static byte[][] GenerateUpdateProof(IMerkleTree tree, IEnumerable<long> leafIndices, out bool[] flags)
 		=> GenerateProof(tree, CalculateUpdateProofPath(tree.Size, leafIndices), out flags);
 
-	public static IEnumerable<byte[]> GenerateAppendProof(IMerkleTree tree)
+	public static byte[][] GenerateAppendProof(IMerkleTree tree)
 		=> GenerateProof(tree, CalculateSubRoots(tree.Size.LeafCount), out _);
 
-	public static IEnumerable<byte[]> GenerateDeleteProof(IMerkleTree tree, long deletedLeafCount, out IEnumerable<bool> flags)
+	public static byte[][] GenerateDeleteProof(IMerkleTree tree, long deletedLeafCount, out bool[] flags)
 		=> GenerateConsistencyProof(tree, tree.Size.LeafCount - deletedLeafCount, out flags);
 
 	public static bool VerifyProof(CHF hashAlgorithm, ReadOnlySpan<byte> startHash, IEnumerable<byte[]> proof, IEnumerable<bool> flags, ReadOnlySpan<byte> expectedHash) {

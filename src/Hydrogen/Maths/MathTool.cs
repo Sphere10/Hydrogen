@@ -7,7 +7,9 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Hydrogen;
 
 // ReSharper disable CheckNamespace
 namespace Tools;
@@ -152,4 +154,48 @@ public class Maths {
 		return Math.Sqrt(Math.Pow(x1 - x0, 2) + Math.Pow(y1 - y0, 2));
 	}
 
+
+	/// <summary>
+	/// Enumerates all permutations of M-tuple indices of a collection of N elements.
+	/// </summary>
+	/// <param name="N">Total number of indexes available in collection</param>
+	/// <param name="M">The number of indexes per permutation</param>
+	/// <returns></returns>
+	/// <remarks>Not memory efficient and can bloat for large N, M.</remarks>
+
+	public static IEnumerable<long[]> GenerateIndexPermutations(long N, long M)
+		=> IterateIndexPermutationsMemoryEfficiently(N, M).Select(x => x.ToArray());
+
+	/// <summary>
+	/// Iterates all permutations of M-tuple indices of a collection of N elements.
+	/// </summary>
+	/// <param name="N">Total number of indexes available in collection</param>
+	/// <param name="M">The tuple size of indexes to fetch</param>
+	/// <returns></returns>
+	/// <remarks>Memory efficient implementation which yields same array instance in every iteration. Careful if converting an array/list as all elements will be same.</remarks>
+	public static IEnumerable<long[]> IterateIndexPermutationsMemoryEfficiently(long N, long M) {
+		Guard.ArgumentLTE(M, N, nameof(M));
+
+		if (M == 0)
+			yield break;
+
+		var result = new long[M];
+		var stack = new Stack<long>();
+		stack.Push(0);
+
+		while (stack.Count > 0) {
+			var index = stack.Count - 1;
+			var value = stack.Pop();
+
+			while (value < N) {
+				result[index++] = value;
+				stack.Push(++value);
+
+				if (index == M) {
+					yield return result;
+					break;
+				}
+			}
+		}
+	}
 }

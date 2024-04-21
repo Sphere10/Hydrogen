@@ -17,7 +17,6 @@ namespace Hydrogen.Tests;
 [Parallelizable(ParallelScope.Children)]
 public class ContextScopeTest {
 
-
 	[Test]
 	public void TestNested_None_None() {
 		Assert.False(ExceptionOccured(ContextScopePolicy.None, ContextScopePolicy.None));
@@ -58,7 +57,6 @@ public class ContextScopeTest {
 		Assert.False(ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested));
 	}
 
-
 	[Test]
 	public void TestNested_MustBeRoot_MustBeRoot() {
 		Assert.True(ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeRoot));
@@ -68,7 +66,6 @@ public class ContextScopeTest {
 	public void MultiThreaded_0() {
 		Assert.IsTrue(Enumerable.Range(1, 10).All(x => !ExceptionOccured(ContextScopePolicy.MustBeRoot, ContextScopePolicy.MustBeNested, Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100), Tools.Maths.RNG.Next(0, 100))));
 	}
-
 
 	[Test]
 	public void MultiThreaded_1() {
@@ -91,7 +88,6 @@ public class ContextScopeTest {
 		Assert.IsTrue(task1.Result);
 		Assert.IsTrue(task2.Result);
 	}
-
 
 	[Test]
 	public void TestNested_None_None_Async() {
@@ -248,7 +244,6 @@ public class ContextScopeTest {
 		return false;
 	}
 
-
 	private async Task<bool> ExceptionOccuredAsync2(ContextScopePolicy rootPolicy, ContextScopePolicy childPolicy, int delay1 = 0, int delay2 = 0, int delay3 = 0) {
 		try {
 			await AsyncTest2(Tuple.Create(rootPolicy, delay1), Tuple.Create(childPolicy, delay2), Tuple.Create(ContextScopePolicy.None, delay3));
@@ -257,7 +252,6 @@ public class ContextScopeTest {
 		}
 		return false;
 	}
-
 
 	private async Task AsyncTest(params Tuple<ContextScopePolicy, int>[] policies) {
 		if (policies.Any()) {
@@ -281,9 +275,7 @@ public class ContextScopeTest {
 		}
 	}
 
-
 	public class ContextScopeDemo : SyncContextScope {
-
 
 		public ContextScopeDemo(ContextScopePolicy policy)
 			: base(policy, "ContextScopeDemo") {

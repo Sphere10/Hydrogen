@@ -17,8 +17,11 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 	public UniqueProjectionIndex(ObjectStream<TItem> objectStream, string indexName, Func<TItem, TKey> projection, IItemSerializer<TKey> keySerializer, IEqualityComparer<TKey> keyComparer)
 		: base(
 			objectStream, 
-			new UniqueKeyStorageAttachment<TKey>(objectStream.Streams, indexName, keySerializer, keyComparer)
-		)  {
+			new UniqueKeyStorageAttachment<TKey>(objectStream.Streams, indexName, keySerializer, keyComparer),
+			IndexNullPolicy.ThrowOnNull
+		) {
+		Guard.ArgumentNotNull(projection, nameof(projection));
+		Guard.Argument(keySerializer.IsConstantSize, nameof(keySerializer), "Must be a constant size serializer");
 		_projection = projection;
 	}
 
@@ -34,7 +37,7 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 
 	protected override void OnAdding(TItem item, long index, TKey key) {
 		if (!IsUnique(key, null, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique keyChecksum violation occurs with item at {clashIndex}");
+			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique projection violation occurs with projected key '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
 	}
 
 	protected override void OnAdded(TItem item, long index, TKey keyChecksum) {
@@ -43,7 +46,7 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 
 	protected override void OnUpdating(TItem item, long index, TKey key) {
 		if (!IsUnique(key, index, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} at {index} as a unique keyChecksum violation occurs with item at {clashIndex}");
+			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} as a unique projection violation occurs with projected key '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
 	}
 
 	protected override void OnUpdated(TItem item, long index, TKey keyChecksum) {
@@ -52,7 +55,7 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 
 	protected override void OnInserting(TItem item, long index, TKey key) {
 		if (!IsUnique(key, index, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} at {index} as a unique keyChecksum violation occurs with item at {clashIndex}");
+			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} as a unique projection violation occurs with projected key '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
 	}
 
 	protected override void OnInserted(TItem item, long index, TKey keyChecksum) {

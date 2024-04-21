@@ -16,8 +16,8 @@ namespace Hydrogen.Tests;
 [TestFixture, Timeout(60000)]
 public class NonMerkleizedObjectSpacesTest : ObjectSpacesTestBase {
 
-	protected override ObjectSpace CreateObjectSpace(string filePath) 
-		=> PrepareObjectSpaceBuilder()
+	protected override ObjectSpace CreateObjectSpace(string filePath, IndexNullPolicy nullValuePolicy = IndexNullPolicy.IgnoreNull) 
+		=> PrepareObjectSpaceBuilder(nullValuePolicy)
 			.UseFile(filePath)
 			.Build();
 }

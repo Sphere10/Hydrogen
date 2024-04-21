@@ -60,28 +60,31 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 			Type = ObjectSpaceDefinition.IndexType.Identifier,
 			Name = indexName ?? member.Name,
 			Member = member,
+			NullPolicy = IndexNullPolicy.ThrowOnNull
 		};
 		_indexes.Add(index);
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> WithIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null) {
+	public ObjectSpaceDimensionBuilder<T> WithIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) {
 		var member = memberExpression.ToMember();
 		var index = new ObjectSpaceDefinition.IndexDefinition {
 			Type = ObjectSpaceDefinition.IndexType.Index,
 			Name = indexName ?? member.Name,
 			Member = member,
+			NullPolicy = nullPolicy
 		};
 		_indexes.Add(index);
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> WithUniqueIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null) {
+	public ObjectSpaceDimensionBuilder<T> WithUniqueIndexOn<TMember>(Expression<Func<T, TMember>> memberExpression, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) {
 		var member = memberExpression.ToMember();
 		var index = new ObjectSpaceDefinition.IndexDefinition {
 			Type = ObjectSpaceDefinition.IndexType.UniqueKey,
 			Name = indexName ?? member.Name,
 			Member = member,
+			NullPolicy = nullPolicy
 		};
 		_indexes.Add(index);
 		return this;

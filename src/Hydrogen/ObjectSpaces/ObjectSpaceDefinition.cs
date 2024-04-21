@@ -128,6 +128,8 @@ public class ObjectSpaceDefinition {
 
 		public Member Member { get; set; }
 
+		public IndexNullPolicy NullPolicy { get; set; }
+
 	}
 
 	public enum IndexType {

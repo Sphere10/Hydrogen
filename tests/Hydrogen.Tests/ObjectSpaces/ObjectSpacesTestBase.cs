@@ -18,7 +18,7 @@ namespace Hydrogen.Tests;
 [TestFixture, Timeout(60000)]
 public abstract class ObjectSpacesTestBase {
 
-	protected abstract ObjectSpace CreateObjectSpace(string filePath);
+	protected abstract ObjectSpace CreateObjectSpace(string filePath, IndexNullPolicy nullValuePolicy = IndexNullPolicy.IgnoreNull);
 
 	#region Activation
 	
@@ -281,6 +281,45 @@ public abstract class ObjectSpacesTestBase {
 		Assert.That( () => objectSpace.Save(account3), Throws.Nothing);
 	}
 
+	[Test]
+	public void UniqueMember_Checksummed_IgnoreNullPolicy() {
+		// note: string based property will use a checksum-based index since not constant length key
+		using var scope = CreateObjectSpaceScope(nullValuePolicy: IndexNullPolicy.IgnoreNull);
+		var objectSpace = scope.Item;
+		var rng = new Random();
+		var account1 = CreateAccount(rng);
+		var account2 = CreateAccount(rng);
+		account1.Name = null;
+		account2.Name = null;
+		objectSpace.Save(account1);
+		Assert.That( () => objectSpace.Save(account2), Throws.Nothing);
+	}
+
+	[Test]
+	public void UniqueMember_Checksummed_IndexNullValue() {
+		// note: string based property will use a checksum-based index since not constant length key
+		using var scope = CreateObjectSpaceScope(nullValuePolicy: IndexNullPolicy.IndexNullValue);
+		var objectSpace = scope.Item;
+		var rng = new Random();
+		var account1 = CreateAccount(rng);
+		var account2 = CreateAccount(rng);
+		account1.Name = null;
+		account2.Name = null;
+		objectSpace.Save(account1);
+		Assert.That( () => objectSpace.Save(account2), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void UniqueMember_Checksummed_ThrowOnNullValue() {
+		// note: string based property will use a checksum-based index since not constant length key
+		using var scope = CreateObjectSpaceScope(nullValuePolicy: IndexNullPolicy.ThrowOnNull);
+		var objectSpace = scope.Item;
+		var rng = new Random();
+		var account1 = CreateAccount(rng);
+		account1.Name = null;
+		Assert.That(() => objectSpace.Save(account1), Throws.InvalidOperationException);
+	}	
+
 	#endregion
 
 	#region Unique Member
@@ -388,13 +427,13 @@ public abstract class ObjectSpacesTestBase {
 
 	#region Aux
 
-	protected static ObjectSpaceBuilder PrepareObjectSpaceBuilder() {
+	protected static ObjectSpaceBuilder PrepareObjectSpaceBuilder(IndexNullPolicy nullValuePolicy) {
 		var builder = new ObjectSpaceBuilder();
 		builder
 			.AutoLoad()
 			.AddDimension<Account>()
-				.WithUniqueIndexOn(x => x.Name)
-				.WithUniqueIndexOn(x => x.UniqueNumber)
+				.WithUniqueIndexOn(x => x.Name, nullPolicy: nullValuePolicy)
+				.WithUniqueIndexOn(x => x.UniqueNumber, nullPolicy: nullValuePolicy)
 				.UsingEqualityComparer(CreateAccountComparer())
 				.Done()
 			.AddDimension<Identity>()
@@ -441,11 +480,11 @@ public abstract class ObjectSpacesTestBase {
 			.By(x => x.DSS)
 			.ThenBy(x => x.Key, ByteArrayEqualityComparer.Instance);
 			
-	protected IScope<ObjectSpace> CreateObjectSpaceScope(string folder = null, bool keepFolder = false) {
+	protected IScope<ObjectSpace> CreateObjectSpaceScope(string folder = null, bool keepFolder = false, IndexNullPolicy nullValuePolicy = IndexNullPolicy.IgnoreNull) {
 		folder ??= Tools.FileSystem.GetTempEmptyDirectory(true);
 		var filePath = Path.Combine(folder, "app.db");
 		
-		var objectSpace = CreateObjectSpace(filePath);
+		var objectSpace = CreateObjectSpace(filePath, nullValuePolicy);
 		var disposables = new Disposables();
 		disposables.Add(objectSpace);
 		if (!keepFolder)

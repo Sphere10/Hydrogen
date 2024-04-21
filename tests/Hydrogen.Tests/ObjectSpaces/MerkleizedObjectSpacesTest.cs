@@ -18,8 +18,8 @@ namespace Hydrogen.Tests;
 [TestFixture, Timeout(60000)]
 public class MerkleizedObjectSpacesTest : ObjectSpacesTestBase {
 
-	protected override ObjectSpace CreateObjectSpace(string filePath) 
-		=> PrepareObjectSpaceBuilder()
+	protected override ObjectSpace CreateObjectSpace(string filePath, IndexNullPolicy nullValuePolicy = IndexNullPolicy.IgnoreNull) 
+		=> PrepareObjectSpaceBuilder(nullValuePolicy)
 			.UseFile(filePath)
 			.Merkleized()
 			.Build();
@@ -40,7 +40,6 @@ public class MerkleizedObjectSpacesTest : ObjectSpacesTestBase {
 
 			var dim1 = objectSpace.Dimensions[0];
 			var dim2 = objectSpace.Dimensions[1];
-
 
 			// Verify account dimension has single item root
 			using var dim1Scope = dim1.ObjectStream.EnterAccessScope();

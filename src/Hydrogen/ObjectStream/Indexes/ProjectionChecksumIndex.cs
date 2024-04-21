@@ -32,10 +32,12 @@ internal sealed class ProjectionChecksumIndex<TItem, TProjection> : ProjectionIn
 		Func<TItem, TProjection> projection,
 		IItemChecksummer<TProjection> projectionChecksummer,
 		Func<long, TProjection> projectionHydrator,
-		IEqualityComparer<TProjection> keyComparer
+		IEqualityComparer<TProjection> keyComparer,
+		IndexNullPolicy nullPolicy
 	) : base(
 			objectStream,
-			new IndexStorageAttachment<int>(objectStream.Streams, indexName, PrimitiveSerializer<int>.Instance, EqualityComparer<int>.Default)
+			new IndexStorageAttachment<int>(objectStream.Streams, indexName, PrimitiveSerializer<int>.Instance, EqualityComparer<int>.Default),
+			nullPolicy
 		) {
 		Guard.ArgumentNotNull(projection, nameof(projection));
 		Guard.ArgumentNotNull(projectionChecksummer, nameof(projectionChecksummer));
@@ -95,6 +97,8 @@ internal sealed class ProjectionChecksumIndex<TItem, TProjection> : ProjectionIn
 	protected override void OnContainerCleared() {
 		Store.Attach();
 	}
+
+	protected override bool IsNullValue((TProjection, int) projection) => projection.Item1 is null;
 
 	private class ChecksumBasedLookup : ILookup<TProjection, long> {
 		private readonly ProjectionChecksumIndex<TItem, TProjection> _parent;

@@ -31,10 +31,12 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 		Func<TItem, TKey> projection,
 		IItemChecksummer<TKey> keyChecksummer,
 		Func<long, TKey> keyHydrator,
-		IEqualityComparer<TKey> keyComparer
+		IEqualityComparer<TKey> keyComparer,
+		IndexNullPolicy indexNullPolicy
 	) : base(
 			objectStream,
-			new IndexStorageAttachment<int>(objectStream.Streams, indexName, PrimitiveSerializer<int>.Instance, EqualityComparer<int>.Default)
+			new IndexStorageAttachment<int>(objectStream.Streams, indexName, PrimitiveSerializer<int>.Instance, EqualityComparer<int>.Default),
+			indexNullPolicy
 		) {
 		Guard.ArgumentNotNull(projection, nameof(projection));
 		Guard.ArgumentNotNull(keyChecksummer, nameof(keyChecksummer));
@@ -63,7 +65,7 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 
 	protected override void OnAdding(TItem item, long index, (TKey, int) keyChecksum) {
 		if (!IsUnique(keyChecksum, null, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs with projected key '{keyChecksum.Item1}' ({keyChecksum.Item2}) with index {clashIndex}");
+			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs with projected key '{keyChecksum.Item1?.ToString() ?? "NULL"}' ({keyChecksum.Item2}) with index {clashIndex}");
 	}
 
 	protected override void OnAdded(TItem item, long index, (TKey, int) keyChecksum) {
@@ -73,7 +75,7 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 
 	protected override void OnUpdating(TItem item, long index, (TKey, int) keyChecksum) {
 		if (!IsUnique(keyChecksum, index, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs with projected key '{keyChecksum.Item1}' ({keyChecksum.Item2}) with index {clashIndex}");
+			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs with projected key '{keyChecksum.Item1?.ToString() ?? "NULL"}' ({keyChecksum.Item2}) with index {clashIndex}");
 	}
 
 	protected override void OnUpdated(TItem item, long index, (TKey, int) keyChecksum) {
@@ -83,7 +85,7 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 
 	protected override void OnInserting(TItem item, long index, (TKey, int) keyChecksum) {
 		if (!IsUnique(keyChecksum, index, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs with projected key '{keyChecksum.Item1}' ({keyChecksum.Item2}) with index {clashIndex}");
+			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs with projected key '{keyChecksum.Item1?.ToString() ?? "NULL"}' ({keyChecksum.Item2}) with index {clashIndex}");
 	}
 
 	protected override void OnInserted(TItem item, long index, (TKey, int) keyChecksum) {
@@ -107,6 +109,8 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 	protected override void OnContainerCleared() {
 		Store.Attach();
 	}
+
+	protected override bool IsNullValue((TKey, int) projection) => projection.Item1 is null;
 
 	private bool IsUnique((TKey, int) keyChecksum, long? exemptIndex, out long clashIndex) {
 		if (_keyDictionary.TryGetValue(keyChecksum, out var foundIndex)) {

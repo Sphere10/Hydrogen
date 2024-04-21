@@ -21,9 +21,11 @@ internal sealed class ProjectionIndex<TItem, TProjection> : ProjectionIndexBase<
 	public ProjectionIndex(ObjectStream<TItem> objectStream, string indexName, Func<TItem, TProjection> projection, IItemSerializer<TProjection> projectionSerializer, IEqualityComparer<TProjection> projectionComparer)
 		: base(
 			objectStream,
-			new IndexStorageAttachment<TProjection>(objectStream.Streams, indexName, projectionSerializer, projectionComparer)
+			new IndexStorageAttachment<TProjection>(objectStream.Streams, indexName, projectionSerializer, projectionComparer),
+			IndexNullPolicy.ThrowOnNull
 		) {
 		Guard.ArgumentNotNull(projection, nameof(projection));
+		Guard.Argument(projectionSerializer.IsConstantSize, nameof(projectionSerializer), "Must be a constant size serializer");
 		_projection = projection;
 	}
 

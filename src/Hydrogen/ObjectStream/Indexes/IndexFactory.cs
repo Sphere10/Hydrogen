@@ -86,7 +86,8 @@ internal static class IndexFactory {
 		IItemSerializer keySerializer = null, 
 		object keyChecksummer = null, 
 		object keyFetcher = null, 
-		object keyComparer = null
+		object keyComparer = null,
+		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull
 	) {
 		Guard.Ensure(objectStream.GetType() == typeof(ObjectStream<>).MakeGenericType(member.DeclaringType));
 		
@@ -101,7 +102,7 @@ internal static class IndexFactory {
 			.GetMethod(nameof(CreateProjectionChecksumIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(member.DeclaringType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer, indexNullPolicy });
 
 	}
 
@@ -112,7 +113,9 @@ internal static class IndexFactory {
 		IItemSerializer<TKey> keySerializer = null, 
 		IItemChecksummer<TKey> keyChecksummer = null, 
 		Func<long, TKey> keyFetcher = null, 
-		IEqualityComparer<TKey> keyComparer= null) {
+		IEqualityComparer<TKey> keyComparer= null,
+		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull
+	) {
 
 		keySerializer ??= ItemSerializer<TKey>.Default;
 		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, objectStream.Streams.Endianness);
@@ -124,7 +127,8 @@ internal static class IndexFactory {
 			projection,
 			keyChecksummer,
 			keyFetcher,
-			keyComparer
+			keyComparer,
+			indexNullPolicy
 		);
 
 		return keyChecksumKeyIndex;
@@ -141,7 +145,8 @@ internal static class IndexFactory {
 		IItemSerializer keySerializer = null,
 		object keyChecksummer = null, 
 		object keyFetcher = null, 
-		object keyComparer = null
+		object keyComparer = null,
+		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull
 	) {
 		Guard.Ensure(objectStream.GetType() == typeof(ObjectStream<>).MakeGenericType(member.DeclaringType));
 		
@@ -156,7 +161,7 @@ internal static class IndexFactory {
 			.GetMethod(nameof(CreateUniqueProjectionChecksumIndex), BindingFlags.NonPublic | BindingFlags.Static)
 			.MakeGenericMethod(member.DeclaringType, member.PropertyType);
 
-		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer });
+		return (IClusteredStreamsAttachment)method.Invoke(null, new object[] { genericContainer, indexName, projection, keySerializer, keyChecksummer, keyFetcher, keyComparer, indexNullPolicy });
 
 	}
 
@@ -167,7 +172,8 @@ internal static class IndexFactory {
 		IItemSerializer<TKey> keySerializer = null, 
 		IItemChecksummer<TKey> keyChecksummer = null, 
 		Func<long, TKey> keyFetcher = null, 
-		IEqualityComparer<TKey> keyComparer= null
+		IEqualityComparer<TKey> keyComparer = null,
+		IndexNullPolicy indexNullPolicy = IndexNullPolicy.IgnoreNull
 	) {
 		keySerializer ??= ItemSerializer<TKey>.Default;
 		keyChecksummer ??= new ItemDigestor<TKey>(keySerializer, objectStream.Streams.Endianness);
@@ -179,7 +185,8 @@ internal static class IndexFactory {
 			projection,
 			keyChecksummer,
 			keyFetcher,
-			keyComparer
+			keyComparer,
+			indexNullPolicy
 		);
 
 		return uniqueKeyChecksumIndex;

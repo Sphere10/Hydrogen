@@ -34,7 +34,6 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 
 	public override TKey ApplyProjection(TItem item) => _projection.Invoke(item);
 
-
 	protected override void OnAdding(TItem item, long index, TKey key) {
 		if (!IsUnique(key, null, out var clashIndex)) 
 			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique projection violation occurs with projected key '{key?.ToString() ?? "NULL"}' with index {clashIndex}");

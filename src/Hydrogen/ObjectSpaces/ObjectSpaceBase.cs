@@ -34,6 +34,7 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		_loaded = false;
 		_dimensions = new DictionaryList<Type, IStreamMappedCollection>(TypeEquivalenceComparer.Instance, ReferenceEqualityComparer.Instance);
 		_instanceTracker = new InstanceTracker();
+		Disposables = Disposables.None;
 	}
 
 	public override bool RequiresLoad => !_loaded || _streams.RequiresLoad;
@@ -50,7 +51,11 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 	
 	public bool IsLocked => _streams.IsLocked;
 
+	internal ClusteredStreams Streams => _streams;
+
 	public IReadOnlyList<IStreamMappedCollection> Dimensions => _dimensions;
+
+	public Disposables Disposables { get; }
 
 	public IDisposable EnterAccessScope() => _streams.EnterAccessScope();
 
@@ -188,6 +193,7 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 	public virtual void Dispose() {
 		Unload();
 		_streams.Dispose();
+		Disposables.Dispose();
 	}
 
 	protected override void LoadInternal() {

@@ -16,19 +16,15 @@ using NUnit.Framework;
 namespace Hydrogen.Tests;
 
 [TestFixture, Timeout(60000)]
-public class MerkleizedObjectSpacesTest : ObjectSpacesTestBase {
+public class MerkleizedFileObjectSpacesTest : FileObjectSpacesTest {
 
-	protected override ObjectSpace CreateObjectSpace(string filePath, IndexNullPolicy nullValuePolicy = IndexNullPolicy.IgnoreNull) 
-		=> PrepareObjectSpaceBuilder(nullValuePolicy)
-			.UseFile(filePath)
-			.Merkleized()
-			.Build();
-	
+	protected override FileObjectSpace CreateFileObjectSpace(string folder, bool keepFilesOnDispose, ObjectSpaceBuilder builder) 
+		=> base.CreateFileObjectSpace(folder, keepFilesOnDispose, builder.Merkleized());
+
 	[Test]
 	public void CheckRootsChanged() {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
-		using (var scope = CreateObjectSpaceScope(folder, true)) {
-			var objectSpace = scope.Item;
+		using (var objectSpace = CreateFileObjectSpace(folder, true, CreateStandardObjectSpace())) {
 			var chf = objectSpace.Definition.HashFunction;
 			var digestSize = Hashers.GetDigestSizeBytes(chf);
 
@@ -52,7 +48,7 @@ public class MerkleizedObjectSpacesTest : ObjectSpacesTestBase {
 			Assert.That(identityRoot, Is.EqualTo(new byte[digestSize]).Using(ByteArrayEqualityComparer.Instance));
 			
 			// Verify spatial root is both account/identity
-			var spaceRoot = objectSpace.InternalStreams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
+			var spaceRoot = objectSpace.Streams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
 			Assert.That(spaceRoot, Is.EqualTo(MerkleTree.ComputeMerkleRoot(new [] { accountRoot, identityRoot }, chf)).Using(ByteArrayEqualityComparer.Instance));
 		}
 

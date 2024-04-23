@@ -21,18 +21,12 @@ public class MemoryObjectSpacesTest : ObjectSpacesTestBase<MemoryObjectSpace> {
 	protected override MemoryObjectSpace CreateObjectSpace(ObjectSpaceBuilder builder) => CreateMemoryObjectSpace(new MemoryStream(), false, builder);
 
 	protected virtual MemoryObjectSpace CreateMemoryObjectSpace(MemoryStream stream, bool keepStreamOnDispose, ObjectSpaceBuilder builder) {
-		
-		// tell builder to use as file
 		builder.UseMemoryStream(stream);
-
 		var objectSpace = (MemoryObjectSpace)builder.Build();
-
 		if (!keepStreamOnDispose)
 			objectSpace.Disposables.Add(stream);
-
 		return objectSpace;
 	}
-
 
 	#region Load
 

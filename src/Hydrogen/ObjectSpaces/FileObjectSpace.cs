@@ -21,7 +21,7 @@ public class FileObjectSpace : ObjectSpaceBase, ITransactionalObject{
 	private readonly TransactionalStream _fileStream;
 
 	public FileObjectSpace(HydrogenFileDescriptor file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default)
-		: base(CreateStreams(file, objectSpaceDefinition, accessMode, out var fileStream), objectSpaceDefinition, serializerFactory, comparerFactory, accessMode) {
+		: base(CreateStreams(file, objectSpaceDefinition.Merkleized, accessMode, out var fileStream), objectSpaceDefinition, serializerFactory, comparerFactory, accessMode) {
 		Guard.ArgumentNotNull(file, nameof(file));
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
@@ -43,9 +43,9 @@ public class FileObjectSpace : ObjectSpaceBase, ITransactionalObject{
 	
 	public HydrogenFileDescriptor File { get; }
 
-	private static ClusteredStreams CreateStreams(HydrogenFileDescriptor file, ObjectSpaceDefinition definition, FileAccessMode accessMode, out TransactionalStream fileStream) {
+	private static ClusteredStreams CreateStreams(HydrogenFileDescriptor file, bool merkleized, FileAccessMode accessMode, out TransactionalStream fileStream) {
 		fileStream = new TransactionalStream(file, accessMode.WithoutAutoLoad());
-		var objectSpaceMetaDataStreamCount = definition.Merkleized ? 1 : 0;
+		var objectSpaceMetaDataStreamCount = merkleized ? 1 : 0;
 		var streams = new ClusteredStreams(
 			fileStream,
 			(int)file.ClusterSize,

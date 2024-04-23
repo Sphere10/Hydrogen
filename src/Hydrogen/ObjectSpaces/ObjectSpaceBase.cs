@@ -179,7 +179,7 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		}
 	}
 
-	public void Flush() {
+	public virtual void Flush() {
 		// ensure all dirty merkle-trees are fully calculated
 		foreach(var dimension in _dimensions.Values) 
 		foreach(var merkleTreeIndex in dimension.ObjectStream.Streams.Attachments.Values.Where(x => x is MerkleTreeIndex).Cast<MerkleTreeIndex>())
@@ -188,6 +188,8 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		// ensure any spatial merkle-trees are fully calculated
 		foreach (var spatialTreeIndex in _streams.Attachments.Values.Where(x => x is ObjectSpaceMerkleTreeIndex).Cast<ObjectSpaceMerkleTreeIndex>())
 			spatialTreeIndex.Flush();
+
+		Streams.RootStream.Flush();
 	}
 
 	public virtual void Dispose() {

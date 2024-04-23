@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Hydrogen.ObjectSpaces;
 using NUnit.Framework;
@@ -16,10 +17,10 @@ using NUnit.Framework;
 namespace Hydrogen.Tests;
 
 [TestFixture, Timeout(60000)]
-public class MerkleizedFileObjectSpacesTest : FileObjectSpacesTest {
+public class MerkleizedMemoryObjectSpacesTest : MemoryObjectSpacesTest {
 
-	protected override FileObjectSpace CreateFileObjectSpace(string folder, bool keepFilesOnDispose, ObjectSpaceBuilder builder) 
-		=> base.CreateFileObjectSpace(folder, keepFilesOnDispose, builder.Merkleized());
+	protected override MemoryObjectSpace CreateMemoryObjectSpace(MemoryStream stream, bool keepStreamOnDispose, ObjectSpaceBuilder builder) 
+		=> base.CreateMemoryObjectSpace(stream, keepStreamOnDispose, builder.Merkleized());
 
 	[Test]
 	public void CheckRootsChanged() {
@@ -30,8 +31,7 @@ public class MerkleizedFileObjectSpacesTest : FileObjectSpacesTest {
 		var savedAccount = CreateAccount();
 		var accountDigest = Hashers.Hash(chf, objectSpace.Serializers.GetSerializer<Account>().SerializeBytesLE(savedAccount));
 		objectSpace.Save(savedAccount);
-
-		objectSpace.Commit();
+		objectSpace.Flush(); // This is necessary to flush out merkle tree changes
 
 		var dim1 = objectSpace.Dimensions[0];
 		var dim2 = objectSpace.Dimensions[1];

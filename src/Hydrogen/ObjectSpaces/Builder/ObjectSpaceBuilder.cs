@@ -9,6 +9,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Hydrogen.ObjectSpaces;
@@ -23,6 +24,7 @@ public class ObjectSpaceBuilder {
 
 	private ObjectSpaceType? _type;
 	private string _filepath;
+	private MemoryStream _memoryStream;
 	private string _pagesPath;
 	private long _maxMemory;
 	private long _pageSize;
@@ -41,7 +43,9 @@ public class ObjectSpaceBuilder {
 	private bool _specifiedCustomComparer;
 
 	public ObjectSpaceBuilder() {
+		_type = null;
 		_filepath = null;
+		_memoryStream = null;
 		_pagesPath = HydrogenDefaults.TransactionalPageFolder;
 		_maxMemory = HydrogenDefaults.MaxMemoryPerCollection;
 		_pageSize = HydrogenDefaults.TransactionalPageSize;
@@ -68,9 +72,9 @@ public class ObjectSpaceBuilder {
 		return this;
 	}
 
-	public ObjectSpaceBuilder AsMemoryMapped() {
+	public ObjectSpaceBuilder UseMemoryStream(MemoryStream stream = null) {
 		_type = ObjectSpaceType.MemoryMapped;
-		_filepath = null;
+		_memoryStream = stream;
 		return this;
 	}
 
@@ -213,11 +217,12 @@ public class ObjectSpaceBuilder {
 		var definition = BuildDefinition();
 		var fileDescriptor = HydrogenFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, _clusterSize, _clusteredStreamsPolicy, _endianness);
 		switch(_type) {
-
 			case ObjectSpaceType.FileMapped:
 				return new FileObjectSpace(fileDescriptor, definition, _serializerFactory, _comparerFactory, _accessMode);
 			case ObjectSpaceType.MemoryMapped:
-				throw new NotImplementedException();
+				return _memoryStream is null ? 
+					new MemoryObjectSpace(definition, _serializerFactory, _comparerFactory, _clusterSize, _clusteredStreamsPolicy,  _endianness) : 
+					new MemoryObjectSpace(_memoryStream, definition, _serializerFactory, _comparerFactory, _clusterSize, _clusteredStreamsPolicy,  _endianness);
 			case null:
 				throw new InvalidOperationException("Object Space type has not been specified (file or memory mapped)");
 				

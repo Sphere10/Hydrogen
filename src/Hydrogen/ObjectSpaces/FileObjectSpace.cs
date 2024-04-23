@@ -97,15 +97,6 @@ public class FileObjectSpace : ObjectSpaceBase, ITransactionalObject{
 		Load();
 	}
 
-	private StreamMappedRecyclableList<TItem> GetDimension<TItem>() {
-		var itemType = typeof(TItem);
-
-		if (!_dimensions.TryGetValue(itemType, out var dimension))
-			throw new InvalidOperationException($"A dimension for type '{itemType.ToStringCS()}' was not registered");
-
-		return (StreamMappedRecyclableList<TItem>)dimension;
-	}
-
 	private void SubscribeToFileStreamEvents() {
 		_fileStream.Committing += OnCommitting;
 		_fileStream.Committed += OnCommitted;

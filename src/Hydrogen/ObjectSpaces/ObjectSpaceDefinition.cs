@@ -59,7 +59,7 @@ public class ObjectSpaceDefinition {
 
 				// Ensure has merkle-tree if object space is merkelized
 				if (Merkleized && dimensionMerkleTrees < 1)
-					result.AddError($"{dimensionErrorPrefix} requires a {nameof(IndexType.MerkleTree)} as the parent {nameof(ObjectSpace)} is merkleized");
+					result.AddError($"{dimensionErrorPrefix} requires a {nameof(IndexType.MerkleTree)} as the parent object space is merkleized");
 
 				// Verify all indexes
 				var alreadyProcessedMembers = new HashSet<Member>();

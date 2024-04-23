@@ -15,80 +15,42 @@ using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
 
-public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObject, IDisposable {
+public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisposable {
 
-	public event EventHandlerEx Committing { add => _fileStream.Committing += value; remove => _fileStream.Committing -= value; }
-	public event EventHandlerEx Committed { add => _fileStream.Committed += value; remove => _fileStream.Committed -= value; }
-	public event EventHandlerEx RollingBack { add => _fileStream.RollingBack += value; remove => _fileStream.RollingBack -= value; }
-	public event EventHandlerEx RolledBack { add => _fileStream.RolledBack += value; remove => _fileStream.RolledBack -= value; }
-
-	private readonly TransactionalStream _fileStream;
-	private readonly ClusteredStreams _streams;
-	private readonly SerializerFactory _serializerFactory;
-	private readonly ComparerFactory _comparerFactory;
-	private readonly DictionaryList<Type, IStreamMappedCollection> _dimensions;
+	protected readonly ClusteredStreams _streams;
+	protected readonly DictionaryList<Type, IStreamMappedCollection> _dimensions;
 	private readonly InstanceTracker _instanceTracker;
 	private bool _loaded;
 
-	public ObjectSpace(HydrogenFileDescriptor file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default) {
-		Guard.ArgumentNotNull(file, nameof(file));
+	protected ObjectSpaceBase(ClusteredStreams streams, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default) {
+		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
 		Guard.ArgumentNotNull(comparerFactory, nameof(comparerFactory));
-
-		File = file;
-		AccessMode = accessMode;
+		_streams = streams;
 		Definition = objectSpaceDefinition;
-		_serializerFactory = serializerFactory;
-		_comparerFactory = comparerFactory;
-
-		// Create the file stream
-		_fileStream = new TransactionalStream(File, AccessMode.WithoutAutoLoad());
-		SubscribeToFileStreamEvents();
-		
-		// Create clustered streams from file stream
-		var objectSpaceMetaDataStreamCount = Definition.Merkleized ? 1 : 0;
-		_streams = new ClusteredStreams(
-			_fileStream,
-			(int)File.ClusterSize,
-			File.ContainerPolicy,
-			objectSpaceMetaDataStreamCount,
-			File.Endianness,
-			false
-		);
-		_streams.OwnsStream = true; // disposes _fileStream
+		Serializers = serializerFactory;
+		Comparers = comparerFactory;
 		_loaded = false;
 		_dimensions = new DictionaryList<Type, IStreamMappedCollection>(TypeEquivalenceComparer.Instance, ReferenceEqualityComparer.Instance);
 		_instanceTracker = new InstanceTracker();
-		if (AccessMode.HasFlag(FileAccessMode.AutoLoad))
-			Load();
 	}
 
 	public override bool RequiresLoad => !_loaded || _streams.RequiresLoad;
-
-	public FileAccessMode AccessMode { get; }
-	
-	public HydrogenFileDescriptor File { get; }
 	
 	public ObjectSpaceDefinition Definition { get; }
 
-	public SerializerFactory Serializers => _serializerFactory;
+	public SerializerFactory Serializers { get; }
 
-	public ComparerFactory Comparers => _comparerFactory;
-	
+	public ComparerFactory Comparers { get; }
+
 	public ICriticalObject ParentCriticalObject { get => _streams.ParentCriticalObject; set => _streams.ParentCriticalObject = value; }
 	
 	public object Lock => _streams.Lock;
 	
 	public bool IsLocked => _streams.IsLocked;
 
-	public long DimensionCount => _dimensions.Count;
-
-	public IEnumerable<Type> DimensionTypes => ((IList<IStreamMappedCollection>)_dimensions).Select(x => x.ObjectStream.ItemType);
-
-	internal IReadOnlyList<IStreamMappedCollection> Dimensions => _dimensions;
-
-	internal ClusteredStreams InternalStreams => _streams;
+	public IReadOnlyList<IStreamMappedCollection> Dimensions => _dimensions;
 
 	public IDisposable EnterAccessScope() => _streams.EnterAccessScope();
 
@@ -212,25 +174,18 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		}
 	}
 
-	public void Commit()  {
-		using (EnterAccessScope()) {
-			// flush all cached changes
-			_fileStream.Commit();
-		}
+	public void Flush() {
+		// ensure all dirty merkle-trees are fully calculated
+		foreach(var dimension in _dimensions.Values) 
+		foreach(var merkleTreeIndex in dimension.ObjectStream.Streams.Attachments.Values.Where(x => x is MerkleTreeIndex).Cast<MerkleTreeIndex>())
+			merkleTreeIndex.Flush();
+
+		// ensure any spatial merkle-trees are fully calculated
+		foreach (var spatialTreeIndex in _streams.Attachments.Values.Where(x => x is ObjectSpaceMerkleTreeIndex).Cast<ObjectSpaceMerkleTreeIndex>())
+			spatialTreeIndex.Flush();
 	}
 
-	public Task CommitAsync() => throw new NotSupportedException();
-	
-	public void Rollback() {
-		using (EnterAccessScope()) {
-			_fileStream.Rollback();
-		}
-	}
-
-	public Task RollbackAsync() => throw new NotSupportedException();
-
-	public void Dispose() {
-		UnsubscribeToFileStreamEvents();
+	public virtual void Dispose() {
 		Unload();
 		_streams.Dispose();
 	}
@@ -282,7 +237,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 			}
 
 			var spaceTree = new ObjectSpaceMerkleTreeIndex(
-				this, 
+				this,
+				_streams,
 				HydrogenDefaults.DefaultSpatialMerkleTreeIndexName,
 				HydrogenDefaults.DefaultMerkleTreeIndexName,
 				Definition.HashFunction, 
@@ -302,7 +258,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		_dimensions.Clear();
 		_instanceTracker.Clear();
 		
-		// unsubscribe to RollingBack event prevent re-entrant unloads (disposal of _streams will result in internal rollback event)
+		// unsubscribe to RollingBack event prevent re-entrant unloads (disposal of Streams will result in internal rollback event)
 		_streams.UnloadAttachments();
 
 
@@ -321,7 +277,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 			SanitizeContainerClusterSize(dimensionDefinition.AverageObjectSizeBytes),
 			ClusteredStreamsPolicy.FastAllocate,
 			dimensionDefinition.Indexes.Length,
-			File.Endianness,
+			_streams.Endianness,
 			false
 		) {
 			OwnsStream = true
@@ -352,7 +308,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		}
 	
 		// Get a comparer
-		var comparer = _comparerFactory.GetEqualityComparer(dimensionDefinition.ObjectType);
+		var comparer = Comparers.GetEqualityComparer(dimensionDefinition.ObjectType);
 
 		// construct the collection
 		var list = (IStreamMappedCollection)typeof(StreamMappedRecyclableList<>)
@@ -374,8 +330,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 
 	protected virtual IClusteredStreamsAttachment BuildIdentifier(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
 		// NOTE: same as BuildUniqueKey, but may have differentiating functionality in future
-		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.Member.PropertyType);
-		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.Member.PropertyType);
+		var keyComparer = Comparers.GetEqualityComparer(indexDefinition.Member.PropertyType);
+		var keySerializer = Serializers.GetSerializer(indexDefinition.Member.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
 				IndexFactory.CreateUniqueMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer) :
@@ -383,8 +339,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 	}
 
 	protected virtual IClusteredStreamsAttachment BuildUniqueKey(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
-		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.Member.PropertyType);
-		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.Member.PropertyType);
+		var keyComparer = Comparers.GetEqualityComparer(indexDefinition.Member.PropertyType);
+		var keySerializer = Serializers.GetSerializer(indexDefinition.Member.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
 				IndexFactory.CreateUniqueMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer) :
@@ -392,8 +348,8 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 	}
 
 	protected virtual IClusteredStreamsAttachment BuildIndex(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
-		var keyComparer = _comparerFactory.GetEqualityComparer(indexDefinition.Member.PropertyType);
-		var keySerializer = _serializerFactory.GetSerializer(indexDefinition.Member.PropertyType);
+		var keyComparer = Comparers.GetEqualityComparer(indexDefinition.Member.PropertyType);
+		var keySerializer = Serializers.GetSerializer(indexDefinition.Member.PropertyType);
 		return
 			keySerializer.IsConstantSize ?
 				IndexFactory.CreateMemberIndex(dimension, indexDefinition.Name, indexDefinition.Member, keySerializer, keyComparer) :
@@ -409,7 +365,7 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 	}
 	
 	protected virtual IItemSerializer CreateItemSerializer(Type objectType) {
-		return _serializerFactory.GetSerializer(objectType);
+		return Serializers.GetSerializer(objectType);
 	}
 
 	protected virtual int SanitizeContainerClusterSize(int? clusterSizeB)
@@ -418,31 +374,6 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 			HydrogenDefaults.SmallestRecommendedClusterSize, 
 			HydrogenDefaults.LargestRecommendedClusterSize
 		);
-
-	protected virtual void OnCommitting() {
-
-		// ensure all dirty merkle-trees are fully calculated
-		foreach(var dimension in _dimensions.Values) 
-			foreach(var merkleTreeIndex in dimension.ObjectStream.Streams.Attachments.Values.Where(x => x is MerkleTreeIndex).Cast<MerkleTreeIndex>())
-				merkleTreeIndex.Flush();
-
-		// ensure any spatial merkle-trees are fully calculated
-		foreach (var spatialTreeIndex in _streams.Attachments.Values.Where(x => x is ObjectSpaceMerkleTreeIndex).Cast<ObjectSpaceMerkleTreeIndex>())
-			spatialTreeIndex.Flush();
-	}
-
-	protected virtual void OnCommitted() {
-	}
-
-	protected virtual void OnRollingBack() {
-		Unload();
-	}
-
-	protected virtual void OnRolledBack() {
-		// reload after rollback
-		_streams.Initialize();
-		Load();
-	}
 
 	private StreamMappedRecyclableList<TItem> GetDimension<TItem>() {
 		var itemType = typeof(TItem);
@@ -453,20 +384,4 @@ public class ObjectSpace : SyncLoadableBase, ITransactionalObject, ICriticalObje
 		return (StreamMappedRecyclableList<TItem>)dimension;
 	}
 
-	private void SubscribeToFileStreamEvents() {
-		_fileStream.Committing += OnCommitting;
-		_fileStream.Committed += OnCommitted;
-		_fileStream.RollingBack += OnRollingBack;
-		_fileStream.RolledBack += OnRolledBack;
-	}
-
-	private void UnsubscribeToFileStreamEvents() {
-		if (_fileStream is null)
-			return;
-
-		_fileStream.Committing -= OnCommitting;
-		_fileStream.Committed -= OnCommitted;
-		_fileStream.RollingBack -= OnRollingBack;
-		_fileStream.RolledBack -= OnRolledBack;
-	}
 }

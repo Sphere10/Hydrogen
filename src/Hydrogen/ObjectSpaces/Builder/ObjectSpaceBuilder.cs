@@ -21,6 +21,7 @@ public class ObjectSpaceBuilder {
 	private static readonly string ErrMsgUsingEqualityComparer = $"Unable to use a custom {typeof(IEqualityComparer<>).ToStringCS()} since a custom {nameof(ComparerFactory)} has been registered. Ensure all comparer registrations are made with your custom factory and not with this {nameof(ObjectSpaceBuilder)}.";
 	private static readonly string ErrMsgUsingComparer = $"Unable to use a custom {typeof(IComparer<>).ToStringCS()} since a custom {nameof(ComparerFactory)} has been registered. Ensure all comparer registrations are made with your custom factory and not with this {nameof(ObjectSpaceBuilder)}.";
 
+	private ObjectSpaceType? _type;
 	private string _filepath;
 	private string _pagesPath;
 	private long _maxMemory;
@@ -62,7 +63,14 @@ public class ObjectSpaceBuilder {
 	}
 
 	public ObjectSpaceBuilder UseFile(string filePath) {
+		_type = ObjectSpaceType.FileMapped;
 		_filepath = filePath;
+		return this;
+	}
+
+	public ObjectSpaceBuilder AsMemoryMapped() {
+		_type = ObjectSpaceType.MemoryMapped;
+		_filepath = null;
 		return this;
 	}
 
@@ -201,11 +209,26 @@ public class ObjectSpaceBuilder {
 		return definition;
 	}
 
-	public ObjectSpace Build() {
+	public ObjectSpaceBase Build() {
 		var definition = BuildDefinition();
 		var fileDescriptor = HydrogenFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, _clusterSize, _clusteredStreamsPolicy, _endianness);
-		return new ObjectSpace(fileDescriptor, definition, _serializerFactory, _comparerFactory, _accessMode);
+		switch(_type) {
 
+			case ObjectSpaceType.FileMapped:
+				return new FileObjectSpace(fileDescriptor, definition, _serializerFactory, _comparerFactory, _accessMode);
+			case ObjectSpaceType.MemoryMapped:
+				throw new NotImplementedException();
+			case null:
+				throw new InvalidOperationException("Object Space type has not been specified (file or memory mapped)");
+				
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
+	}
+
+	private enum ObjectSpaceType {
+		FileMapped,
+		MemoryMapped
 	}
 
 }

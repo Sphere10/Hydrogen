@@ -19,12 +19,12 @@ namespace Hydrogen.ObjectSpaces;
 /// </summary>
 /// <remarks>A dimension of an object space is a <see cref="ObjectStream"/> of a specific type of object.</remarks>
 internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<MerkleTreeStorageAttachment> {
-	private readonly ObjectSpace _objectSpace;
+	private readonly ObjectSpaceBase _objectSpace;
 	private readonly IList<(MerkleTreeStorageAttachment, EventHandlerEx<byte[], byte[]>)> _collectionTreeListeners;
 	private readonly string _childTreeIndexName;
 
-	public ObjectSpaceMerkleTreeIndex(ObjectSpace objectSpace, string indexName, string childTreeIndexName, CHF chf, bool isFirstLoad) 
-		: base (new MerkleTreeStorageAttachment(objectSpace.InternalStreams, indexName, chf, isFirstLoad) ){
+	public ObjectSpaceMerkleTreeIndex(ObjectSpaceBase objectSpace, ClusteredStreams objectSpaceStreams, string indexName, string childTreeIndexName, CHF chf, bool isFirstLoad) 
+		: base (new MerkleTreeStorageAttachment(objectSpaceStreams, indexName, chf, isFirstLoad) ){
 		Guard.ArgumentNotNull(objectSpace, nameof(objectSpace));
 		_objectSpace = objectSpace;
 		_collectionTreeListeners = new List<(MerkleTreeStorageAttachment, EventHandlerEx<byte[], byte[]>)>();
@@ -98,7 +98,7 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 			// Get the object dimension and it's root
 			var dimension = _objectSpace.Dimensions[i];
 			if (!dimension.ObjectStream.Streams.Attachments.TryGetValue(_childTreeIndexName, out var treeAttachment) || treeAttachment is not MerkleTreeIndex dimensionTree)
-				throw new InvalidDataException($"{nameof(ObjectSpace)} dimension {i} requires a {nameof(MerkleTreeIndex)} called '{nameof(MerkleTreeIndex)}' for the spatial tree to track");
+				throw new InvalidDataException($"ObjectSpace dimension {i} requires a {nameof(MerkleTreeIndex)} called '{nameof(MerkleTreeIndex)}' for the spatial tree to track");
 			var dimensionRoot = dimensionTree.MerkleTree.Root;
 			
 			// Check that corresponding spatial-tree leaf matches root of dimension tree
@@ -106,7 +106,7 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 			Guard.Ensure(
 				spatialLeafValue.All(x => x == 0) && dimensionRoot is null ||
 				ByteArrayEqualityComparer.Instance.Equals(spatialLeafValue, dimensionRoot),
-				$"{nameof(ObjectSpace)} dimension {i} ({dimension.GetType().ToStringCS()}) has a merkle-root that does not match corresponding leaf value of the spatial-tree"
+				$"ObjectSpace dimension {i} ({dimension.GetType().ToStringCS()}) has a merkle-root that does not match corresponding leaf value of the spatial-tree"
 			);
 
 			// Track this dimension root as a leaf (for later)
@@ -116,7 +116,7 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 		// check expected matches stored spatial root
 		var calculatedRoot = Hydrogen.MerkleTree.ComputeMerkleRoot(dimensionRoots, _objectSpace.Definition.HashFunction);
 		if (!ByteArrayEqualityComparer.Instance.Equals(MerkleTree.Root, calculatedRoot))
-			throw new InvalidDataException($"{nameof(ObjectSpace)} merkle-tree root did not match roots of dimension trees");
+			throw new InvalidDataException($"ObjectSpace merkle-tree root did not match roots of dimension trees");
 
 		// NOTE: the checking of spatial-tree root matches the stream mapped property root is done by Inner.Attach() -> VerifyIntegrity()
 	}

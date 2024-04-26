@@ -27,7 +27,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 	}
 
 	private void DoConsensusSpaceDemo(string path) {
-		using var appSpace = new DemoObjectSpace(path);
+		//using var appSpace = new DemoObjectSpace(path);
 		
 		var secret = "MyPassword";
 
@@ -46,7 +46,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 			Quantity = 0
 		};
 
-		appSpace.Commit();
+		//appSpace.Commit();
 	}
 
 	private void SaveSettings() {
@@ -68,78 +68,78 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 		}
 	}
 
-	public class DemoObjectSpace : ObjectSpace {
+	//public class DemoObjectSpace : ObjectSpace {
 
-		public DemoObjectSpace(string file, FileAccessMode accessMode = FileAccessMode.Default)
-			: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default, accessMode) {
-		}
+	//	public DemoObjectSpace(string file, FileAccessMode accessMode = FileAccessMode.Default)
+	//		: base(BuildFileDefinition(file), BuildSpaceDefinition(), SerializerFactory.Default, ComparerFactory.Default, accessMode) {
+	//	}
 
-		//public IRepository<Account, long> Accounts => throw new NotImplementedException();
+	//	//public IRepository<Account, long> Accounts => throw new NotImplementedException();
 
-		//public IRepository<Account, long> AccountsByName => throw new NotImplementedException();
+	//	//public IRepository<Account, long> AccountsByName => throw new NotImplementedException();
 
-		//public IRepository<Identity, long> Identities => throw new NotImplementedException();
+	//	//public IRepository<Identity, long> Identities => throw new NotImplementedException();
 
-		//public IRepository<Identity, long> IdentitiesByKey => throw new NotImplementedException();
+	//	//public IRepository<Identity, long> IdentitiesByKey => throw new NotImplementedException();
 
-		private static HydrogenFileDescriptor BuildFileDefinition(string filePath) 
-			=> HydrogenFileDescriptor.From(
-				filePath, 
-				8192, 
-				Tools.Memory.ToBytes(50, MemoryMetric.Megabyte), 
-				512, 
-				ClusteredStreamsPolicy.Default
-			);
+	//	private static HydrogenFileDescriptor BuildFileDefinition(string filePath) 
+	//		=> HydrogenFileDescriptor.From(
+	//			filePath, 
+	//			8192, 
+	//			Tools.Memory.ToBytes(50, MemoryMetric.Megabyte), 
+	//			512, 
+	//			ClusteredStreamsPolicy.Default
+	//		);
 
-		private static ObjectSpaceDefinition BuildSpaceDefinition() {
-			var definition = new ObjectSpaceDefinition {
-				Dimensions = new ObjectSpaceDefinition.DimensionDefinition[] {
-					new() { 
-						ObjectType = typeof(Account),
-						Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
-							new() {
-								Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore,
-							},
-							new() {
-								Type = ObjectSpaceDefinition.IndexType.UniqueKey,
-								Member = Tools.Mapping.GetMember<Account, string>(x => x.Name),
-							}
-						}
-					},
-					new() { 
-						ObjectType = typeof(Identity),
-						Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
-							new() {
-								Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore,
-							},
-							new() {
-								Type = ObjectSpaceDefinition.IndexType.UniqueKey,
-								Member = Tools.Mapping.GetMember<Identity, byte[]>(x => x.Key),
-							}
-						}
-					},
-
-
-				}
-			};
+	//	private static ObjectSpaceDefinition BuildSpaceDefinition() {
+	//		var definition = new ObjectSpaceDefinition {
+	//			Dimensions = new ObjectSpaceDefinition.DimensionDefinition[] {
+	//				new() { 
+	//					ObjectType = typeof(Account),
+	//					Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
+	//						new() {
+	//							Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore,
+	//						},
+	//						new() {
+	//							Type = ObjectSpaceDefinition.IndexType.UniqueKey,
+	//							Member = Tools.Mapping.GetMember<Account, string>(x => x.Name),
+	//						}
+	//					}
+	//				},
+	//				new() { 
+	//					ObjectType = typeof(Identity),
+	//					Indexes = new ObjectSpaceDefinition.IndexDefinition[] {
+	//						new() {
+	//							Type = ObjectSpaceDefinition.IndexType.RecyclableIndexStore,
+	//						},
+	//						new() {
+	//							Type = ObjectSpaceDefinition.IndexType.UniqueKey,
+	//							Member = Tools.Mapping.GetMember<Identity, byte[]>(x => x.Key),
+	//						}
+	//					}
+	//				},
 
 
-			return definition;
-		}
-	}
+	//			}
+	//		};
+
+
+	//		return definition;
+	//	}
+	//}
 
 	public class Account {
-		
+
 		[UniqueProperty]
 		public string Name { get; set; }
-		
+
 		public decimal Quantity { get; set; }
 
 		public Identity Identity { get; set; }
 
 	}
 
-	public class Identity { 
+	public class Identity {
 
 		public DSS DSS { get; set; }
 

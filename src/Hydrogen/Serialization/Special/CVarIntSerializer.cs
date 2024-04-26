@@ -1,15 +1,16 @@
 ﻿namespace Hydrogen;
 
-public sealed class CVarIntSerializer : ItemSerializerBase<long> {
+public sealed class CVarIntSerializer : ItemSerializerBase<CVarInt> {
 
 	public static CVarIntSerializer Instance { get; } = new();
 
-	public override long CalculateSize(SerializationContext context, long item) 
-		=> CVarInt.SizeOf(unchecked((ulong)item));
+	public override long CalculateSize(SerializationContext context, CVarInt item) 
+		=> CVarInt.SizeOf(item);
 
-	public override void Serialize(long item, EndianBinaryWriter writer, SerializationContext context) 
-		=> CVarInt.Write(unchecked((ulong)item), writer.BaseStream);
+	public override void Serialize(CVarInt item, EndianBinaryWriter writer, SerializationContext context) 
+		=> CVarInt.Write(item, writer.BaseStream);
 
-	public override long Deserialize(EndianBinaryReader reader, SerializationContext context) 
-		=> unchecked((long)CVarInt.Read(reader.BaseStream));
+	public override CVarInt Deserialize(EndianBinaryReader reader, SerializationContext context) 
+		=> CVarInt.Read(reader.BaseStream);
+
 }

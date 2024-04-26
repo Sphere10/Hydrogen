@@ -34,6 +34,7 @@ public class SerializerFactory {
 		Default = new SerializerFactory();
 		RegisterDefaults(Default);
 		Default._readOnly = true;
+		
 	}
 
 	public SerializerFactory() {
@@ -78,11 +79,14 @@ public class SerializerFactory {
 		factory.Register(PrimitiveSerializer<float>.Instance);
 		factory.Register(PrimitiveSerializer<double>.Instance);
 		factory.Register(PrimitiveSerializer<decimal>.Instance);
+		factory.Register(CVarIntSerializer.Instance);
+		factory.Register(VarIntSerializer.Instance);
 		factory.Register(DateTimeSerializer.Instance);
 		factory.Register(TimeSpanSerializer.Instance);
 		factory.Register(DateTimeOffsetSerializer.Instance);
 		factory.Register(GuidSerializer.Instance);
-
+		
+		
 		// their nullables
 		factory.Register(NullableSerializer<bool>.Instance);
 		factory.Register(NullableSerializer<byte>.Instance);
@@ -96,14 +100,19 @@ public class SerializerFactory {
 		factory.Register(NullableSerializer<float>.Instance);
 		factory.Register(NullableSerializer<double>.Instance);
 		factory.Register(NullableSerializer<decimal>.Instance);
-		factory.Register(new NullableSerializer<DateTime>(DateTimeSerializer.Instance));
-		factory.Register(new NullableSerializer<TimeSpan>(TimeSpanSerializer.Instance));
-		factory.Register(new NullableSerializer<DateTimeOffset>(DateTimeOffsetSerializer.Instance));
-		factory.Register(new NullableSerializer<Guid>(GuidSerializer.Instance));
+
+		factory.Register(NullableSerializer<CVarInt>.Instance);
+		factory.Register(NullableSerializer<VarInt>.Instance);
+		factory.Register(NullableSerializer<DateTime>.Instance);
+		factory.Register(NullableSerializer<TimeSpan>.Instance);
+		factory.Register(NullableSerializer<DateTimeOffset>.Instance);
+		factory.Register(NullableSerializer<Guid>.Instance);
 
 		// other base .net types
+		
 		factory.Register(new StringSerializer());
 		factory.Register(typeof(KeyValuePair<,>), typeof(KeyValuePairSerializer<,>));
+		
 
 		// general collections
 		factory.Register<ArrayList, ArrayListSerializer>(() => new ArrayListSerializer(factory));

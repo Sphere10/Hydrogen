@@ -50,7 +50,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 				context.NotifySerializingObject(item, true);
 				return sizeof(byte) + Internal.CalculateSize(context, item);
 			case PrefixTag.IsContextReference:
-				return sizeof(byte) + CVarIntSerializer.Instance.CalculateSize(context, contextIndex);
+				return sizeof(byte) + CVarIntSerializer.Instance.CalculateSize(context, unchecked((ulong)contextIndex));
 			default:
 				throw new ArgumentOutOfRangeException(nameof(itemType), itemType, null);
 		}
@@ -70,7 +70,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 				Internal.Serialize(item, writer, context);
 				break;
 			case PrefixTag.IsContextReference:
-				CVarIntSerializer.Instance.Serialize(contextIndex, writer, context);
+				CVarIntSerializer.Instance.Serialize(unchecked((ulong)contextIndex), writer, context);
 				break;
 			default:
 				throw new ArgumentOutOfRangeException(nameof(itemType), itemType, null);
@@ -97,7 +97,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 				return item;
 			case PrefixTag.IsContextReference:
 				var contextIndex = CVarIntSerializer.Instance.Deserialize(reader, context);
-				return (TItem)context.GetSerializedObject(contextIndex);
+				return (TItem)context.GetSerializedObject(unchecked((long)(ulong)contextIndex));
 			default:
 				throw new ArgumentOutOfRangeException(nameof(itemType), itemType, null);
 		}

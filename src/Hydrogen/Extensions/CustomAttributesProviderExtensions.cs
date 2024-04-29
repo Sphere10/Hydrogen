@@ -43,5 +43,5 @@ public static class CustomAttributesProviderExtensions {
 	}
 
 	public static bool HasAttribute<T>(this ICustomAttributeProvider attributesProvider, bool inherited) where T : Attribute
-		=> attributesProvider.TryGetCustomAttributeOfType<T>(true, out _);
+		=> attributesProvider.TryGetCustomAttributeOfType<T>(inherited, out _);
 }

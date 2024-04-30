@@ -361,4 +361,32 @@ public class SerializerFactoryTests {
 		Assert.That(item2[2].A, Is.EqualTo("hello"));
 		Assert.That(item2[0], Is.SameAs(item2[2]));
 	}
+
+
+	[Test]
+	public void NestedType_1() {
+		var factory = SerializerFactory.Default;  //new SerializerFactory();
+		var serializer = factory.GetSerializer<NestedType>();
+
+		var item = new NestedType();
+		var bytes = serializer.SerializeBytesLE(item);
+		var item2 = serializer.DeserializeBytesLE(bytes);
+
+		Assert.That(item2, Is.TypeOf<NestedType>());
+		Assert.That(item2.Nested, Is.Null);
+	}
+
+	[Test]
+	public void NestedType_2() {
+		var factory = SerializerFactory.Default;  //new SerializerFactory();
+		var serializer = factory.GetSerializer<NestedType>();
+
+		var item = new NestedType();
+		item.Nested = new NestedType();
+		var bytes = serializer.SerializeBytesLE(item);
+		var item2 = serializer.DeserializeBytesLE(bytes);
+
+		Assert.That(item2, Is.TypeOf<NestedType>());
+		Assert.That(item2.Nested, Is.Not.Null);
+	}
 }

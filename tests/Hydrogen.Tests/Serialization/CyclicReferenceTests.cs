@@ -191,4 +191,19 @@ public class CyclicReferenceTests {
 		Assert.That(size, Is.EqualTo(serialized.Length));
 	}
 
+
+	
+	[Test]
+	public void CyclicReference_NestedType() {
+		var factory = SerializerFactory.Default;
+		var serializer = factory.GetSerializer<NestedType>();
+
+		var item = new NestedType();
+		item.Nested = item;
+		var bytes = serializer.SerializeBytesLE(item);
+		var item2 = serializer.DeserializeBytesLE(bytes);
+
+		Assert.That(item2, Is.TypeOf<NestedType>());
+		Assert.That(item2.Nested, Is.SameAs(item2));
+	}
 }

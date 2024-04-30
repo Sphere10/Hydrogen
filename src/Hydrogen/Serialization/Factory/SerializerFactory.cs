@@ -488,7 +488,7 @@ public class SerializerFactory {
 				factory.RegisterInternal(factory.GenerateTypeCode(), itemType, compositeSerializer.GetType(), compositeSerializer, null);
 
 			// Create the member serializers
-			var members = SerializerBuilder.GetSerializableMembers(itemType);
+			var members = SerializationHelper.GetSerializableMembers(itemType);
 			var memberBindings = new List<MemberSerializationBinding>(members.Length);
 			foreach (var member in members) {
 				var propertyType = member.PropertyType;

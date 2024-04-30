@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using Hydrogen.Mapping;
 using System;
 using System.Collections.Generic;
 
@@ -20,6 +21,16 @@ public interface IObjectSpaceDimensionBuilder {
 	IObjectSpaceDimensionBuilder WithRecyclableIndexes();
 
 	IObjectSpaceDimensionBuilder Merkleized();
+
+	IObjectSpaceDimensionBuilder UsingComparer(object comparer);
+
+	IObjectSpaceDimensionBuilder UsingEqualityComparer(object comparer);
+
+	IObjectSpaceDimensionBuilder WithIdentifier(Member member, string indexName = null);
+
+	IObjectSpaceDimensionBuilder WithIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull);
+
+	IObjectSpaceDimensionBuilder WithUniqueIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull);
 
 	IObjectSpaceDimensionBuilder OptimizeAssumingAverageItemSize(int bytes);
 

@@ -26,7 +26,7 @@ public class ObjectSpacesBuilderTests {
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
 			.UsingSerializerFactory(customSerializerFactory)
-			.AddDimension<Account>();
+			.AddDimension<Account>(true);
 
 		var serializer = SerializerBuilder.For<Account>().Build();
 		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingSerializer(serializer), Throws.InvalidOperationException);
@@ -39,7 +39,7 @@ public class ObjectSpacesBuilderTests {
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
 			.UsingSerializerFactory(customSerializerFactory)
-			.AddDimension<Account>();
+			.AddDimension<Account>(true);
 
 		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingSerializer<DummyAccountSerializer>(), Throws.InvalidOperationException);
 	}
@@ -64,7 +64,7 @@ public class ObjectSpacesBuilderTests {
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
 			.UsingComparerFactory(customComparerFactory)
-			.AddDimension<Account>();
+			.AddDimension<Account>(true);
 
 		var comparer = ComparerBuilder.For<Account>();
 		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingComparer(comparer), Throws.InvalidOperationException);
@@ -77,7 +77,7 @@ public class ObjectSpacesBuilderTests {
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
 			.UsingComparerFactory(customComparerFactory)
-			.AddDimension<Account>();
+			.AddDimension<Account>(true);
 
 		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingComparer<DummyAccountComparer>(), Throws.InvalidOperationException);
 	}
@@ -89,7 +89,7 @@ public class ObjectSpacesBuilderTests {
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
 			.UsingComparerFactory(customComparerFactory)
-			.AddDimension<Account>();
+			.AddDimension<Account>(true);
 
 		var comparer = EqualityComparerBuilder.For<Account>();
 		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingEqualityComparer(comparer), Throws.InvalidOperationException);
@@ -102,9 +102,44 @@ public class ObjectSpacesBuilderTests {
 		var objectSpaceBuilder = new ObjectSpaceBuilder();
 		objectSpaceBuilder
 			.UsingComparerFactory(customComparerFactory)
-			.AddDimension<Account>();
+			.AddDimension<Account>(true);
 
 		Assert.That(() => objectSpaceBuilder.Configure<Account>().UsingEqualityComparer<DummyAccountEqualityComparer>(), Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void Annotations() {
+		var customComparerFactory = new ComparerFactory(ComparerFactory.Default);
+
+		var objectSpaceBuilder = new ObjectSpaceBuilder();
+		objectSpaceBuilder
+			.UseMemoryStream()
+			.AddDimension<Account>().Done()
+			.AddDimension<Identity>().Done();
+
+
+		var definition = objectSpaceBuilder.BuildDefinition();
+
+		Assert.That(definition.Dimensions[0].Indexes.Count, Is.EqualTo(3));
+		
+		// Account
+		Assert.That(definition.Dimensions[0].Indexes[1].Type, Is.EqualTo(ObjectSpaceDefinition.IndexType.Identifier));
+		Assert.That(definition.Dimensions[0].Indexes[1].Member, Is.EqualTo(Tools.Mapping.GetMember<Account>(x => x.Name)));
+
+		Assert.That(definition.Dimensions[0].Indexes[2].Type, Is.EqualTo(ObjectSpaceDefinition.IndexType.UniqueKey));
+		Assert.That(definition.Dimensions[0].Indexes[2].Member, Is.EqualTo(Tools.Mapping.GetMember<Account>(x => x.UniqueNumber)));
+
+		// Identity
+		Assert.That(definition.Dimensions[1].Indexes[1].Type, Is.EqualTo(ObjectSpaceDefinition.IndexType.UniqueKey));
+		Assert.That(definition.Dimensions[1].Indexes[1].Member, Is.EqualTo(Tools.Mapping.GetMember<Identity>(x => x.Key)));
+
+		Assert.That(definition.Dimensions[1].Indexes[2].Type, Is.EqualTo(ObjectSpaceDefinition.IndexType.Index));
+		Assert.That(definition.Dimensions[1].Indexes[2].Member, Is.EqualTo(Tools.Mapping.GetMember<Identity>(x => x.Group)));
+
+		// Test comparer
+		var objectSpace = objectSpaceBuilder.Build();
+		Assert.That( () => objectSpace.Comparers.GetEqualityComparer<Account>(), Is.InstanceOf<AccountEqualityComparer>());
+		
 	}
 
 	internal class DummyAccountSerializer : ItemSerializerBase<Account> {

@@ -176,6 +176,13 @@ public class ObjectSpaceBuilder {
 		return this;
 	}
 
+	public ObjectSpaceBuilder UsingEqualityComparer(Type type, object comparer) {
+		Guard.Against(_usingCustomComparerFactory, ErrMsgUsingComparer);
+		_specifiedCustomComparer = true;
+		_comparerFactory.RegisterEqualityComparer(type, comparer);
+		return this;
+	}
+
 	public ObjectSpaceBuilder UsingComparer<TItem, TComparer>() where TComparer : IComparer<TItem>, new() {
 		Guard.Against(_usingCustomComparerFactory, ErrMsgUsingComparer);
 		_specifiedCustomComparer = true;
@@ -190,10 +197,38 @@ public class ObjectSpaceBuilder {
 		return this;
 	}
 
-	public ObjectSpaceDimensionBuilder<T> AddDimension<T>() {
-		var dimensionBuilder = new ObjectSpaceDimensionBuilder<T>(this);
+	public ObjectSpaceBuilder UsingComparer(Type type, object comparer) {
+		Guard.Against(_usingCustomComparerFactory, ErrMsgUsingComparer);
+		_specifiedCustomComparer = true;
+		_comparerFactory.RegisterComparer(type, comparer);
+		return this;
+	}
+
+	public ObjectSpaceDimensionBuilder<T> AddDimension<T>(bool ignoreAnnotations = false) 
+		=> (ObjectSpaceDimensionBuilder<T>)AddDimension(typeof(T), ignoreAnnotations);
+
+	public IObjectSpaceDimensionBuilder AddDimension(Type type, bool ignoreAnnotations = false) {
+		var dimensionBuilder = (IObjectSpaceDimensionBuilder)typeof(ObjectSpaceDimensionBuilder<>).MakeGenericType(type).ActivateWithCompatibleArgs(this);
 		_dimensions.Add(dimensionBuilder);
-		return Configure<T>();
+		
+		if (!ignoreAnnotations) {
+
+			if (type.TryGetCustomAttributeOfType<EqualityComparerAttribute>(false, out var equalityComparerAttribute))
+				dimensionBuilder.UsingEqualityComparer(equalityComparerAttribute.EqualityComparerType.ActivateWithCompatibleArgs());
+
+			foreach(var member in SerializationHelper.GetSerializableMembers(type)) {
+				if (member.MemberInfo.TryGetCustomAttributeOfType<IdentityAttribute>(false, out var identityAttribute)) 
+					dimensionBuilder.WithIdentifier(member, identityAttribute.IndexName); 
+
+				if (member.MemberInfo.TryGetCustomAttributeOfType<IndexAttribute>(false, out var indexAttribute)) 
+					dimensionBuilder.WithIndexOn(member, indexAttribute.IndexName, indexAttribute.NullPolicy); 
+
+				if (member.MemberInfo.TryGetCustomAttributeOfType<UniqueIndexAttribute>(false, out var uniqueIndexAttribute)) 
+					dimensionBuilder.WithUniqueIndexOn(member, uniqueIndexAttribute.IndexName, uniqueIndexAttribute.NullPolicy); 
+				
+			}
+		}
+		return dimensionBuilder;
 	}
 
 	public ObjectSpaceDimensionBuilder<T> Configure<T>() {

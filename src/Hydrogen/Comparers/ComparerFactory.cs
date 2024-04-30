@@ -123,8 +123,8 @@ public class ComparerFactory {
 
 	}
 	
-	public IEqualityComparer<string> GetEqualityComparer<T>()
-		=> (IEqualityComparer<string>)GetEqualityComparer(typeof(T));
+	public IEqualityComparer<T> GetEqualityComparer<T>()
+		=> (IEqualityComparer<T>)GetEqualityComparer(typeof(T));
 
 	public object GetEqualityComparer(Type type) {
 		// Get registered comparer
@@ -177,8 +177,8 @@ public class ComparerFactory {
 		return defaultComparer;
 	}
 	
-	public IComparer<string> GetComparer<T>()
-		=> (IComparer<string>)GetComparer(typeof(T));
+	public IComparer<T> GetComparer<T>()
+		=> (IComparer<T>)GetComparer(typeof(T));
 
 	public object GetComparer(Type type) {
 			// Get registered comparer
@@ -198,12 +198,28 @@ public class ComparerFactory {
 		=> RegisterComparer(new TComparer());		
 
 	public void RegisterComparer<T>(IComparer<T> comparer)
-		=> _comparers.Add(typeof(T), comparer);
+		=> RegisterComparer(typeof(T), comparer);
+
+	public void RegisterComparer(Type type, object comparer) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		Guard.ArgumentNotNull(comparer, nameof(comparer));
+		Guard.Argument(comparer.GetType().IsSubtypeOfGenericType(typeof(IComparer<>), out var comparerInterfaceType), nameof(comparer), $"Not an {typeof(IComparer<>).ToStringCS()}");
+		Guard.Argument(comparerInterfaceType.GenericTypeArguments[0] == type, nameof(comparer), $"Not an {typeof(IComparer<>).MakeGenericType(type).ToStringCS()}");
+		_comparers.Add(type, comparer);
+	}
 
 	public void RegisterEqualityComparer<T, TEqualityComparer>() where TEqualityComparer : IEqualityComparer<T>, new()
 		=> RegisterEqualityComparer(new TEqualityComparer());
 
 	public void RegisterEqualityComparer<T>(IEqualityComparer<T> equalityComparer)
-		=> _equalityComparers.Add(typeof(T), equalityComparer);
+		=> RegisterEqualityComparer(typeof(T), equalityComparer);
+
+	public void RegisterEqualityComparer(Type type, object equalityComparer) {
+		Guard.ArgumentNotNull(type, nameof(type));
+		Guard.ArgumentNotNull(equalityComparer, nameof(equalityComparer));
+		Guard.Argument(equalityComparer.GetType().IsSubtypeOfGenericType(typeof(IEqualityComparer<>), out var comparerInterfaceType), nameof(equalityComparer), $"Not an {typeof(IEqualityComparer<>).ToStringCS()}");
+		Guard.Argument(comparerInterfaceType.GenericTypeArguments[0] == type, nameof(equalityComparer), $"Not an {typeof(IEqualityComparer<>).MakeGenericType(type).ToStringCS()}");
+		_equalityComparers.Add(type, equalityComparer);
+	}
 
 }

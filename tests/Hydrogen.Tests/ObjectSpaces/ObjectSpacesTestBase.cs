@@ -25,12 +25,12 @@ public abstract class ObjectSpacesTestBase<TObjectSpace> where TObjectSpace : Ob
 		var builder = new ObjectSpaceBuilder();
 		builder
 			.AutoLoad()
-			.AddDimension<Account>()
+			.AddDimension<Account>(true)
 				.WithUniqueIndexOn(x => x.Name)
 				.WithUniqueIndexOn(x => x.UniqueNumber)
 				.UsingEqualityComparer(CreateAccountComparer())
 				.Done()
-			.AddDimension<Identity>()
+			.AddDimension<Identity>(true)
 				.WithUniqueIndexOn(x => x.Key)
 				.UsingEqualityComparer(CreateIdentityComparer())
 				.Done();
@@ -42,12 +42,12 @@ public abstract class ObjectSpacesTestBase<TObjectSpace> where TObjectSpace : Ob
 		var builder = new ObjectSpaceBuilder();
 		builder
 			.AutoLoad()
-			.AddDimension<Account>()
+			.AddDimension<Account>(true)
 				.WithUniqueIndexOn(x => x.Name, nullPolicy: nullValuePolicy)
 				.WithUniqueIndexOn(x => x.UniqueNumber, nullPolicy: nullValuePolicy)
 				.UsingEqualityComparer(CreateAccountComparer())
 			.Done()
-			.AddDimension<Identity>()
+			.AddDimension<Identity>(true)
 				.WithUniqueIndexOn(x => x.Key)
 				.UsingEqualityComparer(CreateIdentityComparer())
 			.Done();
@@ -90,8 +90,6 @@ public abstract class ObjectSpacesTestBase<TObjectSpace> where TObjectSpace : Ob
 	}
 
 	#endregion
-
-
 
 	#region Clear
 
@@ -267,7 +265,6 @@ public abstract class ObjectSpacesTestBase<TObjectSpace> where TObjectSpace : Ob
 
 		Assert.That(() => objectSpace.Get((Account x) => x.UniqueNumber, 3), Throws.InvalidOperationException);
 	}
-
 
 	[Test]
 	public void UniqueMember_ProhibitsDuplicate_ViaAdd() {

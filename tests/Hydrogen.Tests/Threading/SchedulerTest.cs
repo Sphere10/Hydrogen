@@ -20,6 +20,11 @@ namespace Hydrogen.Tests;
 [NonParallelizable]
 public class SchedulerTest {
 
+	[SetUp]
+	public void Setup() {
+		Assume.That(!Tools.NUnit.IsGitHubAction, "Test fixture is disabled on GitHub Actions");
+	}
+
 	[Test]
 	public async Task StartOn_LocalTime() {
 		var count = 0;
@@ -110,6 +115,7 @@ public class SchedulerTest {
 
 	[Test]
 	public async Task RescheduleOnStart() {
+
 		// Schedule = every 0.1 second
 		// Run for 1 second
 		// Execution takes 1.1 seconds

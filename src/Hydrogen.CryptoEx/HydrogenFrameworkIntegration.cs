@@ -24,6 +24,13 @@ public static class HydrogenFrameworkIntegration {
 		Signers.Register(DSS.SCHNORR_SECP521R1, () => new Schnorr(ECDSAKeyType.SECP521R1));
 		Signers.Register(DSS.SCHNORR_SECT283K1, () => new Schnorr(ECDSAKeyType.SECT283K1));
 
+		if (Tools.Runtime.IsWasmExecutable()) {
+			Hashers.Register(CHF.SHA2_512, () => new HashLibAdapter(CreateSHA2_512()));
+			Hashers.Register(CHF.SHA2_384, () => new HashLibAdapter(CreateSHA2_384()));
+			Hashers.Register(CHF.SHA2_256, () => new HashLibAdapter(CreateSHA2_256()));
+			Hashers.Register(CHF.SHA1_160, () => new HashLibAdapter(CreateSHA1()));
+		}
+		
 		Hashers.Register(CHF.RIPEMD, () => new HashLibAdapter(CreateRIPEMD()));
 		Hashers.Register(CHF.RIPEMD_128, () => new HashLibAdapter(CreateRIPEMD128()));
 		Hashers.Register(CHF.RIPEMD_160, () => new HashLibAdapter(CreateRIPEMD160()));

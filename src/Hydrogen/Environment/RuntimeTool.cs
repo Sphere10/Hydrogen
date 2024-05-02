@@ -22,6 +22,9 @@ public static class Runtime {
 	private static Assembly _entryAssembly = null;
 	private static bool? _isWebApp = null;
 
+
+	public static bool IsWasmExecutable() => (int)Environment.OSVersion.Platform == 7;
+
 	// https://stackoverflow.com/questions/64581054/how-do-i-get-the-name-of-the-current-executable-in-c-net-5-edition
 	public static string GetExecutablePath() => Process.GetCurrentProcess().MainModule.FileName;
 

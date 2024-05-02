@@ -67,7 +67,7 @@ public class ECDSATests {
 		var generator = new DerSequenceGenerator(outStream);
 		generator.AddObject(new DerInteger(rs[0]));
 		generator.AddObject(new DerInteger(rs[1]));
-		generator.Close();
+		//generator.Close();
 		return outStream.ToArray();
 	}
 

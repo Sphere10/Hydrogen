@@ -8,18 +8,21 @@
 
 using System;
 using Org.BouncyCastle.Crypto;
-using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 
 namespace Hydrogen.CryptoEx.PascalCoin;
 
-public class PascalCoinEciesKdfBytesGenerator : BaseKdfBytesGenerator {
+public class PascalCoinEciesKdfBytesGenerator : IDerivationFunction {
 	private byte[] _shared;
 
-	public PascalCoinEciesKdfBytesGenerator(IDigest digest) : base(0, digest) {
+	public PascalCoinEciesKdfBytesGenerator(IDigest digest) {
+		Digest = digest;
+		digest.Reset();
 	}
 
-	public override void Init(IDerivationParameters parameters) {
+	public IDigest Digest { get; }
+
+	public virtual void Init(IDerivationParameters parameters) {
 		KdfParameters kdfParameters = (KdfParameters)parameters;
 		if (kdfParameters != null) {
 			_shared = kdfParameters.GetSharedSecret();
@@ -28,7 +31,7 @@ public class PascalCoinEciesKdfBytesGenerator : BaseKdfBytesGenerator {
 		}
 	}
 
-	public override int GenerateBytes(byte[] output, int outOff, int length) {
+	public virtual int GenerateBytes(byte[] output, int outOff, int length) {
 		if ((output.Length - length) < outOff) {
 			throw new DataLengthException("Output Buffer too Small");
 		}
@@ -50,4 +53,5 @@ public class PascalCoinEciesKdfBytesGenerator : BaseKdfBytesGenerator {
 		Digest.Reset();
 		return length;
 	}
+	
 }

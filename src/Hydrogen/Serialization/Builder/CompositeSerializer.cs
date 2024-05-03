@@ -16,7 +16,7 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 	}
 
 	internal CompositeSerializer() {
-		// This constructor is used by SerializerFactory in conjunction with Confgure method
+		// This constructor is used by SerializerFactory in conjunction with Configure method
 	}
 
 	internal void Configure(Func<TItem> activator, MemberSerializationBinding[] memberBindings)  {

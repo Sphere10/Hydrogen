@@ -81,7 +81,7 @@ public class SerializerBuilder<TItem> {
 
 	public SerializerBuilder<TItem> SerializeAllMembers(SerializerFactory factory) {
 		
-		foreach(var member in SerializationHelper.GetSerializableMembers(typeof(TItem))) {
+		foreach(var member in SerializerHelper.GetSerializableMembers(typeof(TItem))) {
 			if (factory.HasSerializer(member.PropertyType)) {
 				_memberBindings.Add(new(member, factory.GetRegisteredSerializer(member.PropertyType, true)));
 			} else {

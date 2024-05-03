@@ -145,7 +145,7 @@ public class ObjectSpacesBuilderTests {
 
 	[Test]
 	public void DoesNotSerializeNonSettableMembers() {
-		var members = SerializationHelper.GetSerializableMembers(typeof(NoSerializableMembers));
+		var members = SerializerHelper.GetSerializableMembers(typeof(NoSerializableMembers));
 		Assert.That(members.Length, Is.EqualTo(0));
 	}
 

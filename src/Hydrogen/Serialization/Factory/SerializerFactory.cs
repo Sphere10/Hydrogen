@@ -175,7 +175,7 @@ public class SerializerFactory {
 		=> RegisterAutoBuild(typeof(T));
 
 	public void RegisterAutoBuild(Type dataType) 
-		=> SerializationHelper.AssembleSerializer(this, dataType, true, MinimumGeneratedTypeCode);
+		=> SerializerHelper.AssembleSerializer(this, dataType, true, MinimumGeneratedTypeCode);
 
 	internal void RegisterInternal(long typeCode, Type dataType, Type serializerType, IItemSerializer serializerInstance, Func<Registration, Type, IItemSerializer> factory) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
@@ -256,13 +256,13 @@ public class SerializerFactory {
 		=> GetSerializer<T>(EphemeralTypeCodeStartDefault);
 
 	public IItemSerializer<T> GetSerializer<T>(long typeCodeStart) 
-		=> (IItemSerializer<T>)SerializationHelper.AssembleSerializer(this, typeof(T), false, typeCodeStart);
+		=> (IItemSerializer<T>)SerializerHelper.AssembleSerializer(this, typeof(T), false, typeCodeStart);
 
 	public IItemSerializer GetSerializer(Type type) 
 		=> GetSerializer(type, EphemeralTypeCodeStartDefault);
 
 	public IItemSerializer GetSerializer(Type type, long typeCodeStart) 
-		=> SerializationHelper.AssembleSerializer(this, type, false, typeCodeStart);
+		=> SerializerHelper.AssembleSerializer(this, type, false, typeCodeStart);
 
 	#endregion
 

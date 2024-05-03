@@ -6,7 +6,7 @@ using System.Reflection;
 using Hydrogen.Mapping;
 
 namespace Hydrogen;
-internal static class SerializationHelper {
+internal static class SerializerHelper {
 	public static Member[] GetSerializableMembers(Type type)
 		=> type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
 			.Where(x => x.CanRead && x.CanWrite)
@@ -71,7 +71,7 @@ internal static class SerializationHelper {
 				factory.RegisterInternal(factory.GenerateTypeCode(), itemType, compositeSerializer.GetType(), compositeSerializer, null);
 
 			// Create the member serializers
-			var members = SerializationHelper.GetSerializableMembers(itemType);
+			var members = SerializerHelper.GetSerializableMembers(itemType);
 			var memberBindings = new List<MemberSerializationBinding>(members.Length);
 			foreach (var member in members) {
 				var propertyType = member.PropertyType;

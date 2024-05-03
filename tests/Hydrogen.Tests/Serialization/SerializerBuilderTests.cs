@@ -37,6 +37,9 @@ public class SerializerBuilderTests {
 		public string Prop1 { get; set; }
 
 		[Transient]
+		public decimal TransientField;
+
+		[Transient]
 		public int TransientInt { get; set; }
 
 		[Transient]
@@ -566,6 +569,7 @@ public class SerializerBuilderTests {
 		var deserialized = serializer.DeserializeBytesLE(serialized);
 
 		Assert.That(deserialized.Prop1, Is.EqualTo("alpha"));
+		Assert.That(deserialized.TransientField, Is.EqualTo(default(decimal)));
 		Assert.That(deserialized.TransientInt, Is.EqualTo(default(int)));
 		Assert.That(deserialized.TransientString, Is.EqualTo(default(string)));
 		Assert.That(deserialized.Nested, Is.EqualTo(default(string)));

@@ -6,6 +6,7 @@ using System.Reflection;
 using Hydrogen.Mapping;
 
 namespace Hydrogen;
+
 internal static class SerializerHelper {
 	public static Member[] GetSerializableMembers(Type type)
 		=> type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)

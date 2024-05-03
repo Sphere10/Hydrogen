@@ -22,7 +22,6 @@ public class SerializerBuilderTests {
 		public CrudAction? Property { get; set; }
 	}
 
-
 	public class SingleObjectPropertyClass {
 		public object Property { get; set; }
 	}
@@ -111,7 +110,6 @@ public class SerializerBuilderTests {
 		Assert.That(serialized1_3, Is.EqualTo(serialized2_3).Using(new TestObjectEqualityComparer()));
 		
 	}
-
 
 	[Test]
 	public void AutoBuildComplex() {
@@ -249,7 +247,6 @@ public class SerializerBuilderTests {
 		Assert.That(deserialized.Prop1, Is.EqualTo("Hello"));
 		Assert.That(deserialized.Prop2, Is.SameAs(deserialized));
 	}
-
 	
 	[Test]
 	public void BugCase_Cyclic1_CalculateSize() {
@@ -264,7 +261,6 @@ public class SerializerBuilderTests {
 		var serialized = serializer.SerializeBytesLE(obj);
 		Assert.That(size, Is.EqualTo(serialized.Length));
 	}
-
 
 	[Test]
 	public void BugCase_Cyclic_2() {
@@ -347,7 +343,6 @@ public class SerializerBuilderTests {
 		Assert.That(size, Is.EqualTo(serialized.Length));
 	}
 
-
 	[Test]
 	public void BugCase_Cyclic_3() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
@@ -403,8 +398,6 @@ public class SerializerBuilderTests {
 		Assert.That(() => serializer.DeserializeBytesLE(serialized), Throws.Nothing);
 	}
 
-
-
 	[Test]
 	public void BugCase_2() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
@@ -420,7 +413,6 @@ public class SerializerBuilderTests {
 		var serialized = serializer.SerializeBytesLE(obj);
 		Assert.That(() => serializer.DeserializeBytesLE(serialized), Throws.Nothing);
 	}
-
 
 	[Test]
 	public void NullableEnum_Null() {
@@ -542,7 +534,6 @@ public class SerializerBuilderTests {
 		Assert.That(() => serializer.SerializeBytesLE(null), Throws.Exception);
 	}
 
-
 	[Test]
 	public void SupportsNull_True() {
 		// Test with empty string field
@@ -562,7 +553,6 @@ public class SerializerBuilderTests {
 		Assert.That(deserialized, Is.Null);
 			
 	}
-
 
 	[Test]
 	public void Transient_1() {

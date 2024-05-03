@@ -34,4 +34,13 @@
       </EmbeddedResource>
     </ItemGroup>
 
+	<!-- In current version of BouncyCastle.Cryptography there is a problem with finding interfaces implementations. 
+	     See here https://github.com/bcgit/bc-csharp/issues/447 for more details. -->
+	<ItemGroup>
+		<PackageReference Include="BouncyCastle.Cryptography" Version="2.3.0" ExcludeAssets="Compile" GeneratePathProperty="true" />
+		<Reference Include="BouncyCastle.Cryptography">
+			<HintPath>$(PkgBouncyCastle_Cryptography)\lib\netstandard2.0\BouncyCastle.Cryptography.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
 </Project>

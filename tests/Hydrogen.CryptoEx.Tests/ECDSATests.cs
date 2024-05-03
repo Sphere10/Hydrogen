@@ -63,12 +63,13 @@ public class ECDSATests {
 			throw new ArgumentException(InvalidRAndSSignature, nameof(rs));
 		}
 
-		var outStream = new MemoryStream();
-		var generator = new DerSequenceGenerator(outStream);
-		generator.AddObject(new DerInteger(rs[0]));
-		generator.AddObject(new DerInteger(rs[1]));
-		//generator.Close();
-		return outStream.ToArray();
+		using (var outputStream = new MemoryStream()) {
+			using (var sequenceGenerator = new DerSequenceGenerator(outputStream)) {
+				sequenceGenerator.AddObject(new DerInteger(rs[0]));
+				sequenceGenerator.AddObject(new DerInteger(rs[1]));
+			}
+			return outputStream.ToArray();
+		}
 	}
 
 	public static byte[] CanonicalizeSig(BigInteger order, byte[] sig) {

@@ -17,17 +17,6 @@ namespace Tools;
 
 public static class Lambda {
 
-
-	public static Delegate ConvertFunc(Func<object, object> func, Type t1, Type t2) {
-		var methodInfo = typeof(Lambda).GetMethod(nameof(ConvertFuncHelper), BindingFlags.Static | BindingFlags.NonPublic);
-		var genericMethod = methodInfo.MakeGenericMethod(t1, t2);
-		return Delegate.CreateDelegate(typeof(Func<,>).MakeGenericType(t1, t2), func, genericMethod);
-		
-	}
-
-	static T2 ConvertFuncHelper<T1, T2>(Func<object, object> func, object arg) => (T2)func((T1)arg);
-
-
 	public static bool Try<T>(Func<T> func, out T result, out Exception exception) {
 		try {
 			result = func();
@@ -169,4 +158,18 @@ public static class Lambda {
 	public static T ExceptionExpression<T>(string errorMessage, params object[] formatArgs) {
 		throw new Exception(string.Format(errorMessage, formatArgs));
 	}
+
+	public static Delegate CastFunc<T>(Func<T> func, Type castedType) {
+		Guard.ArgumentNotNull(func, nameof(func));
+		Guard.ArgumentNotNull(castedType, nameof(castedType));
+		Guard.Argument(castedType.IsAssignableTo(typeof(T)), nameof(castedType), $"Must be assignable from {typeof(T).ToStringCS()}");
+		var methodInfo = 
+			typeof(Lambda)
+				.GetMethod(nameof(__Cast_1), BindingFlags.Static | BindingFlags.NonPublic)
+				.MakeGenericMethod(typeof(T), castedType);
+		return Delegate.CreateDelegate(typeof(Func<>).MakeGenericType(castedType), func, methodInfo);
+	}
+
+	static TOutReturn __Cast_1<TInReturn, TOutReturn>(Func<TInReturn> func) => (TOutReturn)(object)func();
+
 }

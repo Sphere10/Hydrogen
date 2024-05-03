@@ -12,21 +12,18 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 	private long _constantSize;
 
 	public CompositeSerializer(Func<TItem> activator, MemberSerializationBinding[] memberBindings) {
-		Guard.ArgumentNotNull(activator, nameof(activator));
-		Guard.ArgumentNotNull(memberBindings, nameof(memberBindings));
-		_activator = activator;
-		_memberBindings = memberBindings;
-		_isConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
-		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
+		Configure(activator, memberBindings);
 	}
 
 	internal CompositeSerializer() {
 		// This constructor is used by SerializerFactory in conjunction with Confgure method
 	}
 
-	internal void Configure(Func<object> activator, MemberSerializationBinding[] memberBindings)  {
+	internal void Configure(Func<TItem> activator, MemberSerializationBinding[] memberBindings)  {
 		// This is used to configure the serializer after it has been created by the serializer builder.
-		_activator = () => (TItem)activator.Invoke();
+		Guard.ArgumentNotNull(activator, nameof(activator));
+		Guard.ArgumentNotNull(memberBindings, nameof(memberBindings));
+		_activator = activator;
 		_memberBindings = memberBindings;
 		_isConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
 		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;

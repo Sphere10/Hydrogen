@@ -25,7 +25,6 @@ internal static class SerializerHelper {
 
 		return assembledSerializer;
 
-		// TODO: support nested-types by intelligently tracking parent 
 		IItemSerializer AssembleRecursively(SerializerFactory factory, Type itemType) {
 
 			// Ensure serializers for component types are registered
@@ -35,9 +34,9 @@ internal static class SerializerHelper {
 
 			// If serializer already exists for this type in factory, use that
 			if (factory.HasSerializer(itemType)) {
-				//return factory.GetCachedSerializer(itemType);
 				var typeSerializer = factory.GetCachedSerializer(itemType);
 				if (!itemType.IsValueType && !typeSerializer.SupportsNull) {
+					// We only use a ReferenceSerializer if the given serializer does not support null values
 					return (IItemSerializer)typeof(ReferenceSerializer<>)
 						.MakeGenericType(itemType)
 						.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(IItemSerializer<>)
@@ -53,7 +52,7 @@ internal static class SerializerHelper {
 			}
 
 			// No serializer registered so we need to assemble one as a CompositeSerializer. First, we need to 
-			// register the serializer (before it is assembled) as it may recursively refer to itself. So we 
+			// register the serializer (before it is assembled) so that it may recursively refer to itself. So we 
 			// activate a CompositeSerializer with no members (we'll configure it later)
 			var compositeSerializer =
 				(IItemSerializer)typeof(CompositeSerializer<>)
@@ -87,11 +86,11 @@ internal static class SerializerHelper {
 			}
 
 			// AddDimension the composite serializer instance (which is already registered)
-			var itemTypeLocal = itemType;
+			var capturedItemType = itemType;
 			compositeSerializer
 				.GetType()
 				.GetMethod(nameof(CompositeSerializer<object>.Configure), BindingFlags.Instance | BindingFlags.NonPublic)
-				.Invoke(compositeSerializer, [() => itemTypeLocal.ActivateWithCompatibleArgs(), memberBindings.ToArray()]);
+				.Invoke(compositeSerializer, [Tools.Lambda.CastFunc( () => capturedItemType.ActivateWithCompatibleArgs(), capturedItemType), memberBindings.ToArray()]);
 
 			return serializer;
 		}

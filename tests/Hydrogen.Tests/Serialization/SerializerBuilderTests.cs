@@ -590,5 +590,9 @@ public class SerializerBuilderTests {
 		Assert.That(members.Length, Is.EqualTo(0));
 	}
 
-
+	[Test]
+	public void DoesNotSerializeTransientMembers() {
+		var members = SerializerHelper.GetSerializableMembers(typeof(TransientPropertyObject));
+		Assert.That(members.Length, Is.EqualTo(1));
+	}
 }

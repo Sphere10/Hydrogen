@@ -142,23 +142,6 @@ public class ObjectSpacesBuilderTests {
 		
 	}
 
-
-	[Test]
-	public void DoesNotSerializeNonSettableMembers() {
-		var members = SerializerHelper.GetSerializableMembers(typeof(NoSerializableMembers));
-		Assert.That(members.Length, Is.EqualTo(0));
-	}
-
-	private class NoSerializableMembers {
-		public int A => 1;
-
-		public string B => "B";
-
-		public NoSerializableMembers C => new NoSerializableMembers();
-	}
-
-
-
 	internal class DummyAccountSerializer : ItemSerializerBase<Account> {
 
 		public override long CalculateSize(SerializationContext context, Account item) {

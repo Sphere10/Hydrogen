@@ -49,6 +49,14 @@ public class SerializerBuilderTests {
 		public TransientPropertyObject Nested { get; set; }
 	}
 
+	private class NoSerializableMembers {
+		public int A => 1;
+
+		public string B => "B";
+
+		public NoSerializableMembers C => new NoSerializableMembers();
+	}
+
 	[Test]
 	public void TestObject_1() {
 		// test object
@@ -574,4 +582,13 @@ public class SerializerBuilderTests {
 		Assert.That(deserialized.TransientString, Is.EqualTo(default(string)));
 		Assert.That(deserialized.Nested, Is.EqualTo(default(string)));
 	}
+
+	
+	[Test]
+	public void DoesNotSerializeNonSettableMembers() {
+		var members = SerializerHelper.GetSerializableMembers(typeof(NoSerializableMembers));
+		Assert.That(members.Length, Is.EqualTo(0));
+	}
+
+
 }

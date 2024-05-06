@@ -1,32 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Hydrogen;
 
 public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
-	
 	private Func<TItem> _activator;
 	private MemberSerializationBinding[] _memberBindings;
 	private bool _isConstantSize;
 	private long _constantSize;
+	private bool _configured;
 
-	public CompositeSerializer(Func<TItem> activator, MemberSerializationBinding[] memberBindings) {
+	public CompositeSerializer(Func<TItem> activator, MemberSerializationBinding[] memberBindings) : this() {
 		Configure(activator, memberBindings);
 	}
 
 	internal CompositeSerializer() {
 		// This constructor is used by SerializerFactory in conjunction with Configure method
+		_configured = false;
 	}
 
 	internal void Configure(Func<TItem> activator, MemberSerializationBinding[] memberBindings)  {
 		// This is used to configure the serializer after it has been created by the serializer builder.
 		Guard.ArgumentNotNull(activator, nameof(activator));
 		Guard.ArgumentNotNull(memberBindings, nameof(memberBindings));
+		Guard.Ensure(!_configured, "Serializer has already been configured.");
 		_activator = activator;
 		_memberBindings = memberBindings;
 		_isConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
 		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
+		_configured = true;
 	}
 
 	public override bool SupportsNull => false;

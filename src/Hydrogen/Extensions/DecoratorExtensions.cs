@@ -329,11 +329,11 @@ public static partial class DecoratorExtensions {
 	public static IItemSerializer<T> AsNullableSerializer<T>(this IItemSerializer<T> serializer)
 		=> (typeof(T).IsValueType || serializer.SupportsNull) ? serializer : new ReferenceSerializer<T>(serializer, ReferenceSerializerMode.SupportNull);
 
-	public static IItemSerializer AsReferenceSerializer(this IItemSerializer serializer)
-		=> (serializer.ItemType.IsValueType || serializer.SupportsNull) ? serializer : (IItemSerializer)typeof(ReferenceSerializer<>).MakeGenericType(serializer.ItemType).ActivateWithCompatibleArgs(serializer);
+	public static IItemSerializer AsReferenceSerializer(this IItemSerializer serializer, ReferenceSerializerMode mode = ReferenceSerializerMode.Default)
+		=> (serializer.ItemType.IsValueType || serializer.SupportsNull) ? serializer : (IItemSerializer)typeof(ReferenceSerializer<>).MakeGenericType(serializer.ItemType).ActivateWithCompatibleArgs(serializer, mode);
 	
-	public static IItemSerializer<T> AsReferenceSerializer<T>(this IItemSerializer<T> serializer)
-		=> (typeof(T).IsValueType || serializer.SupportsNull) ? serializer : new ReferenceSerializer<T>(serializer);
+	public static IItemSerializer<T> AsReferenceSerializer<T>(this IItemSerializer<T> serializer, ReferenceSerializerMode mode = ReferenceSerializerMode.Default)
+		=> (typeof(T).IsValueType || serializer.SupportsNull) ? serializer : new ReferenceSerializer<T>(serializer, mode);
 
 	public static IItemSerializer AsDereferencedSerializer(this IItemSerializer serializer)
 		=> serializer.GetType().IsSubtypeOfGenericType(typeof(ReferenceSerializer<>)) ? ((IItemSerializerDecorator)serializer).InternalSerializer : serializer;

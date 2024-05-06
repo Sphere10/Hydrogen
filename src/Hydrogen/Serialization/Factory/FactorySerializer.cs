@@ -87,17 +87,17 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 	}
 
 	private IItemSerializer<TBase> GetItemSerializer(TBase item) {
-		Type itemType;
+		Type superType;
 		if (item is null || typeof(TBase).IsConstructedGenericTypeOf(typeof(Nullable<>))) {
-			itemType = typeof(TBase);
+			superType = typeof(TBase);
 		} else {
-			itemType = item.GetType();
+			superType = item.GetType();
 		} 
 
-		var serializer = _factory.GetRegisteredSerializer<TBase>(itemType, false); 
+		var serializer = _factory.GetRegisteredSerializer<TBase>(superType, false); 
 
-		// A factory serializer is not responsible to storing NULL references, or context references.
-		// To achieve this, wrap this serializer inside a ReferenceSerializer.
+		// Ensure item serializer is not a reference serializer. Handling null, cyclic and other references is the
+		// responsibility of ReferenceSerializer.
 		Guard.Ensure(serializer is not ReferenceSerializer<TBase>, "A FactorySerializer cannot wrap a ReferenceSerializer");
 		return serializer;
 	}

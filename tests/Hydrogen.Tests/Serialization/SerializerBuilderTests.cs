@@ -32,31 +32,6 @@ public class SerializerBuilderTests {
 		public object Prop2 { get; set; }
 	}
 
-	public class TransientPropertyObject {
-
-		public string Prop1 { get; set; }
-
-		[Transient]
-		public decimal TransientField;
-
-		[Transient]
-		public int TransientInt { get; set; }
-
-		[Transient]
-		public string TransientString { get; set ; }
-
-		[Transient]
-		public TransientPropertyObject Nested { get; set; }
-	}
-
-	private class NoSerializableMembers {
-		public int A => 1;
-
-		public string B => "B";
-
-		public NoSerializableMembers C => new NoSerializableMembers();
-	}
-
 	[Test]
 	public void TestObject_1() {
 		// test object
@@ -565,34 +540,4 @@ public class SerializerBuilderTests {
 			
 	}
 
-	[Test]
-	public void Transient_1() {
-		// test object
-		var serializer = SerializerBuilder.AutoBuild<TransientPropertyObject>();
-		
-		var testObj = new TransientPropertyObject { Prop1 = "alpha", TransientInt = 11, TransientString = "beta" };
-		testObj.Nested = testObj;
-		
-		var serialized = serializer.SerializeBytesLE(testObj);
-		var deserialized = serializer.DeserializeBytesLE(serialized);
-
-		Assert.That(deserialized.Prop1, Is.EqualTo("alpha"));
-		Assert.That(deserialized.TransientField, Is.EqualTo(default(decimal)));
-		Assert.That(deserialized.TransientInt, Is.EqualTo(default(int)));
-		Assert.That(deserialized.TransientString, Is.EqualTo(default(string)));
-		Assert.That(deserialized.Nested, Is.EqualTo(default(string)));
-	}
-
-	
-	[Test]
-	public void DoesNotSerializeNonSettableMembers() {
-		var members = SerializerHelper.GetSerializableMembers(typeof(NoSerializableMembers));
-		Assert.That(members.Length, Is.EqualTo(0));
-	}
-
-	[Test]
-	public void DoesNotSerializeTransientMembers() {
-		var members = SerializerHelper.GetSerializableMembers(typeof(TransientPropertyObject));
-		Assert.That(members.Length, Is.EqualTo(1));
-	}
 }

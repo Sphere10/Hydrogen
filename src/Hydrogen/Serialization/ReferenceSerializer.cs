@@ -9,7 +9,7 @@ namespace Hydrogen;
 /// that was previously serialized in the serialization context. It is used to support nullability and cyclic/repeating references in a serialization context.
 /// </summary>
 public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> {
-	private const string ErrMsg_NullValuesNotEnabled = "Null values are not enabled on this serializer";
+	private static string ErrMsg_NullValuesNotEnabled = $"Null value for '{typeof(TItem).ToStringCS()}' is not permitted";
 
 	private readonly bool _supportsNull;
 	private readonly bool _supportsContextReferences;
@@ -19,7 +19,6 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 	public ReferenceSerializer(IItemSerializer<TItem> valueSerializer) 
 		: this(valueSerializer, ReferenceSerializerMode.Default) {
 	}
-
 
 	public ReferenceSerializer(IItemSerializer<TItem> valueSerializer, ReferenceSerializerMode mode) 
 		: base(valueSerializer) {
@@ -41,79 +40,83 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		
 
 	public override long CalculateSize(SerializationContext context, TItem item) {
-		var itemType = ClassifyItem(item, context, true, out var contextIndex);
-		switch(itemType) {
-			case PrefixTag.IsNull:
-				context.NotifySerializingObject(item, true);
-				return sizeof(byte);
-			case PrefixTag.IsNotNull:
-				context.NotifySerializingObject(item, true);
-				return sizeof(byte) + Internal.CalculateSize(context, item);
-			case PrefixTag.IsContextReference:
+		var referenceType = ClassifyReferenceType(item, context, true, out var contextIndex);
+		switch(referenceType) {
+			case ReferenceType.IsNull:
+				context.NotifySizing(item);
+				long size = sizeof(byte);
+				context.NotifySized(item);
+				return size;
+			case ReferenceType.IsNotNull:
+				if (!_supportsReferences)
+					if (context.IsSizingOrSerializingObject(item, out _))
+						throw new InvalidOperationException($"Cyclic-reference was encountered when sizing item  '{item}'. Please ensure context references are enabled sizing cyclic-referencing object graphs or ensure no cyclic references exist.");
+				context.NotifySizing(item);
+				size = sizeof(byte) + Internal.CalculateSize(context, item);
+				context.NotifySized(item);
+				return size;
+			case ReferenceType.IsContextReference:
 				return sizeof(byte) + CVarIntSerializer.Instance.CalculateSize(context, unchecked((ulong)contextIndex));
 			default:
-				throw new ArgumentOutOfRangeException(nameof(itemType), itemType, null);
+				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
 		}
 	}
 
 	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
-		var itemType = ClassifyItem(item, context, false, out var contextIndex);
-		PrimitiveSerializer<byte>.Instance.Serialize((byte)itemType, writer, context);
-		switch (itemType) {
-			case PrefixTag.IsNull:
-				if (_supportsReferences)
-					context.NotifySerializingObject(item, false);
+		var referenceType = ClassifyReferenceType(item, context, false, out var contextIndex);
+		PrimitiveSerializer<byte>.Instance.Serialize((byte)referenceType, writer, context);
+		switch (referenceType) {
+			case ReferenceType.IsNull:
+				context.NotifySerializingObject(item);
+				context.NotifySerializedObject(item);
 				break;
-			case PrefixTag.IsNotNull:
-				if (_supportsReferences)
-					context.NotifySerializingObject(item, false);
+			case ReferenceType.IsNotNull:
+				if (!_supportsReferences)
+					if (context.IsSerializingObject(item, out _))
+						throw new InvalidOperationException($"Cyclic-reference was encountered when serializing item '{item}'. Please ensure context references are enabled serializing cyclic-referencing object graphs or ensure no cyclic references exist.");
+				context.NotifySerializingObject(item);
 				Internal.Serialize(item, writer, context);
+				context.NotifySerializedObject(item);
 				break;
-			case PrefixTag.IsContextReference:
+			case ReferenceType.IsContextReference:
 				CVarIntSerializer.Instance.Serialize(unchecked((ulong)contextIndex), writer, context);
 				break;
 			default:
-				throw new ArgumentOutOfRangeException(nameof(itemType), itemType, null);
+				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
 		}
 	}
 
 	public override TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
-		var itemType = (PrefixTag)PrimitiveSerializer<byte>.Instance.Deserialize(reader, context);
-		switch (itemType) {
-			case PrefixTag.IsNull:
+		var referenceType = (ReferenceType)PrimitiveSerializer<byte>.Instance.Deserialize(reader, context);
+		switch (referenceType) {
+			case ReferenceType.IsNull:
 				Guard.Ensure(_supportsNull, ErrMsg_NullValuesNotEnabled);
-				if (_supportsReferences)
-					context.NotifyDeserializingObject(out _);
+				context.NotifyDeserializingObject(out _);
 				return default;
-			case PrefixTag.IsNotNull:
-				long index = -1;
-				if (_supportsReferences)
-					context.NotifyDeserializingObject(out index);
-				
+			case ReferenceType.IsNotNull:
+				context.NotifyDeserializingObject(out var index);
 				var item = Internal.Deserialize(reader, context);
-
-				if (_supportsReferences)
-					context.NotifyDeserializedObject(item, index);
+				context.NotifyDeserializedObject(item, index);
 				return item;
-			case PrefixTag.IsContextReference:
+			case ReferenceType.IsContextReference:
 				var contextIndex = CVarIntSerializer.Instance.Deserialize(reader, context);
-				return (TItem)context.GetSerializedObject(unchecked((long)(ulong)contextIndex));
+				return (TItem)context.GetDeserializedObject(unchecked((long)(ulong)contextIndex));
 			default:
-				throw new ArgumentOutOfRangeException(nameof(itemType), itemType, null);
+				throw new ArgumentOutOfRangeException(nameof(referenceType), referenceType, null);
 		}
 	}
 
-	private PrefixTag ClassifyItem(TItem item, SerializationContext context, bool sizeOnly, out long index) {
+	private ReferenceType ClassifyReferenceType(TItem item, SerializationContext context, bool sizeOnly, out long index) {
 		index = -1;
 		if (item == null) 
-			return _supportsNull ? PrefixTag.IsNull : throw new InvalidOperationException(ErrMsg_NullValuesNotEnabled);
+			return _supportsNull ? ReferenceType.IsNull : throw new InvalidOperationException(ErrMsg_NullValuesNotEnabled);
 
-		if (_supportsContextReferences && context.HasSerializedObject(item, out index, sizeOnly))
-			return PrefixTag.IsContextReference;
+		if (_supportsContextReferences && (sizeOnly ? context.HasSizedOrSerializedObject(item, out index) : context.HasSerializedObject(item, out index)))
+			return ReferenceType.IsContextReference;
 		
-		return PrefixTag.IsNotNull;
+		return ReferenceType.IsNotNull;
 	}
-	public enum PrefixTag : byte {
+	public enum ReferenceType : byte {
 		IsNull = 0,
 		IsNotNull = 1,
 		IsContextReference = 2,

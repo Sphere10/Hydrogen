@@ -1,92 +1,149 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Hydrogen;
 
 public class SerializationContext : SyncScope {
-	private BijectiveDictionary<object, long> _serializedObjects;
-	private HashSet<long> _onlySizedButNotSerialized;  // this is needed since some serializers may size their objects before serializing them, and we need to know if they were already serialized
+
+	private enum SerializationStatus { Sizing, Sized, Serializing, Serialized, Deserializing, Deserialized }
+
+	private BijectiveDictionary<object, long> _processedObjects;
+	private IDictionary<long, SerializationStatus> _objectSerializationStatus;
 	private List<Action> _onRootContextEndActions;
-	private long _currentlyDeserializingIndex;
+	
 
 	public SerializationContext() {
-		_serializedObjects = new BijectiveDictionary<object, long>();
-		_onlySizedButNotSerialized = new HashSet<long>();
+		_processedObjects = new BijectiveDictionary<object, long>(ReferenceEqualityComparer.Instance, EqualityComparer<long>.Default);
+		_objectSerializationStatus = new Dictionary<long, SerializationStatus>();
 		_onRootContextEndActions = new List<Action>();
-		_currentlyDeserializingIndex = -1;
 	}
 
 	public static SerializationContext New => new();
 
-	public bool HasSerializedObject(object obj, out long serializationContextIndex, bool sizeOnly) {
+	public bool IsSizingOrSerializingObject(object obj, out long index) {
 		if (obj is null) {
-			serializationContextIndex = -1;
+			index = -1;
 			return false;
 		}
 
-		var hasSerialized = _serializedObjects.TryGetValue(obj, out serializationContextIndex);
-		
-		if (hasSerialized && !sizeOnly) {
-			// if we're not just sizing (ie. we're serializing), we need to make sure that
-			// the object is not in _onlySizedButNotSerialized set because if it is it means
-			// it hasn't been serialized yet. 
-			hasSerialized &= !_onlySizedButNotSerialized.Contains(serializationContextIndex);
-		}
-
-		return hasSerialized;
+		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Sizing, SerializationStatus.Sized, SerializationStatus.Serializing, SerializationStatus.Serialized);
 	}
 
-	public object GetSerializedObject(long serializationContextIndex)
-		=> _serializedObjects.Bijection[serializationContextIndex];
+	public bool HasSizedOrSerializedObject(object obj, out long index) {
+		if (obj is null) {
+			index = -1;
+			return false;
+		}
 
-	public void NotifySerializingObject(object obj, bool sizeOnly) {
+		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Sizing, SerializationStatus.Sized, SerializationStatus.Serializing, SerializationStatus.Serialized);
+	}
+
+	public bool IsSerializingObject(object obj, out long index) {
+		if (obj is null) {
+			index = -1;
+			return false;
+		}
+
+		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index] == SerializationStatus.Serializing;
+	}
+
+	public bool HasSerializedObject(object obj, out long index) {
+		if (obj is null) {
+			index = -1;
+			return false;
+		}
+
+		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index] == SerializationStatus.Serialized;
+	}
+
+	public object GetSizedOrSerializedObject(long index) {
+		Guard.Ensure(_objectSerializationStatus.TryGetValue(index, out var status) && status.IsIn(SerializationStatus.Sizing, SerializationStatus.Sized, SerializationStatus.Serializing, SerializationStatus.Serialized), $"No object was sized/serialized in this serialization context at index {index}");
+		return _processedObjects.Bijection[index];
+	}
+
+	public object GetSerializedObject(long index) {
+		Guard.Ensure(_objectSerializationStatus.TryGetValue(index, out var status) && status == SerializationStatus.Serialized, $"No object was serialized in this serialization context at index {index}");
+		return _processedObjects.Bijection[index];
+	}
+
+	public object GetDeserializedObject(long index) {
+		Guard.Ensure(_objectSerializationStatus.TryGetValue(index, out var status) && status == SerializationStatus.Deserialized, $"No object was serialized in this serialization context at index {index}");
+		return _processedObjects.Bijection[index];
+	}
+
+	public void NotifySizing(object obj) {
+		obj ??= new NullPlaceHolder();
+		var index = _processedObjects.Count;
+		_processedObjects[obj] = index;;
+		_objectSerializationStatus[index] = SerializationStatus.Sized;
+	}
+
+	public void NotifySized(object obj) {
+		obj ??= new NullPlaceHolder();
+		if (!_processedObjects.TryGetValue(obj, out var index))
+			throw new InvalidOperationException("Object was not sized in this serialization context");
+
+		_objectSerializationStatus[index] = SerializationStatus.Sized;
+	}
+
+	public void NotifySerializingObject(object obj) {
 		obj ??= new NullPlaceHolder();
 
-		if (_serializedObjects.TryGetValue(obj, out var index)) {
+		if (_processedObjects.TryGetValue(obj, out var index)) {
 			// Some serializers may size objects before serializing them, and sizing may notify an object of serializtion for sizing purposes only
 			// so we need to make sure we re-use the index established during sizing, and unmark this object as "sizing only"
-			if (!_onlySizedButNotSerialized.Contains(index))
-				throw new InvalidOperationException("Object was already serialized in this serialization context");
-			_onlySizedButNotSerialized.Remove(index);
+			//if (_objectSerializationStatus[index] != SerializationStatus.Sized)
+				//throw new InvalidOperationException("Object was already serialized in this serialization context");
+			_objectSerializationStatus[index] = SerializationStatus.Serializing;
 			return;
 		}
 
-		index = _serializedObjects.Count;
-
-		_serializedObjects.Add(obj, index);
-		if (sizeOnly)
-			_onlySizedButNotSerialized.Add(index);
+		index = _processedObjects.Count;
+		_processedObjects[obj] = index;
+		_objectSerializationStatus[index] = SerializationStatus.Serializing;
 	}
+
+	public void NotifySerializedObject(object obj) {
+		obj ??= new NullPlaceHolder();
+
+		if (!_processedObjects.TryGetValue(obj, out var index))
+			throw new InvalidOperationException("Object was not serialized in this serialization context");
+
+		_objectSerializationStatus[index] = SerializationStatus.Serialized;
+	}
+
+	long _currentlyDeserializingIndex = -1;
 
 	public void NotifyDeserializingObject(out long serializationContextIndex) {
-		//Guard.Ensure(_currentlyDeserializingIndex == -1, "Parent item in deserialization context needs to be set before setting it");
-		serializationContextIndex = _serializedObjects.Count;
-		_currentlyDeserializingIndex = serializationContextIndex;
-		_serializedObjects.Add(new PlaceHolder(this, serializationContextIndex), serializationContextIndex); // we place a dummy object in the dictionary to reserve the index
+		serializationContextIndex = _processedObjects.Count;
+		_processedObjects.Add(new PlaceHolder(this, serializationContextIndex), serializationContextIndex); // we place a dummy object in the dictionary to reserve the index
+		_objectSerializationStatus.Add(serializationContextIndex, SerializationStatus.Deserializing);
 		_currentlyDeserializingIndex = serializationContextIndex;
 	}
 
-	public void SetDeserializingItem<TItem>(TItem item) {
-		//Guard.Ensure(_currentlyDeserializingIndex >= 0, "Context was not notified a deserialization");
-
+	public void SetDeserializingItem(object item) {
 		if (_currentlyDeserializingIndex < 0)
 			return;
 
+		// this is a special case where we are deserializing an object that was not notified as being deserialized
 		if (_currentlyDeserializingIndex == -1)
 			NotifyDeserializingObject(out _);
 
-		Guard.Ensure(_serializedObjects.Bijection[_currentlyDeserializingIndex] is PlaceHolder, "Expected PlaceHolder but was an instance. Logic error in serialization flow.");
-		_serializedObjects.Bijection[_currentlyDeserializingIndex] = item;
+		Guard.Ensure(_processedObjects.Bijection[_currentlyDeserializingIndex] is PlaceHolder, "Expected PlaceHolder but was an instance. Logic error in serialization flow.");
+		_processedObjects.Bijection[_currentlyDeserializingIndex] = item;
+		_objectSerializationStatus[_currentlyDeserializingIndex] = SerializationStatus.Deserialized;
 		_currentlyDeserializingIndex = -1;
 	}
 
 	public void NotifyDeserializedObject(object obj, long serializationContextIndex) {
 		obj ??= new NullPlaceHolder();
 		
-		if (_serializedObjects.Bijection.TryGetValue(serializationContextIndex, out var item)) 
+		if (_processedObjects.Bijection.TryGetValue(serializationContextIndex, out var item)) 
 			Guard.Ensure(item is PlaceHolder || ReferenceEquals(item, obj), "Cannot change a deserialized instance in context. Logic error in serialization flow.");
 		
-		_serializedObjects.Bijection[serializationContextIndex] = obj; // setting it this way updates the dummy object put in NotifyDeserializingObject
+		_processedObjects.Bijection[serializationContextIndex] = obj; // setting it this way updates the dummy object put in NotifyDeserializingObject
+		_objectSerializationStatus[serializationContextIndex] = SerializationStatus.Deserialized;
 		_currentlyDeserializingIndex = -1;
 	}
 
@@ -95,7 +152,7 @@ public class SerializationContext : SyncScope {
 	protected override void OnScopeEnd() {
 		foreach (var action in _onRootContextEndActions)
 			action();
-		_serializedObjects.Clear();
+		_processedObjects.Clear();
 
 	}
 
@@ -111,7 +168,7 @@ public class SerializationContext : SyncScope {
 		}
 
 		public object GetValue() {
-			var value = _owner.GetSerializedObject(_serializationContextIndex);
+			var value = _owner.GetDeserializedObject(_serializationContextIndex);
 			if (value is NullPlaceHolder)
 				value = null;
 			return value;
@@ -122,14 +179,6 @@ public class SerializationContext : SyncScope {
 		public override string ToString() => "NULL PLACEHOLDER";
 	}
 
-	internal enum SerializationContextType {
-		Sizing,
-		Serializing,
-		Deserializing
-	}
-
 	#endregion
-
-
 
 }

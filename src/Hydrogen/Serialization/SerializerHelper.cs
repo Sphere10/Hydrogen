@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -35,12 +36,9 @@ internal static class SerializerHelper {
 			// If serializer already exists for this type in factory, use that
 			if (factory.HasSerializer(itemType)) {
 				var typeSerializer = factory.GetCachedSerializer(itemType);
+				// Wrap it in a ReferenceSerializer if it doesn't support null values
 				if (!itemType.IsValueType && !typeSerializer.SupportsNull) {
-					// We only use a ReferenceSerializer if the given serializer does not support null values
-					return (IItemSerializer)typeof(ReferenceSerializer<>)
-						.MakeGenericType(itemType)
-						.GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(IItemSerializer<>)
-						.MakeGenericType(itemType) }, null).Invoke(new object[] { typeSerializer });
+					return typeSerializer.AsReferenceSerializer(ReferenceSerializerMode.Default);
 				}
 				return typeSerializer;
 			}
@@ -54,45 +52,36 @@ internal static class SerializerHelper {
 			// No serializer registered so we need to assemble one as a CompositeSerializer. First, we need to 
 			// register the serializer (before it is assembled) so that it may recursively refer to itself. So we 
 			// activate a CompositeSerializer with no members (we'll configure it later)
-			var compositeSerializer =
-				(IItemSerializer)typeof(CompositeSerializer<>)
-				.MakeGenericType(itemType)
-				.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null)
-				.Invoke(null);
+			var compositeSerializer = CreateCompositeSerializer(itemType);
 
-			var serializer =
-				itemType.IsValueType ?
-				compositeSerializer :
-				(IItemSerializer)typeof(ReferenceSerializer<>).MakeGenericType(itemType).GetConstructor(BindingFlags.Public | BindingFlags.Instance, null, new Type[] { typeof(IItemSerializer<>).MakeGenericType(itemType) }, null).Invoke(new object[] { compositeSerializer });
-
-
-			// register serializer instance now as it may be re-used in component serializers (recursive types)
+			// pre-register the composite serializer instance now for recursive use by member's
 			if (itemType != typeof(object))
 				factory.RegisterInternal(factory.GenerateTypeCode(), itemType, compositeSerializer.GetType(), compositeSerializer, null);
 
-			// Create the member serializers
-			var members = SerializerHelper.GetSerializableMembers(itemType);
+			// Prepare serializers for all members
+			var members = GetSerializableMembers(itemType);
 			var memberBindings = new List<MemberSerializationBinding>(members.Length);
 			foreach (var member in members) {
-				var propertyType = member.PropertyType;
 
 				// Ensure we have a serializer for the member type
-				if (propertyType != typeof(object) && !factory.HasSerializer(propertyType))
-					AssembleRecursively(factory, propertyType);
+				if (member.PropertyType != typeof(object) && !factory.HasSerializer(member.PropertyType))
+					AssembleRecursively(factory, member.PropertyType);
 
-				// We don't use the member type serializer but instead use a FactorySerializer to ensure cyclic/polymorphic references are handled correctly
-				var memberSerializer = (IItemSerializer)typeof(FactorySerializer<>).MakeGenericType(propertyType).ActivateWithCompatibleArgs(factory);
-				memberBindings.Add(new(member, memberSerializer.AsReferenceSerializer()));
+				Guard.Ensure(factory.HasSerializer(member.PropertyType), "Failed to assemble serializer for member type");
+
+				// We don't use the member type serializer but instead use a FactorySerializer to ensure polymorphic references are handled correctly
+				var referenceMode = 
+					member.MemberInfo.TryGetCustomAttributeOfType<ReferenceModeAttribute>(false, out var attr) ? 
+						attr.Mode : 
+						ReferenceSerializerMode.Default;
+				// TODO: avoid FactorySerializer usage for SEALED types (will never be polymorphic)
+				var memberSerializer = CreateFactorySerializer(factory, member.PropertyType).AsReferenceSerializer(referenceMode);
+				memberBindings.Add(new(member, memberSerializer));
 			}
-
-			// AddDimension the composite serializer instance (which is already registered)
-			var capturedItemType = itemType;
-			compositeSerializer
-				.GetType()
-				.GetMethod(nameof(CompositeSerializer<object>.Configure), BindingFlags.Instance | BindingFlags.NonPublic)
-				.Invoke(compositeSerializer, [Tools.Lambda.CastFunc( () => capturedItemType.ActivateWithCompatibleArgs(), capturedItemType), memberBindings.ToArray()]);
-
-			return serializer;
+			ConfigureCompositeSerializer(compositeSerializer, itemType, memberBindings);
+			
+			// return the composite serializer (wrapped in a ReferenceSerializer if necessary)
+			return itemType.IsValueType ? compositeSerializer : compositeSerializer.AsReferenceSerializer();
 		}
 
 		IEnumerable<Type> GetUnregisteredComponentTypes(SerializerFactory factory, Type type, HashSet<Type> alreadyVisited = null) {
@@ -133,5 +122,23 @@ internal static class SerializerHelper {
 			}
 		}
 	}
-}
 
+	public static IItemSerializer CreateCompositeSerializer(Type itemType) 
+		=> (IItemSerializer)typeof(CompositeSerializer<>)
+			.MakeGenericType(itemType)
+			.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null)
+			.Invoke(null);
+
+	public static void ConfigureCompositeSerializer(IItemSerializer serializer, Type itemType, IEnumerable<MemberSerializationBinding> memberBindings) {
+		Guard.Ensure(serializer.GetType().IsConstructedGenericTypeOf(typeof(CompositeSerializer<>)), "Serializer must be a CompositeSerializer");
+		serializer
+			.GetType()
+			.GetMethod(nameof(CompositeSerializer<object>.Configure), BindingFlags.Instance | BindingFlags.NonPublic)
+			.Invoke(serializer, [ Tools.Lambda.CastFunc( () => itemType.ActivateWithCompatibleArgs(), itemType), memberBindings.ToArray() ]);
+	}
+
+	public static IItemSerializer CreateFactorySerializer(SerializerFactory factory, Type itemType) 
+		=> (IItemSerializer)typeof(FactorySerializer<>)
+			.MakeGenericType(itemType)
+			.ActivateWithCompatibleArgs(factory);
+}

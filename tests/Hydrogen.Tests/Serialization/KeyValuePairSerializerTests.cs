@@ -22,8 +22,10 @@ public class KeyValuePairSerializerTests {
 		var kvp = new KeyValuePair<string, byte[]>("alpha", "alpha".ToAsciiByteArray());
 		var comparer = new KeyValuePairEqualityComparer<string, byte[]>(EqualityComparer<string>.Default, new ByteArrayEqualityComparer());
 		var serializer = new KeyValuePairSerializer<string, byte[]>(new StringSerializer(Encoding.UTF8), new ByteArraySerializer());
+		var size = serializer.CalculateSize(kvp);
 		var serializedBytes = serializer.SerializeBytesLE(kvp);
 		var deserializedItem = serializer.DeserializeBytesLE(serializedBytes);
+		Assert.That(serializedBytes.Length, Is.EqualTo(size));
 		Assert.That(deserializedItem, Is.EqualTo(kvp).Using(comparer));
 	}
 
@@ -49,8 +51,10 @@ public class KeyValuePairSerializerTests {
 	private void RunTest(KeyValuePair<string, byte[]> item) {
 		var comparer = new KeyValuePairEqualityComparer<string, byte[]>(EqualityComparer<string>.Default, new ByteArrayEqualityComparer());
 		var serializer = new KeyValuePairSerializer<string, byte[]>(new StringSerializer(Encoding.UTF8), new ByteArraySerializer());
+		var size = serializer.CalculateSize(item);
 		var serializedBytes = serializer.SerializeBytesLE(item);
 		var deserializedItem = serializer.DeserializeBytesLE(serializedBytes);
+		Assert.That(serializedBytes.Length, Is.EqualTo(size));
 		Assert.That(deserializedItem, Is.EqualTo(item).Using(comparer));
 	}
 }

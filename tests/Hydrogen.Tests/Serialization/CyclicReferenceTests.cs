@@ -9,6 +9,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using FastSerialization;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -200,10 +201,13 @@ public class CyclicReferenceTests {
 
 		var item = new NestedType();
 		item.Nested = item;
-		var bytes = serializer.SerializeBytesLE(item);
-		var item2 = serializer.DeserializeBytesLE(bytes);
 
-		Assert.That(item2, Is.TypeOf<NestedType>());
-		Assert.That(item2.Nested, Is.SameAs(item2));
+		var size = serializer.CalculateSize(item);
+		var serialized = serializer.SerializeBytesLE(item);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(size, Is.EqualTo(serialized.Length));
+		Assert.That(deserialized, Is.TypeOf<NestedType>());
+		Assert.That(deserialized.Nested, Is.SameAs(deserialized));
 	}
 }

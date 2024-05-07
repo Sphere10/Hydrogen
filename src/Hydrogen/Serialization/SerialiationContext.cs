@@ -113,7 +113,7 @@ public sealed class SerializationContext : SyncScope {
 		obj ??= new NullPlaceHolder();
 		index = _processedObjects.Count;
 		_processedObjects[obj] = index;;
-		_objectSerializationStatus[index] = SerializationStatus.Sized;
+		_objectSerializationStatus[index] = SerializationStatus.Sizing;
 	}
 
 #if !DEBUG

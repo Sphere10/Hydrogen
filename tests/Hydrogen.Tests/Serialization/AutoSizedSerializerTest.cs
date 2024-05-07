@@ -9,6 +9,7 @@
 using System;
 using System.Text;
 using NUnit.Framework;
+using Org.BouncyCastle.Utilities;
 
 namespace Hydrogen.Tests;
 
@@ -33,8 +34,11 @@ public class AutoSizedSerializerTest {
 		if (expectThrow) {
 			Assert.That(() => serializer.SerializeBytesLE(@string), Throws.InstanceOf<ArgumentOutOfRangeException>());
 		} else {
+			var size = serializer.CalculateSize(@string);
 			var serializedBytes = serializer.SerializeBytesLE(@string);
 			var deserializedItem = serializer.DeserializeBytesLE(serializedBytes);
+
+			Assert.That(serializedBytes.Length, Is.EqualTo(size));
 			Assert.That(deserializedItem, Is.EqualTo(@string));
 		}
 	}

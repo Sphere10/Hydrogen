@@ -8,6 +8,8 @@
 
 using System;
 using System.Collections.Generic;
+using FastSerialization;
+using System.Drawing;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -24,9 +26,11 @@ public class SerializationAnnotationTests {
 		var testObj = new TransientOnlyMembersClass { NonTransientExemption = "alpha", TransientInt = 11, TransientString = "beta" };
 		testObj.Nested = testObj;
 		
+		var size = serializer.CalculateSize(testObj);
 		var serialized = serializer.SerializeBytesLE(testObj);
 		var deserialized = serializer.DeserializeBytesLE(serialized);
 
+		Assert.That(serialized.Length, Is.EqualTo(size));
 		Assert.That(deserialized.NonTransientExemption, Is.EqualTo("alpha"));
 		Assert.That(deserialized.TransientField, Is.EqualTo(default(decimal)));
 		Assert.That(deserialized.TransientInt, Is.EqualTo(default(int)));
@@ -50,8 +54,12 @@ public class SerializationAnnotationTests {
 	public void NullableMembersSerialize() {
 		var serializer = SerializerBuilder.AutoBuild<NotNullableMembersClass>();
 		var testObj = new NotNullableMembersClass { AllowsNull = null, NotAllowsNull = "alpha" };
-		var bytes = serializer.SerializeBytesLE(testObj);
-		var deserialized = serializer.DeserializeBytesLE(bytes);
+		
+		var size = serializer.CalculateSize(testObj);
+		var serialized = serializer.SerializeBytesLE(testObj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(serialized.Length, Is.EqualTo(size));
 		Assert.That(deserialized.AllowsNull, Is.Null);
 		Assert.That(deserialized.NotAllowsNull, Is.EqualTo("alpha"));
 	}
@@ -71,9 +79,11 @@ public class SerializationAnnotationTests {
 		
 		Assert.That(testObj.StringA, Is.SameAs(testObj.StringB));
 		
-		var bytes = serializer.SerializeBytesLE(testObj);
-		var deserialized = serializer.DeserializeBytesLE(bytes);
+		var size = serializer.CalculateSize(testObj);
+		var serialized = serializer.SerializeBytesLE(testObj);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
 
+		Assert.That(serialized.Length, Is.EqualTo(size));
 		Assert.That(deserialized.StringA, Is.Not.SameAs(testObj.StringB));
 	}
 
@@ -83,6 +93,7 @@ public class SerializationAnnotationTests {
 		var testObj = new RecursiveNoContextReference();
 		testObj.Item = testObj;
 		Assert.That(testObj.Item, Is.SameAs(testObj));
+		Assert.That(() => serializer.CalculateSize(testObj), Throws.InvalidOperationException);
 		Assert.That(() => serializer.SerializeBytesLE(testObj), Throws.InvalidOperationException);
 	}
 
@@ -92,6 +103,7 @@ public class SerializationAnnotationTests {
 		var testObj = new RecursiveNoContextReference();
 		testObj.Item = new RecursiveNoContextReference();
 		testObj.Item.Item = testObj;
+		Assert.That(() => serializer.CalculateSize(testObj), Throws.InvalidOperationException);
 		Assert.That(() => serializer.SerializeBytesLE(testObj), Throws.InvalidOperationException);
 	}
 

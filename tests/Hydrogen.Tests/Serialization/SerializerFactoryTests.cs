@@ -265,9 +265,11 @@ public class SerializerFactoryTests {
 		item.Add(111);
 		item.Add("world");
 
+		var size = serializer.CalculateSize(item);
 		var bytes = serializer.SerializeBytesLE(item);
 		var item2 = serializer.DeserializeBytesLE(bytes);
 
+		Assert.That(bytes.Length, Is.EqualTo(size));
 		Assert.That(item2, Is.TypeOf<ArrayList>());
 		Assert.That(item2.Count, Is.EqualTo(3));
 		Assert.That(item2[0], Is.EqualTo("hello"));
@@ -287,9 +289,11 @@ public class SerializerFactoryTests {
 		item.Add(111);
 		item.Add(obj);
 
+		var size = serializer.CalculateSize(item);
 		var bytes = serializer.SerializeBytesLE(item);
 		var item2 = serializer.DeserializeBytesLE(bytes);
 
+		Assert.That(bytes.Length, Is.EqualTo(size));
 		Assert.That(item2, Is.TypeOf<ArrayList>());
 		Assert.That(item2.Count, Is.EqualTo(3));
 		Assert.That(item2[1], Is.EqualTo(111));
@@ -307,9 +311,11 @@ public class SerializerFactoryTests {
 		item.Add(2, "world");
 		item.Add(3, "hello");
 
+		var size = serializer.CalculateSize(item);
 		var bytes = serializer.SerializeBytesLE(item);
 		var item2 = serializer.DeserializeBytesLE(bytes);
 
+		Assert.That(bytes.Length, Is.EqualTo(size));
 		Assert.That(item2, Is.TypeOf<Dictionary<int, string>>());
 		Assert.That(item2.Count, Is.EqualTo(3));
 		Assert.That(item2[1], Is.EqualTo("hello"));
@@ -332,6 +338,8 @@ public class SerializerFactoryTests {
 		var bytes = serializer.SerializeBytesLE(item);
 		var item2 = serializer.DeserializeBytesLE(bytes);
 
+		var size = serializer.CalculateSize(item);
+		Assert.That(bytes.Length, Is.EqualTo(size));
 		Assert.That(item2, Is.TypeOf<Dictionary<int, PrimitiveTestObject>>());
 		Assert.That(item2.Count, Is.EqualTo(3));
 		Assert.That(item2[1].A, Is.EqualTo("hello"));
@@ -354,6 +362,8 @@ public class SerializerFactoryTests {
 		var bytes = serializer.SerializeBytesLE(item);
 		var item2 = serializer.DeserializeBytesLE(bytes);
 
+		var size = serializer.CalculateSize(item);
+		Assert.That(bytes.Length, Is.EqualTo(size));
 		Assert.That(item2, Is.TypeOf<PrimitiveTestObject[]>());
 		Assert.That(item2.Count, Is.EqualTo(3));
 		Assert.That(item2[0].A, Is.EqualTo("hello"));
@@ -369,9 +379,12 @@ public class SerializerFactoryTests {
 		var serializer = factory.GetSerializer<NestedType>();
 
 		var item = new NestedType();
+
+		var size = serializer.CalculateSize(item);
 		var bytes = serializer.SerializeBytesLE(item);
 		var item2 = serializer.DeserializeBytesLE(bytes);
 
+		Assert.That(bytes.Length, Is.EqualTo(size));
 		Assert.That(item2, Is.TypeOf<NestedType>());
 		Assert.That(item2.Nested, Is.Null);
 	}
@@ -383,9 +396,12 @@ public class SerializerFactoryTests {
 
 		var item = new NestedType();
 		item.Nested = new NestedType();
+
+		var size = serializer.CalculateSize(item);
 		var bytes = serializer.SerializeBytesLE(item);
 		var item2 = serializer.DeserializeBytesLE(bytes);
 
+		Assert.That(bytes.Length, Is.EqualTo(size));
 		Assert.That(item2, Is.TypeOf<NestedType>());
 		Assert.That(item2.Nested, Is.Not.Null);
 	}

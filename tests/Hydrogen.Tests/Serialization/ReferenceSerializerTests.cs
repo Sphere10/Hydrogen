@@ -54,11 +54,16 @@ public class ReferenceSerializerTests {
 			Property3 = null
 		};
 		
+		var size1 = withContextReferenceSerializer.CalculateSize(obj);
 		var serialized1 = withContextReferenceSerializer.SerializeBytesLE(obj);
 		var deserialized1 = withContextReferenceSerializer.DeserializeBytesLE(serialized1);
 
+		var size2 = nullOnlySerializer.CalculateSize(obj);
 		var serialized2 = nullOnlySerializer.SerializeBytesLE(obj);
 		var deserialized2 = nullOnlySerializer.DeserializeBytesLE(serialized2);
+
+		Assert.That(serialized1.Length, Is.EqualTo(size1));
+		Assert.That(serialized2.Length, Is.EqualTo(size2));
 
 		Assert.That(obj, Is.EqualTo(deserialized1).Using(comparer));
 		Assert.That(deserialized1.Property1, Is.SameAs(deserialized1.Property2));

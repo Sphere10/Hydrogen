@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using Hydrogen;
 
 // ReSharper disable CheckNamespace
@@ -22,6 +23,14 @@ public class Values {
 	public const string POSITIVE_INFINITY_STRING = "+∞";
 	public const string UNDEFINED_STRING = "undef";
 
+	/// <summary>
+	/// Visual Basic like 'With' statement.
+	/// </summary>
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static bool With<T>(T value, out T valueAsOut) {
+		valueAsOut = value;
+		return true;
+	}
 
 	/// <summary>
 	/// Converts an integer into into another base. 

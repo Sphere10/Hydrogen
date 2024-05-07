@@ -5,7 +5,7 @@ using System.Linq;
 namespace Hydrogen;
 
 /// <summary>
-/// Used to serialize a reference to serializer in a <see cref="SerializerFactory"/>. Used predominantly by <see cref="FactorySerializer{TBase}"/>
+/// Used to serialize a reference to serializer in a <see cref="SerializerFactory"/>. Used predominantly by <see cref="PolymorphicSerializer{TBase}"/>
 /// as a prefix for serialized objects so that deserialization knows which <see cref="IItemSerializer{TItem}"/> to use.
 /// </summary>
 internal class SerializerSerializer : ItemSerializerBase<IItemSerializer>{

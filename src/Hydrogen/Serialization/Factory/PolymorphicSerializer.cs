@@ -20,15 +20,15 @@ namespace Hydrogen;
 /// </summary>
 /// <remarks>Ensure that the identical factory is used for both Serialization and Deserialization for consistent results.</remarks>
 /// <typeparam name="TBase">The base-types of objects being serialized/deserialized</typeparam>
-public class FactorySerializer<TBase> : IItemSerializer<TBase> {
+public class PolymorphicSerializer<TBase> : IItemSerializer<TBase> {
 	private readonly SerializerFactory _factory;
 	private readonly SerializerSerializer _serializerSerializer;
 
-	public FactorySerializer() 
+	public PolymorphicSerializer() 
 		: this(new SerializerFactory()) {
 	}
 
-	public FactorySerializer(SerializerFactory factory) {
+	public PolymorphicSerializer(SerializerFactory factory) {
 		_factory = factory;
 		_serializerSerializer = new SerializerSerializer(_factory);
 	}
@@ -98,7 +98,7 @@ public class FactorySerializer<TBase> : IItemSerializer<TBase> {
 
 		// Ensure item serializer is not a reference serializer. Handling null, cyclic and other references is the
 		// responsibility of ReferenceSerializer.
-		Guard.Ensure(serializer is not ReferenceSerializer<TBase>, "A FactorySerializer cannot wrap a ReferenceSerializer");
+		Guard.Ensure(serializer is not ReferenceSerializer<TBase>, "A PolymorphicSerializer cannot wrap a ReferenceSerializer");
 		return serializer;
 	}
 }

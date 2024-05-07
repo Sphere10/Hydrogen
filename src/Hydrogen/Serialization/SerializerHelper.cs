@@ -69,13 +69,13 @@ internal static class SerializerHelper {
 
 				Guard.Ensure(factory.HasSerializer(member.PropertyType), "Failed to assemble serializer for member type");
 
-				// We don't use the member type serializer but instead use a FactorySerializer to ensure polymorphic references are handled correctly
+				// We don't use the member type serializer but instead use a PolymorphicSerializer to ensure polymorphic references are handled correctly
 				var referenceMode = 
 					member.MemberInfo.TryGetCustomAttributeOfType<ReferenceModeAttribute>(false, out var attr) ? 
 						attr.Mode : 
 						ReferenceSerializerMode.Default;
-				// TODO: avoid FactorySerializer usage for SEALED types (will never be polymorphic)
-				var memberSerializer = CreateFactorySerializer(factory, member.PropertyType).AsReferenceSerializer(referenceMode);
+				// TODO: avoid PolymorphicSerializer usage for SEALED types (will never be polymorphic)
+				var memberSerializer = CreatePolymorphicSerializer(factory, member.PropertyType).AsReferenceSerializer(referenceMode);
 				memberBindings.Add(new(member, memberSerializer));
 			}
 			ConfigureCompositeSerializer(compositeSerializer, itemType, memberBindings);
@@ -137,8 +137,8 @@ internal static class SerializerHelper {
 			.Invoke(serializer, [ Tools.Lambda.CastFunc( () => itemType.ActivateWithCompatibleArgs(), itemType), memberBindings.ToArray() ]);
 	}
 
-	public static IItemSerializer CreateFactorySerializer(SerializerFactory factory, Type itemType) 
-		=> (IItemSerializer)typeof(FactorySerializer<>)
+	public static IItemSerializer CreatePolymorphicSerializer(SerializerFactory factory, Type itemType) 
+		=> (IItemSerializer)typeof(PolymorphicSerializer<>)
 			.MakeGenericType(itemType)
 			.ActivateWithCompatibleArgs(factory);
 }

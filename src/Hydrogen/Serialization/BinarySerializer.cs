@@ -8,7 +8,7 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object> {
 	}
 
 	public BinarySerializer(SerializerFactory serializerFactory) 
-		: base(new FactorySerializer<object>(serializerFactory)) {
+		: base(new PolymorphicSerializer<object>(serializerFactory)) {
 	}
 
 }

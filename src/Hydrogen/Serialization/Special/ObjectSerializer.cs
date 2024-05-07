@@ -1,6 +1,6 @@
 ﻿namespace Hydrogen;
 
-public sealed class ObjectSerializer : FactorySerializer<object> {
+public sealed class ObjectSerializer : PolymorphicSerializer<object> {
 
 	public ObjectSerializer() 
 		: this (SerializerFactory.Default) {

@@ -32,6 +32,19 @@ public class SerializerBuilderTests {
 		public object Prop2 { get; set; }
 	}
 
+	public struct TestStruct {
+		public string Property1 { get; set; }
+		public string Property2 { get; set; }
+		public string Property3 { get; set; }
+	
+	}
+
+	public class BadAnnotationObject {
+
+		[ReferenceMode(Nullable = true)]  // can't specify this for value type members
+		public TestStruct Property1 { get; set; }
+	}
+
 	[Test]
 	public void TestObject_1() {
 		// test object
@@ -540,4 +553,8 @@ public class SerializerBuilderTests {
 			
 	}
 
+	[Test]
+	public void BadAnnotation_1() {
+		Assert.That(SerializerBuilder.AutoBuild<BadAnnotationObject>, Throws.InvalidOperationException);
+	}
 }

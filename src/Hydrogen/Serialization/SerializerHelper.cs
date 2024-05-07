@@ -69,13 +69,26 @@ internal static class SerializerHelper {
 
 				Guard.Ensure(factory.HasSerializer(member.PropertyType), "Failed to assemble serializer for member type");
 
-				// We don't use the member type serializer but instead use a PolymorphicSerializer to ensure polymorphic references are handled correctly
+				// Get any specified reference annotation for this member
 				var referenceMode = 
 					member.MemberInfo.TryGetCustomAttributeOfType<ReferenceModeAttribute>(false, out var attr) ? 
 						attr.Mode : 
 						ReferenceSerializerMode.Default;
-				// TODO: avoid PolymorphicSerializer usage for SEALED types (will never be polymorphic)
-				var memberSerializer = CreatePolymorphicSerializer(factory, member.PropertyType).AsReferenceSerializer(referenceMode);
+
+				// Ensure value types have no such annotations (since they can never be references)
+				Guard.Against(attr is not null && member.PropertyType.IsValueType, $"Member {member.DeclaringType.ToStringCS()}.{member.Name} has incorrectly specified a {nameof(ReferenceModeAttribute)} for a value type {member.PropertyType.ToStringCS()}");
+
+				// If member type is sealed, we can use a serializer for that type, otherwise we need a polymorphic serializer for that type.
+				// NOTE: these may recursively call AssembleRecursively to ensure all types are registered
+				var memberSerializer = 
+					member.PropertyType.IsSealed ? 
+					factory.GetSerializer(member.PropertyType).AsDereferencedSerializer() : 
+					CreatePolymorphicSerializer(factory, member.PropertyType);
+
+				// if member type is a reference type, we need to wrap the serializer as a reference serializer
+				if (!member.PropertyType.IsValueType)
+					memberSerializer = memberSerializer.AsReferenceSerializer(referenceMode);
+
 				memberBindings.Add(new(member, memberSerializer));
 			}
 			ConfigureCompositeSerializer(compositeSerializer, itemType, memberBindings);

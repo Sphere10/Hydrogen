@@ -39,6 +39,8 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 
 	public override long ConstantSize => _constantSize;
 
+	public MemberSerializationBinding[] MemberBindings => _memberBindings;
+
 	public override long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var itemsArr = items as TItem[] ?? items.ToArray();
 		itemSizes = null;

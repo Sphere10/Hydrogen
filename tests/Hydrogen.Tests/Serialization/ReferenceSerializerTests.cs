@@ -23,6 +23,12 @@ public class ReferenceSerializerTests {
 		public string Property3 { get; set; }
 	}
 
+
+	public class SealedMembersObject {
+		public string MemberOfSealedType { get; set; }
+		public SealedMembersObject MemberOfUnsealedType { get; set; }
+	}
+
 	[Test]
 	public void NullableDoesNotReuseContextReference() {
 		// test object
@@ -92,6 +98,31 @@ public class ReferenceSerializerTests {
 		};
 
 		Assert.That(() => serializer.CalculateSize(obj), Throws.Nothing);
+	}
+
+
+	[Test]
+	public void SealedMembersDoNotUsePolymorphicSerializers() {
+
+		//var unsealedSerializer = SerializerBuilder.AutoBuild<UnsealedMembersObject>();
+		var sealedSerializer = SerializerBuilder.AutoBuild<SealedMembersObject>();
+		Assert.That(sealedSerializer, Is.InstanceOf<ReferenceSerializer<SealedMembersObject>>());
+
+		var asReferenceSerializer = (ReferenceSerializer<SealedMembersObject>)sealedSerializer;
+		Assert.That(asReferenceSerializer.Internal, Is.InstanceOf<CompositeSerializer<SealedMembersObject>>());
+
+		var asCompositeSerializer = (CompositeSerializer<SealedMembersObject>)asReferenceSerializer.Internal;
+		Assert.That(asCompositeSerializer.MemberBindings.Length, Is.EqualTo(2));
+		Assert.That(asCompositeSerializer.MemberBindings[0].Serializer, Is.InstanceOf<ReferenceSerializer<string>>());
+		Assert.That(asCompositeSerializer.MemberBindings[1].Serializer, Is.InstanceOf<ReferenceSerializer<SealedMembersObject>>());
+
+		// check sealed member does not have polymorphic serializer
+		var sealedMemberSerializer = (ReferenceSerializer<string>)asCompositeSerializer.MemberBindings[0].Serializer;
+		Assert.That(sealedMemberSerializer.Internal, Is.InstanceOf<StringSerializer>());
+		
+		// check unsealed member has polymorphic serializer
+		var unsealedMemberSerializer = (ReferenceSerializer<SealedMembersObject>)asCompositeSerializer.MemberBindings[1].Serializer;
+		Assert.That(unsealedMemberSerializer.Internal, Is.InstanceOf<PolymorphicSerializer<SealedMembersObject>>());
 	}
 	
 }

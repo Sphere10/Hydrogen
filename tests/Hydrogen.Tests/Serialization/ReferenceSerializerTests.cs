@@ -68,5 +68,25 @@ public class ReferenceSerializerTests {
 
 		Assert.That(withContextReferenceSerializer.CalculateSize(obj), Is.LessThan(nullOnlySerializer.CalculateSize(obj)));
 	}
+
+	
+	[Test]
+	public void BugCase_1() {
+		var serializer = 
+			SerializerBuilder
+				.For<TestObject>()
+				.Serialize(x => x.Property1, new StringSerializer().AsNullableSerializer())
+				.Serialize(x => x.Property2, new StringSerializer().AsNullableSerializer())
+				.Serialize(x => x.Property3, new StringSerializer().AsNullableSerializer())
+				.Build();
+
+		var obj = new TestObject {
+			Property1 = "Hello",
+			Property2 = "Hello",
+			Property3 = null
+		};
+
+		Assert.That(() => serializer.CalculateSize(obj), Throws.Nothing);
+	}
 	
 }

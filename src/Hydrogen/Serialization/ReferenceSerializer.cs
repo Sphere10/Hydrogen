@@ -43,17 +43,17 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		var referenceType = ClassifyReferenceType(item, context, true, out var contextIndex);
 		switch(referenceType) {
 			case ReferenceType.IsNull:
-				context.NotifySizing(item);
+				context.NotifySizing(item, out contextIndex);
 				long size = sizeof(byte);
-				context.NotifySized(item);
+				context.NotifySized(contextIndex);
 				return size;
 			case ReferenceType.IsNotNull:
 				if (!_supportsReferences)
 					if (context.IsSizingOrSerializingObject(item, out _))
 						throw new InvalidOperationException($"Cyclic-reference was encountered when sizing item  '{item}'. Please ensure context references are enabled sizing cyclic-referencing object graphs or ensure no cyclic references exist.");
-				context.NotifySizing(item);
+				context.NotifySizing(item, out contextIndex);
 				size = sizeof(byte) + Internal.CalculateSize(context, item);
-				context.NotifySized(item);
+				context.NotifySized(contextIndex);
 				return size;
 			case ReferenceType.IsContextReference:
 				return sizeof(byte) + CVarIntSerializer.Instance.CalculateSize(context, unchecked((ulong)contextIndex));
@@ -67,16 +67,16 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		PrimitiveSerializer<byte>.Instance.Serialize((byte)referenceType, writer, context);
 		switch (referenceType) {
 			case ReferenceType.IsNull:
-				context.NotifySerializingObject(item);
-				context.NotifySerializedObject(item);
+				context.NotifySerializingObject(item, out contextIndex);
+				context.NotifySerializedObject(contextIndex);
 				break;
 			case ReferenceType.IsNotNull:
 				if (!_supportsReferences)
 					if (context.IsSerializingObject(item, out _))
 						throw new InvalidOperationException($"Cyclic-reference was encountered when serializing item '{item}'. Please ensure context references are enabled serializing cyclic-referencing object graphs or ensure no cyclic references exist.");
-				context.NotifySerializingObject(item);
+				context.NotifySerializingObject(item, out contextIndex);
 				Internal.Serialize(item, writer, context);
-				context.NotifySerializedObject(item);
+				context.NotifySerializedObject(contextIndex);
 				break;
 			case ReferenceType.IsContextReference:
 				CVarIntSerializer.Instance.Serialize(unchecked((ulong)contextIndex), writer, context);
@@ -111,7 +111,7 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 		if (item == null) 
 			return _supportsNull ? ReferenceType.IsNull : throw new InvalidOperationException(ErrMsg_NullValuesNotEnabled);
 
-		if (_supportsContextReferences && (sizeOnly ? context.HasSizedOrSerializedObject(item, out index) : context.HasSerializedObject(item, out index)))
+		if (_supportsContextReferences && (sizeOnly ? context.HasSizedOrSerializedObject(item, out index) : context.IsSerializingOrHasSerializedObject(item, out index)))
 			return ReferenceType.IsContextReference;
 		
 		return ReferenceType.IsNotNull;

@@ -27,7 +27,7 @@ public class SerializationContext : SyncScope {
 			return false;
 		}
 
-		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Sizing, SerializationStatus.Sized, SerializationStatus.Serializing, SerializationStatus.Serialized);
+		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Sizing, SerializationStatus.Serializing);
 	}
 
 	public bool HasSizedOrSerializedObject(object obj, out long index) {
@@ -48,13 +48,13 @@ public class SerializationContext : SyncScope {
 		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index] == SerializationStatus.Serializing;
 	}
 
-	public bool HasSerializedObject(object obj, out long index) {
+	public bool IsSerializingOrHasSerializedObject(object obj, out long index) {
 		if (obj is null) {
 			index = -1;
 			return false;
 		}
 
-		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index] == SerializationStatus.Serialized;
+		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Serializing,  SerializationStatus.Serialized);
 	}
 
 	public object GetSizedOrSerializedObject(long index) {
@@ -72,25 +72,21 @@ public class SerializationContext : SyncScope {
 		return _processedObjects.Bijection[index];
 	}
 
-	public void NotifySizing(object obj) {
+	public void NotifySizing(object obj, out long index) {
 		obj ??= new NullPlaceHolder();
-		var index = _processedObjects.Count;
+		index = _processedObjects.Count;
 		_processedObjects[obj] = index;;
 		_objectSerializationStatus[index] = SerializationStatus.Sized;
 	}
 
-	public void NotifySized(object obj) {
-		obj ??= new NullPlaceHolder();
-		if (!_processedObjects.TryGetValue(obj, out var index))
-			throw new InvalidOperationException("Object was not sized in this serialization context");
-
+	public void NotifySized(long index) {
 		_objectSerializationStatus[index] = SerializationStatus.Sized;
 	}
 
-	public void NotifySerializingObject(object obj) {
+	public void NotifySerializingObject(object obj, out long index) {
 		obj ??= new NullPlaceHolder();
 
-		if (_processedObjects.TryGetValue(obj, out var index)) {
+		if (_processedObjects.TryGetValue(obj, out index)) {
 			// Some serializers may size objects before serializing them, and sizing may notify an object of serializtion for sizing purposes only
 			// so we need to make sure we re-use the index established during sizing, and unmark this object as "sizing only"
 			//if (_objectSerializationStatus[index] != SerializationStatus.Sized)
@@ -104,12 +100,7 @@ public class SerializationContext : SyncScope {
 		_objectSerializationStatus[index] = SerializationStatus.Serializing;
 	}
 
-	public void NotifySerializedObject(object obj) {
-		obj ??= new NullPlaceHolder();
-
-		if (!_processedObjects.TryGetValue(obj, out var index))
-			throw new InvalidOperationException("Object was not serialized in this serialization context");
-
+	public void NotifySerializedObject(long index) {
 		_objectSerializationStatus[index] = SerializationStatus.Serialized;
 	}
 

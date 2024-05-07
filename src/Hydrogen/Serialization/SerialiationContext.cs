@@ -1,26 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
-public class SerializationContext : SyncScope {
+public sealed class SerializationContext : SyncScope {
 
 	private enum SerializationStatus { Sizing, Sized, Serializing, Serialized, Deserializing, Deserialized }
 
-	private BijectiveDictionary<object, long> _processedObjects;
-	private IDictionary<long, SerializationStatus> _objectSerializationStatus;
-	private List<Action> _onRootContextEndActions;
-	
+	private readonly BijectiveDictionary<object, long> _processedObjects;
+	private readonly IDictionary<long, SerializationStatus> _objectSerializationStatus;
+	private readonly List<Action> _onRootContextEndActions;
+	long _currentlyDeserializingIndex;
 
 	public SerializationContext() {
 		_processedObjects = new BijectiveDictionary<object, long>(ReferenceEqualityComparer.Instance, EqualityComparer<long>.Default);
 		_objectSerializationStatus = new Dictionary<long, SerializationStatus>();
 		_onRootContextEndActions = new List<Action>();
+		_currentlyDeserializingIndex = -1;
 	}
 
 	public static SerializationContext New => new();
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public bool IsSizingOrSerializingObject(object obj, out long index) {
 		if (obj is null) {
 			index = -1;
@@ -30,15 +36,26 @@ public class SerializationContext : SyncScope {
 		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Sizing, SerializationStatus.Serializing);
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public bool HasSizedOrSerializedObject(object obj, out long index) {
 		if (obj is null) {
 			index = -1;
 			return false;
 		}
 
-		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Sizing, SerializationStatus.Sized, SerializationStatus.Serializing, SerializationStatus.Serialized);
+		// Optimized form of:
+		// return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Sizing, SerializationStatus.Sized, SerializationStatus.Serializing, SerializationStatus.Serialized);
+		if (!_processedObjects.TryGetValue(obj, out index))
+			return false;
+		var status = _objectSerializationStatus[index];
+		return (int)status is >= (int)SerializationStatus.Sizing and <= (int)SerializationStatus.Serialized;
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public bool IsSerializingObject(object obj, out long index) {
 		if (obj is null) {
 			index = -1;
@@ -48,30 +65,50 @@ public class SerializationContext : SyncScope {
 		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index] == SerializationStatus.Serializing;
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public bool IsSerializingOrHasSerializedObject(object obj, out long index) {
 		if (obj is null) {
 			index = -1;
 			return false;
 		}
 
-		return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Serializing,  SerializationStatus.Serialized);
+		// Optimized form of:
+		// return _processedObjects.TryGetValue(obj, out index) && _objectSerializationStatus[index].IsIn(SerializationStatus.Serializing,  SerializationStatus.Serialized);
+		if (!_processedObjects.TryGetValue(obj, out index))
+			return false;
+		var status = _objectSerializationStatus[index];
+		return (int)status is >= (int)SerializationStatus.Serializing and <= (int)SerializationStatus.Serialized;
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public object GetSizedOrSerializedObject(long index) {
-		Guard.Ensure(_objectSerializationStatus.TryGetValue(index, out var status) && status.IsIn(SerializationStatus.Sizing, SerializationStatus.Sized, SerializationStatus.Serializing, SerializationStatus.Serialized), $"No object was sized/serialized in this serialization context at index {index}");
+		Debug.Assert(_objectSerializationStatus.TryGetValue(index, out var status) && status.IsIn(SerializationStatus.Sizing, SerializationStatus.Sized, SerializationStatus.Serializing, SerializationStatus.Serialized), $"No object was sized/serialized in this serialization context at index {index}");
 		return _processedObjects.Bijection[index];
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public object GetSerializedObject(long index) {
-		Guard.Ensure(_objectSerializationStatus.TryGetValue(index, out var status) && status == SerializationStatus.Serialized, $"No object was serialized in this serialization context at index {index}");
+		Debug.Assert(_objectSerializationStatus.TryGetValue(index, out var status) && status == SerializationStatus.Serialized, $"No object was serialized in this serialization context at index {index}");
 		return _processedObjects.Bijection[index];
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public object GetDeserializedObject(long index) {
-		Guard.Ensure(_objectSerializationStatus.TryGetValue(index, out var status) && status == SerializationStatus.Deserialized, $"No object was serialized in this serialization context at index {index}");
+		Debug.Assert(_objectSerializationStatus.TryGetValue(index, out var status) && status == SerializationStatus.Deserialized, $"No object was serialized in this serialization context at index {index}");
 		return _processedObjects.Bijection[index];
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public void NotifySizing(object obj, out long index) {
 		obj ??= new NullPlaceHolder();
 		index = _processedObjects.Count;
@@ -79,10 +116,16 @@ public class SerializationContext : SyncScope {
 		_objectSerializationStatus[index] = SerializationStatus.Sized;
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public void NotifySized(long index) {
 		_objectSerializationStatus[index] = SerializationStatus.Sized;
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public void NotifySerializingObject(object obj, out long index) {
 		obj ??= new NullPlaceHolder();
 
@@ -100,12 +143,16 @@ public class SerializationContext : SyncScope {
 		_objectSerializationStatus[index] = SerializationStatus.Serializing;
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public void NotifySerializedObject(long index) {
 		_objectSerializationStatus[index] = SerializationStatus.Serialized;
 	}
 
-	long _currentlyDeserializingIndex = -1;
-
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public void NotifyDeserializingObject(out long serializationContextIndex) {
 		serializationContextIndex = _processedObjects.Count;
 		_processedObjects.Add(new PlaceHolder(this, serializationContextIndex), serializationContextIndex); // we place a dummy object in the dictionary to reserve the index
@@ -113,6 +160,9 @@ public class SerializationContext : SyncScope {
 		_currentlyDeserializingIndex = serializationContextIndex;
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public void SetDeserializingItem(object item) {
 		if (_currentlyDeserializingIndex < 0)
 			return;
@@ -121,25 +171,34 @@ public class SerializationContext : SyncScope {
 		if (_currentlyDeserializingIndex == -1)
 			NotifyDeserializingObject(out _);
 
-		Guard.Ensure(_processedObjects.Bijection[_currentlyDeserializingIndex] is PlaceHolder, "Expected PlaceHolder but was an instance. Logic error in serialization flow.");
+		Debug.Assert(_processedObjects.Bijection[_currentlyDeserializingIndex] is PlaceHolder, "Expected PlaceHolder but was an instance. Logic error in serialization flow.");
 		_processedObjects.Bijection[_currentlyDeserializingIndex] = item;
 		_objectSerializationStatus[_currentlyDeserializingIndex] = SerializationStatus.Deserialized;
 		_currentlyDeserializingIndex = -1;
 	}
-
+	
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public void NotifyDeserializedObject(object obj, long serializationContextIndex) {
 		obj ??= new NullPlaceHolder();
 		
 		if (_processedObjects.Bijection.TryGetValue(serializationContextIndex, out var item)) 
-			Guard.Ensure(item is PlaceHolder || ReferenceEquals(item, obj), "Cannot change a deserialized instance in context. Logic error in serialization flow.");
+			Debug.Assert(item is PlaceHolder || ReferenceEquals(item, obj), "Cannot change a deserialized instance in context. Logic error in serialization flow.");
 		
 		_processedObjects.Bijection[serializationContextIndex] = obj; // setting it this way updates the dummy object put in NotifyDeserializingObject
 		_objectSerializationStatus[serializationContextIndex] = SerializationStatus.Deserialized;
 		_currentlyDeserializingIndex = -1;
 	}
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	public void RegisterFinalizationAction(Action action) => _onRootContextEndActions.Add(action);
 
+#if !DEBUG
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 	protected override void OnScopeEnd() {
 		foreach (var action in _onRootContextEndActions)
 			action();
@@ -149,7 +208,7 @@ public class SerializationContext : SyncScope {
 
 	#region Inner Types
 
-	internal class PlaceHolder {
+	internal sealed class PlaceHolder {
 		private readonly SerializationContext _owner;
 		private readonly long _serializationContextIndex;
 
@@ -158,6 +217,9 @@ public class SerializationContext : SyncScope {
 			_serializationContextIndex = serializationContextIndex;
 		}
 
+#if !DEBUG
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 		public object GetValue() {
 			var value = _owner.GetDeserializedObject(_serializationContextIndex);
 			if (value is NullPlaceHolder)

@@ -170,7 +170,7 @@ public class GenericItemSerializerTests {
 
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<ReferenceTypeObject>();
-		var serializer =  factory.GetSerializer<ObjectObj>();
+		var serializer = factory.GetSerializer<ObjectObj>();
 		using var memoryStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
 		var byteCount = serializer.SerializeReturnSize(item, writer);
@@ -242,7 +242,7 @@ public class GenericItemSerializerTests {
 			F = new byte[] { 1, 2, 3 },
 		};
 		var serializer = ItemSerializer<ReferenceTypeObject>.Default;
-		var  calculatedSize = serializer.CalculateSize(item);
+		var calculatedSize = serializer.CalculateSize(item);
 		var serialized = serializer.SerializeBytesLE(item);
 		Assert.AreEqual(calculatedSize, serialized.Length);
 	}

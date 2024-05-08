@@ -54,9 +54,9 @@ internal class PropertyMember : Member {
 
 	public override Type PropertyType => _member.PropertyType;
 
-	public override bool CanRead => _getMethod.IsPublic && _member.CanRead;
+	public override bool CanRead => _getMethod is not null && _getMethod.IsPublic && _member.CanRead;
 
-	public override bool CanWrite => _setMethod.IsPublic && _member.CanWrite;
+	public override bool CanWrite => _setMethod is not null && _setMethod.IsPublic && _member.CanWrite;
 
 	public override MemberInfo MemberInfo => _member;
 

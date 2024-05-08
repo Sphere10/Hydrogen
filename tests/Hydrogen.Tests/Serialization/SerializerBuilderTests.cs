@@ -45,6 +45,28 @@ public class SerializerBuilderTests {
 		public TestStruct Property1 { get; set; }
 	}
 
+	public class BaseClass {
+
+		public static int StaticProp1 { get; set; }
+
+		public string Prop1 { get; set; }
+
+		public virtual string Prop2 { get; set; }
+
+		public string Prop3 { get; set; }
+	}
+
+	public class SubClass : BaseClass {
+		public static int StaticProp2 { get; set; }
+
+		public override string Prop2 { get; set; }
+
+		public new string Prop3 { get; set; }
+
+		public string Prop4 { get; set; }
+	}
+
+
 	[Test]
 	public void TestObject_1() {
 		// test object
@@ -556,5 +578,15 @@ public class SerializerBuilderTests {
 	[Test]
 	public void BadAnnotation_1() {
 		Assert.That(SerializerBuilder.AutoBuild<BadAnnotationObject>, Throws.InvalidOperationException);
+	}
+
+	[Test]
+	public void SerializableMembersInBaseFirstOrder() {
+		var members = SerializerHelper.GetSerializableMembers(typeof(SubClass));
+		Assert.That(members.Length, Is.EqualTo(4));
+		Assert.That(members[0].Name, Is.EqualTo("Prop1"));
+		Assert.That(members[1].Name, Is.EqualTo("Prop2"));
+		Assert.That(members[2].Name, Is.EqualTo("Prop3"));
+		Assert.That(members[3].Name, Is.EqualTo("Prop4"));
 	}
 }

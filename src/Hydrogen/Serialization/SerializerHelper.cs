@@ -9,12 +9,16 @@ using Hydrogen.Mapping;
 namespace Hydrogen;
 
 internal static class SerializerHelper {
-	public static Member[] GetSerializableMembers(Type type)
-		=> type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static)
-			.Where(x => x.CanRead && x.CanWrite)
-			.Where(x => !x.HasAttribute<TransientAttribute>(false))
+	public static Member[] GetSerializableMembers(Type type) {
+		var inheritanceDepth = type.Visit(x => x.BaseType, x => x is not null).ToList();
+		return type.GetMembers(BindingFlags.Public | BindingFlags.Instance)
+			.Where(x => x is PropertyInfo || x is FieldInfo)
 			.Select(x => x.ToMember())
+			.Where(x => x.CanRead && x.CanWrite)
+			.Where(x => !x.MemberInfo.HasAttribute<TransientAttribute>(false))
+			.OrderByDescending(x => inheritanceDepth.IndexOf(x.DeclaringType))  // this order to ensure base-type members are serialized before sub-type members
 			.ToArray();
+	}
 
 
 	public static IItemSerializer AssembleSerializer(SerializerFactory serializerFactory, Type itemType, bool retainRegisteredTypesInFactory, long typeCodeStart) {
@@ -28,10 +32,10 @@ internal static class SerializerHelper {
 
 		IItemSerializer AssembleRecursively(SerializerFactory factory, Type itemType) {
 
-			// Ensure serializers for component types are registered
+			// Ensure serializers for member types are registered
 			// (i.e. resolving serializer for List<UnregisteredType> serializer requires a serializer for UnregisteredType)
-			foreach (var genericType in GetUnregisteredComponentTypes(factory, itemType))
-				AssembleRecursively(factory, genericType);
+			foreach (var unregisteredMemberType in GetUnregisteredMemberTypes(factory, itemType))
+				AssembleRecursively(factory, unregisteredMemberType);
 
 			// If serializer already exists for this type in factory, use that
 			if (factory.HasSerializer(itemType)) {
@@ -97,7 +101,7 @@ internal static class SerializerHelper {
 			return itemType.IsValueType ? compositeSerializer : compositeSerializer.AsReferenceSerializer();
 		}
 
-		IEnumerable<Type> GetUnregisteredComponentTypes(SerializerFactory factory, Type type, HashSet<Type> alreadyVisited = null) {
+		IEnumerable<Type> GetUnregisteredMemberTypes(SerializerFactory factory, Type type, HashSet<Type> alreadyVisited = null) {
 			alreadyVisited ??= new HashSet<Type>();
 
 			// List<Type>
@@ -118,7 +122,7 @@ internal static class SerializerHelper {
 			if (type.IsArray) {
 				var elementType = type.GetElementType();
 				if (!factory.HasSerializer(elementType)) {
-					foreach (var elementTypeUnregisteredComponentTypes in GetUnregisteredComponentTypes(factory, elementType, alreadyVisited))
+					foreach (var elementTypeUnregisteredComponentTypes in GetUnregisteredMemberTypes(factory, elementType, alreadyVisited))
 						yield return elementTypeUnregisteredComponentTypes;
 					yield return elementType;
 				}
@@ -128,7 +132,7 @@ internal static class SerializerHelper {
 			// e.g. List<UnregType>, Dictionary<UnregType1, UnregType2>, etc
 			if (type.IsConstructedGenericType && factory.HasSerializer(type.GetGenericTypeDefinition())) {
 				foreach (var genericArgumentType in type.GetGenericArguments().Where(x => !factory.HasSerializer(x))) {
-					foreach (var subType in GetUnregisteredComponentTypes(factory, genericArgumentType, alreadyVisited))
+					foreach (var subType in GetUnregisteredMemberTypes(factory, genericArgumentType, alreadyVisited))
 						yield return subType;
 					yield return genericArgumentType;
 				}

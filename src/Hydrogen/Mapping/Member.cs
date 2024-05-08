@@ -7,6 +7,7 @@ namespace Hydrogen.Mapping;
 public abstract class Member : IEquatable<Member> {
 	public abstract string Name { get; }
 	public abstract Type PropertyType { get; }
+	public abstract bool CanRead { get; }
 	public abstract bool CanWrite { get; }
 	public abstract MemberInfo MemberInfo { get; }
 	public abstract Type DeclaringType { get; }

@@ -50,6 +50,8 @@ internal class MethodMember : Member {
 
 	public override Type PropertyType => _member.ReturnType;
 
+	public override bool CanRead => false;
+
 	public override bool CanWrite => false;
 
 	public override MemberInfo MemberInfo => _member;

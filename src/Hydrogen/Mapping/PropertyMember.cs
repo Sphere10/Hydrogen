@@ -54,17 +54,10 @@ internal class PropertyMember : Member {
 
 	public override Type PropertyType => _member.PropertyType;
 
-	public override bool CanWrite {
-		get {
-			// override the default reflection value here. Private setters aren't
-			// considered "settable" in the same sense that public ones are. We can
-			// use this to control the access strategy later
-			if (IsAutoProperty && (_setMethod == null || _setMethod.IsPrivate))
-				return false;
+	public override bool CanRead => _getMethod.IsPublic && _member.CanRead;
 
-			return _member.CanWrite;
-		}
-	}
+	public override bool CanWrite => _setMethod.IsPublic && _member.CanWrite;
+
 	public override MemberInfo MemberInfo => _member;
 
 	public override Type DeclaringType => _member.DeclaringType;

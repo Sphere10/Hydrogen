@@ -28,7 +28,9 @@ internal class FieldMember : Member {
 
 	public override Type PropertyType => _member.FieldType;
 
-	public override bool CanWrite => true;
+	public override bool CanRead => IsPublic;
+
+	public override bool CanWrite => IsPublic;
 
 	public override MemberInfo MemberInfo => _member;
 

@@ -17,7 +17,7 @@ using NUnit.Framework;
 
 namespace Hydrogen.Tests;
 
-public class GenericItemSerializerTests {
+public class DefaultSerializerTests {
 	private readonly IFixture _fixture = new Fixture();
 
 	[Test]

@@ -23,7 +23,7 @@ public class GenericItemSerializerTests {
 	[Test]
 	public void PrimitiveSerializeDeserialize() {
 		var item = _fixture.Create<PrimitiveTestObject>();
-		var serializer = SerializerFactory.Default.GetSerializer<PrimitiveTestObject>();
+		var serializer = ItemSerializer<PrimitiveTestObject>.Default;
 		var bytes = serializer.SerializeBytesLE(item);
 		var deserializedItem = serializer.DeserializeBytesLE(bytes);
 

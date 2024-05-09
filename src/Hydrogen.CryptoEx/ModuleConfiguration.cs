@@ -6,15 +6,27 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using Hydrogen.CryptoEx.EC;
 using Hydrogen.CryptoEx.EC.Schnorr;
 using static HashLib4CSharp.Base.HashFactory.Crypto;
 
 namespace Hydrogen.CryptoEx;
 
-public static class HydrogenFrameworkIntegration {
+public class ModuleConfiguration : CoreModuleConfigurationBase {
 
-	public static void Initialize() {
+
+	public override void OnInitialize(IServiceProvider serviceProvider) {
+		base.OnInitialize(serviceProvider);
+		InitializeInternal();
+	}
+
+	public override void OnFinalize(IServiceProvider serviceProvider) {
+		base.OnFinalize(serviceProvider);
+		FinalizeInternal();
+	}
+
+	public static void InitializeInternal() {
 		Signers.Register(DSS.ECDSA_SECP256k1, () => new ECDSA(ECDSAKeyType.SECP256K1));
 		Signers.Register(DSS.ECDSA_SECP384R1, () => new ECDSA(ECDSAKeyType.SECP384R1));
 		Signers.Register(DSS.ECDSA_SECP521R1, () => new ECDSA(ECDSAKeyType.SECP521R1));
@@ -30,7 +42,7 @@ public static class HydrogenFrameworkIntegration {
 			Hashers.Register(CHF.SHA2_256, () => new HashLibAdapter(CreateSHA2_256()));
 			Hashers.Register(CHF.SHA1_160, () => new HashLibAdapter(CreateSHA1()));
 		}
-		
+
 		Hashers.Register(CHF.RIPEMD, () => new HashLibAdapter(CreateRIPEMD()));
 		Hashers.Register(CHF.RIPEMD_128, () => new HashLibAdapter(CreateRIPEMD128()));
 		Hashers.Register(CHF.RIPEMD_160, () => new HashLibAdapter(CreateRIPEMD160()));
@@ -118,8 +130,6 @@ public static class HydrogenFrameworkIntegration {
 		Hashers.Register(CHF.RadioGatun32, () => new HashLibAdapter(CreateRadioGatun32()));
 	}
 
-	public static void Finalize() {
-
+	public static void FinalizeInternal() {
 	}
-
 }

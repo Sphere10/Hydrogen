@@ -41,9 +41,9 @@ public class HydrogenFramework {
 				.CurrentDomain
 				.GetNonFrameworkAssemblies()
 				.SelectMany(a => a.GetTypes())
-				.Where(t => t.IsClass && !t.IsAbstract && typeof(IModuleConfiguration).IsAssignableFrom(t))
+				.Where(t => t.IsClass && !t.IsAbstract && typeof(ICoreModuleConfiguration).IsAssignableFrom(t))
 				.Select(TypeActivator.Activate)
-				.Cast<IModuleConfiguration>()
+				.Cast<ICoreModuleConfiguration>()
 				.OrderByDescending(x => x.Priority)
 				.ToArray()
 		);
@@ -57,13 +57,13 @@ public class HydrogenFramework {
 
 	public HydrogenFrameworkOptions Options { get; private set; }
 
-	private IFuture<IModuleConfiguration[]> ModuleConfigurations { get; set; }
+	private IFuture<ICoreModuleConfiguration[]> ModuleConfigurations { get; set; }
 
 	public IServiceCollection RegisterModules(IServiceCollection serviceCollection) {
 		CheckNotStarted();
 		Guard.Against(_registeredModules, "Modules have already been registered");
 		lock (_threadLock) {
-			ModuleConfigurations.Value.ForEach(m => m.RegisterComponents(serviceCollection));
+			ModuleConfigurations.Value.Where(x => x is IModuleConfiguration).Cast<IModuleConfiguration>().ForEach(m => m.RegisterComponents(serviceCollection));
 			_registeredModules = true;
 		}
 		return serviceCollection;

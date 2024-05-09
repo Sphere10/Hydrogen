@@ -11,18 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Application;
 
-public abstract class ModuleConfigurationBase : IModuleConfiguration {
-	public virtual int Priority => 0;
-
+public abstract class ModuleConfigurationBase : CoreModuleConfigurationBase {
 
 	public virtual void RegisterComponents(IServiceCollection services) {
 	}
-
-	public virtual void OnInitialize(IServiceProvider serviceProvider) {
-	}
-
-	public virtual void OnFinalize(IServiceProvider serviceProvider) {
-	}
-
 
 }

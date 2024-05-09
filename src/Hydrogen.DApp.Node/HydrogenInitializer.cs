@@ -20,7 +20,7 @@ public class HydrogenInitializer : ApplicationInitializerBase {
 		SystemLog.RegisterLogger(new TimestampLogger(new ConsoleLogger()));
 
 		//NOTE: Until HydrogenInitializer gets to properly reference CryptoEx module, we init it here.
-		Hydrogen.CryptoEx.HydrogenFrameworkIntegration.Initialize();
+		//Hydrogen.CryptoEx.HydrogenFrameworkIntegration.Initialize();
 		//SystemLog.RegisterLogger(new TimestampLogger(new DebugLogger()));
 
 

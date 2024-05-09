@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using Hydrogen.NUnit;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -31,7 +32,7 @@ public abstract class RecyclableListTestsBase {
 		Assert.That(rlist.RecycledCount, Is.EqualTo(0));
 
 		// Enumerate empty
-		CollectionAssert.AreEqual(rlist, Array.Empty<string>());
+		ClassicAssert.AreEqual(rlist, Array.Empty<string>());
 
 		// add "A"
 		rlist.Add("A");
@@ -64,7 +65,7 @@ public abstract class RecyclableListTestsBase {
 		Assert.That(() => rlist.RemoveAt(1), Throws.ArgumentException);
 
 		// Enumerate 
-		CollectionAssert.AreEqual(rlist, new[] { "A", "C" });
+		ClassicAssert.AreEqual(rlist, new[] { "A", "C" });
 		Assert.That(rlist.Count, Is.EqualTo(2));
 		Assert.That(rlist.ListCount, Is.EqualTo(3));
 		Assert.That(rlist.RecycledCount, Is.EqualTo(1));
@@ -87,7 +88,7 @@ public abstract class RecyclableListTestsBase {
 		Assert.That(rlist.Read(1), Is.EqualTo("B2"));
 
 		// Enumeration check
-		CollectionAssert.AreEqual(rlist, new[] { "A", "B2", "C" });
+		ClassicAssert.AreEqual(rlist, new[] { "A", "B2", "C" });
 
 		// add another "A" (verify used new index)
 		rlist.Add("A");
@@ -129,7 +130,7 @@ public abstract class RecyclableListTestsBase {
 		Assert.That(rlist.IndexOf("C"), Is.EqualTo(2));
 
 		// Enumerate "B2" and "C"
-		CollectionAssert.AreEqual(rlist, new[] { "B2", "C" });
+		ClassicAssert.AreEqual(rlist, new[] { "B2", "C" });
 
 		// Clear
 		rlist.Clear();

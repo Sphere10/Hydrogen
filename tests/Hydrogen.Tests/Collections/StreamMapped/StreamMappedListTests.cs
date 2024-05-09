@@ -14,6 +14,7 @@ using System.Text;
 using NUnit.Framework;
 using Hydrogen.NUnit;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -81,9 +82,9 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 			.ReadRange(0, 3)
 			.ToArray();
 
-		Assert.AreEqual(inputs[0], read[0]);
-		Assert.AreEqual(inputs[1], read[1]);
-		Assert.AreEqual(inputs[2], read[2]);
+		ClassicAssert.AreEqual(inputs[0], read[0]);
+		ClassicAssert.AreEqual(inputs[1], read[1]);
+		ClassicAssert.AreEqual(inputs[2], read[2]);
 	}
 
 	[Test]
@@ -108,10 +109,10 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 			list.Load();
 
 		list.AddRange(999, 1000, 1001, 1002);
-		Assert.IsEmpty(list.ReadRange(0, 0));
+		ClassicAssert.IsEmpty(list.ReadRange(0, 0));
 
 		list.Clear();
-		Assert.IsEmpty(list.ReadRange(0, 0));
+		ClassicAssert.IsEmpty(list.ReadRange(0, 0));
 	}
 
 	[Test]
@@ -165,8 +166,8 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 		string update = random.NextString(0, 100);
 		list.UpdateRange(0, new[] { update });
 		var value = list.Read(0);
-		Assert.AreEqual(update, value);
-		Assert.AreEqual(inputs.Length, list.Count);
+		ClassicAssert.AreEqual(update, value);
+		ClassicAssert.AreEqual(inputs.Length, list.Count);
 	}
 
 	[Test]
@@ -180,8 +181,8 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 		list.UpdateRange(0, new[] { 998 });
 		int read = list[0];
 
-		Assert.AreEqual(998, read);
-		Assert.AreEqual(4, list.Count);
+		ClassicAssert.AreEqual(998, read);
+		ClassicAssert.AreEqual(4, list.Count);
 	}
 
 	[Test]
@@ -196,8 +197,8 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 		list.AddRange(inputs);
 		list.RemoveRange(0, 1);
 
-		Assert.AreEqual(inputs[1], list[0]);
-		Assert.AreEqual(inputs.Length - 1, list.Count);
+		ClassicAssert.AreEqual(inputs[1], list[0]);
+		ClassicAssert.AreEqual(inputs.Length - 1, list.Count);
 	}
 
 	[Test]
@@ -228,7 +229,7 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 
 		IEnumerable<long> indexes = list.IndexOfRange(inputs[..5]);
 
-		Assert.AreEqual(new[] { 0, 1, 2, 3, 4 }, indexes);
+		ClassicAssert.AreEqual(new[] { 0, 1, 2, 3, 4 }, indexes);
 	}
 
 	[Test]
@@ -262,10 +263,10 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 		using var list = StreamMappedFactory.CreateList<string>(stream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 		if (list.RequiresLoad)
 			list.Load();
-		Assert.AreEqual(0, list.Count);
+		ClassicAssert.AreEqual(0, list.Count);
 		list.AddRange(inputs);
 
-		Assert.AreEqual(inputs.Length, list.Count);
+		ClassicAssert.AreEqual(inputs.Length, list.Count);
 	}
 
 	[Test]
@@ -280,8 +281,8 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 		list.AddRange(inputs);
 		list.InsertRange(0, new[] { random.NextString(1, 100) });
 
-		Assert.AreEqual(inputs.Length + 1, list.Count);
-		Assert.AreEqual(inputs[0], list[1]);
+		ClassicAssert.AreEqual(inputs.Length + 1, list.Count);
+		ClassicAssert.AreEqual(inputs[0], list[1]);
 	}
 
 	[Test]
@@ -309,10 +310,10 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 			list.Load();
 		list.AddRange(inputs);
 		list.Clear();
-		Assert.AreEqual(0, list.Count);
+		ClassicAssert.AreEqual(0, list.Count);
 
 		list.AddRange(inputs);
-		Assert.AreEqual(inputs, list);
+		ClassicAssert.AreEqual(inputs, list);
 	}
 
 	[Test]
@@ -346,14 +347,14 @@ public class StreamMappedListTests : StreamPersistedCollectionTestsBase {
 				using var list = StreamMappedFactory.CreateList<string>(fileStream, 32, new StringSerializer(Encoding.UTF8), itemChecksummer: useChecksumIndex ? new ObjectHashCodeChecksummer<string>() : null, reservedStreams: useChecksumIndex ? 1 : 0, policy: policy);
 				if (list.RequiresLoad)
 					list.Load();
-				Assert.AreEqual(input.Length, list.Count);
-				Assert.AreEqual(input, list);
+				ClassicAssert.AreEqual(input.Length, list.Count);
+				ClassicAssert.AreEqual(input, list);
 
 				var secondInput = Enumerable.Range(0, random.Next(1, 100)).Select(x => random.NextString(1, 100)).ToArray();
 				list.AddRange(secondInput);
-				Assert.AreEqual(input.Concat(secondInput), list.ReadRange(0, list.Count));
+				ClassicAssert.AreEqual(input.Concat(secondInput), list.ReadRange(0, list.Count));
 				list.RemoveRange(0, list.Count);
-				Assert.IsEmpty(list);
+				ClassicAssert.IsEmpty(list);
 			}
 		}
 	}

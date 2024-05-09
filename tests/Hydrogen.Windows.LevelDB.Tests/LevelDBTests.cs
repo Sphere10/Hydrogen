@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Hydrogen.Windows.LevelDB;
+using NUnit.Framework.Legacy;
 
 
 // ReSharper disable CheckNamespace
@@ -32,11 +33,11 @@ public class LevelDBTests {
 	public void Intro() {
 		using (var database = new DB("mytestdb", new Options() { CreateIfMissing = true })) {
 			database.Put("key1", "value1");
-			Assert.AreEqual("value1", database.Get("key1"));
-			Assert.IsTrue(database.Get("key1") != null);
+			ClassicAssert.AreEqual("value1", database.Get("key1"));
+			ClassicAssert.IsTrue(database.Get("key1") != null);
 			database.Delete("key1");
-			Assert.IsFalse(database.Get("key1") != null);
-			Assert.IsNull(database.Get("key1"));
+			ClassicAssert.IsFalse(database.Get("key1") != null);
+			ClassicAssert.IsNull(database.Get("key1"));
 		}
 	}
 
@@ -63,13 +64,13 @@ public class LevelDBTests {
 			db.Put("London", "red");
 			db.Put("New York", "blue");
 
-			Assert.AreEqual(db.Get("Tampa"), "green");
-			Assert.AreEqual(db.Get("London"), "red");
-			Assert.AreEqual(db.Get("New York"), "blue");
+			ClassicAssert.AreEqual(db.Get("Tampa"), "green");
+			ClassicAssert.AreEqual(db.Get("London"), "red");
+			ClassicAssert.AreEqual(db.Get("New York"), "blue");
 
 			db.Delete("New York");
 
-			Assert.IsNull(db.Get("New York"));
+			ClassicAssert.IsNull(db.Get("New York"));
 
 			db.Delete("New York");
 		}
@@ -102,7 +103,7 @@ public class LevelDBTests {
 				}
 			}
 
-			CollectionAssert.AreEqual(expected, actual);
+			ClassicAssert.AreEqual(expected, actual);
 
 		}
 	}
@@ -120,7 +121,7 @@ public class LevelDBTests {
 			var actual = from kv in db as IEnumerable<KeyValuePair<string, string>>
 			             select kv.Key;
 
-			CollectionAssert.AreEqual(expected, actual.ToArray());
+			ClassicAssert.AreEqual(expected, actual.ToArray());
 		}
 	}
 
@@ -138,15 +139,15 @@ public class LevelDBTests {
 
 				db.Put("New York", "blue");
 
-				Assert.AreEqual(db.Get("Tampa", readOptions), "green");
-				Assert.AreEqual(db.Get("London", readOptions), "red");
+				ClassicAssert.AreEqual(db.Get("Tampa", readOptions), "green");
+				ClassicAssert.AreEqual(db.Get("London", readOptions), "red");
 
 				// Snapshot taken before key was updates
-				Assert.IsNull(db.Get("New York", readOptions));
+				ClassicAssert.IsNull(db.Get("New York", readOptions));
 			}
 
 			// can see the change now
-			Assert.AreEqual(db.Get("New York"), "blue");
+			ClassicAssert.AreEqual(db.Get("New York"), "blue");
 
 		}
 	}
@@ -168,8 +169,8 @@ public class LevelDBTests {
 
 			var stats = db.PropertyValue("leveldb.stats");
 
-			Assert.IsNotNull(stats);
-			Assert.IsTrue(stats.Contains("Compactions"));
+			ClassicAssert.IsNotNull(stats);
+			ClassicAssert.IsTrue(stats.Contains("Compactions"));
 		}
 	}
 
@@ -192,7 +193,7 @@ public class LevelDBTests {
 			var actual = from kv in db as IEnumerable<KeyValuePair<string, string>>
 			             select kv.Key;
 
-			CollectionAssert.AreEqual(expected, actual.ToArray());
+			ClassicAssert.AreEqual(expected, actual.ToArray());
 		}
 	}
 }

@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using FluentAssertions;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests.Values;
 
@@ -28,7 +29,7 @@ public class VarIntTests {
 		var stream = new MemoryStream();
 		var a = new VarInt(value);
 		a.Write(stream);
-		Assert.AreEqual(expectedByteLength, stream.Length);
+		ClassicAssert.AreEqual(expectedByteLength, stream.Length);
 
 		stream.Seek(0, SeekOrigin.Begin);
 		ulong b = VarInt.Read(stream);
@@ -74,7 +75,7 @@ public class VarIntTests {
 			ulong val = (uint)rng.Next() + (uint)rng.Next();
 			VarInt.Write(val, memStream);
 			memStream.Seek(0, SeekOrigin.Begin);
-			Assert.AreEqual(val, VarInt.Read(memStream));
+			ClassicAssert.AreEqual(val, VarInt.Read(memStream));
 		}
 	}
 

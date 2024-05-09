@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Hydrogen.CryptoEx.EC.Schnorr;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.CryptoEx.Tests;
 
@@ -60,14 +61,14 @@ public class Bip340SchnorrTest {
 		_vectors.Where(vec => !string.IsNullOrEmpty(vec.SecretKey)).ForEach(vec => {
 			var schnorr = new Schnorr(ECDSAKeyType.SECP256K1);
 
-			Assert.IsTrue(schnorr.TryParsePrivateKey(vec.SecretKey.ToHexByteArray(),
+			ClassicAssert.IsTrue(schnorr.TryParsePrivateKey(vec.SecretKey.ToHexByteArray(),
 					out var d),
 				$"error creating private key index = '{vec.Index}' private key = '{vec.SecretKey}'");
 			var m = vec.Message.ToHexByteArray();
 			var a = vec.AuxRand.ToHexByteArray();
 			var expected = vec.Signature.ToHexByteArray();
 			var actual = schnorr.SignDigestWithAuxRandomData(d, m, a);
-			Assert.AreEqual(expected, actual, $"signature mismatch at index = '{vec.Index}'. expected = '{vec.Signature}' but got = '{actual.ToHexString()}'");
+			ClassicAssert.AreEqual(expected, actual, $"signature mismatch at index = '{vec.Index}'. expected = '{vec.Signature}' but got = '{actual.ToHexString()}'");
 		});
 	}
 
@@ -86,7 +87,7 @@ public class Bip340SchnorrTest {
 			} catch (Exception) {
 				actual = false;
 			}
-			Assert.AreEqual(expected, actual, $"verification failure at index = '{vec.Index}'. expected = '{expected}' but got = '{actual}'");
+			ClassicAssert.AreEqual(expected, actual, $"verification failure at index = '{vec.Index}'. expected = '{expected}' but got = '{actual}'");
 		});
 	}
 
@@ -98,7 +99,7 @@ public class Bip340SchnorrTest {
 		var signatures = positiveVectors.Select(vec => vec.Signature.ToHexByteArray()).ToArray();
 		var schnorr = new Schnorr(ECDSAKeyType.SECP256K1);
 		var actual = schnorr.BatchVerifyDigest(signatures, messages, pubKeys);
-		Assert.AreEqual(true, actual, $"batch verification failure. expected = '{true}' but got = '{actual}'");
+		ClassicAssert.AreEqual(true, actual, $"batch verification failure. expected = '{true}' but got = '{actual}'");
 	}
 
 	[Test]
@@ -122,9 +123,9 @@ public class Bip340SchnorrTest {
 			exception = e;
 		}
 
-		Assert.AreEqual(false, actual, $"batch verification failure. expected = '{false}' but got = '{actual}'");
-		Assert.IsNotNull(exception);
-		Assert.AreEqual("c is not equal to y^2", exception?.Message);
+		ClassicAssert.AreEqual(false, actual, $"batch verification failure. expected = '{false}' but got = '{actual}'");
+		ClassicAssert.IsNotNull(exception);
+		ClassicAssert.AreEqual("c is not equal to y^2", exception?.Message);
 	}
 
 	[Test]
@@ -136,7 +137,7 @@ public class Bip340SchnorrTest {
 		var pk = schnorr.DerivePublicKey(sk);
 		var sig = schnorr.SignDigest(sk, messageDigest);
 		var actual = schnorr.VerifyDigest(sig, messageDigest, pk);
-		Assert.IsTrue(actual);
+		ClassicAssert.IsTrue(actual);
 	}
 
 	[Test]
@@ -145,7 +146,7 @@ public class Bip340SchnorrTest {
 		var schnorr = new Schnorr(keyType);
 		var privateKey = schnorr.GeneratePrivateKey();
 		var publicKey = schnorr.DerivePublicKey(privateKey);
-		Assert.IsTrue(schnorr.IsPublicKey(privateKey, publicKey.RawBytes));
+		ClassicAssert.IsTrue(schnorr.IsPublicKey(privateKey, publicKey.RawBytes));
 	}
 
 	// test parsing private and public keys
@@ -155,7 +156,7 @@ public class Bip340SchnorrTest {
 	[TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP256K1)]
 	public void VerifyThatTryParsePrivateKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType) {
 		var schnorr = new Schnorr(keyType);
-		Assert.IsFalse(schnorr.TryParsePrivateKey(badRawKey, out _));
+		ClassicAssert.IsFalse(schnorr.TryParsePrivateKey(badRawKey, out _));
 	}
 
 	[Test]
@@ -163,9 +164,9 @@ public class Bip340SchnorrTest {
 	public void VerifyThatTryParsePrivateKeyFailsForValuesNotInBetweenZeroToCurveOrderMinusOne(ECDSAKeyType keyType) {
 		var schnorr = new Schnorr(keyType);
 		var negativeOne = BigInteger.One.Negate();
-		Assert.IsFalse(schnorr.TryParsePrivateKey(negativeOne.ToByteArray(), out _));
+		ClassicAssert.IsFalse(schnorr.TryParsePrivateKey(negativeOne.ToByteArray(), out _));
 		var order = keyType.GetAttribute<KeyTypeOrderAttribute>().Value;
-		Assert.IsFalse(schnorr.TryParsePrivateKey(BigIntegerUtils.BigIntegerToBytes(order.Add(BigInteger.One), schnorr.KeySize), out _));
+		ClassicAssert.IsFalse(schnorr.TryParsePrivateKey(BigIntegerUtils.BigIntegerToBytes(order.Add(BigInteger.One), schnorr.KeySize), out _));
 	}
 
 	[Test]
@@ -173,8 +174,8 @@ public class Bip340SchnorrTest {
 	public void VerifyThatTryParsePrivateKeyPassForGoodKeys(ECDSAKeyType keyType) {
 		var schnorr = new Schnorr(keyType);
 		var privateKeyBytes = schnorr.GeneratePrivateKey().RawBytes;
-		Assert.IsTrue(schnorr.TryParsePrivateKey(privateKeyBytes, out var privateKey));
-		Assert.AreEqual(privateKeyBytes, privateKey.RawBytes);
+		ClassicAssert.IsTrue(schnorr.TryParsePrivateKey(privateKeyBytes, out var privateKey));
+		ClassicAssert.AreEqual(privateKeyBytes, privateKey.RawBytes);
 	}
 
 	[Test]
@@ -182,7 +183,7 @@ public class Bip340SchnorrTest {
 	[TestCase(new byte[] { 0, 0 }, ECDSAKeyType.SECP256K1)]
 	public void VerifyThatTryParsePublicKeyFailsEarlyForBadKeys(byte[] badRawKey, ECDSAKeyType keyType) {
 		var schnorr = new Schnorr(keyType);
-		Assert.IsFalse(schnorr.TryParsePublicKey(badRawKey, out _));
+		ClassicAssert.IsFalse(schnorr.TryParsePublicKey(badRawKey, out _));
 	}
 
 	[Test]
@@ -190,9 +191,9 @@ public class Bip340SchnorrTest {
 	public void VerifyThatTryParsePublicKeyFailsForValuesNotInBetweenZeroToPrimeFieldMinusOne(ECDSAKeyType keyType) {
 		var schnorr = new Schnorr(keyType);
 		var negativeOne = BigInteger.One.Negate();
-		Assert.IsFalse(schnorr.TryParsePublicKey(negativeOne.ToByteArray(), out _));
+		ClassicAssert.IsFalse(schnorr.TryParsePublicKey(negativeOne.ToByteArray(), out _));
 		var primeField = keyType.GetAttribute<KeyTypePrimeFieldAttribute>().Value;
-		Assert.IsFalse(schnorr.TryParsePublicKey(BigIntegerUtils.BigIntegerToBytes(primeField, schnorr.KeySize), out _));
+		ClassicAssert.IsFalse(schnorr.TryParsePublicKey(BigIntegerUtils.BigIntegerToBytes(primeField, schnorr.KeySize), out _));
 	}
 
 	[Test]
@@ -201,7 +202,7 @@ public class Bip340SchnorrTest {
 		var schnorr = new Schnorr(keyType);
 		var privateKey = schnorr.GeneratePrivateKey();
 		var publicKeyBytes = schnorr.DerivePublicKey(privateKey).RawBytes;
-		Assert.IsTrue(schnorr.TryParsePublicKey(publicKeyBytes, out var publicKey));
-		Assert.AreEqual(publicKeyBytes, publicKey.RawBytes);
+		ClassicAssert.IsTrue(schnorr.TryParsePublicKey(publicKeyBytes, out var publicKey));
+		ClassicAssert.AreEqual(publicKeyBytes, publicKey.RawBytes);
 	}
 }

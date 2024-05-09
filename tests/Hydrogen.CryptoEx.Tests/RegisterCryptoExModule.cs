@@ -12,14 +12,14 @@ namespace Hydrogen.CryptoEx.Tests;
 
 [SetUpFixture]
 public class RegisterCryptoExModule {
-
+	
 	[OneTimeSetUp]
 	public void RegisterModule() {
-		HydrogenFrameworkIntegration.Initialize();
+		Hydrogen.CryptoEx.ModuleConfiguration.InitializeInternal();
 	}
 
 	[OneTimeTearDown]
 	public void DeregisterModule() {
-		HydrogenFrameworkIntegration.Finalize();
+		Hydrogen.CryptoEx.ModuleConfiguration.FinalizeInternal();
 	}
 }

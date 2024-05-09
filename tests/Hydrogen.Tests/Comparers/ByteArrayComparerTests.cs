@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -16,26 +17,26 @@ public class ByteArrayComparerTests {
 
 	[Test]
 	public void TestNull() {
-		Assert.AreEqual(0, ByteArrayComparer.Instance.Compare(null, null));
+		ClassicAssert.AreEqual(0, ByteArrayComparer.Instance.Compare(null, null));
 	}
 
 	[Test]
 	public void TestEmpty() {
-		Assert.AreEqual(0, ByteArrayComparer.Instance.Compare(new byte[0], new byte[0]));
+		ClassicAssert.AreEqual(0, ByteArrayComparer.Instance.Compare(new byte[0], new byte[0]));
 	}
 
 	[Test]
 	public void TestSame() {
-		Assert.AreEqual(0, ByteArrayComparer.Instance.Compare(new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }));
+		ClassicAssert.AreEqual(0, ByteArrayComparer.Instance.Compare(new byte[] { 1, 2, 3 }, new byte[] { 1, 2, 3 }));
 	}
 
 	[Test]
 	public void TestSmaller() {
-		Assert.AreEqual(-1, ByteArrayComparer.Instance.Compare(new byte[] { 1, 2, 3 }, new byte[] { 3, 2, 1 }));
+		ClassicAssert.AreEqual(-1, ByteArrayComparer.Instance.Compare(new byte[] { 1, 2, 3 }, new byte[] { 3, 2, 1 }));
 	}
 
 	[Test]
 	public void TestGreater() {
-		Assert.AreEqual(1, ByteArrayComparer.Instance.Compare(new byte[] { 3, 2, 1 }, new byte[] { 1, 2, 3 }));
+		ClassicAssert.AreEqual(1, ByteArrayComparer.Instance.Compare(new byte[] { 3, 2, 1 }, new byte[] { 1, 2, 3 }));
 	}
 }

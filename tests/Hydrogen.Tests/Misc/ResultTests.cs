@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -17,14 +18,14 @@ public class ResultTests {
 
 	[Test]
 	public void ValueTypeCast_Bool() {
-		Assert.IsTrue((bool)Result<bool>.From(true));
-		Assert.IsFalse((bool)Result<bool>.From(false));
+		ClassicAssert.IsTrue((bool)Result<bool>.From(true));
+		ClassicAssert.IsFalse((bool)Result<bool>.From(false));
 	}
 
 	[Test]
 	public void ValueTypeCast_Result_Bool() {
-		Assert.AreEqual(Result<bool>.From(true), (Result<bool>)true);
-		Assert.AreEqual(Result<bool>.From(false), (Result<bool>)false);
+		ClassicAssert.AreEqual(Result<bool>.From(true), (Result<bool>)true);
+		ClassicAssert.AreEqual(Result<bool>.From(false), (Result<bool>)false);
 	}
 
 	[Test]

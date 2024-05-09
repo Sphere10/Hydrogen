@@ -9,6 +9,7 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -28,20 +29,20 @@ public class RandomTests {
 	public void Range_1() {
 		var rng = new Random(31337);
 		var range = rng.NextRange(1, rangeLength: 1);
-		Assert.AreEqual(0, range.Start);
-		Assert.AreEqual(0, range.End);
+		ClassicAssert.AreEqual(0, range.Start);
+		ClassicAssert.AreEqual(0, range.End);
 	}
 
 	[Test]
 	public void Range_2() {
 		var rng = new Random(31337);
 		var range = rng.NextRange(2, true, rangeLength: 2);
-		Assert.AreEqual(0, range.Start);
-		Assert.AreEqual(1, range.End);
+		ClassicAssert.AreEqual(0, range.Start);
+		ClassicAssert.AreEqual(1, range.End);
 
 		range = rng.NextRange(2, false, rangeLength: 2);
-		Assert.AreEqual(0, range.Start);
-		Assert.AreEqual(1, range.End);
+		ClassicAssert.AreEqual(0, range.Start);
+		ClassicAssert.AreEqual(1, range.End);
 
 	}
 
@@ -49,8 +50,8 @@ public class RandomTests {
 	public void Range_Empty() {
 		var rng = new Random(31337);
 		var range = rng.NextRange(1, rangeLength: 0);
-		Assert.AreEqual(0, range.Start);
-		Assert.AreEqual(0, range.End);
+		ClassicAssert.AreEqual(0, range.Start);
+		ClassicAssert.AreEqual(0, range.End);
 	}
 
 	//[Test]

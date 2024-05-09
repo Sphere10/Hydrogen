@@ -11,6 +11,7 @@ using Hydrogen.CryptoEx;
 using Hydrogen.DApp.Core.Maths;
 using System;
 using System.Text;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.DApp.Core.Tests;
 
@@ -82,15 +83,12 @@ internal abstract class RandomHash2TestBase {
 
 	#endregion
 
-	protected static void AssertAreEqual(byte[] expected, byte[] actual) => Assert.AreEqual(expected, actual);
+	protected static void AssertAreEqual(byte[] expected, byte[] actual) => ClassicAssert.AreEqual(expected, actual);
 
 	// if stars with 0x parses as input hexstring else ascii
 	protected static byte[] ParseBytes(string input) =>
 		input.StartsWith("0x") ? HexEncoding.Decode(input) : Encoding.ASCII.GetBytes(input);
 
-	static RandomHash2TestBase() {
-		HydrogenFrameworkIntegration.Initialize();
-	}
 }
 
 
@@ -122,7 +120,7 @@ internal class RandomHash2Test : RandomHash2TestBase {
 		var hasher = RandomHash2.RandomHash2Instance();
 		for (var idx = 1; idx <= 100; idx++) {
 			var buffer2 = hasher.Hash(buffer);
-			Assert.AreEqual(32768 + idx,
+			ClassicAssert.AreEqual(32768 + idx,
 				RandomHashUtils.GetLastDWordLE(RandomHashUtils.SetLastDWordLE(buffer2, (uint)(32768 + idx))));
 		}
 	}

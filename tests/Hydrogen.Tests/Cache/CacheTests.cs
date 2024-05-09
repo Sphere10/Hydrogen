@@ -11,6 +11,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -38,9 +39,9 @@ public class CacheTests {
 	public void MaxCapacity_1() {
 		var cache = new ActionCache<int, int>(x => x, sizeEstimator: x => 1, maxCapacity: 1, reapStrategy: CacheReapPolicy.LeastUsed);
 		var val = cache[0];
-		Assert.AreEqual(1, cache.ItemCount);
+		ClassicAssert.AreEqual(1, cache.ItemCount);
 		val = cache[1];
-		Assert.AreEqual(1, cache.ItemCount);
+		ClassicAssert.AreEqual(1, cache.ItemCount);
 	}
 
 	[Test]
@@ -49,10 +50,10 @@ public class CacheTests {
 		var val = cache[0];
 		val = cache[1];
 		val = cache[2];
-		Assert.AreEqual(3, cache.ItemCount);
+		ClassicAssert.AreEqual(3, cache.ItemCount);
 		for (var i = 3; i < 1000; i++) {
 			val = cache[i];
-			Assert.AreEqual(3, cache.ItemCount);
+			ClassicAssert.AreEqual(3, cache.ItemCount);
 		}
 	}
 
@@ -64,11 +65,11 @@ public class CacheTests {
 		cache.ItemRemoved += (i, item) => removed.Add(item.Value);
 
 		var val = cache[0];
-		Assert.AreEqual(0, removed.Count);
+		ClassicAssert.AreEqual(0, removed.Count);
 
 		val = cache[1];
-		Assert.AreEqual(1, removed.Count);
-		Assert.AreEqual(0, removed[0]);
+		ClassicAssert.AreEqual(1, removed.Count);
+		ClassicAssert.AreEqual(0, removed[0]);
 	}
 
 	[Test]
@@ -81,9 +82,9 @@ public class CacheTests {
 			var val = cache[i];
 		}
 
-		Assert.AreEqual(999, removed.Count);
+		ClassicAssert.AreEqual(999, removed.Count);
 		removed.Sort();
-		Assert.AreEqual(Enumerable.Range(0, 999).ToArray(), removed.ToArray());
+		ClassicAssert.AreEqual(Enumerable.Range(0, 999).ToArray(), removed.ToArray());
 	}
 
 	[Test]
@@ -92,8 +93,8 @@ public class CacheTests {
 			() => new Dictionary<int, string>() {
 				{ 1, "one" }, { 2, "two" }, { 3, "three" }
 			});
-		Assert.AreEqual("one", cache[1]);
-		Assert.AreEqual(new[] { "one", "two", "three" }, cache.CachedItems.Select(x => x.Value).ToArray());
+		ClassicAssert.AreEqual("one", cache[1]);
+		ClassicAssert.AreEqual(new[] { "one", "two", "three" }, cache.CachedItems.Select(x => x.Value).ToArray());
 	}
 
 	[Test]
@@ -105,14 +106,14 @@ public class CacheTests {
 			expirationStrategy: ExpirationPolicy.SinceFetchedTime,
 			expirationDuration: TimeSpan.FromMilliseconds(100)
 		);
-		Assert.AreEqual("first", cache[1]);
+		ClassicAssert.AreEqual("first", cache[1]);
 		val = "second";
-		Assert.AreEqual("first", cache[1]);
-		Assert.AreEqual("first", cache[1]);
+		ClassicAssert.AreEqual("first", cache[1]);
+		ClassicAssert.AreEqual("first", cache[1]);
 		Thread.Sleep(111);
-		Assert.AreEqual("second", cache[1]);
-		Assert.AreEqual("second", cache[1]);
-		Assert.AreEqual("second", cache[1]);
+		ClassicAssert.AreEqual("second", cache[1]);
+		ClassicAssert.AreEqual("second", cache[1]);
+		ClassicAssert.AreEqual("second", cache[1]);
 	}
 
 	[Test]
@@ -129,15 +130,15 @@ public class CacheTests {
 		Assert.Throws<InvalidOperationException>(() => {
 			var x = cache[101];
 		});
-		Assert.AreEqual("98", cache[98]);
-		Assert.AreEqual(1, cache.InternalStorage.Count);
-		Assert.AreEqual("2", cache[2]);
-		Assert.AreEqual(2, cache.InternalStorage.Count);
-		Assert.AreEqual("1", cache[1]);
-		Assert.AreEqual(2, cache.InternalStorage.Count); // should have purged first item
-		Assert.AreEqual(new[] { "1", "2" }, cache.GetAllCachedValues().ToArray());
-		Assert.AreEqual("100", cache[100]);
-		Assert.AreEqual(1, cache.InternalStorage.Count); // should have purged everything 
+		ClassicAssert.AreEqual("98", cache[98]);
+		ClassicAssert.AreEqual(1, cache.InternalStorage.Count);
+		ClassicAssert.AreEqual("2", cache[2]);
+		ClassicAssert.AreEqual(2, cache.InternalStorage.Count);
+		ClassicAssert.AreEqual("1", cache[1]);
+		ClassicAssert.AreEqual(2, cache.InternalStorage.Count); // should have purged first item
+		ClassicAssert.AreEqual(new[] { "1", "2" }, cache.GetAllCachedValues().ToArray());
+		ClassicAssert.AreEqual("100", cache[100]);
+		ClassicAssert.AreEqual(1, cache.InternalStorage.Count); // should have purged everything 
 	}
 
 	[Test]
@@ -156,11 +157,11 @@ public class CacheTests {
 			expirationStrategy: ExpirationPolicy.SinceFetchedTime,
 			expirationDuration: TimeSpan.FromMilliseconds(100)
 		);
-		Assert.IsFalse(cache.ContainsCachedItem(1));
+		ClassicAssert.IsFalse(cache.ContainsCachedItem(1));
 		var val = cache[1];
-		Assert.IsTrue(cache.ContainsCachedItem(1));
+		ClassicAssert.IsTrue(cache.ContainsCachedItem(1));
 		Thread.Sleep(111);
-		Assert.IsFalse(cache.ContainsCachedItem(1));
+		ClassicAssert.IsFalse(cache.ContainsCachedItem(1));
 	}
 
 
@@ -173,8 +174,8 @@ public class CacheTests {
 		);
 		for (var i = 0; i < 100; i++) {
 			var item = cache[i];
-			Assert.AreEqual(i + 1, cache.ItemCount);
-			Assert.AreEqual(0, cache.CurrentSize);
+			ClassicAssert.AreEqual(i + 1, cache.ItemCount);
+			ClassicAssert.AreEqual(0, cache.CurrentSize);
 		}
 	}
 

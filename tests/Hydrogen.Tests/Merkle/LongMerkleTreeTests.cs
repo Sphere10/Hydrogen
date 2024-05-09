@@ -10,6 +10,7 @@ using System;
 using NUnit.Framework;
 using System.Linq;
 using Hydrogen;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests.Merkle;
 
@@ -22,13 +23,13 @@ public class LongMerkleTreeTests {
 		var rng = new Random(31337);
 		var reference = new SimpleMerkleTree(chf);
 		var impl = new LongMerkleTree(chf);
-		Assert.AreEqual(reference.Root, impl.Root);
+		ClassicAssert.AreEqual(reference.Root, impl.Root);
 		var newItems = rng.NextBytes(Hashers.GetDigestSizeBytes(chf));
 		reference.Leafs.AddRange(newItems);
 		impl.Leafs.AddRange(newItems);
-		Assert.AreEqual(reference.Root, impl.Root);
-		Assert.AreEqual(reference.Leafs.Count, impl.Leafs.Count);
-		Assert.AreEqual(reference.Size, impl.Size);
+		ClassicAssert.AreEqual(reference.Root, impl.Root);
+		ClassicAssert.AreEqual(reference.Leafs.Count, impl.Leafs.Count);
+		ClassicAssert.AreEqual(reference.Size, impl.Size);
 	}
 
 	[Test]
@@ -41,8 +42,8 @@ public class LongMerkleTreeTests {
 			var newItems = rng.NextBytes(Hashers.GetDigestSizeBytes(chf));
 			reference.Leafs.AddRange(newItems);
 			impl.Leafs.AddRange(newItems);
-			Assert.AreEqual(reference.Root, impl.Root);
-			Assert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
+			ClassicAssert.AreEqual(reference.Root, impl.Root);
+			ClassicAssert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
 		}
 	}
 
@@ -55,7 +56,7 @@ public class LongMerkleTreeTests {
 		var rng = new Random(31337);
 		var reference = new SimpleMerkleTree(chf);
 		var impl = new LongMerkleTree(chf);
-		Assert.AreEqual(reference.Root, impl.Root);
+		ClassicAssert.AreEqual(reference.Root, impl.Root);
 		for (var i = 0; i < MaxIterations; i++) {
 			var newItems =
 				Tools.Collection.Generate(() => rng.NextBytes(Hashers.GetDigestSizeBytes(chf))).Take(rng.Next(MinItemsAddPerIter, MaxItemsAddPerIter + 1)).ToArray();
@@ -63,12 +64,12 @@ public class LongMerkleTreeTests {
 			reference.Leafs.AddRange(newItems);
 			impl.Leafs.AddRange(newItems);
 			if (Tools.Maths.Gamble(0.1)) // force root calculation 10% of the time
-				Assert.AreEqual(reference.Root, impl.Root);
+				ClassicAssert.AreEqual(reference.Root, impl.Root);
 
-			Assert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
+			ClassicAssert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
 
 		}
-		Assert.AreEqual(reference.Root, impl.Root);
+		ClassicAssert.AreEqual(reference.Root, impl.Root);
 	}
 
 	[Test]

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using Hydrogen;
+using NUnit.Framework.Legacy;
 
 namespace Tools;
 
@@ -29,16 +30,16 @@ public static class NUnit {
 
 	public static void IsEmpty<T>(IEnumerable<T> collection, string message = null) {
 		if (!string.IsNullOrWhiteSpace(message))
-			Assert.IsEmpty(collection, message);
+			ClassicAssert.IsEmpty(collection, message);
 		else
-			Assert.IsEmpty(collection);
+			ClassicAssert.IsEmpty(collection);
 	}
 
 	public static void IsNotEmpty<T>(IEnumerable<T> collection, string message = null) {
 		if (!string.IsNullOrWhiteSpace(message))
-			Assert.IsNotEmpty(collection, message);
+			ClassicAssert.IsNotEmpty(collection, message);
 		else
-			Assert.IsNotEmpty(collection);
+			ClassicAssert.IsNotEmpty(collection);
 	}
 
 

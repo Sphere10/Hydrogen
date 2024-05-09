@@ -9,6 +9,7 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -23,7 +24,7 @@ public class BitsTests {
 		var dest = new byte[100];
 		var bitLength = bytes.Length * 8;
 		Bits.CopyBits(bytes, 0, dest, 0, bitLength);
-		Assert.AreEqual(bytes, dest);
+		ClassicAssert.AreEqual(bytes, dest);
 	}
 
 	[Test]
@@ -33,7 +34,7 @@ public class BitsTests {
 		var dest = new byte[100];
 		var bitLength = bytes.Length * 8;
 		Bits.CopyBits(bytes, bitLength - 1, dest, bitLength - 1, bitLength, IterateDirection.RightToLeft, IterateDirection.RightToLeft);
-		Assert.AreEqual(bytes, dest);
+		ClassicAssert.AreEqual(bytes, dest);
 	}
 
 
@@ -46,7 +47,7 @@ public class BitsTests {
 		var bitLength = bytes.Length * 8;
 		Bits.CopyBits(bytes, 0, tmp, bitLength - 1, bitLength, IterateDirection.LeftToRight, IterateDirection.RightToLeft);
 		Bits.CopyBits(tmp, bitLength - 1, dest, 0, bitLength, IterateDirection.RightToLeft, IterateDirection.LeftToRight);
-		Assert.AreEqual(bytes, dest);
+		ClassicAssert.AreEqual(bytes, dest);
 	}
 
 	[Test]
@@ -56,8 +57,8 @@ public class BitsTests {
 		Bits.SetBit(buffer, 7, true);
 		Bits.SetBit(buffer, 15, true);
 
-		Assert.AreEqual(1, buffer[0]);
-		Assert.AreEqual(1, buffer[1]);
+		ClassicAssert.AreEqual(1, buffer[0]);
+		ClassicAssert.AreEqual(1, buffer[1]);
 	}
 
 	[Test]
@@ -69,31 +70,31 @@ public class BitsTests {
 		Bits.SetBit(buffer, 8, false);
 		Bits.SetBit(buffer, 15, true);
 
-		Assert.AreEqual(128, buffer[0]);
-		Assert.AreEqual(1, buffer[1]);
+		ClassicAssert.AreEqual(128, buffer[0]);
+		ClassicAssert.AreEqual(1, buffer[1]);
 	}
 
 	[Test]
 	public void SetBit_3() {
 		var buffer = new byte[1];
 		Bits.SetBit(buffer, 0, true);
-		Assert.AreEqual(128, (int)buffer[0]);
+		ClassicAssert.AreEqual(128, (int)buffer[0]);
 	}
 
 	[Test]
 	public void ReadBit_1() {
 		var buffer = new byte[] { 129, 128, 255 };
 
-		Assert.True(Bits.ReadBit(buffer, 0));
-		Assert.True(Bits.ReadBit(buffer, 7));
-		Assert.True(Bits.ReadBit(buffer, 8));
-		Assert.False(Bits.ReadBit(buffer, 15));
+		ClassicAssert.IsTrue(Bits.ReadBit(buffer, 0));
+		ClassicAssert.IsTrue(Bits.ReadBit(buffer, 7));
+		ClassicAssert.IsTrue(Bits.ReadBit(buffer, 8));
+		ClassicAssert.IsFalse(Bits.ReadBit(buffer, 15));
 
 		bool allTrue = Enumerable.Range(16, 7)
 			.Select(x => Bits.ReadBit(buffer, x))
 			.All(x => x);
 
-		Assert.True(allTrue);
+		ClassicAssert.IsTrue(allTrue);
 	}
 
 	[Test]
@@ -115,7 +116,7 @@ public class BitsTests {
 				Bits.CopyBits(arr2, range.Start, arr1, range.Start, range.End - range.Start + 1, dir, dir);
 
 			}
-			Assert.AreEqual(arr1, arr2);
+			ClassicAssert.AreEqual(arr1, arr2);
 		}
 	}
 
@@ -137,7 +138,7 @@ public class BitsTests {
 				var number = Bits.ReadBinaryNumber(bytes, offset, bitsInNumber, dir);
 
 				// Check not bigger than possible (this can happen if reading bits wrong)
-				Assert.LessOrEqual(number, 1 << bitsInNumber);
+				ClassicAssert.LessOrEqual(number, 1 << bitsInNumber);
 
 				// Rebuild the array copy surrounding bits and writing the number where it was read
 				var copy = new byte[bytes.Length]; //Tools.Array.Clone(bytes);
@@ -146,7 +147,7 @@ public class BitsTests {
 				Bits.WriteBinaryNumber(number, copy, offset, bitsInNumber, dir);
 
 				// Check unchanged
-				Assert.AreEqual(bytes, copy);
+				ClassicAssert.AreEqual(bytes, copy);
 			}
 		}
 

@@ -11,6 +11,7 @@ using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -35,8 +36,8 @@ public class PooledCacheTests {
 		var _1 = cache1.Get(9); // allocated 9 bytes, total 9
 		var _2 = cache2.Get("0"); // allocated 1 bytes, total 10 (pool exhausted now)
 		Assert.Throws<InvalidOperationException>(() => cache1.Get(11)); // allocated 11 bytes, too much
-		Assert.IsFalse(_1.Traits.HasFlag(CachedItemTraits.Purged));
-		Assert.IsFalse(_2.Traits.HasFlag(CachedItemTraits.Purged));
+		ClassicAssert.IsFalse(_1.Traits.HasFlag(CachedItemTraits.Purged));
+		ClassicAssert.IsFalse(_2.Traits.HasFlag(CachedItemTraits.Purged));
 	}
 
 	[Test]
@@ -49,8 +50,8 @@ public class PooledCacheTests {
 		var _2 = cache2.Get("0"); // allocated 1 bytes, total 10 (pool exhausted now)
 		_2.CanPurge = false;
 		Assert.Throws<InvalidOperationException>(() => cache1.Get(10)); // allocated 10 bytes, but can't purge _2 
-		Assert.IsTrue(_1.Traits.HasFlag(CachedItemTraits.Purged)); // purged this one whilst trying to free space
-		Assert.IsFalse(_2.Traits.HasFlag(CachedItemTraits.Purged)); // didn't purge this one, then failed and threw
+		ClassicAssert.IsTrue(_1.Traits.HasFlag(CachedItemTraits.Purged)); // purged this one whilst trying to free space
+		ClassicAssert.IsFalse(_2.Traits.HasFlag(CachedItemTraits.Purged)); // didn't purge this one, then failed and threw
 	}
 
 	[Test]
@@ -60,22 +61,22 @@ public class PooledCacheTests {
 		using var cache2 = new ActionCache<string, string>(x => x, sizeEstimator: x => x.Length, maxCapacity: 10, reapStrategy: CacheReapPolicy.Smallest, reaper: pool);
 
 		var _1 = cache1.Get(9); // allocated 9 bytes, total 9
-		Assert.AreEqual(9, cache1.CurrentSize);
-		Assert.AreEqual(9, pool.CurrentSize);
+		ClassicAssert.AreEqual(9, cache1.CurrentSize);
+		ClassicAssert.AreEqual(9, pool.CurrentSize);
 
 		var _2 = cache2.Get("0"); // allocated 1 bytes, total 10 (pool full now)
-		Assert.AreEqual(9, cache1.CurrentSize);
-		Assert.AreEqual(1, cache2.CurrentSize);
-		Assert.AreEqual(10, pool.CurrentSize);
+		ClassicAssert.AreEqual(9, cache1.CurrentSize);
+		ClassicAssert.AreEqual(1, cache2.CurrentSize);
+		ClassicAssert.AreEqual(10, pool.CurrentSize);
 
 		var _3 = cache1.Get(1); // allocated 1 bytes, will reap _1 but not _2
-		Assert.AreEqual(1, cache1.CurrentSize);
-		Assert.AreEqual(1, cache2.CurrentSize);
-		Assert.AreEqual(2, pool.CurrentSize);
+		ClassicAssert.AreEqual(1, cache1.CurrentSize);
+		ClassicAssert.AreEqual(1, cache2.CurrentSize);
+		ClassicAssert.AreEqual(2, pool.CurrentSize);
 
-		Assert.IsTrue(_1.Traits.HasFlag(CachedItemTraits.Purged));
-		Assert.IsFalse(_2.Traits.HasFlag(CachedItemTraits.Purged));
-		Assert.IsFalse(_3.Traits.HasFlag(CachedItemTraits.Purged));
+		ClassicAssert.IsTrue(_1.Traits.HasFlag(CachedItemTraits.Purged));
+		ClassicAssert.IsFalse(_2.Traits.HasFlag(CachedItemTraits.Purged));
+		ClassicAssert.IsFalse(_3.Traits.HasFlag(CachedItemTraits.Purged));
 	}
 
 	[Test]
@@ -85,23 +86,23 @@ public class PooledCacheTests {
 		using var cache2 = new ActionCache<string, string>(x => x, sizeEstimator: x => x.Length, maxCapacity: 10, reapStrategy: CacheReapPolicy.Smallest, reaper: pool);
 
 		var _1 = cache1.Get(9); // allocated 9 bytes, total 9
-		Assert.AreEqual(9, cache1.CurrentSize);
-		Assert.AreEqual(0, cache2.CurrentSize);
-		Assert.AreEqual(9, pool.CurrentSize);
+		ClassicAssert.AreEqual(9, cache1.CurrentSize);
+		ClassicAssert.AreEqual(0, cache2.CurrentSize);
+		ClassicAssert.AreEqual(9, pool.CurrentSize);
 
 		var _2 = cache2.Get("0"); // allocated 1 bytes, total 10 (pool full now)
-		Assert.AreEqual(9, cache1.CurrentSize);
-		Assert.AreEqual(1, cache2.CurrentSize);
-		Assert.AreEqual(10, pool.CurrentSize);
+		ClassicAssert.AreEqual(9, cache1.CurrentSize);
+		ClassicAssert.AreEqual(1, cache2.CurrentSize);
+		ClassicAssert.AreEqual(10, pool.CurrentSize);
 
 		var _3 = cache1.Get(10); // allocated 10 bytes, needs to reap _1 and _2
-		Assert.AreEqual(10, cache1.CurrentSize);
-		Assert.AreEqual(0, cache2.CurrentSize);
-		Assert.AreEqual(10, pool.CurrentSize);
+		ClassicAssert.AreEqual(10, cache1.CurrentSize);
+		ClassicAssert.AreEqual(0, cache2.CurrentSize);
+		ClassicAssert.AreEqual(10, pool.CurrentSize);
 
-		Assert.IsTrue(_1.Traits.HasFlag(CachedItemTraits.Purged));
-		Assert.IsTrue(_2.Traits.HasFlag(CachedItemTraits.Purged));
-		Assert.IsFalse(_3.Traits.HasFlag(CachedItemTraits.Purged));
+		ClassicAssert.IsTrue(_1.Traits.HasFlag(CachedItemTraits.Purged));
+		ClassicAssert.IsTrue(_2.Traits.HasFlag(CachedItemTraits.Purged));
+		ClassicAssert.IsFalse(_3.Traits.HasFlag(CachedItemTraits.Purged));
 	}
 
 	[Test]
@@ -124,7 +125,7 @@ public class PooledCacheTests {
 
 		Task.WaitAll(tasks);
 
-		Assert.LessOrEqual(maxSizeEver, maxCapacity);
+		ClassicAssert.LessOrEqual(maxSizeEver, maxCapacity);
 		System.Console.WriteLine($"Max Size Reached: {maxSizeEver}, Total Removes: {removes}, Max Item Count Reached: {maxItemCountEver}");
 
 		void CacheLoop(ICache<int, int> c, int index) {

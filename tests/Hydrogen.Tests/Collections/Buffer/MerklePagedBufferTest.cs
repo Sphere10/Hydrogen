@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using System.IO;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -24,7 +25,7 @@ public class MerklePagedBufferTest {
 			var data = new byte[] { 0 };
 			list.AddRange(data);
 			var dataHash = Hashers.Hash(chf, data);
-			Assert.AreEqual(dataHash, list.MerkleTree.Root);
+			ClassicAssert.AreEqual(dataHash, list.MerkleTree.Root);
 		}
 	}
 
@@ -45,7 +46,7 @@ public class MerklePagedBufferTest {
 			refTree.Leafs.Add(Hash(page2Data));
 			refTree.Leafs.Add(Hash(page3Data));
 
-			Assert.AreEqual(refTree.Root, list.MerkleTree.Root);
+			ClassicAssert.AreEqual(refTree.Root, list.MerkleTree.Root);
 		}
 
 		byte[] Hash(byte[] data) => Hashers.Hash(chf, data);
@@ -66,7 +67,7 @@ public class MerklePagedBufferTest {
 			refTree.Leafs.Add(Hash(page2Data));
 			refTree.Leafs.Add(Hash(page3Data));
 
-			Assert.AreEqual(refTree.Root, list.MerkleTree.Root);
+			ClassicAssert.AreEqual(refTree.Root, list.MerkleTree.Root);
 		}
 
 		byte[] Hash(byte[] data) => Hashers.Hash(chf, data);
@@ -91,7 +92,7 @@ public class MerklePagedBufferTest {
 			refTree.Leafs.Add(Hash(page2Data_2));
 			refTree.Leafs.Add(Hash(page3Data));
 
-			Assert.AreEqual(refTree.Root, list.MerkleTree.Root);
+			ClassicAssert.AreEqual(refTree.Root, list.MerkleTree.Root);
 		}
 
 		byte[] Hash(byte[] data) => Hashers.Hash(chf, data);
@@ -115,7 +116,7 @@ public class MerklePagedBufferTest {
 				IEnumerable<byte> newItems = RNG.NextBytes(newItemsCount);
 				merkleBuffer.AddRange(newItems);
 				expected.AddRange(newItems);
-				Assert.AreEqual(expected, merkleBuffer);
+				ClassicAssert.AreEqual(expected, merkleBuffer);
 
 				// update a random amount
 				if (merkleBuffer.Count > 0) {
@@ -147,7 +148,7 @@ public class MerklePagedBufferTest {
 				var refTree = new SimpleMerkleTree(chf);
 				foreach (var pageData in expected.Partition(pageSize))
 					refTree.Leafs.Add(Hash(pageData.ToArray()));
-				Assert.AreEqual(refTree.Root, merkleBuffer.MerkleTree.Root);
+				ClassicAssert.AreEqual(refTree.Root, merkleBuffer.MerkleTree.Root);
 			}
 
 		}

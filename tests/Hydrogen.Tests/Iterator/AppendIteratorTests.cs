@@ -8,6 +8,7 @@
 
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -20,8 +21,8 @@ public class AppendIteratorTests {
 		var data = new[] { "one" };
 		var union = data.Union("one");
 		var result = union.ToArray();
-		Assert.AreEqual(1, result.Length);
-		Assert.AreEqual("one", result[0]);
+		ClassicAssert.AreEqual(1, result.Length);
+		ClassicAssert.AreEqual("one", result[0]);
 	}
 
 	[Test]
@@ -29,9 +30,9 @@ public class AppendIteratorTests {
 		var data = new[] { "one" };
 		var union = data.Concat("one");
 		var result = union.ToArray();
-		Assert.AreEqual(2, result.Length);
-		Assert.AreEqual("one", result[0]);
-		Assert.AreEqual("one", result[0]);
+		ClassicAssert.AreEqual(2, result.Length);
+		ClassicAssert.AreEqual("one", result[0]);
+		ClassicAssert.AreEqual("one", result[0]);
 	}
 
 

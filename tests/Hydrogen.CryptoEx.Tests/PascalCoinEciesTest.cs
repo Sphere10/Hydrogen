@@ -152,7 +152,7 @@
 // 			string decryptedPayload = DoPascalCoinEciesDecrypt(keyType, rawPrivateKey,
 // 				payloadToDecrypt);
 //
-// 			Assert.AreEqual(expectedOutput, decryptedPayload, string.Format("Test {0} Failed, Expected {1} but got {2}",
+// 			ClassicAssert.AreEqual(expectedOutput, decryptedPayload, string.Format("Test {0} Failed, Expected {1} but got {2}",
 // 				id + "_Decrypt", expectedOutput,
 // 				decryptedPayload));
 // 		}
@@ -165,7 +165,7 @@
 // 				DoPascalCoinEciesEncrypt(keyType, rawAffineXCoord, rawAffineYCoord,
 // 					payloadToEncrypt));
 //
-// 			Assert.AreEqual(payloadToEncrypt, actualOutput, string.Format("Test {0} Failed, Expected {1} but got {2}",
+// 			ClassicAssert.AreEqual(payloadToEncrypt, actualOutput, string.Format("Test {0} Failed, Expected {1} but got {2}",
 // 				id + "_EncryptDecrypt",
 // 				payloadToEncrypt,
 // 				actualOutput));

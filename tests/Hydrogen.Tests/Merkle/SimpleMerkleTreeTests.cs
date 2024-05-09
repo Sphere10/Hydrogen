@@ -11,6 +11,7 @@ using NUnit.Framework;
 using System.Linq;
 using System.Text;
 using Hydrogen;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests.Merkle;
 
@@ -29,7 +30,7 @@ public class SimpleMerkleTreeTests {
 		foreach (var (newLeaf, expectedTree) in new string[] { null }.Concat(elems).Zip(expectedTrees, Tuple.Create)) {
 			if (newLeaf != null)
 				testTree.Leafs.Add(Encoding.ASCII.GetBytes(newLeaf));
-			Assert.AreEqual(expectedTree.Root, testTree.Root);
+			ClassicAssert.AreEqual(expectedTree.Root, testTree.Root);
 		}
 	}
 
@@ -37,27 +38,27 @@ public class SimpleMerkleTreeTests {
 	public void Insert() {
 		var expected = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
 		var test = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
-		Assert.AreNotEqual(expected.Root, test.Root);
+		ClassicAssert.AreNotEqual(expected.Root, test.Root);
 		test.Leafs.InsertRange(3, new[] { "D", "E", "F" }.Select(Encoding.ASCII.GetBytes));
-		Assert.AreEqual(expected.Root, test.Root);
+		ClassicAssert.AreEqual(expected.Root, test.Root);
 	}
 
 	[Test]
 	public void Update() {
 		var expected = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
 		var test = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "Z", "Z", "Z", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
-		Assert.AreNotEqual(expected.Root, test.Root);
+		ClassicAssert.AreNotEqual(expected.Root, test.Root);
 		test.Leafs.UpdateRange(3, new[] { "D", "E", "F" }.Select(Encoding.ASCII.GetBytes));
-		Assert.AreEqual(expected.Root, test.Root);
+		ClassicAssert.AreEqual(expected.Root, test.Root);
 	}
 
 	[Test]
 	public void Remove() {
 		var expected = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
 		var test = new SimpleMerkleTree(CHF.ConcatBytes, new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I" }.Select(Encoding.ASCII.GetBytes));
-		Assert.AreNotEqual(expected.Root, test.Root);
+		ClassicAssert.AreNotEqual(expected.Root, test.Root);
 		test.Leafs.RemoveRange(3, 3);
-		Assert.AreEqual(expected.Root, test.Root);
+		ClassicAssert.AreEqual(expected.Root, test.Root);
 	}
 
 }

@@ -12,6 +12,7 @@ using AutoFixture;
 using NUnit.Framework;
 using Hydrogen.DApp.Presentation.Components.Tables;
 using Hydrogen.DApp.Presentation.Models;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.DApp.Presentation.Tests;
 
@@ -28,15 +29,15 @@ public class PagedTableTests {
 		vm.PageSize = pageSize;
 		vm.Items = AutoFixture.CreateMany<Block>(rowCount).ToList();
 
-		Assert.AreEqual(5, vm.Page.Count());
+		ClassicAssert.AreEqual(5, vm.Page.Count());
 
 		vm.NextPageAsync();
-		Assert.AreEqual(2, vm.CurrentPage);
-		Assert.AreEqual(5, vm.Page.Count());
+		ClassicAssert.AreEqual(2, vm.CurrentPage);
+		ClassicAssert.AreEqual(5, vm.Page.Count());
 
 		vm.NextPageAsync();
-		Assert.AreEqual(3, vm.CurrentPage);
-		Assert.AreEqual(4, vm.Page.Count());
+		ClassicAssert.AreEqual(3, vm.CurrentPage);
+		ClassicAssert.AreEqual(4, vm.Page.Count());
 
 		Assert.ThrowsAsync<InvalidOperationException>(vm.NextPageAsync);
 	}
@@ -58,7 +59,7 @@ public class PagedTableTests {
 		vm.PrevPageAsync();
 		vm.PrevPageAsync();
 
-		Assert.AreEqual(first, vm.Page);
+		ClassicAssert.AreEqual(first, vm.Page);
 	}
 
 	[Test]
@@ -68,18 +69,18 @@ public class PagedTableTests {
 			Items = AutoFixture.CreateMany<Block>(9).ToList()
 		};
 
-		Assert.IsTrue(vm.HasNextPage);
-		Assert.IsFalse(vm.HasPrevPage);
+		ClassicAssert.IsTrue(vm.HasNextPage);
+		ClassicAssert.IsFalse(vm.HasPrevPage);
 
 		vm.NextPageAsync();
 
-		Assert.IsTrue(vm.HasNextPage);
-		Assert.IsTrue(vm.HasPrevPage);
+		ClassicAssert.IsTrue(vm.HasNextPage);
+		ClassicAssert.IsTrue(vm.HasPrevPage);
 
 		vm.NextPageAsync();
 
-		Assert.IsFalse(vm.HasNextPage);
-		Assert.IsTrue(vm.HasPrevPage);
+		ClassicAssert.IsFalse(vm.HasNextPage);
+		ClassicAssert.IsTrue(vm.HasPrevPage);
 	}
 
 	[Test]
@@ -89,15 +90,15 @@ public class PagedTableTests {
 			Items = AutoFixture.CreateMany<Block>(10).ToList()
 		};
 
-		Assert.AreEqual(10, vm.TotalPages);
-		Assert.AreEqual(1, vm.CurrentPage);
+		ClassicAssert.AreEqual(10, vm.TotalPages);
+		ClassicAssert.AreEqual(1, vm.CurrentPage);
 
 		vm.NextPageAsync();
 
-		Assert.AreEqual(2, vm.CurrentPage);
+		ClassicAssert.AreEqual(2, vm.CurrentPage);
 
 		vm.PageSize = 3;
 
-		Assert.AreEqual(1, vm.CurrentPage);
+		ClassicAssert.AreEqual(1, vm.CurrentPage);
 	}
 }

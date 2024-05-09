@@ -9,6 +9,7 @@
 using System;
 using NUnit.Framework;
 using System.Linq;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -30,7 +31,7 @@ public class HashersTests {
 		foreach (var item in items.Skip(1))
 			expected = Hashers.JoinHash(CHF.SHA2_256, expected, item);
 
-		Assert.AreEqual(expected, Hashers.Aggregate(CHF.SHA2_256, items));
+		ClassicAssert.AreEqual(expected, Hashers.Aggregate(CHF.SHA2_256, items));
 	}
 
 }

@@ -9,6 +9,7 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -26,7 +27,7 @@ public class WOTSTests {
 		var key = wots.GenerateKeys();
 		var sig = wots.Sign(key.PrivateKey, System.Text.Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog"));
 		var sig2 = wots.Sign(key.PrivateKey, System.Text.Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog"));
-		Assert.True(sig.AsFlatSpan().Slice(..^wots.Config.DigestSize).SequenceEqual(sig2.AsFlatSpan().Slice(..^wots.Config.DigestSize)));
+		ClassicAssert.IsTrue(sig.AsFlatSpan().Slice(..^wots.Config.DigestSize).SequenceEqual(sig2.AsFlatSpan().Slice(..^wots.Config.DigestSize)));
 	}
 
 	[Test]
@@ -41,7 +42,7 @@ public class WOTSTests {
 		var key = wots.GenerateKeys();
 		var sig = wots.SignDigest(key.PrivateKey, digest);
 		// signature should be 2^w-1'th hash into the hash chain (private key is 1st) (exclusing digest)
-		Assert.AreEqual(
+		ClassicAssert.AreEqual(
 			sig.ToFlatArray().Take(wots.Config.SignatureDigits * wots.Config.DigestSize),
 			key
 				.PrivateKey
@@ -65,7 +66,7 @@ public class WOTSTests {
 		var sig = wots.SignDigest(key.PrivateKey, digest);
 		// signature should be the private key (minus checksum)
 		var nonFracitionalSignatureDigits = wots.Config.SignatureDigits - (wots.Config.SignatureDigits % wots.Config.W);
-		Assert.AreEqual(
+		ClassicAssert.AreEqual(
 			sig.ToFlatArray().Take(nonFracitionalSignatureDigits * wots.Config.DigestSize),
 			key.PrivateKey.ToFlatArray().Take(nonFracitionalSignatureDigits * wots.Config.DigestSize)
 		);
@@ -80,7 +81,7 @@ public class WOTSTests {
 		var wots = new WOTS(w, optimized);
 		var digest = Tools.Array.Gen<byte>(wots.Config.DigestSize, 0);
 		var key = wots.GenerateKeys();
-		Assert.IsTrue(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest));
+		ClassicAssert.IsTrue(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest));
 	}
 
 	[Test]
@@ -92,7 +93,7 @@ public class WOTSTests {
 		var wots = new WOTS(w, optimized);
 		var digest = Tools.Array.Gen<byte>(wots.Config.DigestSize, 1);
 		var key = wots.GenerateKeys();
-		Assert.IsTrue(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest));
+		ClassicAssert.IsTrue(wots.VerifyDigest(wots.SignDigest(key.PrivateKey, digest), key.PublicKey, digest));
 	}
 
 	[Test]
@@ -105,7 +106,7 @@ public class WOTSTests {
 		var key = wots.GenerateKeys();
 		var message = System.Text.Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 		var sig = wots.Sign(key.PrivateKey, message);
-		Assert.IsTrue(wots.Verify(sig, key.PublicKey, message));
+		ClassicAssert.IsTrue(wots.Verify(sig, key.PublicKey, message));
 	}
 
 	[Test]
@@ -114,7 +115,7 @@ public class WOTSTests {
 		var key = wots.GenerateKeys();
 		var message = System.Text.Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 		var sig = wots.Sign(key.PrivateKey, message);
-		Assert.IsTrue(wots.Verify(sig, key.PublicKey, message));
+		ClassicAssert.IsTrue(wots.Verify(sig, key.PublicKey, message));
 	}
 
 	[Test]
@@ -129,7 +130,7 @@ public class WOTSTests {
 		var sig = wots.Sign(key.PrivateKey, message);
 		unchecked {
 			sig[0, 0] = (byte)(sig[0, 0] + 1);
-			Assert.IsFalse(wots.Verify(sig, key.PublicKey, message));
+			ClassicAssert.IsFalse(wots.Verify(sig, key.PublicKey, message));
 		}
 	}
 
@@ -146,7 +147,7 @@ public class WOTSTests {
 		for (var i = 0; i < TestRounds; i++) {
 			var message = RNG.NextBytes(RNG.Next(0, 100));
 			var sig = wots.Sign(key.PrivateKey, message);
-			Assert.IsTrue(wots.Verify(sig, key.PublicKey, message));
+			ClassicAssert.IsTrue(wots.Verify(sig, key.PublicKey, message));
 
 			// flip a random byte
 			var row = RNG.Next(0, sig.GetLength(0));
@@ -154,7 +155,7 @@ public class WOTSTests {
 			unchecked {
 				sig[row, col] += 1;
 			}
-			Assert.IsFalse(wots.Verify(sig, key.PublicKey, message));
+			ClassicAssert.IsFalse(wots.Verify(sig, key.PublicKey, message));
 		}
 	}
 

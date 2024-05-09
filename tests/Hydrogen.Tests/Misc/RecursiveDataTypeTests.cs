@@ -9,6 +9,7 @@
 using System;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -45,7 +46,7 @@ public class RecursiveDataTypeTests {
 		rdt.AddSubStates("B", "C", "D");
 		rdt.SubStates[1].AddSubStates("C1");
 
-		CollectionAssert.AreEqual(new[] { "A", "B", "C", "C1", "D" }, rdt.Flatten());
+		ClassicAssert.AreEqual(new[] { "A", "B", "C", "C1", "D" }, rdt.Flatten());
 	}
 
 	[Test]
@@ -55,8 +56,8 @@ public class RecursiveDataTypeTests {
 		rdt.AddSubStates("B", "C", "D");
 		rdt.SubStates[1].AddSubStates("C1");
 		rdt.Flatten(out var states, out var counts);
-		CollectionAssert.AreEqual(new[] { "A", "B", "C", "C1", "D" }, states);
-		CollectionAssert.AreEqual(new[] { 3, 0, 1, 0, 0 }, counts);
+		ClassicAssert.AreEqual(new[] { "A", "B", "C", "C1", "D" }, states);
+		ClassicAssert.AreEqual(new[] { 3, 0, 1, 0, 0 }, counts);
 	}
 
 	[Test]

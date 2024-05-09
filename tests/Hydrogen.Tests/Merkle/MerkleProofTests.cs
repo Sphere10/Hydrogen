@@ -11,6 +11,7 @@ using NUnit.Framework;
 using System.Linq;
 using System.Text;
 using Hydrogen;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests.Merkle;
 
@@ -28,16 +29,16 @@ public class MerkleProofTests {
 			for (var i = 0; i < tree.Leafs.Count; i++) {
 				var proof = tree.GenerateExistenceProof(i).ToArray();
 				var verify = MerkleMath.VerifyExistenceProof(tree.HashAlgorithm, tree.Root, tree.Size, i, Encoding.ASCII.GetBytes(elems[i]), proof);
-				Assert.IsTrue(verify);
+				ClassicAssert.IsTrue(verify);
 			}
 		}
 
 		// Verify last proof items 
 		var lastProof = tree.GenerateExistenceProof(tree.Leafs.Count - 1).ToArray();
-		Assert.AreEqual(3, lastProof.Length);
-		Assert.AreEqual(lastProof[0], Encoding.ASCII.GetBytes("Y"));
-		Assert.AreEqual(lastProof[1], Encoding.ASCII.GetBytes("QRSTUVWX"));
-		Assert.AreEqual(lastProof[2], Encoding.ASCII.GetBytes("ABCDEFGHIJKLMNOP"));
+		ClassicAssert.AreEqual(3, lastProof.Length);
+		ClassicAssert.AreEqual(lastProof[0], Encoding.ASCII.GetBytes("Y"));
+		ClassicAssert.AreEqual(lastProof[1], Encoding.ASCII.GetBytes("QRSTUVWX"));
+		ClassicAssert.AreEqual(lastProof[2], Encoding.ASCII.GetBytes("ABCDEFGHIJKLMNOP"));
 	}
 
 
@@ -61,7 +62,7 @@ public class MerkleProofTests {
 				var consistencyProof = newTree.GenerateConsistencyProof(i);
 				var verifyProof = MerkleMath.VerifyConsistencyProof(chf, oldTree.Root, i, newTree.Root, i + (j - i), consistencyProof);
 
-				Assert.IsTrue(verifyProof);
+				ClassicAssert.IsTrue(verifyProof);
 			}
 
 		}

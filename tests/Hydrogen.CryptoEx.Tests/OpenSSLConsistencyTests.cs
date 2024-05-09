@@ -15,6 +15,7 @@ using Hydrogen.CryptoEx.EC;
 using System.Text;
 using Tools;
 using System.IO;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.CryptoEx.Tests;
 
@@ -94,7 +95,7 @@ public class OpenSSLConsistencyTests {
 		var sig = CallPascalOpenSSL(args).ToHexByteArray();
 		// OpenSSL doesn't take into account the "LowS fix" to resolve signature malleability so we account for it here
 		sig = ECDSATests.CanonicalizeSig(order, sig);
-		Assert.IsTrue(ecdsa.VerifyDigest(sig, messageDigest.ToHexByteArray(), publicKey));
+		ClassicAssert.IsTrue(ecdsa.VerifyDigest(sig, messageDigest.ToHexByteArray(), publicKey));
 	}
 
 	[Test]
@@ -121,7 +122,7 @@ public class OpenSSLConsistencyTests {
 		};
 
 		var isValidSig = CallPascalOpenSSL(args);
-		Assert.IsTrue(isValidSig.ToBool());
+		ClassicAssert.IsTrue(isValidSig.ToBool());
 	}
 
 
@@ -156,6 +157,6 @@ public class OpenSSLConsistencyTests {
 		};
 
 		var isValidSig = CallPascalOpenSSL(args);
-		Assert.IsFalse(isValidSig.ToBool());
+		ClassicAssert.IsFalse(isValidSig.ToBool());
 	}
 }

@@ -8,6 +8,7 @@
 
 using System.Text;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -21,7 +22,7 @@ public class PaddedSerializerTests {
 		var size = serializer.CalculateSize(@value);
 		var bytes = serializer.SerializeBytesLE(@value);
 		Assert.That(bytes.Length, Is.EqualTo(size));
-		Assert.AreEqual(100, bytes.Length);
+		ClassicAssert.AreEqual(100, bytes.Length);
 	}
 
 }

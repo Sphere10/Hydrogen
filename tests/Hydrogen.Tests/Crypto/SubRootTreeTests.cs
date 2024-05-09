@@ -23,15 +23,15 @@
 //		[Test]
 //		public void NullRoot() {
 //			var tree = new SubRootTree(CHF.SHA2_256);
-//			Assert.AreEqual(null, tree.Root);
+//			ClassicAssert.AreEqual(null, tree.Root);
 //		}
 
 //		[Test]
 //		public void Integration_Empty() {
 //			var standard = new MerkleTree(CHF.SHA2_256);
 //			var perfect = new SubRootTree(CHF.SHA2_256);
-//			Assert.AreEqual(standard.Size, perfect.Size);
-//			Assert.AreEqual(standard.Root, perfect.Root);
+//			ClassicAssert.AreEqual(standard.Size, perfect.Size);
+//			ClassicAssert.AreEqual(standard.Root, perfect.Root);
 //		}
 
 //		[Test]
@@ -41,8 +41,8 @@
 //			var data = new Random(3133).NextBytes(32);
 //			standard.Leafs.Add(data);
 //			perfect.Leafs.Add(data);
-//			Assert.AreEqual(standard.Size, perfect.Size);
-//			Assert.AreEqual(standard.Root, perfect.Root);
+//			ClassicAssert.AreEqual(standard.Size, perfect.Size);
+//			ClassicAssert.AreEqual(standard.Root, perfect.Root);
 //		}
 
 //		[Test]
@@ -54,8 +54,8 @@
 //			var data2 = rng.NextBytes(32);
 //			standard.Leafs.AddRange(new[] { data1, data2 });
 //			perfect.Leafs.AddRange(new[] { data1, data2 });
-//			Assert.AreEqual(standard.Size, perfect.Size);
-//			Assert.AreEqual(standard.Root, perfect.Root);
+//			ClassicAssert.AreEqual(standard.Size, perfect.Size);
+//			ClassicAssert.AreEqual(standard.Root, perfect.Root);
 //		}
 
 //		[Test]
@@ -67,8 +67,8 @@
 //				var data = rng.NextBytes(32);
 //				standard.Leafs.Add(data);
 //				perfect.Leafs.Add(data);
-//				Assert.AreEqual(standard.Size, perfect.Size);
-//				Assert.AreEqual(standard.Root, perfect.Root);
+//				ClassicAssert.AreEqual(standard.Size, perfect.Size);
+//				ClassicAssert.AreEqual(standard.Root, perfect.Root);
 //			}
 //		}
 
@@ -82,8 +82,8 @@
 //				standard.Leafs.Add(data);
 //				perfect.Leafs.Add(data);
 //			}
-//			Assert.AreEqual(standard.Size, perfect.Size);
-//			Assert.AreEqual(standard.Root, perfect.Root);
+//			ClassicAssert.AreEqual(standard.Size, perfect.Size);
+//			ClassicAssert.AreEqual(standard.Root, perfect.Root);
 
 //		}
 

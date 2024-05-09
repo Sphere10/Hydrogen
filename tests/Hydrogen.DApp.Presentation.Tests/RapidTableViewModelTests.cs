@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Hydrogen.DApp.Presentation.Components.Tables;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.DApp.Presentation.Tests;
 
@@ -32,7 +33,7 @@ public class RapidTableViewModelTests {
 		await vm.InitAsync();
 		await Task.Delay(10);
 
-		Assert.AreEqual(10, vm.Items.Count);
+		ClassicAssert.AreEqual(10, vm.Items.Count);
 	}
 
 	[Test]
@@ -45,6 +46,6 @@ public class RapidTableViewModelTests {
 		await vm.InitAsync();
 		await Task.Delay(10);
 
-		Assert.AreEqual(2, vm.Items.Count);
+		ClassicAssert.AreEqual(2, vm.Items.Count);
 	}
 }

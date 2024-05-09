@@ -8,6 +8,7 @@
 
 using System;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -23,6 +24,6 @@ public class PagedBufferImplementationHelperTests {
 		int endIndex = startIndex + count;
 
 		var span = buffer.ReadSpan(startIndex, count);
-		Assert.AreEqual(input[startIndex..endIndex], span.ToArray());
+		ClassicAssert.AreEqual(input[startIndex..endIndex], span.ToArray());
 	}
 }

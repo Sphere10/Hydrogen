@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using System.IO;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -20,21 +21,21 @@ public class TransactionalFileMappedBufferTests {
 	private const int RandomSeed = 123292;
 
 	private static void AssertEmptyDir(string dir) {
-		Assert.IsTrue(Directory.Exists(dir));
-		Assert.AreEqual(0, Directory.GetFiles(dir).Length);
+		ClassicAssert.IsTrue(Directory.Exists(dir));
+		ClassicAssert.AreEqual(0, Directory.GetFiles(dir).Length);
 	}
 
 	private static void AssertSingleFile(string dir, string filename) {
-		Assert.IsTrue(Directory.Exists(dir));
+		ClassicAssert.IsTrue(Directory.Exists(dir));
 		var files = Directory.GetFiles(dir);
-		Assert.AreEqual(1, files.Length);
-		Assert.AreEqual(Path.GetFileName(filename), Path.GetFileName(files[0]));
+		ClassicAssert.AreEqual(1, files.Length);
+		ClassicAssert.AreEqual(Path.GetFileName(filename), Path.GetFileName(files[0]));
 	}
 
 	private static void AssertFileCount(string dir, int expectedCount) {
-		Assert.IsTrue(Directory.Exists(dir));
+		ClassicAssert.IsTrue(Directory.Exists(dir));
 		var files = Directory.GetFiles(dir);
-		Assert.AreEqual(expectedCount, files.Length);
+		ClassicAssert.AreEqual(expectedCount, files.Length);
 	}
 
 	#region Single Page
@@ -60,7 +61,7 @@ public class TransactionalFileMappedBufferTests {
 				var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 
 				// Check pagefile for page 0 doesn't exist yet
-				Assert.IsTrue(!File.Exists(pageFile));
+				ClassicAssert.IsTrue(!File.Exists(pageFile));
 			}
 		}
 	}
@@ -90,7 +91,7 @@ public class TransactionalFileMappedBufferTests {
 				file.Flush();
 
 				// Check page file for page 0 does exist yet
-				Assert.IsTrue(File.Exists(pageFile));
+				ClassicAssert.IsTrue(File.Exists(pageFile));
 			}
 		}
 	}
@@ -116,7 +117,7 @@ public class TransactionalFileMappedBufferTests {
 				var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 
 				// Check pagefile for page 0 doesn't exist yet
-				Assert.IsTrue(!File.Exists(pageFile));
+				ClassicAssert.IsTrue(!File.Exists(pageFile));
 
 				// Cause page 0 to be flushed
 				file.Flush();
@@ -128,7 +129,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains original data, no changes
-			Assert.AreEqual(originalData, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(originalData, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -153,7 +154,7 @@ public class TransactionalFileMappedBufferTests {
 				var pageFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 0);
 
 				// Check pagefile for page 0 doesn't exist yet
-				Assert.IsTrue(!File.Exists(pageFile));
+				ClassicAssert.IsTrue(!File.Exists(pageFile));
 
 				// Cause page 0 to be flushed
 				file.Flush();
@@ -165,7 +166,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains transformed data, with changes
-			Assert.AreEqual(originalData.Select(b => b ^ b).ToArray(), File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(originalData.Select(b => b ^ b).ToArray(), File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -193,7 +194,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains transformed data, with changes
-			Assert.AreEqual(originalData.Select(b => b ^ b).ToArray(), File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(originalData.Select(b => b ^ b).ToArray(), File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -221,7 +222,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains original data, no changes
-			Assert.AreEqual(originalData, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(originalData, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -241,7 +242,7 @@ public class TransactionalFileMappedBufferTests {
 				// delete data
 				file.RemoveRange(0, file.Count);
 				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(file.PageMarkerRepo.BaseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
-				Assert.IsTrue(File.Exists(markerFile));
+				ClassicAssert.IsTrue(File.Exists(markerFile));
 			}
 		}
 	}
@@ -267,7 +268,7 @@ public class TransactionalFileMappedBufferTests {
 				file.RemoveRange(lastPage.StartIndex, lastPage.Count);
 
 				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(file.PageMarkerRepo.BaseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPage.Number);
-				Assert.IsFalse(File.Exists(markerFile));
+				ClassicAssert.IsFalse(File.Exists(markerFile));
 			}
 		}
 	}
@@ -288,7 +289,7 @@ public class TransactionalFileMappedBufferTests {
 				// delete data
 				file.RemoveRange(0, file.Count);
 				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(file.PageMarkerRepo.BaseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
-				Assert.IsTrue(File.Exists(markerFile));
+				ClassicAssert.IsTrue(File.Exists(markerFile));
 
 				// rollback transaction
 				file.Rollback();
@@ -297,7 +298,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains original data, no changes
-			Assert.AreEqual(originalData, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(originalData, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -317,7 +318,7 @@ public class TransactionalFileMappedBufferTests {
 				// delete data
 				file.RemoveRange(0, file.Count);
 				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(file.PageMarkerRepo.BaseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 0);
-				Assert.IsTrue(File.Exists(markerFile));
+				ClassicAssert.IsTrue(File.Exists(markerFile));
 				// Commit transaction
 				file.Commit();
 			}
@@ -325,7 +326,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains transformed data, with changes
-			Assert.AreEqual(new byte[0], File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(new byte[0], File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -353,7 +354,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains transformed data, with changes
-			Assert.AreEqual(new byte[0], File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(new byte[0], File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -381,7 +382,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains original data, no changes
-			Assert.AreEqual(originalData, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(originalData, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -405,7 +406,7 @@ public class TransactionalFileMappedBufferTests {
 				// delete data
 				file.RemoveRange(file.Pages[1].StartIndex, file.Pages[1].Count);
 				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, 1);
-				Assert.IsTrue(File.Exists(markerFile));
+				ClassicAssert.IsTrue(File.Exists(markerFile));
 				// Commit transaction
 				file.Commit();
 			}
@@ -413,7 +414,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains transformed data, with changes
-			Assert.AreEqual(originalData.Take(pageSize).ToArray(), File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(originalData.Take(pageSize).ToArray(), File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -436,8 +437,8 @@ public class TransactionalFileMappedBufferTests {
 
 				var markerFile1 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[0].Number);
 				var markerFile2 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[1].Number);
-				Assert.IsTrue(File.Exists(markerFile1));
-				Assert.IsTrue(File.Exists(markerFile2));
+				ClassicAssert.IsTrue(File.Exists(markerFile1));
+				ClassicAssert.IsTrue(File.Exists(markerFile2));
 			}
 		}
 	}
@@ -464,8 +465,8 @@ public class TransactionalFileMappedBufferTests {
 
 				var markerFile1 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[0].Number);
 				var markerFile2 = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(baseDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, lastPages[1].Number);
-				Assert.IsFalse(File.Exists(markerFile1));
-				Assert.IsFalse(File.Exists(markerFile2));
+				ClassicAssert.IsFalse(File.Exists(markerFile1));
+				ClassicAssert.IsFalse(File.Exists(markerFile2));
 			}
 		}
 	}
@@ -493,8 +494,8 @@ public class TransactionalFileMappedBufferTests {
 				file.RemoveRange(pageSize + lastPageRemainingData, pageSize - lastPageRemainingData);
 				file.Flush();
 				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 1);
-				Assert.IsTrue(File.Exists(markerFile));
-				Assert.AreEqual(lastPageRemainingData, Tools.FileSystem.GetFileSize(markerFile));
+				ClassicAssert.IsTrue(File.Exists(markerFile));
+				ClassicAssert.AreEqual(lastPageRemainingData, Tools.FileSystem.GetFileSize(markerFile));
 
 				// Commit transaction
 				file.Rollback();
@@ -503,7 +504,7 @@ public class TransactionalFileMappedBufferTests {
 			AssertSingleFile(baseDir, fileName);
 
 			// Contains transformed data, with changes
-			Assert.AreEqual(originalData, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(originalData, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -526,8 +527,8 @@ public class TransactionalFileMappedBufferTests {
 				file.RemoveRange(pageSize + lastPageRemainingData, pageSize - lastPageRemainingData);
 				file.Flush();
 				var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, 1);
-				Assert.IsTrue(File.Exists(markerFile));
-				Assert.AreEqual(lastPageRemainingData, Tools.FileSystem.GetFileSize(markerFile));
+				ClassicAssert.IsTrue(File.Exists(markerFile));
+				ClassicAssert.AreEqual(lastPageRemainingData, Tools.FileSystem.GetFileSize(markerFile));
 
 				// Commit transaction
 				file.Commit();
@@ -538,7 +539,7 @@ public class TransactionalFileMappedBufferTests {
 			// Contains transformed data, with changes
 			var expected = originalData.Take(pageSize + lastPageRemainingData).ToArray();
 			var actual = File.ReadAllBytes(fileName);
-			Assert.AreEqual(expected, actual);
+			ClassicAssert.AreEqual(expected, actual);
 		}
 	}
 
@@ -564,7 +565,7 @@ public class TransactionalFileMappedBufferTests {
 				// check deleted pages 3..10 exist
 				for (var i = 2; i < 10; i++) {
 					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.DeletedMarker, i);
-					Assert.IsTrue(File.Exists(markerFile));
+					ClassicAssert.IsTrue(File.Exists(markerFile));
 				}
 
 				// Commit transaction
@@ -576,7 +577,7 @@ public class TransactionalFileMappedBufferTests {
 			// Contains transformed data, with changes
 			var expected = originalData;
 			var actual = File.ReadAllBytes(fileName);
-			Assert.AreEqual(expected, actual);
+			ClassicAssert.AreEqual(expected, actual);
 		}
 	}
 
@@ -592,7 +593,7 @@ public class TransactionalFileMappedBufferTests {
 		Tools.FileSystem.AppendAllBytes(fileName, originalData);
 		using (Tools.Scope.ExecuteOnDispose(() => Tools.FileSystem.DeleteDirectory(baseDir))) {
 			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageSize, maxOpenPages * pageSize), FileAccessMode.OpenOrCreate)) {
-				Assert.IsTrue(file.RequiresLoad);
+				ClassicAssert.IsTrue(file.RequiresLoad);
 				file.Load();
 
 				// No pages should exist after load
@@ -604,7 +605,7 @@ public class TransactionalFileMappedBufferTests {
 				// check deleted pages 3..10 exist
 				for (var i = 2; i < 10; i++) {
 					var markerFile = TransactionalFileMappedBuffer.MarkerRepository.GeneratePageMarkerFileName(pagesDir, file.FileID, TransactionalFileMappedBuffer.PageMarkerType.UncommittedPage, i);
-					Assert.IsTrue(File.Exists(markerFile));
+					ClassicAssert.IsTrue(File.Exists(markerFile));
 				}
 
 				// Delete pages 3..10
@@ -623,7 +624,7 @@ public class TransactionalFileMappedBufferTests {
 			// Contains transformed data, with changes
 			var expected = originalData;
 			var actual = File.ReadAllBytes(fileName);
-			Assert.AreEqual(expected, actual);
+			ClassicAssert.AreEqual(expected, actual);
 		}
 	}
 
@@ -726,17 +727,17 @@ public class TransactionalFileMappedBufferTests {
 			file.Committing += () => committingCount++;
 			file.Committed += () => committedCount++;
 			file.AddRange(new Random(31337).NextBytes(100));
-			Assert.AreEqual(0, committingCount);
-			Assert.AreEqual(0, committedCount);
-			Assert.AreEqual(0, rollingBackCount);
-			Assert.AreEqual(0, rolledBackCount);
+			ClassicAssert.AreEqual(0, committingCount);
+			ClassicAssert.AreEqual(0, committedCount);
+			ClassicAssert.AreEqual(0, rollingBackCount);
+			ClassicAssert.AreEqual(0, rolledBackCount);
 
 			// Commit transaction
 			file.Commit();
-			Assert.AreEqual(1, committingCount);
-			Assert.AreEqual(1, committedCount);
-			Assert.AreEqual(0, rollingBackCount);
-			Assert.AreEqual(0, rolledBackCount);
+			ClassicAssert.AreEqual(1, committingCount);
+			ClassicAssert.AreEqual(1, committedCount);
+			ClassicAssert.AreEqual(0, rollingBackCount);
+			ClassicAssert.AreEqual(0, rolledBackCount);
 
 		}
 		
@@ -756,17 +757,17 @@ public class TransactionalFileMappedBufferTests {
 			file.RollingBack += () => rollingBackCount++;
 			file.RolledBack += () => rolledBackCount++;
 			file.AddRange(new Random(31337).NextBytes(100));
-			Assert.AreEqual(0, committingCount);
-			Assert.AreEqual(0, committedCount);
+			ClassicAssert.AreEqual(0, committingCount);
+			ClassicAssert.AreEqual(0, committedCount);
 
-			Assert.AreEqual(0, rollingBackCount);
-			Assert.AreEqual(0, rolledBackCount);
+			ClassicAssert.AreEqual(0, rollingBackCount);
+			ClassicAssert.AreEqual(0, rolledBackCount);
 			// Commit transaction
 			file.Rollback();
-			Assert.AreEqual(0, committingCount);
-			Assert.AreEqual(0, committedCount);
-			Assert.AreEqual(1, rollingBackCount);
-			Assert.AreEqual(1, rolledBackCount);
+			ClassicAssert.AreEqual(0, committingCount);
+			ClassicAssert.AreEqual(0, committedCount);
+			ClassicAssert.AreEqual(1, rollingBackCount);
+			ClassicAssert.AreEqual(1, rolledBackCount);
 		}
 	}
 
@@ -802,7 +803,7 @@ public class TransactionalFileMappedBufferTests {
 					IEnumerable<byte> newItems = RNG.NextBytes(newItemsCount);
 					file.AddRange(newItems);
 					expected.AddRange(newItems);
-					Assert.AreEqual(expected, file);
+					ClassicAssert.AreEqual(expected, file);
 
 					// update a random amount
 					if (file.Count > 0) {
@@ -810,7 +811,7 @@ public class TransactionalFileMappedBufferTests {
 						newItems = RNG.NextBytes(range.End - range.Start + 1);
 						expected.UpdateRangeSequentially(range.Start, newItems);
 						file.UpdateRange(range.Start, newItems);
-						Assert.AreEqual(expected, file);
+						ClassicAssert.AreEqual(expected, file);
 
 						// shuffle a random amount
 						range = RNG.NextRange((int)file.Count);
@@ -821,20 +822,20 @@ public class TransactionalFileMappedBufferTests {
 						expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 						file.UpdateRange(range.Start, newItems);
 
-						Assert.AreEqual(expected.Count, file.Count);
-						Assert.AreEqual(expected, file);
+						ClassicAssert.AreEqual(expected.Count, file.Count);
+						ClassicAssert.AreEqual(expected, file);
 
 						// remove a random amount (FROM END OF LIST)
 						range = new ValueRange<int>(RNG.Next(0, (int)file.Count), (int)file.Count - 1);
 						file.RemoveRange(range.Start, range.End - range.Start + 1);
 						expected.RemoveRange(range.Start, range.End - range.Start + 1);
-						Assert.AreEqual(expected, file);
+						ClassicAssert.AreEqual(expected, file);
 					}
 				}
 				file.Commit();
 			}
 			var fileBytes = File.ReadAllBytes(fileName);
-			Assert.AreEqual(expected, fileBytes);
+			ClassicAssert.AreEqual(expected, fileBytes);
 		}
 	}
 
@@ -865,7 +866,7 @@ public class TransactionalFileMappedBufferTests {
 						file.Load();
 
 					// initial check
-					Assert.AreEqual(expected, file);
+					ClassicAssert.AreEqual(expected, file);
 					for (var i = 0; i < 10; i++) {
 
 						// add a random amount
@@ -874,7 +875,7 @@ public class TransactionalFileMappedBufferTests {
 						IEnumerable<byte> newItems = RNG.NextBytes(newItemsCount);
 						file.AddRange(newItems);
 						expected.AddRange(newItems);
-						Assert.AreEqual(expected, file);
+						ClassicAssert.AreEqual(expected, file);
 
 						// update a random amount
 						if (file.Count > 0) {
@@ -882,7 +883,7 @@ public class TransactionalFileMappedBufferTests {
 							newItems = RNG.NextBytes(range.End - range.Start + 1);
 							expected.UpdateRangeSequentially(range.Start, newItems);
 							file.UpdateRange(range.Start, newItems);
-							Assert.AreEqual(expected, file);
+							ClassicAssert.AreEqual(expected, file);
 
 							// shuffle a random amount
 							range = RNG.NextRange((int)file.Count);
@@ -893,14 +894,14 @@ public class TransactionalFileMappedBufferTests {
 							expected.UpdateRangeSequentially(range.Start, expectedNewItems);
 							file.UpdateRange(range.Start, newItems);
 
-							Assert.AreEqual(expected.Count, file.Count);
-							Assert.AreEqual(expected, file);
+							ClassicAssert.AreEqual(expected.Count, file.Count);
+							ClassicAssert.AreEqual(expected, file);
 
 							// remove a random amount (FROM END OF LIST)
 							range = new ValueRange<int>(RNG.Next(0, (int)file.Count), (int)file.Count - 1);
 							file.RemoveRange(range.Start, range.End - range.Start + 1);
 							expected.RemoveRange(range.Start, range.End - range.Start + 1);
-							Assert.AreEqual(expected, file);
+							ClassicAssert.AreEqual(expected, file);
 						}
 					}
 					file.Flush(); // write all pages to disk
@@ -923,7 +924,7 @@ public class TransactionalFileMappedBufferTests {
 			using (var file = new TransactionalFileMappedBuffer(TransactionalFileDescriptor.From(fileName, pageBaseDir, pageSize, maxOpenPages * pageSize))) {
 				file.Load(); // should resume commit
 			}
-			Assert.AreEqual(expected, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(expected, File.ReadAllBytes(fileName));
 		}
 	}
 

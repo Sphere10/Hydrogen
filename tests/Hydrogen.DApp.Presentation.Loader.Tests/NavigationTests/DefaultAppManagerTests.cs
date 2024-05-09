@@ -12,6 +12,7 @@ using NUnit.Framework;
 using Hydrogen.DApp.Presentation.Loader.Plugins;
 using Hydrogen.DApp.Presentation.Loader.Tests.PluginManagerTests;
 using Hydrogen.DApp.Presentation.Plugins;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.DApp.Presentation.Loader.Tests.NavigationTests;
 
@@ -24,7 +25,7 @@ public class DefaultAppManagerTests {
 		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
 		IAppManager appManager = new DefaultAppManager(pluginManager, new TestNavigationManager());
 
-		Assert.AreEqual(expected.Apps.Count(), appManager.Apps.Count());
+		ClassicAssert.AreEqual(expected.Apps.Count(), appManager.Apps.Count());
 	}
 
 	[Test]
@@ -35,9 +36,9 @@ public class DefaultAppManagerTests {
 		IPluginManager pluginManager = new DefaultPluginManager(locator, new NullLogger<DefaultPluginManager>());
 		IAppManager appManager = new DefaultAppManager(pluginManager, new TestNavigationManager());
 
-		Assert.NotNull(appManager.SelectedApp);
+		ClassicAssert.NotNull(appManager.SelectedApp);
 
-		Assert.AreEqual(expected.Apps.First().Name, appManager.SelectedApp.Name);
+		ClassicAssert.AreEqual(expected.Apps.First().Name, appManager.SelectedApp.Name);
 	}
 
 	[Test]
@@ -50,7 +51,7 @@ public class DefaultAppManagerTests {
 
 		nav.NavigateTo(nav.Uri + "unknown");
 
-		Assert.Null(appManager.SelectedApp);
+		ClassicAssert.Null(appManager.SelectedApp);
 	}
 
 	[Test]
@@ -65,8 +66,8 @@ public class DefaultAppManagerTests {
 
 		nav.NavigateTo(app.Route);
 
-		Assert.NotNull(appManager.SelectedApp);
-		Assert.AreEqual(app.Name, appManager.SelectedApp.Name);
+		ClassicAssert.NotNull(appManager.SelectedApp);
+		ClassicAssert.AreEqual(app.Name, appManager.SelectedApp.Name);
 	}
 
 	[Test]
@@ -82,9 +83,9 @@ public class DefaultAppManagerTests {
 
 		nav.NavigateTo(page.Route);
 
-		Assert.NotNull(appManager.SelectedApp);
-		Assert.NotNull(appManager.SelectedPage);
-		Assert.AreEqual(app.Name, appManager.SelectedApp.Name);
-		Assert.AreEqual(page.Name, appManager.SelectedPage.Name);
+		ClassicAssert.NotNull(appManager.SelectedApp);
+		ClassicAssert.NotNull(appManager.SelectedPage);
+		ClassicAssert.AreEqual(app.Name, appManager.SelectedApp.Name);
+		ClassicAssert.AreEqual(page.Name, appManager.SelectedPage.Name);
 	}
 }

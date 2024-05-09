@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -23,7 +24,7 @@ public class MiscellaneousTests {
 
 	[Test]
 	public void InterpolateNullAssumption() {
-		Assert.AreEqual(string.Empty, $"{null}");
+		ClassicAssert.AreEqual(string.Empty, $"{null}");
 	}
 
 	[Test]

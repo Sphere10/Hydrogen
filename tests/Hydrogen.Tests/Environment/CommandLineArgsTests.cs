@@ -51,16 +51,16 @@
 //				"--p1", "c1", "--p2", "p2value", "c2", "--p3", "p3value", "--p3", "p3value2"
 //			});
 
-//			Assert.IsTrue(result.Success);
+//			ClassicAssert.IsTrue(result.Success);
 //			var results = result.Value;
 
-//			Assert.IsTrue(results.Arguments.Contains("p1"));
-//			Assert.IsEmpty(results.Arguments["p1"]);
-//			Assert.AreEqual("c1", results.SubCommand.CommandName);
-//			Assert.AreEqual("p2value", results.SubCommand.Arguments["p2"].Single());
-//			Assert.AreEqual("c2", results.SubCommand.SubCommand.CommandName);
-//			Assert.AreEqual("p3value", results.SubCommand.SubCommand.Arguments["p3"].First());
-//			Assert.AreEqual("p3value2", results.SubCommand.SubCommand.Arguments["p3"].Skip(1).First());
+//			ClassicAssert.IsTrue(results.Arguments.Contains("p1"));
+//			ClassicAssert.IsEmpty(results.Arguments["p1"]);
+//			ClassicAssert.AreEqual("c1", results.SubCommand.CommandName);
+//			ClassicAssert.AreEqual("p2value", results.SubCommand.Arguments["p2"].Single());
+//			ClassicAssert.AreEqual("c2", results.SubCommand.SubCommand.CommandName);
+//			ClassicAssert.AreEqual("p3value", results.SubCommand.SubCommand.Arguments["p3"].First());
+//			ClassicAssert.AreEqual("p3value2", results.SubCommand.SubCommand.Arguments["p3"].Skip(1).First());
 //		}
 
 //		[Test]
@@ -80,17 +80,17 @@
 //			};
 
 //			var result = args.TryParseArguments(new[] { "--p1", "--p2", "p2value", "--p3", "c1" });
-//			Assert.IsEmpty(result.Value.Arguments["p1"]);
-//			Assert.AreEqual("p2value", result.Value.Arguments["p2"].Single());
-//			Assert.IsEmpty(result.Value.Arguments["p3"]);
-//			Assert.AreEqual("c1", result.Value.SubCommand.CommandName);
+//			ClassicAssert.IsEmpty(result.Value.Arguments["p1"]);
+//			ClassicAssert.AreEqual("p2value", result.Value.Arguments["p2"].Single());
+//			ClassicAssert.IsEmpty(result.Value.Arguments["p3"]);
+//			ClassicAssert.AreEqual("c1", result.Value.SubCommand.CommandName);
 //		}
 
 //		[Test]
 //		public void DefaultConstructorParse() {
 //			var args = new CommandLineParameters();
 //			var result = args.TryParseArguments(Array.Empty<string>());
-//			Assert.IsTrue(result.Success);
+//			ClassicAssert.IsTrue(result.Success);
 //		}
 
 //		[Test]
@@ -105,9 +105,9 @@
 //			};
 
 //			var result = args.TryParseArguments(new string[] { "--test", "valid", "unittest" });
-//			Assert.IsTrue(result.Success);
-//			Assert.AreEqual("unittest", result.Value.SubCommand.CommandName);
-//			Assert.AreEqual("valid", result.Value.Arguments["test"].Single());
+//			ClassicAssert.IsTrue(result.Success);
+//			ClassicAssert.AreEqual("unittest", result.Value.SubCommand.CommandName);
+//			ClassicAssert.AreEqual("valid", result.Value.Arguments["test"].Single());
 //		}
 
 //		[Test]
@@ -122,9 +122,9 @@
 
 //			var result = args.TryParseArguments(Array.Empty<string>());
 
-//			Assert.IsTrue(result.Success);
-//			Assert.IsNull(result.Value.SubCommand);
-//			Assert.IsEmpty(result.Value.Arguments);
+//			ClassicAssert.IsTrue(result.Success);
+//			ClassicAssert.IsNull(result.Value.SubCommand);
+//			ClassicAssert.IsEmpty(result.Value.Arguments);
 //		}
 
 //		[Test]
@@ -138,7 +138,7 @@
 //				});
 
 //			var result = args.TryParseArguments(new[] { "test2", "--baz" });
-//			Assert.IsTrue(result.Failure);
+//			ClassicAssert.IsTrue(result.Failure);
 //		}
 
 //		[Test]
@@ -152,7 +152,7 @@
 //				});
 
 //			var result = args.TryParseArguments(new[] { "test", "test2", "--baz" });
-//			Assert.IsTrue(result.Failure);
+//			ClassicAssert.IsTrue(result.Failure);
 //		}
 
 //		[Test]
@@ -171,12 +171,12 @@
 //				});
 
 //			var result = args.TryParseArguments(new[] { "test", "test-2", "--foo baz" });
-//			Assert.IsTrue(result.Success);
-//			Assert.AreEqual("test", result.Value.SubCommand.CommandName);
+//			ClassicAssert.IsTrue(result.Success);
+//			ClassicAssert.AreEqual("test", result.Value.SubCommand.CommandName);
 //			var testResult = result.Value.SubCommand;
 //			var test2Results = testResult.SubCommand;
 
-//			Assert.AreEqual("baz", test2Results.Arguments["foo"].Single());
+//			ClassicAssert.AreEqual("baz", test2Results.Arguments["foo"].Single());
 //		}
 
 //		[Test]
@@ -196,10 +196,10 @@
 //				});
 
 //			var invalid = args.TryParseArguments(new[] { "test", "test-2", "--fo0", "baz" });
-//			Assert.IsFalse(invalid.Success);
+//			ClassicAssert.IsFalse(invalid.Success);
 
 //			var valid = args.TryParseArguments(new[] { "test", "test-2", "--foo", "baz" });
-//			Assert.IsTrue(valid.Success);
+//			ClassicAssert.IsTrue(valid.Success);
 //		}
 
 //		[Test]
@@ -218,10 +218,10 @@
 //				});
 
 //			var result = args.TryParseArguments(new[] { "test", "test-2" });
-//			Assert.IsTrue(result.Success);
+//			ClassicAssert.IsTrue(result.Success);
 
-//			Assert.AreEqual("test", result.Value.SubCommand.CommandName);
-//			Assert.AreEqual("test-2", result.Value.SubCommand.SubCommand.CommandName);
+//			ClassicAssert.AreEqual("test", result.Value.SubCommand.CommandName);
+//			ClassicAssert.AreEqual("test-2", result.Value.SubCommand.SubCommand.CommandName);
 //		}
 
 //		[Test]
@@ -243,9 +243,9 @@
 
 //			var parsed = p.TryParseArguments(args);
 
-//			Assert.IsTrue(parsed.Success);
-//			Assert.AreEqual(1, parsed.Value.Arguments["test"].Count());
-//			Assert.AreEqual("test", parsed.Value.Arguments["test"].Single());
+//			ClassicAssert.IsTrue(parsed.Success);
+//			ClassicAssert.AreEqual(1, parsed.Value.Arguments["test"].Count());
+//			ClassicAssert.AreEqual("test", parsed.Value.Arguments["test"].Single());
 //		}
 
 //		[Test]
@@ -268,8 +268,8 @@
 //				"--multi", "c"
 //			});
 
-//			Assert.IsTrue(parsed.Success);
-//			Assert.AreEqual(new[] { "a", "b", "c" }, parsed.Value.Arguments["multi"]);
+//			ClassicAssert.IsTrue(parsed.Success);
+//			ClassicAssert.AreEqual(new[] { "a", "b", "c" }, parsed.Value.Arguments["multi"]);
 //		}
 
 //		[Test]
@@ -288,16 +288,16 @@
 //				"--single=c"
 //			});
 
-//			Assert.IsFalse(invalid.Success);
-//			Assert.AreEqual(1, invalid.ErrorMessages.Count());
+//			ClassicAssert.IsFalse(invalid.Success);
+//			ClassicAssert.AreEqual(1, invalid.ErrorMessages.Count());
 
 //			var valid = args.TryParseArguments(new[]
 //			{
 //				"--single=c"
 //			});
 
-//			Assert.IsTrue(valid.Success);
-//			Assert.AreEqual("c", valid.Value.Arguments["single"].Single());
+//			ClassicAssert.IsTrue(valid.Success);
+//			ClassicAssert.AreEqual("c", valid.Value.Arguments["single"].Single());
 //		}
 
 //		[Test]
@@ -317,17 +317,17 @@
 //				"test"
 //			});
 
-//			Assert.IsFalse(invalid.Success);
-//			Assert.AreEqual(1, invalid.ErrorMessages.Count());
-//			Assert.IsEmpty(invalid.Value.Arguments);
+//			ClassicAssert.IsFalse(invalid.Success);
+//			ClassicAssert.AreEqual(1, invalid.ErrorMessages.Count());
+//			ClassicAssert.IsEmpty(invalid.Value.Arguments);
 
 //			var valid = args.TryParseArguments(new[]
 //			{
 //				"/mandatory", "test",
 //			});
 
-//			Assert.IsTrue(valid.Success);
-//			Assert.AreEqual("test", valid.Value.Arguments["mandatory"].Single());
+//			ClassicAssert.IsTrue(valid.Success);
+//			ClassicAssert.AreEqual("test", valid.Value.Arguments["mandatory"].Single());
 //		}
 
 //		[Test]
@@ -349,17 +349,17 @@
 //				"/mandatory", "test",
 //			});
 
-//			Assert.IsFalse(invalid.Success);
-//			Assert.AreEqual(1, invalid.ErrorMessages.Count());
-//			Assert.IsEmpty(invalid.Value.Arguments);
+//			ClassicAssert.IsFalse(invalid.Success);
+//			ClassicAssert.AreEqual(1, invalid.ErrorMessages.Count());
+//			ClassicAssert.IsEmpty(invalid.Value.Arguments);
 
 //			var valid = args.TryParseArguments(new[]
 //			{
 //				"/mAnDaToRy", "test",
 //			});
 
-//			Assert.IsTrue(valid.Success);
-//			Assert.AreEqual("test", valid.Value.Arguments["mAnDaToRy"].Single());
+//			ClassicAssert.IsTrue(valid.Success);
+//			ClassicAssert.AreEqual("test", valid.Value.Arguments["mAnDaToRy"].Single());
 //		}
 
 //		[Test]
@@ -378,8 +378,8 @@
 //				"--h"
 //			});
 
-//			Assert.IsTrue(help.Success);
-//			Assert.IsTrue(help.Value.HelpRequested);
+//			ClassicAssert.IsTrue(help.Success);
+//			ClassicAssert.IsTrue(help.Value.HelpRequested);
 //		}
 
 //		[Test]
@@ -397,8 +397,8 @@
 //				"--help"
 //			});
 
-//			Assert.IsTrue(help.Success);
-//			Assert.IsTrue(help.Value.HelpRequested);
+//			ClassicAssert.IsTrue(help.Success);
+//			ClassicAssert.IsTrue(help.Value.HelpRequested);
 //		}
 
 //		[Test]
@@ -417,8 +417,8 @@
 //				"/mandatoryWithDependency", "test"
 //			});
 
-//			Assert.IsFalse(invalid.Success);
-//			Assert.AreEqual(1, invalid.ErrorMessages.Count());
+//			ClassicAssert.IsFalse(invalid.Success);
+//			ClassicAssert.AreEqual(1, invalid.ErrorMessages.Count());
 
 //			var valid = args.TryParseArguments(new[]
 //			{
@@ -426,10 +426,10 @@
 //				"/test", "test"
 //			});
 
-//			Assert.IsTrue(valid.Success);
-//			Assert.IsEmpty(valid.ErrorMessages);
-//			Assert.AreEqual("test", valid.Value.Arguments["mandatoryWithDependency"].Single());
-//			Assert.AreEqual("test", valid.Value.Arguments["test"].Single());
+//			ClassicAssert.IsTrue(valid.Success);
+//			ClassicAssert.IsEmpty(valid.ErrorMessages);
+//			ClassicAssert.AreEqual("test", valid.Value.Arguments["mandatoryWithDependency"].Single());
+//			ClassicAssert.AreEqual("test", valid.Value.Arguments["test"].Single());
 //		}
 
 //		[Test]
@@ -459,9 +459,9 @@
 //				});
 //			var parsed = args.TryParseArguments(input);
 
-//			Assert.IsTrue(parsed.Success);
-//			Assert.AreEqual(5, parsed.Value.Arguments.Count());
-//			Assert.IsEmpty(parsed.ErrorMessages);
+//			ClassicAssert.IsTrue(parsed.Success);
+//			ClassicAssert.AreEqual(5, parsed.Value.Arguments.Count());
+//			ClassicAssert.IsEmpty(parsed.ErrorMessages);
 //		}
 //	}
 //}

@@ -13,6 +13,7 @@ using Hydrogen.CryptoEx.EC;
 using NUnit.Framework;
 using Org.BouncyCastle.Utilities;
 using Hydrogen.CryptoEx.EC.Schnorr;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.CryptoEx.Tests;
 
@@ -88,7 +89,7 @@ public class MuSigBuilderTest {
 			new byte[] { 255 },
 		};
 		MuSigBuilder.SortPublicKeysInLexicographicOrder(input);
-		CollectionAssert.AreEqual(expected, input);
+		ClassicAssert.AreEqual(expected, input);
 	}
 
 	[Test]
@@ -151,11 +152,11 @@ public class MuSigBuilderTest {
 		Assert.DoesNotThrow(bobMuSigBuilder.VerifyPartialSignatures);
 		Assert.DoesNotThrow(charlieMuSigBuilder.VerifyPartialSignatures);
 
-		Assert.AreEqual(aliceAggregatedSignature.AggregatedSignature, bobAggregatedSignature.AggregatedSignature);
-		Assert.AreEqual(bobAggregatedSignature.AggregatedSignature, charlieAggregatedSignature.AggregatedSignature);
-		Assert.AreEqual(aliceAggregatedSignature.AggregatedSignature, AggregatedSig);
+		ClassicAssert.AreEqual(aliceAggregatedSignature.AggregatedSignature, bobAggregatedSignature.AggregatedSignature);
+		ClassicAssert.AreEqual(bobAggregatedSignature.AggregatedSignature, charlieAggregatedSignature.AggregatedSignature);
+		ClassicAssert.AreEqual(aliceAggregatedSignature.AggregatedSignature, AggregatedSig);
 		// since all aggregated signatures are same from above check, we can just verify one.
-		Assert.IsTrue(MuSig.Schnorr.VerifyDigest(charlieAggregatedSignature.AggregatedSignature,
+		ClassicAssert.IsTrue(MuSig.Schnorr.VerifyDigest(charlieAggregatedSignature.AggregatedSignature,
 			MessageDigest,
 			charlieAggregatedSignature.AggregatedPublicKey));
 	}
@@ -217,25 +218,25 @@ public class MuSigBuilderTest {
 		var errorMessage =
 			$"partial signature verification of participant (publicKey: {bobMuSigBuilder.PublicKey.ToHexString()}) failed";
 		var result = Assert.Throws<InvalidOperationException>(() => aliceMuSigBuilder.VerifyPartialSignatures());
-		Assert.AreEqual(result?.Message, errorMessage);
+		ClassicAssert.AreEqual(result?.Message, errorMessage);
 		result = Assert.Throws<InvalidOperationException>(() => bobMuSigBuilder.VerifyPartialSignatures());
-		Assert.AreEqual(result?.Message, errorMessage);
+		ClassicAssert.AreEqual(result?.Message, errorMessage);
 		result = Assert.Throws<InvalidOperationException>(() => charlieMuSigBuilder.VerifyPartialSignatures());
-		Assert.AreEqual(result?.Message, errorMessage);
+		ClassicAssert.AreEqual(result?.Message, errorMessage);
 
 		var aliceAggregatedSignature = aliceMuSigBuilder.BuildAggregatedSignature();
 		var bobAggregatedSignature = bobMuSigBuilder.BuildAggregatedSignature();
 		var charlieAggregatedSignature = charlieMuSigBuilder.BuildAggregatedSignature();
 
-		Assert.IsFalse(MuSig.Schnorr.VerifyDigest(aliceAggregatedSignature.AggregatedSignature,
+		ClassicAssert.IsFalse(MuSig.Schnorr.VerifyDigest(aliceAggregatedSignature.AggregatedSignature,
 			MessageDigest,
 			aliceAggregatedSignature.AggregatedPublicKey));
 
-		Assert.IsFalse(MuSig.Schnorr.VerifyDigest(bobAggregatedSignature.AggregatedSignature,
+		ClassicAssert.IsFalse(MuSig.Schnorr.VerifyDigest(bobAggregatedSignature.AggregatedSignature,
 			MessageDigest,
 			bobAggregatedSignature.AggregatedPublicKey));
 
-		Assert.IsFalse(MuSig.Schnorr.VerifyDigest(charlieAggregatedSignature.AggregatedSignature,
+		ClassicAssert.IsFalse(MuSig.Schnorr.VerifyDigest(charlieAggregatedSignature.AggregatedSignature,
 			MessageDigest,
 			charlieAggregatedSignature.AggregatedPublicKey));
 	}
@@ -286,11 +287,11 @@ public class MuSigBuilderTest {
 			aggregatedSignatures.Add(muSigBuilders[i].BuildAggregatedSignature());
 		}
 
-		Assert.IsTrue(aggregatedSignatures.All(bytes => bytes.AggregatedSignature.SequenceEqual(aggregatedSignatures
+		ClassicAssert.IsTrue(aggregatedSignatures.All(bytes => bytes.AggregatedSignature.SequenceEqual(aggregatedSignatures
 			.First()
 			.AggregatedSignature)));
 		// since all aggregated signatures are same from above check, we can just verify one.
-		Assert.IsTrue(muSig.Schnorr.VerifyDigest(aggregatedSignatures.Last().AggregatedSignature,
+		ClassicAssert.IsTrue(muSig.Schnorr.VerifyDigest(aggregatedSignatures.Last().AggregatedSignature,
 			messageDigest,
 			aggregatedSignatures.Last().AggregatedPublicKey));
 	}
@@ -342,7 +343,7 @@ public class MuSigBuilderTest {
 		for (var i = 0; i < numberOfSigners; i++) {
 			// all participants validate each other partial signatures.
 			var result = Assert.Throws<InvalidOperationException>(() => muSigBuilders[i].VerifyPartialSignatures());
-			Assert.AreEqual(result?.Message, errorMessage);
+			ClassicAssert.AreEqual(result?.Message, errorMessage);
 		}
 
 		var aggregatedSignatures = new List<MuSigData>();
@@ -351,7 +352,7 @@ public class MuSigBuilderTest {
 		}
 
 		for (var i = 0; i < numberOfSigners; i++) {
-			Assert.IsFalse(MuSig.Schnorr.VerifyDigest(aggregatedSignatures[i].AggregatedSignature,
+			ClassicAssert.IsFalse(MuSig.Schnorr.VerifyDigest(aggregatedSignatures[i].AggregatedSignature,
 				MessageDigest,
 				aggregatedSignatures[i].AggregatedPublicKey));
 		}

@@ -29,7 +29,7 @@
 //	public void BlockMenuRenders() {
 //		var component = RenderComponent<BlockMenu>();
 
-//		Assert.AreEqual(1, component.RenderCount);
-//		Assert.NotNull(component.Instance);
+//		ClassicAssert.AreEqual(1, component.RenderCount);
+//		ClassicAssert.NotNull(component.Instance);
 //	}
 //}

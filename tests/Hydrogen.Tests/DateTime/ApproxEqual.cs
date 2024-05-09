@@ -8,6 +8,7 @@
 
 using System;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -19,47 +20,47 @@ public class ApproxEqual {
 	public void Exact() {
 		var date = DateTime.Now;
 		var test = date;
-		Assert.IsTrue(date.ApproxEqual(test));
+		ClassicAssert.IsTrue(date.ApproxEqual(test));
 	}
 
 	[Test]
 	public void LessThanButWithinTolerance() {
 		var date = DateTime.Now;
 		var test = date.Subtract(TimeSpan.FromMilliseconds(100));
-		Assert.IsTrue(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
+		ClassicAssert.IsTrue(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
 	}
 
 	[Test]
 	public void LessThanButAtMaxTolerance() {
 		var date = DateTime.Now;
 		var test = date.Subtract(TimeSpan.FromMilliseconds(250));
-		Assert.IsTrue(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
+		ClassicAssert.IsTrue(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
 	}
 
 	[Test]
 	public void LessThanAndBeyondTolerance() {
 		var date = DateTime.Now;
 		var test = date.Subtract(TimeSpan.FromMilliseconds(251));
-		Assert.IsFalse(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
+		ClassicAssert.IsFalse(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
 	}
 	[Test]
 	public void GreaterThanButWithinTolerance() {
 		var date = DateTime.Now;
 		var test = date.Add(TimeSpan.FromMilliseconds(100));
-		Assert.IsTrue(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
+		ClassicAssert.IsTrue(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
 	}
 
 	[Test]
 	public void GreaterThanButAtMaxTolerance() {
 		var date = DateTime.Now;
 		var test = date.Add(TimeSpan.FromMilliseconds(250));
-		Assert.IsTrue(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
+		ClassicAssert.IsTrue(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
 	}
 
 	[Test]
 	public void GreaterThanAndBeyondTolerance() {
 		var date = DateTime.Now;
 		var test = date.Add(TimeSpan.FromMilliseconds(251));
-		Assert.IsFalse(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
+		ClassicAssert.IsFalse(date.ApproxEqual(test, TimeSpan.FromMilliseconds(250)));
 	}
 }

@@ -14,6 +14,7 @@ using System.Linq;
 using AutoFixture;
 using FluentAssertions;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -38,7 +39,7 @@ public class DefaultSerializerTests {
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
 		var byteCount = serializer.SerializeReturnSize(item, writer);
 
-		Assert.AreEqual(memoryStream.Length, byteCount);
+		ClassicAssert.AreEqual(memoryStream.Length, byteCount);
 
 		memoryStream.Seek(0, SeekOrigin.Begin);
 		var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
@@ -56,7 +57,7 @@ public class DefaultSerializerTests {
 		var byteCount = serializer.SerializeReturnSize(item, writer);
 		var hash = Hashers.Hash(CHF.SHA2_256, memoryStream.ToArray());
 
-		Assert.AreEqual(memoryStream.Length, byteCount);
+		ClassicAssert.AreEqual(memoryStream.Length, byteCount);
 
 		memoryStream.Seek(0, SeekOrigin.Begin);
 		var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
@@ -78,7 +79,7 @@ public class DefaultSerializerTests {
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
 		var byteCount = serializer.SerializeReturnSize(item, writer);
 
-		Assert.AreEqual(memoryStream.Length, byteCount);
+		ClassicAssert.AreEqual(memoryStream.Length, byteCount);
 
 		memoryStream.Seek(0, SeekOrigin.Begin);
 		var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
@@ -97,7 +98,7 @@ public class DefaultSerializerTests {
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
 		var byteCount = serializer.SerializeReturnSize(item, writer);
 
-		Assert.AreEqual(memoryStream.Length, byteCount);
+		ClassicAssert.AreEqual(memoryStream.Length, byteCount);
 
 		memoryStream.Seek(0, SeekOrigin.Begin);
 		var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
@@ -116,7 +117,7 @@ public class DefaultSerializerTests {
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
 		var byteCount = serializer.SerializeReturnSize(item, writer);
 
-		Assert.AreEqual(memoryStream.Length, byteCount);
+		ClassicAssert.AreEqual(memoryStream.Length, byteCount);
 
 		memoryStream.Seek(0, SeekOrigin.Begin);
 		var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
@@ -143,7 +144,7 @@ public class DefaultSerializerTests {
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
 		var byteCount = serializer.SerializeReturnSize(parent, writer);
 
-		Assert.AreEqual(memoryStream.Length, byteCount);
+		ClassicAssert.AreEqual(memoryStream.Length, byteCount);
 
 		memoryStream.Seek(0, SeekOrigin.Begin);
 		var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
@@ -175,7 +176,7 @@ public class DefaultSerializerTests {
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
 		var byteCount = serializer.SerializeReturnSize(item, writer);
 
-		Assert.AreEqual(memoryStream.Length, byteCount);
+		ClassicAssert.AreEqual(memoryStream.Length, byteCount);
 
 		memoryStream.Seek(0, SeekOrigin.Begin);
 		var reader = new EndianBinaryReader(EndianBitConverter.Little, memoryStream);
@@ -232,7 +233,7 @@ public class DefaultSerializerTests {
 		var serializer = ItemSerializer<ReferenceTypeObject>.Default;
 		var calculatedSize = serializer.CalculateSize(item);
 		var serialized = serializer.SerializeBytesLE(item);
-		Assert.AreEqual(calculatedSize, serialized.Length);
+		ClassicAssert.AreEqual(calculatedSize, serialized.Length);
 	}
 
 	[Test]
@@ -244,7 +245,7 @@ public class DefaultSerializerTests {
 		var serializer = ItemSerializer<ReferenceTypeObject>.Default;
 		var calculatedSize = serializer.CalculateSize(item);
 		var serialized = serializer.SerializeBytesLE(item);
-		Assert.AreEqual(calculatedSize, serialized.Length);
+		ClassicAssert.AreEqual(calculatedSize, serialized.Length);
 	}
 
 	[Test]
@@ -255,17 +256,17 @@ public class DefaultSerializerTests {
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
 
 		var calculatedTotalSize = serializer.CalculateTotalSize(items, true, out var sizes);
-		Assert.AreEqual(0, memoryStream.Length);
+		ClassicAssert.AreEqual(0, memoryStream.Length);
 
 		var serializedTotal = 0L;
 		foreach (var item in items) {
 			serializedTotal += serializer.SerializeReturnSize(item, writer);
 		}
 
-		Assert.AreEqual(serializedTotal, calculatedTotalSize);
-		Assert.AreEqual(memoryStream.Length, calculatedTotalSize);
-		Assert.AreEqual(items.Count(), sizes.Length);
-		Assert.AreEqual(calculatedTotalSize, sizes.Sum(x => x));
+		ClassicAssert.AreEqual(serializedTotal, calculatedTotalSize);
+		ClassicAssert.AreEqual(memoryStream.Length, calculatedTotalSize);
+		ClassicAssert.AreEqual(items.Count(), sizes.Length);
+		ClassicAssert.AreEqual(calculatedTotalSize, sizes.Sum(x => x));
 	}
 
 	[Test]
@@ -276,11 +277,11 @@ public class DefaultSerializerTests {
 		using var memoryStream = new MemoryStream();
 		var writer = new EndianBinaryWriter(EndianBitConverter.Little, memoryStream);
 		var size = serializer.CalculateSize(item);
-		Assert.AreEqual(0, memoryStream.Length);
+		ClassicAssert.AreEqual(0, memoryStream.Length);
 
 		IItemSerializer<EnumObj> deserializer = ItemSerializer<EnumObj>.Default;
 		var serializedSize = deserializer.SerializeReturnSize(item, writer);
-		Assert.AreEqual(serializedSize, size);
+		ClassicAssert.AreEqual(serializedSize, size);
 	}
 }
 

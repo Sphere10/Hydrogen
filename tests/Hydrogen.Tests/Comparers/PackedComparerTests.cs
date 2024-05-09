@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -43,12 +44,12 @@ public class PackedComparerTests {
 	public void TestCompare_Consistency() {
 		IComparer<string> stringComparer = StringComparer.InvariantCultureIgnoreCase;
 		var packedComparer = stringComparer.AsPacked();
-		Assert.AreEqual(stringComparer.Compare(null, null), packedComparer.Compare(null, null));
-		Assert.AreEqual(stringComparer.Compare(null, "B"), packedComparer.Compare(null, "B"));
-		Assert.AreEqual(stringComparer.Compare("A", null), packedComparer.Compare("A", null));
-		Assert.AreEqual(stringComparer.Compare("a", "b"), packedComparer.Compare("a", "b"));
-		Assert.AreEqual(stringComparer.Compare("a", "a"), packedComparer.Compare("a", "a"));
-		Assert.AreEqual(stringComparer.Compare("a", "A"), packedComparer.Compare("a", "A"));
+		ClassicAssert.AreEqual(stringComparer.Compare(null, null), packedComparer.Compare(null, null));
+		ClassicAssert.AreEqual(stringComparer.Compare(null, "B"), packedComparer.Compare(null, "B"));
+		ClassicAssert.AreEqual(stringComparer.Compare("A", null), packedComparer.Compare("A", null));
+		ClassicAssert.AreEqual(stringComparer.Compare("a", "b"), packedComparer.Compare("a", "b"));
+		ClassicAssert.AreEqual(stringComparer.Compare("a", "a"), packedComparer.Compare("a", "a"));
+		ClassicAssert.AreEqual(stringComparer.Compare("a", "A"), packedComparer.Compare("a", "A"));
 	}
 
 	[Test]

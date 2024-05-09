@@ -11,6 +11,7 @@ using System.Data;
 using NUnit.Framework;
 using System.IO;
 using Hydrogen.Data.Tests.Properties;
+using NUnit.Framework.Legacy;
 
 
 namespace Hydrogen.Data.Tests;
@@ -30,7 +31,7 @@ public class SqliteDACTests {
 	public void Connection_CreateOpen() {
 		var dac = Tools.Sqlite.Open(DBFile);
 		using (var conn = dac.CreateOpenConnection()) {
-			Assert.AreEqual(conn.State, ConnectionState.Open);
+			ClassicAssert.AreEqual(conn.State, ConnectionState.Open);
 		}
 	}
 
@@ -38,7 +39,7 @@ public class SqliteDACTests {
 	public void Connection_CreateClosed() {
 		var dac = Tools.Sqlite.Open(DBFile);
 		using (var conn = dac.CreateConnection()) {
-			Assert.AreEqual(conn.State, ConnectionState.Closed);
+			ClassicAssert.AreEqual(conn.State, ConnectionState.Closed);
 		}
 	}
 
@@ -58,7 +59,7 @@ public class SqliteDACTests {
 			dac.ExecuteNonQuery(tableDDL);
 			dac.Insert("Table", new[] { new ColumnValue("Data1", guid) });
 			var read = dac.Select("Table", new[] { "Data1" }).Single().Get<Guid>(0);
-			Assert.AreEqual(guid, read);
+			ClassicAssert.AreEqual(guid, read);
 		} finally {
 			if (File.Exists(dbFile))
 				File.Delete(dbFile);
@@ -83,7 +84,7 @@ public class SqliteDACTests {
 			dac.Insert("Table", new[] { new ColumnValue("Data1", guid) });
 
 			var read = dac.Select("Table", new[] { "Data1" }, columnMatches: new[] { new ColumnValue("Data1", guid), }).Single().Get<Guid>(0);
-			Assert.AreEqual(guid, read);
+			ClassicAssert.AreEqual(guid, read);
 
 		} finally {
 			if (File.Exists(dbFile))
@@ -111,7 +112,7 @@ public class SqliteDACTests {
 			dac.Insert("Table", new[] { new ColumnValue("Data1", emptyGuid) });
 
 			var read = dac.Select("Table", new[] { "Data1" }, columnMatches: new[] { new ColumnValue("Data1", emptyGuid), }).Single().Get<Guid>(0);
-			Assert.AreEqual(emptyGuid, read);
+			ClassicAssert.AreEqual(emptyGuid, read);
 
 		} finally {
 			if (File.Exists(dbFile))

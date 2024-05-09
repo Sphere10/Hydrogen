@@ -9,7 +9,6 @@
 using System;
 using System.Text;
 using NUnit.Framework;
-using Org.BouncyCastle.Utilities;
 
 namespace Hydrogen.Tests;
 

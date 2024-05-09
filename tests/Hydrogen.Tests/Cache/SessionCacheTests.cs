@@ -9,6 +9,7 @@
 using System;
 using System.Threading;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -22,7 +23,7 @@ public class SessionCacheTests {
 		cache.Set(1, "one");
 		Thread.Sleep(300);
 		cache.Cleanup(); // Need to call this manually since https://dzone.com/articles/unit-testing-multi-threaded
-		Assert.AreEqual(0, cache.ItemCount);
+		ClassicAssert.AreEqual(0, cache.ItemCount);
 	}
 
 	[Test]
@@ -34,10 +35,10 @@ public class SessionCacheTests {
 		cache.Set(4, "four");
 		cache.Set(5, "five");
 		cache.Set(6, "six");
-		Assert.AreEqual(6, cache.ItemCount);
+		ClassicAssert.AreEqual(6, cache.ItemCount);
 		Thread.Sleep(300);
 		cache.Cleanup(); // Need to call this manually since https://dzone.com/articles/unit-testing-multi-threaded
-		Assert.AreEqual(0, cache.ItemCount);
+		ClassicAssert.AreEqual(0, cache.ItemCount);
 	}
 
 
@@ -50,7 +51,7 @@ public class SessionCacheTests {
 		cache.Set(4, "four");
 		cache.Set(5, "five");
 		cache.Set(6, "six");
-		Assert.AreEqual(6, cache.ItemCount);
+		ClassicAssert.AreEqual(6, cache.ItemCount);
 		for (var i = 0; i < 10; i++) {
 			cache.KeepAlive(1);
 			cache.KeepAlive(2);
@@ -59,10 +60,10 @@ public class SessionCacheTests {
 		}
 		cache.Cleanup(); // Need to call this manually since https://dzone.com/articles/unit-testing-multi-threaded
 		var remaining = cache.InternalStorage;
-		Assert.AreEqual(3, remaining.Count);
-		Assert.IsTrue(remaining.ContainsKey(1));
-		Assert.IsTrue(remaining.ContainsKey(2));
-		Assert.IsTrue(remaining.ContainsKey(3));
+		ClassicAssert.AreEqual(3, remaining.Count);
+		ClassicAssert.IsTrue(remaining.ContainsKey(1));
+		ClassicAssert.IsTrue(remaining.ContainsKey(2));
+		ClassicAssert.IsTrue(remaining.ContainsKey(3));
 	}
 
 	[Test]
@@ -74,7 +75,7 @@ public class SessionCacheTests {
 		cache.Set(4, "four");
 		cache.Set(5, "five");
 		cache.Set(6, "six");
-		Assert.AreEqual(6, cache.ItemCount);
+		ClassicAssert.AreEqual(6, cache.ItemCount);
 		for (int i = 0; i < 6; i++) {
 			Thread.Sleep(100);
 			cache.KeepAlive(1);
@@ -85,8 +86,8 @@ public class SessionCacheTests {
 		cache.Remove(3);
 		cache.Cleanup(); // Need to call this manually since https://dzone.com/articles/unit-testing-multi-threaded
 		var remaining = cache.InternalStorage;
-		Assert.AreEqual(1, remaining.Count);
-		Assert.IsTrue(remaining.ContainsKey(1));
+		ClassicAssert.AreEqual(1, remaining.Count);
+		ClassicAssert.IsTrue(remaining.ContainsKey(1));
 	}
 
 
@@ -98,7 +99,7 @@ public class SessionCacheTests {
 		cache.Set(1, Tools.Scope.ExecuteOnDispose(() => disposed = true));
 		Thread.Sleep(200);
 		cache.Cleanup(); // Need to call this manually since https://dzone.com/articles/unit-testing-multi-threaded
-		Assert.IsTrue(disposed);
+		ClassicAssert.IsTrue(disposed);
 	}
 
 	[Test]
@@ -108,7 +109,7 @@ public class SessionCacheTests {
 		cache.ItemRemoved += (i, item) => item.Dispose();
 		cache.Set(1, Tools.Scope.ExecuteOnDispose(() => disposed = true));
 		cache.Purge();
-		Assert.IsTrue(disposed);
+		ClassicAssert.IsTrue(disposed);
 	}
 
 
@@ -116,7 +117,7 @@ public class SessionCacheTests {
 	public void Throws_1() {
 		var cache = new SessionCache<int, string>(TimeSpan.FromMilliseconds(100));
 		cache.Set(1, "one");
-		Assert.AreEqual("one", cache[1]);
+		ClassicAssert.AreEqual("one", cache[1]);
 		Thread.Sleep(300);
 		Assert.Throws<Exception>(() => {
 			var x = cache[1];
@@ -130,10 +131,10 @@ public class SessionCacheTests {
 		cache.Set(1, "one");
 		DateTime start = DateTime.Now;
 		while (DateTime.Now.Subtract(start).TotalSeconds <= 1.0D) {
-			Assert.AreEqual("one", cache[1]);
+			ClassicAssert.AreEqual("one", cache[1]);
 			Thread.Sleep(50);
 		}
-		Assert.AreEqual("one", cache[1]);
+		ClassicAssert.AreEqual("one", cache[1]);
 
 	}
 

@@ -12,6 +12,7 @@ using NUnit.Framework;
 using System.Linq;
 using Hydrogen.NUnit;
 using Hydrogen;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests.Merkle;
 
@@ -24,13 +25,13 @@ public class FlatMerkleTreeTests {
 		var rng = new Random(31337);
 		var reference = new SimpleMerkleTree(chf);
 		var impl = new FlatMerkleTree(chf);
-		Assert.AreEqual(reference.Root, impl.Root);
+		ClassicAssert.AreEqual(reference.Root, impl.Root);
 		var newItems = rng.NextBytes(Hashers.GetDigestSizeBytes(chf));
 		reference.Leafs.AddRange(newItems);
 		impl.Leafs.AddRange(newItems);
-		Assert.AreEqual(reference.Root, impl.Root);
-		Assert.AreEqual(reference.Leafs.Count, impl.Leafs.Count);
-		Assert.AreEqual(reference.Size, impl.Size);
+		ClassicAssert.AreEqual(reference.Root, impl.Root);
+		ClassicAssert.AreEqual(reference.Leafs.Count, impl.Leafs.Count);
+		ClassicAssert.AreEqual(reference.Size, impl.Size);
 	}
 
 	[Test]
@@ -43,8 +44,8 @@ public class FlatMerkleTreeTests {
 			var newItems = rng.NextBytes(Hashers.GetDigestSizeBytes(chf));
 			reference.Leafs.AddRange(newItems);
 			impl.Leafs.AddRange(newItems);
-			Assert.AreEqual(reference.Root, impl.Root);
-			Assert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
+			ClassicAssert.AreEqual(reference.Root, impl.Root);
+			ClassicAssert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
 		}
 	}
 
@@ -57,7 +58,7 @@ public class FlatMerkleTreeTests {
 		var rng = new Random(31337);
 		var reference = new SimpleMerkleTree(chf);
 		var impl = new FlatMerkleTree(chf);
-		Assert.AreEqual(reference.Root, impl.Root);
+		ClassicAssert.AreEqual(reference.Root, impl.Root);
 		for (var i = 0; i < MaxIterations; i++) {
 			var newItems =
 				Tools.Collection.Generate(() => rng.NextBytes(Hashers.GetDigestSizeBytes(chf))).Take(rng.Next(MinItemsAddPerIter, MaxItemsAddPerIter + 1)).ToArray();
@@ -65,12 +66,12 @@ public class FlatMerkleTreeTests {
 			reference.Leafs.AddRange(newItems);
 			impl.Leafs.AddRange(newItems);
 			if (Tools.Maths.Gamble(0.1)) // force root calculation 10% of the time
-				Assert.AreEqual(reference.Root, impl.Root);
+				ClassicAssert.AreEqual(reference.Root, impl.Root);
 
-			Assert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
+			ClassicAssert.AreEqual(impl.Leafs.Count, impl.Size.LeafCount);
 
 		}
-		Assert.AreEqual(reference.Root, impl.Root);
+		ClassicAssert.AreEqual(reference.Root, impl.Root);
 	}
 
 	[Test]
@@ -163,7 +164,7 @@ public class FlatMerkleTreeTests {
 		var digest = rng.NextByteArrays(Hashers.GetDigestSizeBytes(CHF.SHA2_256), 1)[0];
 		expected.Insert(0, digest);
 		list.Leafs.Insert(0, digest);
-		Assert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
+		ClassicAssert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
 	}
 
 	[Test]
@@ -179,7 +180,7 @@ public class FlatMerkleTreeTests {
 		expected.Insert(0, digest[1]);
 		list.Leafs.Insert(0, digest[1]);
 
-		Assert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
+		ClassicAssert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
 	}
 
 	[Test]
@@ -198,7 +199,7 @@ public class FlatMerkleTreeTests {
 		expected.Insert(1, digest[1]);
 		list.Leafs.Insert(1, digest[1]);
 
-		Assert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
+		ClassicAssert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
 	}
 
 	[Test]
@@ -214,7 +215,7 @@ public class FlatMerkleTreeTests {
 		expected.RemoveAt(1);
 		list.Leafs.RemoveAt(1);
 
-		Assert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
+		ClassicAssert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
 	}
 
 
@@ -231,7 +232,7 @@ public class FlatMerkleTreeTests {
 		expected.RemoveAt(2);
 		list.Leafs.RemoveAt(2);
 
-		Assert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
+		ClassicAssert.AreEqual(expected.ToArray(), list.Leafs.ToArray());
 	}
 
 	[Test]
@@ -247,7 +248,7 @@ public class FlatMerkleTreeTests {
 			for (var j = 0; j < MerkleMath.CalculateLevelLength(leafCount, i); j++) {
 				var e = expected.GetValue(MerkleCoordinate.From(i, j)).ToArray();
 				var a = actual.GetValue(MerkleCoordinate.From(i, j)).ToArray();
-				Assert.AreEqual(e, a);
+				ClassicAssert.AreEqual(e, a);
 			}
 		}
 	}
@@ -265,7 +266,7 @@ public class FlatMerkleTreeTests {
 			for (var j = MerkleMath.CalculateLevelLength(leafCount, i) - 1; j >= 0; j--) {
 				var e = expected.GetValue(MerkleCoordinate.From(i, j)).ToArray();
 				var a = actual.GetValue(MerkleCoordinate.From(i, j)).ToArray();
-				Assert.AreEqual(e, a);
+				ClassicAssert.AreEqual(e, a);
 			}
 		}
 	}

@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 
 namespace Hydrogen.Tests;
@@ -17,32 +18,32 @@ public class ByteArrayEqualityComparerTests {
 
 	[Test]
 	public void TestNull() {
-		Assert.AreEqual(true, ByteArrayEqualityComparer.Instance.Equals(null, null));
+		ClassicAssert.AreEqual(true, ByteArrayEqualityComparer.Instance.Equals(null, null));
 	}
 
 	[Test]
 	public void TestEmpty() {
-		Assert.AreEqual(true, ByteArrayEqualityComparer.Instance.Equals(new byte[0], new byte[0]));
+		ClassicAssert.AreEqual(true, ByteArrayEqualityComparer.Instance.Equals(new byte[0], new byte[0]));
 	}
 
 	[Test]
 	public void TestSame() {
-		Assert.AreEqual(true, ByteArrayEqualityComparer.Instance.Equals(new byte[] { 1, 2 }, new byte[] { 1, 2 }));
+		ClassicAssert.AreEqual(true, ByteArrayEqualityComparer.Instance.Equals(new byte[] { 1, 2 }, new byte[] { 1, 2 }));
 	}
 
 	[Test]
 	public void TestDiff() {
-		Assert.AreEqual(false, ByteArrayEqualityComparer.Instance.Equals(new byte[] { 1, 2 }, new byte[] { 2, 1 }));
+		ClassicAssert.AreEqual(false, ByteArrayEqualityComparer.Instance.Equals(new byte[] { 1, 2 }, new byte[] { 2, 1 }));
 	}
 
 	[Test]
 	public void TestDiffLonger_1() {
-		Assert.AreEqual(false, ByteArrayEqualityComparer.Instance.Equals(new byte[] { 1, 2, 3 }, new byte[] { 2, 1 }));
+		ClassicAssert.AreEqual(false, ByteArrayEqualityComparer.Instance.Equals(new byte[] { 1, 2, 3 }, new byte[] { 2, 1 }));
 	}
 
 	[Test]
 	public void TestDiffLonger_2() {
-		Assert.AreEqual(false, ByteArrayEqualityComparer.Instance.Equals(new byte[] { 1, 2 }, new byte[] { 2, 1, 3 }));
+		ClassicAssert.AreEqual(false, ByteArrayEqualityComparer.Instance.Equals(new byte[] { 1, 2 }, new byte[] { 2, 1, 3 }));
 	}
 
 }

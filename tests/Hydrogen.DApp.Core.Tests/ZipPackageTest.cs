@@ -11,6 +11,7 @@ using System.Linq;
 using NUnit.Framework;
 using Hydrogen;
 using Hydrogen.DApp.Core.Storage;
+using NUnit.Framework.Legacy;
 
 namespace VelocityNET.Processing.Tests.Core;
 
@@ -19,12 +20,12 @@ public class ZipPackageTest {
 	[Test]
 	public void CreatePackageOnFirstWrite() {
 		var filename = Tools.FileSystem.GetTempFileName(false);
-		Assert.IsTrue(!File.Exists(filename));
+		ClassicAssert.IsTrue(!File.Exists(filename));
 
 		using (new ActionScope(endAction: () => File.Delete(filename))) {
 			var package = new ZipPackage(filename);
 			using (var scope = package.EnterWriteScope()) {
-				Assert.IsTrue(File.Exists(filename));
+				ClassicAssert.IsTrue(File.Exists(filename));
 			}
 		}
 	}
@@ -34,7 +35,7 @@ public class ZipPackageTest {
 	public void Create_TextFile() {
 		var textData = "alpha beta gamma";
 		var filename = Tools.FileSystem.GetTempFileName(false);
-		Assert.IsTrue(!File.Exists(filename));
+		ClassicAssert.IsTrue(!File.Exists(filename));
 
 		using (new ActionScope(endAction: () => File.Delete(filename))) {
 			var package = new ZipPackage(filename);
@@ -43,9 +44,9 @@ public class ZipPackageTest {
 			}
 
 			using (package.EnterReadScope()) {
-				Assert.AreEqual(1, package.GetKeys().Count());
+				ClassicAssert.AreEqual(1, package.GetKeys().Count());
 				var value = package.ReadAllText("alpha.txt");
-				Assert.AreEqual(textData, value);
+				ClassicAssert.AreEqual(textData, value);
 			}
 		}
 	}
@@ -55,7 +56,7 @@ public class ZipPackageTest {
 	public void Create_BinFile() {
 		var binData = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 		var filename = Tools.FileSystem.GetTempFileName(false);
-		Assert.IsTrue(!File.Exists(filename));
+		ClassicAssert.IsTrue(!File.Exists(filename));
 		using (new ActionScope(endAction: () => File.Delete(filename))) {
 			var package = new ZipPackage(filename);
 			using (package.EnterWriteScope()) {
@@ -63,9 +64,9 @@ public class ZipPackageTest {
 			}
 
 			using (package.EnterReadScope()) {
-				Assert.AreEqual(1, package.GetKeys().Count());
+				ClassicAssert.AreEqual(1, package.GetKeys().Count());
 				var value = package.ReadAllBytes("alpha.bin");
-				Assert.AreEqual(binData, value);
+				ClassicAssert.AreEqual(binData, value);
 			}
 		}
 	}
@@ -75,7 +76,7 @@ public class ZipPackageTest {
 	public void Update_1() {
 		var textData = "alpha beta gamma";
 		var filename = Tools.FileSystem.GetTempFileName(false);
-		Assert.IsTrue(!File.Exists(filename));
+		ClassicAssert.IsTrue(!File.Exists(filename));
 
 		using (new ActionScope(endAction: () => File.Delete(filename))) {
 			var package = new ZipPackage(filename);
@@ -88,9 +89,9 @@ public class ZipPackageTest {
 			}
 
 			using (package.EnterReadScope()) {
-				Assert.AreEqual(1, package.GetKeys().Count());
+				ClassicAssert.AreEqual(1, package.GetKeys().Count());
 				var value = package.ReadAllText("alpha.txt");
-				Assert.AreEqual(textData, value);
+				ClassicAssert.AreEqual(textData, value);
 			}
 		}
 	}
@@ -99,7 +100,7 @@ public class ZipPackageTest {
 	public void Update_2() {
 		var textData = "alpha beta gamma";
 		var filename = Tools.FileSystem.GetTempFileName(false);
-		Assert.IsTrue(!File.Exists(filename));
+		ClassicAssert.IsTrue(!File.Exists(filename));
 
 		using (new ActionScope(endAction: () => File.Delete(filename))) {
 			var package = new ZipPackage(filename);
@@ -113,9 +114,9 @@ public class ZipPackageTest {
 			}
 
 			using (package.EnterReadScope()) {
-				Assert.AreEqual(2, package.GetKeys().Count());
-				Assert.AreEqual(textData, package.ReadAllText("alpha1.txt"));
-				Assert.AreEqual(textData, package.ReadAllText("alpha2.txt"));
+				ClassicAssert.AreEqual(2, package.GetKeys().Count());
+				ClassicAssert.AreEqual(textData, package.ReadAllText("alpha1.txt"));
+				ClassicAssert.AreEqual(textData, package.ReadAllText("alpha2.txt"));
 			}
 		}
 	}
@@ -131,7 +132,7 @@ public class ZipPackageTest {
 		var textData = "alpha beta gamma";
 		var binData = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 		var filename = Tools.FileSystem.GetTempFileName(false);
-		Assert.IsTrue(!File.Exists(filename));
+		ClassicAssert.IsTrue(!File.Exists(filename));
 		using (new ActionScope(endAction: () => File.Delete(filename))) {
 			var package = ZipPackage.Create(filename);
 			using (package.EnterWriteScope()) {
@@ -139,19 +140,19 @@ public class ZipPackageTest {
 				package.WriteAllText($"{folder1Name}/{file2Name}", textData);
 			}
 			using (package.EnterWriteScope()) {
-				Assert.AreEqual(2, package.GetKeys().Count());
-				Assert.Contains(file1Name, package.GetKeys().ToArray());
-				Assert.Contains($"{folder1Name}/{file2Name}", package.GetKeys().ToArray());
+				ClassicAssert.AreEqual(2, package.GetKeys().Count());
+				ClassicAssert.Contains(file1Name, package.GetKeys().ToArray());
+				ClassicAssert.Contains($"{folder1Name}/{file2Name}", package.GetKeys().ToArray());
 				package.WriteAllBytes($"{file2Name}", binData);
 				package.WriteAllText($"{folder2Name}/{file2Name}", textData);
 			}
 
 			using (package.EnterReadScope()) {
-				Assert.AreEqual(4, package.GetKeys().Count());
-				Assert.Contains(file1Name, package.GetKeys().ToArray());
-				Assert.Contains($"{folder1Name}/{file2Name}", package.GetKeys().ToArray());
-				Assert.Contains(file2Name, package.GetKeys().ToArray());
-				Assert.Contains($"{folder2Name}/{file2Name}", package.GetKeys().ToArray());
+				ClassicAssert.AreEqual(4, package.GetKeys().Count());
+				ClassicAssert.Contains(file1Name, package.GetKeys().ToArray());
+				ClassicAssert.Contains($"{folder1Name}/{file2Name}", package.GetKeys().ToArray());
+				ClassicAssert.Contains(file2Name, package.GetKeys().ToArray());
+				ClassicAssert.Contains($"{folder2Name}/{file2Name}", package.GetKeys().ToArray());
 			}
 		}
 	}
@@ -166,7 +167,7 @@ public class ZipPackageTest {
 		var textData = "alpha beta gamma";
 		var binData = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
 		var filename = Tools.FileSystem.GetTempFileName(false);
-		Assert.IsTrue(!File.Exists(filename));
+		ClassicAssert.IsTrue(!File.Exists(filename));
 		using (new ActionScope(endAction: () => File.Delete(filename))) {
 			var package = ZipPackage.Create(filename);
 			using (package.EnterWriteScope()) {
@@ -187,37 +188,37 @@ public class ZipPackageTest {
 
 					// root
 					var files = Tools.FileSystem.GetFiles(tmpDir).ToArray();
-					Assert.AreEqual(2, files.Length);
-					Assert.Contains(filename_bin, files);
-					Assert.Contains(filename_txt, files);
-					Assert.AreEqual(binData, File.ReadAllBytes(Path.Combine(tmpDir, filename_bin)));
-					Assert.AreEqual(textData, File.ReadAllText(Path.Combine(tmpDir, filename_txt)));
+					ClassicAssert.AreEqual(2, files.Length);
+					ClassicAssert.Contains(filename_bin, files);
+					ClassicAssert.Contains(filename_txt, files);
+					ClassicAssert.AreEqual(binData, File.ReadAllBytes(Path.Combine(tmpDir, filename_bin)));
+					ClassicAssert.AreEqual(textData, File.ReadAllText(Path.Combine(tmpDir, filename_txt)));
 
 					var dirs = Tools.FileSystem.GetSubDirectories(tmpDir).ToArray();
-					Assert.AreEqual(2, dirs.Length);
-					Assert.Contains(child_dir_1, dirs);
-					Assert.Contains(child_dir_2, dirs);
+					ClassicAssert.AreEqual(2, dirs.Length);
+					ClassicAssert.Contains(child_dir_1, dirs);
+					ClassicAssert.Contains(child_dir_2, dirs);
 
 					// subdir 1
 					var subDir1 = Path.Combine(tmpDir, child_dir_1);
 					files = Tools.FileSystem.GetFiles(subDir1).ToArray();
-					Assert.AreEqual(2, files.Length);
-					Assert.Contains(filename_bin, files);
-					Assert.Contains(filename_txt, files);
-					Assert.AreEqual(0, Tools.FileSystem.GetSubDirectories(subDir1).Count());
-					Assert.AreEqual(binData, File.ReadAllBytes(Path.Combine(tmpDir, subDir1, filename_bin)));
-					Assert.AreEqual(textData, File.ReadAllText(Path.Combine(tmpDir, subDir1, filename_txt)));
+					ClassicAssert.AreEqual(2, files.Length);
+					ClassicAssert.Contains(filename_bin, files);
+					ClassicAssert.Contains(filename_txt, files);
+					ClassicAssert.AreEqual(0, Tools.FileSystem.GetSubDirectories(subDir1).Count());
+					ClassicAssert.AreEqual(binData, File.ReadAllBytes(Path.Combine(tmpDir, subDir1, filename_bin)));
+					ClassicAssert.AreEqual(textData, File.ReadAllText(Path.Combine(tmpDir, subDir1, filename_txt)));
 
 
 					// subdir 2
 					var subDir2 = Path.Combine(tmpDir, child_dir_2);
 					files = Tools.FileSystem.GetFiles(subDir2).ToArray();
-					Assert.AreEqual(2, files.Length);
-					Assert.Contains(filename_bin, files);
-					Assert.Contains(filename_txt, files);
-					Assert.AreEqual(0, Tools.FileSystem.GetSubDirectories(subDir2).Count());
-					Assert.AreEqual(binData, File.ReadAllBytes(Path.Combine(tmpDir, subDir2, filename_bin)));
-					Assert.AreEqual(textData, File.ReadAllText(Path.Combine(tmpDir, subDir2, filename_txt)));
+					ClassicAssert.AreEqual(2, files.Length);
+					ClassicAssert.Contains(filename_bin, files);
+					ClassicAssert.Contains(filename_txt, files);
+					ClassicAssert.AreEqual(0, Tools.FileSystem.GetSubDirectories(subDir2).Count());
+					ClassicAssert.AreEqual(binData, File.ReadAllBytes(Path.Combine(tmpDir, subDir2, filename_bin)));
+					ClassicAssert.AreEqual(textData, File.ReadAllText(Path.Combine(tmpDir, subDir2, filename_txt)));
 
 				}
 

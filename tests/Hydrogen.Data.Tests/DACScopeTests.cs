@@ -10,6 +10,7 @@ using System.Data;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Hydrogen.NUnit;
+using NUnit.Framework.Legacy;
 
 
 namespace Hydrogen.Data.Tests;
@@ -23,7 +24,7 @@ public class DACScopeTests : DACTestFixture {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			using (var scope = dac.BeginScope(false)) {
 				using (var scope2 = dac.BeginScope(false)) {
-					Assert.AreSame(scope.Connection, scope2.Connection);
+					ClassicAssert.AreSame(scope.Connection, scope2.Connection);
 				}
 			}
 		}
@@ -35,7 +36,7 @@ public class DACScopeTests : DACTestFixture {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			using (var scope = dac.BeginScope(false)) {
 				using (var scope2 = dac.BeginScope(true)) {
-					Assert.AreSame(scope.Connection, scope2.Connection);
+					ClassicAssert.AreSame(scope.Connection, scope2.Connection);
 				}
 			}
 		}
@@ -47,7 +48,7 @@ public class DACScopeTests : DACTestFixture {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			using (var scope = dac.BeginScope(true)) {
 				using (var scope2 = dac.BeginScope(false)) {
-					Assert.AreSame(scope.Connection, scope2.Connection);
+					ClassicAssert.AreSame(scope.Connection, scope2.Connection);
 				}
 			}
 		}
@@ -59,7 +60,7 @@ public class DACScopeTests : DACTestFixture {
 		using (var dac = EnterCreateDatabaseScope(dbmsType, TestTables.BasicTable)) {
 			using (var scope = dac.BeginScope(true)) {
 				using (var scope2 = dac.BeginScope(true)) {
-					Assert.AreSame(scope.Connection, scope2.Connection);
+					ClassicAssert.AreSame(scope.Connection, scope2.Connection);
 				}
 			}
 		}
@@ -73,7 +74,7 @@ public class DACScopeTests : DACTestFixture {
 			var dac2 = DuplicateDAC(dac);
 			using (var scope = dac.BeginScope(false)) {
 				using (var scope2 = dac2.BeginScope(false)) {
-					Assert.AreSame(scope.Connection, scope2.Connection);
+					ClassicAssert.AreSame(scope.Connection, scope2.Connection);
 				}
 			}
 		}
@@ -86,7 +87,7 @@ public class DACScopeTests : DACTestFixture {
 			var dac2 = DuplicateDAC(dac);
 			using (var scope = dac.BeginScope(false)) {
 				using (var scope2 = dac2.BeginScope(true)) {
-					Assert.AreSame(scope.Connection, scope2.Connection);
+					ClassicAssert.AreSame(scope.Connection, scope2.Connection);
 				}
 			}
 		}
@@ -99,7 +100,7 @@ public class DACScopeTests : DACTestFixture {
 			var dac2 = DuplicateDAC(dac);
 			using (var scope = dac.BeginScope(true)) {
 				using (var scope2 = dac2.BeginScope(false)) {
-					Assert.AreSame(scope.Connection, scope2.Connection);
+					ClassicAssert.AreSame(scope.Connection, scope2.Connection);
 				}
 			}
 		}
@@ -112,7 +113,7 @@ public class DACScopeTests : DACTestFixture {
 			var dac2 = DuplicateDAC(dac);
 			using (var scope = dac.BeginScope(true)) {
 				using (var scope2 = dac2.BeginScope(true)) {
-					Assert.AreSame(scope.Connection, scope2.Connection);
+					ClassicAssert.AreSame(scope.Connection, scope2.Connection);
 				}
 			}
 		}
@@ -143,7 +144,7 @@ public class DACScopeTests : DACTestFixture {
 
 	private async Task AssertConnectionPropagationAsync(IDbConnection expectedConnectionObj, IDAC dac2) {
 		using (var scope2 = dac2.BeginScope(true)) {
-			Assert.AreSame(expectedConnectionObj, scope2.Connection);
+			ClassicAssert.AreSame(expectedConnectionObj, scope2.Connection);
 		}
 	}
 
@@ -168,7 +169,7 @@ public class DACScopeTests : DACTestFixture {
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				scope.Commit();
 			}
-			Assert.AreEqual(1, dac.Count("BasicTable"));
+			ClassicAssert.AreEqual(1, dac.Count("BasicTable"));
 		}
 	}
 	[Test]
@@ -180,7 +181,7 @@ public class DACScopeTests : DACTestFixture {
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 1) });
 				scope.Rollback();
 			}
-			Assert.AreEqual(0, dac.Count("BasicTable"));
+			ClassicAssert.AreEqual(0, dac.Count("BasicTable"));
 		}
 	}
 
@@ -200,7 +201,7 @@ public class DACScopeTests : DACTestFixture {
 				}
 				scope.Commit();
 			}
-			Assert.AreEqual(0, dac.Count("BasicTable"));
+			ClassicAssert.AreEqual(0, dac.Count("BasicTable"));
 		}
 	}
 
@@ -221,7 +222,7 @@ public class DACScopeTests : DACTestFixture {
 				scope.Commit();
 
 			}
-			Assert.AreEqual(2, dac.Count("BasicTable"));
+			ClassicAssert.AreEqual(2, dac.Count("BasicTable"));
 		}
 	}
 
@@ -244,7 +245,7 @@ public class DACScopeTests : DACTestFixture {
 				}
 				scope1.Commit();
 			}
-			Assert.AreEqual(0, dac.Count("BasicTable"));
+			ClassicAssert.AreEqual(0, dac.Count("BasicTable"));
 		}
 	}
 
@@ -267,7 +268,7 @@ public class DACScopeTests : DACTestFixture {
 				}
 				scope1.Rollback();
 			}
-			Assert.AreEqual(0, dac.Count("BasicTable"));
+			ClassicAssert.AreEqual(0, dac.Count("BasicTable"));
 		}
 	}
 
@@ -290,7 +291,7 @@ public class DACScopeTests : DACTestFixture {
 				}
 				scope1.Commit();
 			}
-			Assert.AreEqual(3, dac.Count("BasicTable"));
+			ClassicAssert.AreEqual(3, dac.Count("BasicTable"));
 		}
 	}
 
@@ -318,7 +319,7 @@ public class DACScopeTests : DACTestFixture {
 				dac.Insert("BasicTable", new[] { new ColumnValue("ID", 4) });
 				scope0.Commit();
 			}
-			Assert.AreEqual(1, dac.Count("BasicTable"));
+			ClassicAssert.AreEqual(1, dac.Count("BasicTable"));
 		}
 	}
 

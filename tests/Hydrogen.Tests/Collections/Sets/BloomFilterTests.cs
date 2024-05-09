@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using System.Text;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -29,7 +30,7 @@ public class BloomFilterTests {
 		var expected = filter.ToArray();
 		for (var i = 0; i < 5; i++) {
 			filter.Add(data);
-			Assert.AreEqual(expected, filter.ToArray()); // same data doesnt change filter
+			ClassicAssert.AreEqual(expected, filter.ToArray()); // same data doesnt change filter
 		}
 	}
 
@@ -43,7 +44,7 @@ public class BloomFilterTests {
 		for (var i = 0; i < maxExpectedItems; i++) {
 			var data = RNG.NextString(10, 50);
 			filter.Add(data);
-			Assert.IsTrue(filter.Contains(data));
+			ClassicAssert.IsTrue(filter.Contains(data));
 		}
 	}
 
@@ -59,19 +60,19 @@ public class BloomFilterTests {
 		var data = Tools.Collection.Generate(() => RNG.NextString(10, 50)).Take(maxExpectedItems).ToArray();
 		foreach (var datum in data) {
 			filter.Add(datum);
-			Assert.IsTrue(filter.Contains(datum));
+			ClassicAssert.IsTrue(filter.Contains(datum));
 		}
 
 		// No false negatives
 		var falseNegatives = data.Count(x => !filter.Contains(x));
-		Assert.AreEqual(0, falseNegatives);
+		ClassicAssert.AreEqual(0, falseNegatives);
 
 		// False positive error rate is tolerable
 		var diffData = Enumerable.Range(0, int.MaxValue).Zip(data.Loop(), (i, s) => $"__{i}_{s}").Take(FalsePositiveSampleSize).ToArray();
 		var falsePositives = diffData.Count(filter.Contains);
 		var actualError = falsePositives / (decimal)diffData.Length;
 		var errorUpperBound = targetError + 0.07M; // allow 7% tolerance for testing (happens when filter is small)
-		Assert.LessOrEqual(actualError, errorUpperBound);
+		ClassicAssert.LessOrEqual(actualError, errorUpperBound);
 	}
 
 

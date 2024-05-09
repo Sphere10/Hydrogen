@@ -31,6 +31,7 @@ using NUnit.Framework;
 using Hydrogen.Data;
 using Tools;
 using Object = Tools.Object;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.NUnit {
 	public abstract class DACTestFixture {
@@ -110,7 +111,7 @@ namespace Hydrogen.NUnit {
 		protected virtual void AssertSameTableRowCount(IDAC source, IDAC dest, string tableName) {
 			var sourceCount = source.Count(tableName);
 			var destCount = dest.Count(tableName);
-			Assert.AreEqual(sourceCount, destCount);
+			ClassicAssert.AreEqual(sourceCount, destCount);
 		}
 
 		// ReSharper disable once InconsistentNaming
@@ -156,8 +157,8 @@ namespace Hydrogen.NUnit {
 			var sourceTableSchema = source.GetSchemaCached()[tableName];
 			var destTableSchema = dest.GetSchemaCached()[tableName];
 
-			Assert.AreNotEqual(DBKeyType.None, sourceTableSchema.PrimaryKey.KeyType, "Tables without primary keys are not supported");
-			Assert.AreEqual(sourceTableSchema.PrimaryKey.KeyType, destTableSchema.PrimaryKey.KeyType, "Table primary key types do not match");
+			ClassicAssert.AreNotEqual(DBKeyType.None, sourceTableSchema.PrimaryKey.KeyType, "Tables without primary keys are not supported");
+			ClassicAssert.AreEqual(sourceTableSchema.PrimaryKey.KeyType, destTableSchema.PrimaryKey.KeyType, "Table primary key types do not match");
 
 			var sourceData = source.Select(tableName).Rows.Cast<DataRow>().Select(r => r.ItemArray.Select(Object.SanitizeObject).ToArray()).ToArray();
 			var destData = dest.Select(tableName).Rows.Cast<DataRow>().Select(r => r.ItemArray.Select(Object.SanitizeObject).ToArray()).ToArray();

@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -85,7 +86,7 @@ public class BijectiveDictionaryTests {
 		dictionary.Bijection[1] = "one updated";
 
 		Assert.That(dictionary.Count, Is.EqualTo(1));
-		CollectionAssert.AreEqual(dictionary.Keys, new [] { "one updated" });
-		CollectionAssert.AreEqual(dictionary.Values, new [] { 1 });
+		ClassicAssert.AreEqual(dictionary.Keys, new [] { "one updated" });
+		ClassicAssert.AreEqual(dictionary.Values, new [] { 1 });
 	}
 }

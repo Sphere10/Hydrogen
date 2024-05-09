@@ -9,6 +9,7 @@
 using System;
 using NUnit.Framework;
 using System.Linq;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -46,7 +47,7 @@ public class EnumerableExtensionTests {
 
 		for (var i = 0; i < 6; i++) {
 			for (var j = 0; j < 2; j++) {
-				Assert.AreEqual(expected[i][j], actual.ElementAt(i).ElementAt(j));
+				ClassicAssert.AreEqual(expected[i][j], actual.ElementAt(i).ElementAt(j));
 			}
 		}
 
@@ -61,7 +62,7 @@ public class EnumerableExtensionTests {
 		var input = rando.NextBytes(length);
 		var parts = input.PartitionBySize(x => 1, partSize);
 
-		Assert.AreEqual(expectedParts, parts.Count());
-		Assert.AreEqual(input, parts.Aggregate((x, y) => x.Concat(y)));
+		ClassicAssert.AreEqual(expectedParts, parts.Count());
+		ClassicAssert.AreEqual(input, parts.Aggregate((x, y) => x.Concat(y)));
 	}
 }

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Hydrogen.NUnit;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -322,7 +323,7 @@ public abstract class StreamMappedMerkleDictionaryTestsBase : StreamPersistedCol
 						return Hashers.JoinHash(chf, keyHash, valueHash);
 					}).ToArray();
 					var treeLeaves = clusteredDictionary.MerkleTree.GetLeafs().ToArray();
-					CollectionAssert.AreEqual(itemHashes, treeLeaves);
+					ClassicAssert.AreEqual(itemHashes, treeLeaves);
 					Assert.That(clusteredDictionary.MerkleTree.Root, Is.EqualTo(MerkleTree.ComputeMerkleRoot(itemHashes, chf)));
 				}
 			);

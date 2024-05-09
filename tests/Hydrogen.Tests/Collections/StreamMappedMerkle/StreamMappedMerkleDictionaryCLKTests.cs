@@ -97,7 +97,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 			endOfIterTest: () => {
 				//var clkLeafs = clk.MerkleTree.GetLeafs().ToArray();
 				//var kvpLeafs = kvp.MerkleTree.GetLeafs().ToArray();
-				//CollectionAssert.AreEqual(clkLeafs, kvpLeafs);
+				//ClassicAssert.AreEqual(clkLeafs, kvpLeafs);
 				Assert.That(clk.MerkleTree.Root, Is.EqualTo(kvp.MerkleTree.Root));
 			},
 			expected: kvp

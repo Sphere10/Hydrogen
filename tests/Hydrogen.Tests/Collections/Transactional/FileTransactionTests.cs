@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using System.IO;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -39,11 +40,11 @@ public class FileTransactionTests {
 				file.AddRange(chunk1);
 				transaction.Commit();
 				// check no transaction files
-				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
+				ClassicAssert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 				file.AddRange(chunk2);
 				transaction.Commit();
 			}
-			Assert.AreEqual(original.Concat(chunk1).Concat(chunk2), File.ReadAllBytes(filePath));
+			ClassicAssert.AreEqual(original.Concat(chunk1).Concat(chunk2), File.ReadAllBytes(filePath));
 		}
 	}
 
@@ -68,11 +69,11 @@ public class FileTransactionTests {
 				file.AddRange(chunk1);
 				transaction.Commit();
 				// check no transaction files
-				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
+				ClassicAssert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 				file.AddRange(chunk2);
 				transaction.Rollback();
 			}
-			Assert.AreEqual(original.Concat(chunk1), File.ReadAllBytes(filePath));
+			ClassicAssert.AreEqual(original.Concat(chunk1), File.ReadAllBytes(filePath));
 		}
 	}
 
@@ -98,11 +99,11 @@ public class FileTransactionTests {
 				file.AddRange(chunk1);
 				transaction.Rollback();
 				// check no transaction files
-				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
+				ClassicAssert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 				file.AddRange(chunk2);
 				transaction.Commit();
 			}
-			Assert.AreEqual(original.Concat(chunk2), File.ReadAllBytes(filePath));
+			ClassicAssert.AreEqual(original.Concat(chunk2), File.ReadAllBytes(filePath));
 		}
 	}
 
@@ -128,11 +129,11 @@ public class FileTransactionTests {
 				file.AddRange(chunk1);
 				transaction.Rollback();
 				// check no transaction files
-				Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
+				ClassicAssert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 				file.AddRange(chunk2);
 				transaction.Rollback();
 			}
-			Assert.AreEqual(original, File.ReadAllBytes(filePath));
+			ClassicAssert.AreEqual(original, File.ReadAllBytes(filePath));
 		}
 	}
 
@@ -222,12 +223,12 @@ public class FileTransactionTests {
 			}
 
 			// check no transaction junk
-			Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
+			ClassicAssert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 
 			// check files match expected
 			for (var i = 0; i < numFiles; i++) {
 				var filename = Path.Combine(fileBaseDir, $"File{i}.dat");
-				Assert.AreEqual(expected[i], File.ReadAllBytes(filename));
+				ClassicAssert.AreEqual(expected[i], File.ReadAllBytes(filename));
 			}
 		}
 	}
@@ -296,18 +297,18 @@ public class FileTransactionTests {
 			// Reload transaction file should resume prior commit
 			using (var transaction = new FileTransaction(txnFile, txnBaseDir)) {
 				// Checks transaction is empty and usable (resumption was done in constructor)
-				Assert.AreEqual(FileTransactionState.Unchanged, transaction.Status);
-				Assert.IsEmpty(transaction.EnlistedFiles);
+				ClassicAssert.AreEqual(FileTransactionState.Unchanged, transaction.Status);
+				ClassicAssert.IsEmpty(transaction.EnlistedFiles);
 			}
 
 			// check no transaction junk
-			Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
+			ClassicAssert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 
 			// check files match expected
 			for (var i = 0; i < numFiles; i++) {
 				var filename = Path.Combine(fileBaseDir, $"File{i}.dat");
 				var fileData = File.ReadAllBytes(filename);
-				Assert.AreEqual(expected[i], fileData);
+				ClassicAssert.AreEqual(expected[i], fileData);
 			}
 		}
 	}
@@ -365,12 +366,12 @@ public class FileTransactionTests {
 			}
 
 			// check no transaction junk
-			Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
+			ClassicAssert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 
 			// check files match expected
 			for (var i = 0; i < numFiles; i++) {
 				var filename = Path.Combine(fileBaseDir, $"File{i}.dat");
-				Assert.AreEqual(original[i], File.ReadAllBytes(filename));
+				ClassicAssert.AreEqual(original[i], File.ReadAllBytes(filename));
 			}
 		}
 	}
@@ -443,18 +444,18 @@ public class FileTransactionTests {
 			// Reload transaction file should resume prior rollback
 			using (var transaction = new FileTransaction(txnFile, txnBaseDir)) {
 				// Checks transaction is empty and usable (resumption was done in constructor)
-				Assert.AreEqual(FileTransactionState.Unchanged, transaction.Status);
-				Assert.IsEmpty(transaction.EnlistedFiles);
+				ClassicAssert.AreEqual(FileTransactionState.Unchanged, transaction.Status);
+				ClassicAssert.IsEmpty(transaction.EnlistedFiles);
 			}
 
 			// check no transaction junk
-			Assert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
+			ClassicAssert.AreEqual(0, Tools.FileSystem.GetFiles(txnBaseDir).Count());
 
 			// check files are unchanged
 			for (var i = 0; i < numFiles; i++) {
 				var filename = Path.Combine(fileBaseDir, $"File{i}.dat");
 				var fileData = File.ReadAllBytes(filename);
-				Assert.AreEqual(original[i], fileData);
+				ClassicAssert.AreEqual(original[i], fileData);
 			}
 		}
 	}

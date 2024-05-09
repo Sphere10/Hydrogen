@@ -10,6 +10,7 @@ using System;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -43,9 +44,9 @@ public class WAMSTests {
 		var sig = wams.Sign(key, Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog"), (ulong)batch, 0);
 		var sig2 = wams.Sign(key, Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog"), (ulong)batch, 0);
 		if (ots == AMSOTS.WOTS)
-			Assert.AreEqual(sig, sig2);
+			ClassicAssert.AreEqual(sig, sig2);
 		else
-			Assert.AreNotEqual(sig, sig2);
+			ClassicAssert.AreNotEqual(sig, sig2);
 	}
 
 	[Test]
@@ -64,7 +65,7 @@ public class WAMSTests {
 
 		var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 		var sig = wams.Sign(privateKey, message, publicKey.BatchNo, 0);
-		Assert.IsTrue(wams.Verify(sig, message, publicKey));
+		ClassicAssert.IsTrue(wams.Verify(sig, message, publicKey));
 	}
 
 	[Test]
@@ -85,7 +86,7 @@ public class WAMSTests {
 
 		for (var i = 0; i < 1 << privateKey.Height; i++) {
 			var sig = wams.SignDigest(privateKey, messageDigest, (ulong)batch, i);
-			Assert.IsTrue(wams.VerifyDigest(sig, messageDigest, publicKey.RawBytes));
+			ClassicAssert.IsTrue(wams.VerifyDigest(sig, messageDigest, publicKey.RawBytes));
 		}
 	}
 
@@ -103,7 +104,7 @@ public class WAMSTests {
 
 		var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 		var sig = wams.Sign(privateKey, message, publicKey.BatchNo, 0);
-		Assert.IsTrue(wams.Verify(sig, message, publicKey));
+		ClassicAssert.IsTrue(wams.Verify(sig, message, publicKey));
 	}
 
 	[Test]
@@ -120,7 +121,7 @@ public class WAMSTests {
 		var privateKey = wams.GeneratePrivateKey(Secret);
 		var publicKey = wams.DerivePublicKeyForBatch(privateKey, (ulong)batch);
 		var bytes = publicKey.RawBytes.ToArray();
-		Assert.IsTrue(wams.IsPublicKey(privateKey, bytes));
+		ClassicAssert.IsTrue(wams.IsPublicKey(privateKey, bytes));
 	}
 
 	[Test]
@@ -140,7 +141,7 @@ public class WAMSTests {
 		unchecked {
 			bytes[0] += 1;
 		}
-		Assert.IsFalse(wams.IsPublicKey(privateKey, bytes));
+		ClassicAssert.IsFalse(wams.IsPublicKey(privateKey, bytes));
 	}
 
 }

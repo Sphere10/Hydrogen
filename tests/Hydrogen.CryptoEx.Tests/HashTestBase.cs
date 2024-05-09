@@ -10,14 +10,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.CryptoEx.Tests;
 
 public abstract class HashTestBase {
-	static HashTestBase() {
-		HydrogenFrameworkIntegration.Initialize();
-	}
-
 
 	protected struct TestItem<TInput, TExpected> {
 		public TInput Input;
@@ -29,7 +26,7 @@ public abstract class HashTestBase {
 		foreach (var testCase in testCases) {
 			var input = HexEncoding.Decode(DATA_BYTES).Take(testCase.Input).ToArray();
 			var result = hasher(input);
-			Assert.AreEqual(testCase.Expected, result);
+			ClassicAssert.AreEqual(testCase.Expected, result);
 		}
 	}
 

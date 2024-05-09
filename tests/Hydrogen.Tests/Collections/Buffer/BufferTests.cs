@@ -13,6 +13,7 @@ using NUnit.Framework;
 using System.IO;
 using Hydrogen.Collections;
 using Hydrogen.NUnit;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -28,18 +29,18 @@ public class BufferTests {
 		using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages * (long)pageSize, out var buffer)) {
 			buffer.AddRange(Tools.Array.Gen<byte>(pageSize, 10));
 			// Check page
-			Assert.AreEqual(1, buffer.Pages.Count());
-			Assert.AreEqual(0, buffer.Pages[0].Number);
-			Assert.AreEqual(pageSize, buffer.Pages[0].MaxSize);
-			Assert.AreEqual(0, buffer.Pages[0].StartIndex);
-			Assert.AreEqual(pageSize, buffer.Pages[0].Count);
-			Assert.AreEqual(pageSize - 1, buffer.Pages[0].EndIndex);
-			Assert.AreEqual(pageSize, buffer.Pages[0].Size);
-			Assert.IsTrue(buffer.Pages[0].Dirty);
+			ClassicAssert.AreEqual(1, buffer.Pages.Count());
+			ClassicAssert.AreEqual(0, buffer.Pages[0].Number);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[0].MaxSize);
+			ClassicAssert.AreEqual(0, buffer.Pages[0].StartIndex);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[0].Count);
+			ClassicAssert.AreEqual(pageSize - 1, buffer.Pages[0].EndIndex);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[0].Size);
+			ClassicAssert.IsTrue(buffer.Pages[0].Dirty);
 
 			// Check value
-			Assert.AreEqual(10, buffer[0]);
-			Assert.AreEqual(pageSize, buffer.Count);
+			ClassicAssert.AreEqual(10, buffer[0]);
+			ClassicAssert.AreEqual(pageSize, buffer.Count);
 
 		}
 	}
@@ -54,42 +55,42 @@ public class BufferTests {
 			buffer.AddRange(Tools.Array.Gen<byte>(pageSize, 10));
 
 			// Check Page 1
-			Assert.AreEqual(1, buffer.Pages.Count());
-			Assert.AreEqual(PageState.Loaded, buffer.Pages[0].State);
-			Assert.AreEqual(0, buffer.Pages[0].Number);
-			Assert.AreEqual(pageSize, buffer.Pages[0].MaxSize);
-			Assert.AreEqual(0, buffer.Pages[0].StartIndex);
-			Assert.AreEqual(pageSize, buffer.Pages[0].Count);
-			Assert.AreEqual(pageSize - 1, buffer.Pages[0].EndIndex);
-			Assert.AreEqual(pageSize, buffer.Pages[0].Size);
-			Assert.IsTrue(buffer.Pages[0].Dirty);
+			ClassicAssert.AreEqual(1, buffer.Pages.Count());
+			ClassicAssert.AreEqual(PageState.Loaded, buffer.Pages[0].State);
+			ClassicAssert.AreEqual(0, buffer.Pages[0].Number);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[0].MaxSize);
+			ClassicAssert.AreEqual(0, buffer.Pages[0].StartIndex);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[0].Count);
+			ClassicAssert.AreEqual(pageSize - 1, buffer.Pages[0].EndIndex);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[0].Size);
+			ClassicAssert.IsTrue(buffer.Pages[0].Dirty);
 
 			// Add new page
 			buffer.AddRange(Tools.Array.Gen<byte>(pageSize, 20));
 
 			// Check pages 1 & 2
-			Assert.AreEqual(2, buffer.Pages.Count());
-			Assert.AreEqual(PageState.Unloaded, buffer.Pages[0].State);
-			Assert.AreEqual(0, buffer.Pages[0].Number);
-			Assert.AreEqual(pageSize, buffer.Pages[0].MaxSize);
-			Assert.AreEqual(0, buffer.Pages[0].StartIndex);
-			Assert.AreEqual(pageSize, buffer.Pages[0].Count);
-			Assert.AreEqual(pageSize - 1, buffer.Pages[0].EndIndex);
-			Assert.AreEqual(pageSize, buffer.Pages[0].Size);
+			ClassicAssert.AreEqual(2, buffer.Pages.Count());
+			ClassicAssert.AreEqual(PageState.Unloaded, buffer.Pages[0].State);
+			ClassicAssert.AreEqual(0, buffer.Pages[0].Number);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[0].MaxSize);
+			ClassicAssert.AreEqual(0, buffer.Pages[0].StartIndex);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[0].Count);
+			ClassicAssert.AreEqual(pageSize - 1, buffer.Pages[0].EndIndex);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[0].Size);
 
 
-			Assert.AreEqual(PageState.Loaded, buffer.Pages[1].State);
-			Assert.AreEqual(1, buffer.Pages[1].Number);
-			Assert.AreEqual(pageSize, buffer.Pages[1].MaxSize);
-			Assert.AreEqual(pageSize, buffer.Pages[1].StartIndex);
-			Assert.AreEqual(pageSize, buffer.Pages[1].Count);
-			Assert.AreEqual(pageSize * 2 - 1, buffer.Pages[1].EndIndex);
-			Assert.AreEqual(pageSize, buffer.Pages[1].Size);
-			Assert.IsTrue(buffer.Pages[1].Dirty);
+			ClassicAssert.AreEqual(PageState.Loaded, buffer.Pages[1].State);
+			ClassicAssert.AreEqual(1, buffer.Pages[1].Number);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[1].MaxSize);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[1].StartIndex);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[1].Count);
+			ClassicAssert.AreEqual(pageSize * 2 - 1, buffer.Pages[1].EndIndex);
+			ClassicAssert.AreEqual(pageSize, buffer.Pages[1].Size);
+			ClassicAssert.IsTrue(buffer.Pages[1].Dirty);
 
 			// Check values
-			Assert.AreEqual(10, buffer[0]);
-			Assert.AreEqual(20, buffer[pageSize]);
+			ClassicAssert.AreEqual(10, buffer[0]);
+			ClassicAssert.AreEqual(20, buffer[pageSize]);
 
 		}
 	}
@@ -103,9 +104,9 @@ public class BufferTests {
 		using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages * (long)pageSize, out var buffer)) {
 			buffer.AddRange(Tools.Array.Gen<byte>(pageSize, 10));
 			buffer.RemoveRange(0, buffer.Count);
-			Assert.AreEqual(0, buffer.Pages.Count);
-			Assert.AreEqual(0, buffer.Count);
-			Assert.AreEqual(Enumerable.Empty<byte>(), buffer);
+			ClassicAssert.AreEqual(0, buffer.Pages.Count);
+			ClassicAssert.AreEqual(0, buffer.Count);
+			ClassicAssert.AreEqual(Enumerable.Empty<byte>(), buffer);
 		}
 	}
 
@@ -118,9 +119,9 @@ public class BufferTests {
 		using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages * (long)pageSize, out var buffer)) {
 			buffer.AddRange(Tools.Array.Gen<byte>(pageSize, 10));
 			buffer.RemoveRange(1, buffer.Count - 1);
-			Assert.AreEqual(1, buffer.Pages.Count);
-			Assert.AreEqual(1, buffer.Count);
-			Assert.AreEqual(new byte[] { 10 }, buffer);
+			ClassicAssert.AreEqual(1, buffer.Pages.Count);
+			ClassicAssert.AreEqual(1, buffer.Count);
+			ClassicAssert.AreEqual(new byte[] { 10 }, buffer);
 		}
 	}
 
@@ -134,15 +135,15 @@ public class BufferTests {
 		using (CreateMemPagedBuffer(storageType, pageSize, maxOpenPages * (long)pageSize, out var buffer)) {
 			buffer.AddRange<byte>(127, 16, 15, 14, 13);
 			buffer.RemoveRange(1, 4);
-			Assert.AreEqual(1, buffer.Count);
-			Assert.AreEqual(127, buffer[0]);
+			ClassicAssert.AreEqual(1, buffer.Count);
+			ClassicAssert.AreEqual(127, buffer[0]);
 			buffer.AddRange<byte>(17, 18, 19);
-			Assert.AreEqual(4, buffer.Count);
-			Assert.AreEqual(127, buffer[0]);
-			Assert.AreEqual(17, buffer[1]);
-			Assert.AreEqual(18, buffer[2]);
-			Assert.AreEqual(19, buffer[3]);
-			Assert.AreEqual(expected, buffer);
+			ClassicAssert.AreEqual(4, buffer.Count);
+			ClassicAssert.AreEqual(127, buffer[0]);
+			ClassicAssert.AreEqual(17, buffer[1]);
+			ClassicAssert.AreEqual(18, buffer[2]);
+			ClassicAssert.AreEqual(19, buffer[3]);
+			ClassicAssert.AreEqual(expected, buffer);
 		}
 	}
 

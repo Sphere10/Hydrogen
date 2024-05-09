@@ -12,6 +12,7 @@ using System.Linq;
 using NUnit.Framework;
 using System.IO;
 using Hydrogen.NUnit;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -26,18 +27,18 @@ public class FileMappedBufferTests {
 		using (Tools.Scope.ExecuteOnDispose(() => File.Delete(fileName))) {
 			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From( fileName, 1, 1))) {
 
-				Assert.AreEqual(0, binaryFile.Pages.Count());
+				ClassicAssert.AreEqual(0, binaryFile.Pages.Count());
 				binaryFile.AddRange(expected);
 
 				// Check page
-				Assert.AreEqual(1, binaryFile.Pages.Count());
-				Assert.AreEqual(0, binaryFile.Pages[0].StartIndex);
-				Assert.AreEqual(1, binaryFile.Pages[0].Count);
-				Assert.AreEqual(0, binaryFile.Pages[0].EndIndex);
-				Assert.IsTrue(binaryFile.Pages[0].Dirty);
+				ClassicAssert.AreEqual(1, binaryFile.Pages.Count());
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].StartIndex);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[0].Count);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].EndIndex);
+				ClassicAssert.IsTrue(binaryFile.Pages[0].Dirty);
 			}
 			// Check saved
-			Assert.AreEqual(expected, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(expected, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -50,19 +51,19 @@ public class FileMappedBufferTests {
 			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From( fileName, 1, 1), FileAccessMode.Read | FileAccessMode.AutoLoad)) {
 
 				// Check page
-				Assert.AreEqual(1, binaryFile.Pages.Count());
-				Assert.AreEqual(0, binaryFile.Pages[0].StartIndex);
-				Assert.AreEqual(1, binaryFile.Pages[0].Count);
-				Assert.AreEqual(0, binaryFile.Pages[0].EndIndex);
-				Assert.IsFalse(binaryFile.Pages[0].Dirty);
+				ClassicAssert.AreEqual(1, binaryFile.Pages.Count());
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].StartIndex);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[0].Count);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].EndIndex);
+				ClassicAssert.IsFalse(binaryFile.Pages[0].Dirty);
 
 				// Check value
-				Assert.AreEqual(expected, binaryFile);
-				Assert.AreEqual(1, binaryFile.Count);
-				Assert.AreEqual(1, binaryFile.CalculateTotalSize());
+				ClassicAssert.AreEqual(expected, binaryFile);
+				ClassicAssert.AreEqual(1, binaryFile.Count);
+				ClassicAssert.AreEqual(1, binaryFile.CalculateTotalSize());
 			}
 			// Check file unchanged
-			Assert.AreEqual(expected, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(expected, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -79,26 +80,26 @@ public class FileMappedBufferTests {
 				binaryFile.AddRange(appendedBytes);
 
 				// Check pages 1 & 2
-				Assert.AreEqual(2, binaryFile.Pages.Count());
-				Assert.IsTrue(binaryFile.Pages[0].State == PageState.Unloaded);
-				Assert.AreEqual(0, binaryFile.Pages[0].StartIndex);
-				Assert.AreEqual(1, binaryFile.Pages[0].Count);
-				Assert.AreEqual(0, binaryFile.Pages[0].EndIndex);
-				Assert.IsFalse(binaryFile.Pages[0].Dirty);
+				ClassicAssert.AreEqual(2, binaryFile.Pages.Count());
+				ClassicAssert.IsTrue(binaryFile.Pages[0].State == PageState.Unloaded);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].StartIndex);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[0].Count);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].EndIndex);
+				ClassicAssert.IsFalse(binaryFile.Pages[0].Dirty);
 
-				Assert.IsTrue(binaryFile.Pages[1].State == PageState.Loaded);
-				Assert.AreEqual(1, binaryFile.Pages[1].StartIndex);
-				Assert.AreEqual(1, binaryFile.Pages[1].Count);
-				Assert.AreEqual(1, binaryFile.Pages[1].EndIndex);
-				Assert.IsTrue(binaryFile.Pages[1].Dirty);
+				ClassicAssert.IsTrue(binaryFile.Pages[1].State == PageState.Loaded);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[1].StartIndex);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[1].Count);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[1].EndIndex);
+				ClassicAssert.IsTrue(binaryFile.Pages[1].Dirty);
 
 				// Check value
-				Assert.AreEqual(expected, binaryFile);
-				Assert.AreEqual(2, binaryFile.Count);
-				Assert.AreEqual(2, binaryFile.CalculateTotalSize());
+				ClassicAssert.AreEqual(expected, binaryFile);
+				ClassicAssert.AreEqual(2, binaryFile.Count);
+				ClassicAssert.AreEqual(2, binaryFile.CalculateTotalSize());
 			}
 			// Check file was saved appended
-			Assert.AreEqual(expected, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(expected, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -112,33 +113,33 @@ public class FileMappedBufferTests {
 				binaryFile.Add(expected[0]);
 
 				// Check Page 1
-				Assert.AreEqual(1, binaryFile.Pages.Count());
-				Assert.IsTrue(binaryFile.Pages[0].State == PageState.Loaded);
-				Assert.AreEqual(0, binaryFile.Pages[0].StartIndex);
-				Assert.AreEqual(1, binaryFile.Pages[0].Count);
-				Assert.AreEqual(0, binaryFile.Pages[0].EndIndex);
-				Assert.IsTrue(binaryFile.Pages[0].Dirty);
+				ClassicAssert.AreEqual(1, binaryFile.Pages.Count());
+				ClassicAssert.IsTrue(binaryFile.Pages[0].State == PageState.Loaded);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].StartIndex);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[0].Count);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].EndIndex);
+				ClassicAssert.IsTrue(binaryFile.Pages[0].Dirty);
 
 				// Add new page
 				binaryFile.Add(expected[1]);
 
 				// Check pages 1 & 2
-				Assert.AreEqual(2, binaryFile.Pages.Count());
-				Assert.IsTrue(binaryFile.Pages[0].State == PageState.Unloaded);
-				Assert.AreEqual(0, binaryFile.Pages[0].StartIndex);
-				Assert.AreEqual(1, binaryFile.Pages[0].Count);
-				Assert.AreEqual(0, binaryFile.Pages[0].EndIndex);
-				Assert.IsFalse(binaryFile.Pages[0].Dirty);
+				ClassicAssert.AreEqual(2, binaryFile.Pages.Count());
+				ClassicAssert.IsTrue(binaryFile.Pages[0].State == PageState.Unloaded);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].StartIndex);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[0].Count);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].EndIndex);
+				ClassicAssert.IsFalse(binaryFile.Pages[0].Dirty);
 
-				Assert.IsTrue(binaryFile.Pages[1].State == PageState.Loaded);
-				Assert.AreEqual(1, binaryFile.Pages[1].StartIndex);
-				Assert.AreEqual(1, binaryFile.Pages[1].Count);
-				Assert.AreEqual(1, binaryFile.Pages[1].EndIndex);
-				Assert.IsTrue(binaryFile.Pages[1].Dirty);
+				ClassicAssert.IsTrue(binaryFile.Pages[1].State == PageState.Loaded);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[1].StartIndex);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[1].Count);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[1].EndIndex);
+				ClassicAssert.IsTrue(binaryFile.Pages[1].Dirty);
 			}
 
 			// Check saved
-			Assert.AreEqual(expected, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(expected, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -151,14 +152,14 @@ public class FileMappedBufferTests {
 
 				binaryFile.AddRange<byte>(127, 16, 15, 14, 13);
 				binaryFile.RemoveRange(1, 4);
-				Assert.AreEqual(1, binaryFile.Count);
-				Assert.AreEqual(127, binaryFile[0]);
+				ClassicAssert.AreEqual(1, binaryFile.Count);
+				ClassicAssert.AreEqual(127, binaryFile[0]);
 				binaryFile.AddRange<byte>(17, 18, 19);
-				Assert.AreEqual(4, binaryFile.Count);
-				Assert.AreEqual(expected, binaryFile);
+				ClassicAssert.AreEqual(4, binaryFile.Count);
+				ClassicAssert.AreEqual(expected, binaryFile);
 			}
 			// Check saved
-			Assert.AreEqual(expected, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(expected, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -171,23 +172,23 @@ public class FileMappedBufferTests {
 			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 1, 1))) {
 
 				// Check pages 1 & 2
-				Assert.AreEqual(2, binaryFile.Pages.Count());
-				Assert.IsTrue(binaryFile.Pages[0].State == PageState.Unloaded);
-				Assert.AreEqual(0, binaryFile.Pages[0].StartIndex);
-				Assert.AreEqual(1, binaryFile.Pages[0].Count);
-				Assert.AreEqual(0, binaryFile.Pages[0].EndIndex);
-				Assert.IsFalse(binaryFile.Pages[0].Dirty);
+				ClassicAssert.AreEqual(2, binaryFile.Pages.Count());
+				ClassicAssert.IsTrue(binaryFile.Pages[0].State == PageState.Unloaded);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].StartIndex);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[0].Count);
+				ClassicAssert.AreEqual(0, binaryFile.Pages[0].EndIndex);
+				ClassicAssert.IsFalse(binaryFile.Pages[0].Dirty);
 
-				Assert.IsTrue(binaryFile.Pages[1].State == PageState.Unloaded);
-				Assert.AreEqual(1, binaryFile.Pages[1].StartIndex);
-				Assert.AreEqual(1, binaryFile.Pages[1].Count);
-				Assert.AreEqual(1, binaryFile.Pages[1].EndIndex);
+				ClassicAssert.IsTrue(binaryFile.Pages[1].State == PageState.Unloaded);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[1].StartIndex);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[1].Count);
+				ClassicAssert.AreEqual(1, binaryFile.Pages[1].EndIndex);
 
 				// Check values
-				Assert.AreEqual(expected, binaryFile);
+				ClassicAssert.AreEqual(expected, binaryFile);
 			}
 			// Check file unchanged
-			Assert.AreEqual(expected, File.ReadAllBytes(fileName));
+			ClassicAssert.AreEqual(expected, File.ReadAllBytes(fileName));
 		}
 	}
 
@@ -200,7 +201,7 @@ public class FileMappedBufferTests {
 		using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From (fileName, 8, 4*8))) {
 
 			for (var i = 0; i < 8; i++)
-				Assert.AreEqual(expected[i], binaryFile[i]);
+				ClassicAssert.AreEqual(expected[i], binaryFile[i]);
 		}
 	}
 
@@ -213,7 +214,7 @@ public class FileMappedBufferTests {
 		using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 8, 4 * 8))) {
 
 			for (var i = 0; i < 256; i++)
-				Assert.AreEqual(expected[i], binaryFile[i]);
+				ClassicAssert.AreEqual(expected[i], binaryFile[i]);
 		}
 	}
 
@@ -228,14 +229,14 @@ public class FileMappedBufferTests {
 
 				QuickSorter.Sort(binaryFile, Comparer<byte>.Default);
 				for (var i = 0; i < 256; i++)
-					Assert.AreEqual(expected[i], binaryFile[i]);
+					ClassicAssert.AreEqual(expected[i], binaryFile[i]);
 			}
 
 			// check file is as expected
 			using (var binaryFile = new FileMappedBuffer(PagedFileDescriptor.From(fileName, 8, 4 * 8))) {
 
 				for (var i = 0; i < 256; i++)
-					Assert.AreEqual(expected[i], binaryFile[i]);
+					ClassicAssert.AreEqual(expected[i], binaryFile[i]);
 			}
 		}
 	}

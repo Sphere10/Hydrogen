@@ -40,7 +40,7 @@
 //			var digest = DoSha256Digest(Encoding.UTF8.GetBytes("PascalCoin"));
 //			var privateKey = GetNewPrivateKey(ecOpensslNid);
 //			var sig = DoEcdsaSign(privateKey, digest);
-//			Assert.IsTrue(ECCrypto.ECDSAVerify(privateKey.PublicKey, digest, sig));
+//			ClassicAssert.IsTrue(ECCrypto.ECDSAVerify(privateKey.PublicKey, digest, sig));
 //		}
 
 //		[Test]
@@ -53,7 +53,7 @@
 //				DoSha256Digest(Encoding.UTF8.GetBytes("PascalCoin")));
 //			var encodeSig = ECCrypto.EncodeSignature(origSig);
 //			_ = ECCrypto.DecodeSignature(encodeSig, out var newSig);
-//			Assert.IsTrue(AreEcdsaSigEqual(origSig, newSig));
+//			ClassicAssert.IsTrue(AreEcdsaSigEqual(origSig, newSig));
 //		}
 
 //		[Test]
@@ -67,7 +67,7 @@
 //			var serialized = originalPubKey.ToSerialized();
 //			ECDSA_Public reconstructedPubKey = default;
 //			reconstructedPubKey.FromSerialized(serialized);
-//			Assert.IsTrue(originalPubKey.IsEqualTo(reconstructedPubKey));
+//			ClassicAssert.IsTrue(originalPubKey.IsEqualTo(reconstructedPubKey));
 //		}
 
 //		[Test]
@@ -79,7 +79,7 @@
 //			var originalPrivateKey = GetNewPrivateKey(ecOpensslNid);
 //			var raw = originalPrivateKey.ExportToRaw();
 //			var reconstructedPrivateKey = ECPrivateKey.ImportFromRaw(raw);
-//			Assert.IsTrue(AreEcPrivateKeyEqual(originalPrivateKey, reconstructedPrivateKey));
+//			ClassicAssert.IsTrue(AreEcPrivateKeyEqual(originalPrivateKey, reconstructedPrivateKey));
 //		}
 
 //		[Test]
@@ -90,8 +90,8 @@
 //			var isDecrypted =
 //				ECCrypto.DoPascalCoinAESDecrypt(ECCrypto.DoPascalCoinAESEncrypt(message, password),
 //					password, ref decryptedMessage);
-//			Assert.IsTrue(isDecrypted);
-//			Assert.IsTrue(message.SequenceEqual(decryptedMessage));
+//			ClassicAssert.IsTrue(isDecrypted);
+//			ClassicAssert.IsTrue(message.SequenceEqual(decryptedMessage));
 //		}
 
 //		[Test]
@@ -113,11 +113,11 @@
 //			var privateKey = GetNewPrivateKey(ecOpensslNid);
 //			var publicKey = privateKey.PublicKey;
 //			var isEncrypted = ECCrypto.DoPascalCoinECIESEncrypt(publicKey, message, ref encryptedMessage);
-//			Assert.IsTrue(isEncrypted);
+//			ClassicAssert.IsTrue(isEncrypted);
 //			var isDecrypted = ECCrypto.DoPascalCoinECIESDecrypt(privateKey.EC_OpenSSL_NID,
 //				privateKey.PrivateKey.RAW_PrivKey, encryptedMessage, ref decryptedMessage);
-//			Assert.IsTrue(isDecrypted);
-//			Assert.IsTrue(message.SequenceEqual(decryptedMessage));
+//			ClassicAssert.IsTrue(isDecrypted);
+//			ClassicAssert.IsTrue(message.SequenceEqual(decryptedMessage));
 //		}
 //	}
 //}

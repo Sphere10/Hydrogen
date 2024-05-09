@@ -7,6 +7,7 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.Utilities.Encoders;
@@ -56,7 +57,7 @@ public abstract class DigestTest {
 		_digest.BlockUpdate(lastV, lastV.Length / 2, lastV.Length - lastV.Length / 2);
 		_digest.DoFinal(resBuf, 0);
 
-		Assert.AreEqual(lastDigest,
+		ClassicAssert.AreEqual(lastDigest,
 			resBuf,
 			string.Format("fail clone vector test, expected {0} but got {1}",
 				_results[_results.Length - 1],
@@ -65,7 +66,7 @@ public abstract class DigestTest {
 		d.BlockUpdate(lastV, lastV.Length / 2, lastV.Length - lastV.Length / 2);
 		d.DoFinal(resBuf, 0);
 
-		Assert.AreEqual(lastDigest,
+		ClassicAssert.AreEqual(lastDigest,
 			resBuf,
 			string.Format("fail second clone vector test, expected {0} but got {1}",
 				_results[_results.Length - 1],
@@ -85,7 +86,7 @@ public abstract class DigestTest {
 		_digest.BlockUpdate(lastV, lastV.Length / 2, lastV.Length - lastV.Length / 2);
 		_digest.DoFinal(resBuf, 0);
 
-		Assert.AreEqual(lastDigest,
+		ClassicAssert.AreEqual(lastDigest,
 			resBuf,
 			string.Format("fail memo vector test, expected {0} but got {1}",
 				_results[_results.Length - 1],
@@ -96,7 +97,7 @@ public abstract class DigestTest {
 		_digest.BlockUpdate(lastV, lastV.Length / 2, lastV.Length - lastV.Length / 2);
 		_digest.DoFinal(resBuf, 0);
 
-		Assert.AreEqual(lastDigest,
+		ClassicAssert.AreEqual(lastDigest,
 			resBuf,
 			string.Format("fail memo reset vector test, expected {0} but got {1}",
 				_results[_results.Length - 1],
@@ -107,7 +108,7 @@ public abstract class DigestTest {
 		md.BlockUpdate(lastV, lastV.Length / 2, lastV.Length - lastV.Length / 2);
 		md.DoFinal(resBuf, 0);
 
-		Assert.AreEqual(lastDigest,
+		ClassicAssert.AreEqual(lastDigest,
 			resBuf,
 			string.Format("fail memo copy vector test, expected {0} but got {1}",
 				_results[_results.Length - 1],
@@ -134,7 +135,7 @@ public abstract class DigestTest {
 		aDigest.BlockUpdate(aInput, 0, aInput.Length);
 		aDigest.DoFinal(resBuf, 0);
 
-		Assert.AreEqual(resBuf,
+		ClassicAssert.AreEqual(resBuf,
 			expected,
 			string.Format("Vector {0} failed, got {1}", count, Hex.ToHexString(resBuf)));
 	}

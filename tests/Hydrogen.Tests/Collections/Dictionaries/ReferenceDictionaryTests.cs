@@ -9,6 +9,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -24,8 +25,8 @@ public class ReferenceDictionaryTests {
 		referenceDictionary[key2] = 2;
 		referenceDictionary["one"] = 3;  // overwrite key1 value since compiler re-uses string literals
 		Assert.That(referenceDictionary.Count, Is.EqualTo(2));
-		CollectionAssert.AreEqual(referenceDictionary.Keys.ToArray(), new [] { key1, key2 });
-		CollectionAssert.AreEqual(referenceDictionary.Values.ToArray(), new [] { 3, 2 });
+		ClassicAssert.AreEqual(referenceDictionary.Keys.ToArray(), new [] { key1, key2 });
+		ClassicAssert.AreEqual(referenceDictionary.Values.ToArray(), new [] { 3, 2 });
 	}
 
 	[Test]
@@ -36,7 +37,7 @@ public class ReferenceDictionaryTests {
 		referenceDictionary[key1] = 1;
 		referenceDictionary[key2] = 2;
 		referenceDictionary.Remove("one");  // remove key1 value since compiler re-uses string literals
-		CollectionAssert.AreEqual(referenceDictionary.Keys.ToArray(), new [] { key2 });
-		CollectionAssert.AreEqual(referenceDictionary.Values.ToArray(), new [] { 2 });
+		ClassicAssert.AreEqual(referenceDictionary.Keys.ToArray(), new [] { key2 });
+		ClassicAssert.AreEqual(referenceDictionary.Values.ToArray(), new [] { 2 });
 	}
 }

@@ -10,6 +10,7 @@ using NUnit.Framework;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities.Encoders;
 using Hydrogen.CryptoEx.HF;
+using NUnit.Framework.Legacy;
 
 namespace NPascalCoin.UnitTests.Crypto;
 
@@ -55,7 +56,7 @@ public class Murmur3_x86_32DigestTest
 	private void DoPerformTest(string testTitle, byte[] inputBytes, uint resultsAsUInt32) {
 		uint resUInt32 = CreateUInt32OutputFromDigest(inputBytes);
 
-		Assert.AreEqual(resultsAsUInt32, resUInt32, testTitle);
+		ClassicAssert.AreEqual(resultsAsUInt32, resUInt32, testTitle);
 	}
 
 	private uint CreateUInt32OutputFromDigest(byte[] digestBytes) {

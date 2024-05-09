@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using Hydrogen.DApp.Presentation.Plugins;
+using NUnit.Framework.Legacy;
 using Assert = NUnit.Framework.Assert;
 
 namespace Hydrogen.DApp.Presentation.Loader.Tests.PluginTests;
@@ -41,11 +42,11 @@ public class MenuItemTests {
 
 		List<MenuItem> merged = menu1.Merge(menu2).ToList();
 
-		Assert.AreEqual(2, merged.Count);
-		Assert.AreEqual(menu1[0].Heading, merged[0].Heading);
-		Assert.AreEqual(menu1[0].Route, merged[0].Route);
-		Assert.AreEqual(2, merged[0].Children.Count);
-		Assert.AreEqual(1, merged[1].Children.Count);
+		ClassicAssert.AreEqual(2, merged.Count);
+		ClassicAssert.AreEqual(menu1[0].Heading, merged[0].Heading);
+		ClassicAssert.AreEqual(menu1[0].Route, merged[0].Route);
+		ClassicAssert.AreEqual(2, merged[0].Children.Count);
+		ClassicAssert.AreEqual(1, merged[1].Children.Count);
 	}
 
 	[Test]
@@ -60,8 +61,8 @@ public class MenuItemTests {
 
 		var copy = menu1.Copy().ToList();
 
-		Assert.AreNotSame(copy, menu1);
-		Assert.True(menu1[0].Heading == copy[0].Heading);
-		Assert.True(menu1[0].Children[0].Heading == copy[0].Children[0].Heading);
+		ClassicAssert.AreNotSame(copy, menu1);
+		ClassicAssert.IsTrue(menu1[0].Heading == copy[0].Heading);
+		ClassicAssert.IsTrue(menu1[0].Children[0].Heading == copy[0].Children[0].Heading);
 	}
 }

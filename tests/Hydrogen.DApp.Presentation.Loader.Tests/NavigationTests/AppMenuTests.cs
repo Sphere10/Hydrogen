@@ -11,6 +11,7 @@ using NUnit.Framework;
 using Hydrogen.DApp.Presentation.Loader.Plugins;
 using Hydrogen.DApp.Presentation.Loader.Tests.PluginManagerTests;
 using Hydrogen.DApp.Presentation.Loader.ViewModels;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.DApp.Presentation.Loader.Tests.NavigationTests;
 
@@ -26,8 +27,8 @@ public class AppMenuTests {
 
 		navigationManager.NavigateTo("/");
 
-		Assert.AreSame(appManager.Apps, appsMenuViewModel.Apps);
-		Assert.AreSame(appManager.SelectedApp, appsMenuViewModel.SelectedApp);
-		Assert.AreSame(appManager.SelectedApp?.AppBlocks, blockMenuViewModel.AppBlocks);
+		ClassicAssert.AreSame(appManager.Apps, appsMenuViewModel.Apps);
+		ClassicAssert.AreSame(appManager.SelectedApp, appsMenuViewModel.SelectedApp);
+		ClassicAssert.AreSame(appManager.SelectedApp?.AppBlocks, blockMenuViewModel.AppBlocks);
 	}
 }

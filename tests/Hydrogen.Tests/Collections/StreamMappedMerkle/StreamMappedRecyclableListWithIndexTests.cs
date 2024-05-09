@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -42,7 +43,7 @@ public class StreamMappedMerkleRecyclableListWithIndexTests : RecyclableListTest
 		Assert.That(mlist.MerkleTree.Root, Is.Null);
 
 		// Enumerate empty
-		CollectionAssert.AreEqual(rlist, Array.Empty<string>());
+		ClassicAssert.AreEqual(rlist, Array.Empty<string>());
 
 		// add "A"
 		rlist.Add("A");
@@ -77,7 +78,7 @@ public class StreamMappedMerkleRecyclableListWithIndexTests : RecyclableListTest
 		Assert.That(() => rlist.RemoveAt(1), Throws.ArgumentException);
 
 		// Enumerate 
-		CollectionAssert.AreEqual(rlist, new[] { "A", "C" });
+		ClassicAssert.AreEqual(rlist, new[] { "A", "C" });
 		Assert.That(rlist.Count, Is.EqualTo(2));
 		Assert.That(rlist.ListCount, Is.EqualTo(3));
 		Assert.That(rlist.RecycledCount, Is.EqualTo(1));
@@ -102,7 +103,7 @@ public class StreamMappedMerkleRecyclableListWithIndexTests : RecyclableListTest
 		Assert.That(mlist.MerkleTree.Root, Is.EqualTo(TreeHash("A", "B2", "C")));
 
 		// Enumeration check
-		CollectionAssert.AreEqual(rlist, new[] { "A", "B2", "C" });
+		ClassicAssert.AreEqual(rlist, new[] { "A", "B2", "C" });
 
 		// add another "A" (verify used new index)
 		rlist.Add("A");
@@ -147,7 +148,7 @@ public class StreamMappedMerkleRecyclableListWithIndexTests : RecyclableListTest
 		Assert.That(rlist.IndexOf("C"), Is.EqualTo(2));
 
 		// Enumerate "B2" and "C"
-		CollectionAssert.AreEqual(rlist, new[] { "B2", "C" });
+		ClassicAssert.AreEqual(rlist, new[] { "B2", "C" });
 
 		// Clear
 		rlist.Clear();

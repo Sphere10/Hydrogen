@@ -185,7 +185,7 @@
 //			//test for 5 seonds
 //			int TestRoundCount = 5;
 //			MiningManager.SimulateBlockCreation(TestRoundCount);
-//			Assert.AreEqual(RhMinerMock.Accepted, TestRoundCount * 4 / 2);
+//			ClassicAssert.AreEqual(RhMinerMock.Accepted, TestRoundCount * 4 / 2);
 
 //			StopStratumServer();
 //			StopMiningManager();

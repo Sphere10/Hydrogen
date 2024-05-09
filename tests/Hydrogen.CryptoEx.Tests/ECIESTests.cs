@@ -11,6 +11,7 @@ using NUnit.Framework;
 using Hydrogen.CryptoEx.EC;
 using System.Linq;
 using System.Text;
+using NUnit.Framework.Legacy;
 using Tools;
 
 namespace Hydrogen.CryptoEx.Tests;
@@ -38,8 +39,8 @@ public class ECIESTests {
 		var publicKey = ecdsa.DerivePublicKey(privateKey);
 		var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 		var encryptedData = ecdsa.IES.Encrypt(message, publicKey);
-		Assert.IsTrue(ecdsa.IES.TryDecrypt(encryptedData, out var decryptedData, privateKey));
-		Assert.IsTrue(message.SequenceEqual(decryptedData.ToArray()));
+		ClassicAssert.IsTrue(ecdsa.IES.TryDecrypt(encryptedData, out var decryptedData, privateKey));
+		ClassicAssert.IsTrue(message.SequenceEqual(decryptedData.ToArray()));
 	}
 
 	[Test]
@@ -55,8 +56,8 @@ public class ECIESTests {
 		var publicKey = ecdsa.DerivePublicKey(privateKey);
 		var message = Encoding.ASCII.GetBytes(RandomString(rng.Next(1, 1000), iterations));
 		var encryptedData = ecdsa.IES.Encrypt(message, publicKey);
-		Assert.IsTrue(ecdsa.IES.TryDecrypt(encryptedData, out var decryptedData, privateKey));
-		Assert.IsTrue(message.SequenceEqual(decryptedData.ToArray()));
+		ClassicAssert.IsTrue(ecdsa.IES.TryDecrypt(encryptedData, out var decryptedData, privateKey));
+		ClassicAssert.IsTrue(message.SequenceEqual(decryptedData.ToArray()));
 	}
 
 }

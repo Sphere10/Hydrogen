@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Hydrogen.NUnit;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -28,7 +29,7 @@ public class BitVectorTests {
 		var insert = Enumerable.Repeat(false, 20).ToArray();
 		list.InsertRange(20, insert);
 
-		Assert.AreEqual(inputs.Concat(insert), list);
+		ClassicAssert.AreEqual(inputs.Concat(insert), list);
 	}
 
 	[Test]
@@ -39,12 +40,12 @@ public class BitVectorTests {
 
 		var inputs = random.NextBools(16);
 		list.AddRange(inputs);
-		Assert.AreEqual(inputs, list);
+		ClassicAssert.AreEqual(inputs, list);
 
 		var range = list.ReadRange(9, 7)
 			.ToList();
 
-		Assert.AreEqual(inputs[9..], range);
+		ClassicAssert.AreEqual(inputs[9..], range);
 	}
 
 	[Test]
@@ -56,8 +57,8 @@ public class BitVectorTests {
 		var inputs = new[] { false, false, false, false, false, false, false, false, true };
 		list.AddRange(inputs);
 
-		Assert.AreEqual(new[] { 8, 8, 8 }, list.IndexOfRange(new[] { true, true, true }));
-		Assert.AreEqual(new[] { 7 }, list.IndexOfRange(new[] { false }));
+		ClassicAssert.AreEqual(new[] { 8, 8, 8 }, list.IndexOfRange(new[] { true, true, true }));
+		ClassicAssert.AreEqual(new[] { 7 }, list.IndexOfRange(new[] { false }));
 	}
 
 	[Test]
@@ -69,11 +70,11 @@ public class BitVectorTests {
 
 		list.AddRange(inputs);
 		list.RemoveRange(8, 1);
-		Assert.AreEqual(8, list.Count);
-		Assert.AreEqual(inputs[..^1], list);
+		ClassicAssert.AreEqual(8, list.Count);
+		ClassicAssert.AreEqual(inputs[..^1], list);
 
 		list.RemoveRange(0, list.Count);
-		Assert.AreEqual(0, list.Count);
+		ClassicAssert.AreEqual(0, list.Count);
 	}
 
 	[Test]
@@ -92,7 +93,7 @@ public class BitVectorTests {
 		list.UpdateRange(0, update);
 		expected.UpdateRange(0, update);
 
-		Assert.AreEqual(expected, list);
+		ClassicAssert.AreEqual(expected, list);
 
 		int randomIndex = random.Next(0, (int)list.Count - 1);
 		var randomUpdate = random.NextBools((int)list.Count - randomIndex);
@@ -100,7 +101,7 @@ public class BitVectorTests {
 		list.UpdateRange(randomIndex, randomUpdate);
 		expected.UpdateRange(randomIndex, randomUpdate);
 
-		Assert.AreEqual(expected, list);
+		ClassicAssert.AreEqual(expected, list);
 	}
 
 	[Test]

@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using NUnit.Framework;
 using Hydrogen.NUnit;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -21,9 +22,9 @@ public class ExtendedMemoryStreamTests {
 	public void Empty([Values] InnerListType listType) {
 		using (CreateTestStream(listType, 10, out var stream)) {
 			var expected = new MemoryStream();
-			Assert.AreEqual(expected.Position, stream.Position);
-			Assert.AreEqual(expected.Length, stream.Length);
-			Assert.AreEqual(expected.ToArray(), stream.ToArray());
+			ClassicAssert.AreEqual(expected.Position, stream.Position);
+			ClassicAssert.AreEqual(expected.Length, stream.Length);
+			ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 		}
 	}
 
@@ -34,10 +35,10 @@ public class ExtendedMemoryStreamTests {
 			var data = new Random(31337).NextBytes(100);
 			stream.WriteBytes(data);
 			expected.WriteBytes(data);
-			Assert.AreEqual(expected.ReadBytes(100), stream.ReadBytes(100));
-			Assert.AreEqual(expected.Position, stream.Position);
-			Assert.AreEqual(expected.Length, stream.Length);
-			Assert.AreEqual(expected.ToArray(), stream.ToArray());
+			ClassicAssert.AreEqual(expected.ReadBytes(100), stream.ReadBytes(100));
+			ClassicAssert.AreEqual(expected.Position, stream.Position);
+			ClassicAssert.AreEqual(expected.Length, stream.Length);
+			ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 		}
 	}
 
@@ -50,9 +51,9 @@ public class ExtendedMemoryStreamTests {
 			expected.WriteBytes(data);
 			stream.SetLength(0);
 			expected.SetLength(0);
-			Assert.AreEqual(expected.Position, stream.Position);
-			Assert.AreEqual(expected.Length, stream.Length);
-			Assert.AreEqual(expected.ToArray(), stream.ToArray());
+			ClassicAssert.AreEqual(expected.Position, stream.Position);
+			ClassicAssert.AreEqual(expected.Length, stream.Length);
+			ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 		}
 	}
 
@@ -62,7 +63,7 @@ public class ExtendedMemoryStreamTests {
 			var expected = new MemoryStream();
 			stream.Seek(0, SeekOrigin.End);
 			expected.Seek(0, SeekOrigin.End);
-			Assert.AreEqual(expected.Position, stream.Position);
+			ClassicAssert.AreEqual(expected.Position, stream.Position);
 		}
 	}
 
@@ -75,7 +76,7 @@ public class ExtendedMemoryStreamTests {
 			expected.WriteBytes(data);
 			stream.Seek(0, SeekOrigin.End);
 			expected.Seek(0, SeekOrigin.End);
-			Assert.AreEqual(expected.Position, stream.Position);
+			ClassicAssert.AreEqual(expected.Position, stream.Position);
 		}
 	}
 

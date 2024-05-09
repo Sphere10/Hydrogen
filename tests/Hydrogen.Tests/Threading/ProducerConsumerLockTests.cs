@@ -26,7 +26,7 @@
 //			using (@lock.BlockUntil(ProducerConsumerType.Consumer, () => true)) {
 //				result = 1;
 //			}
-//			Assert.AreEqual(1, result);
+//			ClassicAssert.AreEqual(1, result);
 //		}
 
 //		[Test]
@@ -95,7 +95,7 @@
 //			Volatile.Write(ref start, true);
 //			@lock.Pulse();
 //			Thread.Sleep(200);
-//			Assert.AreEqual(new int[] { 1, 2 }, result.ToArray());
+//			ClassicAssert.AreEqual(new int[] { 1, 2 }, result.ToArray());
 //		}
 
 
@@ -130,19 +130,19 @@
 
 //			// Everything should be blocked
 //			Thread.Sleep(100);
-//			Assert.AreEqual(Enumerable.Empty<int>(), result);
+//			ClassicAssert.AreEqual(Enumerable.Empty<int>(), result);
 
 //			// Allow first two threads in
 //			Volatile.Write(ref start, true);
 //			@lock.Pulse();
 //			Thread.Sleep(100);
-//			Assert.AreEqual(new[] { 1, 2 }, result.ToArray());
+//			ClassicAssert.AreEqual(new[] { 1, 2 }, result.ToArray());
 
 //			// Allow last two threads in
 //			Volatile.Write(ref start, true);
 //			@lock.Pulse();
 //			Thread.Sleep(100);
-//			Assert.AreEqual(new[] { 1, 2, 3, 4 }, result.ToArray());
+//			ClassicAssert.AreEqual(new[] { 1, 2, 3, 4 }, result.ToArray());
 
 //		}
 
@@ -178,7 +178,7 @@
 //			}
 
 //			Thread.Sleep(100);
-//			Assert.AreEqual(Enumerable.Empty<int>(), result);
+//			ClassicAssert.AreEqual(Enumerable.Empty<int>(), result);
 
 
 //			Volatile.Write(ref start, true);
@@ -187,7 +187,7 @@
 //				Thread.Sleep(100);
 //			}
 //			Tools.NUnit.Print(result);
-//			Assert.AreEqual(Enumerable.Range(1, 100), result);
+//			ClassicAssert.AreEqual(Enumerable.Range(1, 100), result);
 //		}
 //	}
 

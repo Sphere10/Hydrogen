@@ -9,6 +9,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -35,7 +36,7 @@ public class UrlIDTests {
 			var checkTask = new Task(() => {
 				while (!queue.HasFinishedProducing) {
 					var toCheck = queue.Take();
-					Assert.AreEqual(false, permutes.Contains(toCheck), "Value {0} clashed".FormatWith(toCheck));
+					ClassicAssert.AreEqual(false, permutes.Contains(toCheck), "Value {0} clashed".FormatWith(toCheck));
 					permutes.Add(toCheck);
 				}
 			});

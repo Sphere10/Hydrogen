@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -28,11 +29,11 @@ public class ProducerConsumerQueueTest {
 	public async Task Simple() {
 		using var queue = new ProducerConsumerQueue<string>(10);
 		await queue.PutAsync("Hello World!");
-		Assert.AreEqual(1, queue.Count);
+		ClassicAssert.AreEqual(1, queue.Count);
 		var r = await queue.TakeManyAsync(1);
-		Assert.AreEqual(0, queue.Count);
-		Assert.AreEqual(1, r.Length);
-		Assert.AreEqual("Hello World!", r[0]);
+		ClassicAssert.AreEqual(0, queue.Count);
+		ClassicAssert.AreEqual(1, r.Length);
+		ClassicAssert.AreEqual("Hello World!", r[0]);
 	}
 
 	[Test]
@@ -86,7 +87,7 @@ public class ProducerConsumerQueueTest {
 
 		await Task.WhenAll(ProduceTask(), ConsumeTask());
 		//Tools.NUnit.Print(result);
-		Assert.AreEqual(expected, result);
+		ClassicAssert.AreEqual(expected, result);
 	}
 
 
@@ -169,7 +170,7 @@ public class ProducerConsumerQueueTest {
 
 		await Task.WhenAll(ProduceTask(), ConsumeTask()).WithTimeout(TimeSpan.FromSeconds(TimeoutSEC));
 		var resultArr = result.OrderBy(x => x).ToArray();
-		Assert.AreEqual(expected, resultArr);
+		ClassicAssert.AreEqual(expected, resultArr);
 	}
 
 

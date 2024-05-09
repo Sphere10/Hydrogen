@@ -14,6 +14,7 @@ using AutoFixture;
 using NUnit.Framework;
 using Hydrogen.DApp.Presentation.Components.Tables;
 using Hydrogen.DApp.Presentation.Models;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.DApp.Presentation.Tests;
 
@@ -43,9 +44,9 @@ public class VirtualPagedTableViewModelTests {
 
 		await vm.InitAsync();
 
-		Assert.AreEqual(vm.PageSize, vm.Page.Count());
-		Assert.AreEqual(service.TotalItems, vm.TotalItems);
-		Assert.AreEqual((int)Math.Ceiling((double)service.TotalItems / vm.PageSize), vm.TotalPages);
+		ClassicAssert.AreEqual(vm.PageSize, vm.Page.Count());
+		ClassicAssert.AreEqual(service.TotalItems, vm.TotalItems);
+		ClassicAssert.AreEqual((int)Math.Ceiling((double)service.TotalItems / vm.PageSize), vm.TotalPages);
 	}
 
 	[Test]
@@ -59,8 +60,8 @@ public class VirtualPagedTableViewModelTests {
 
 		await vm.InitAsync();
 
-		Assert.AreEqual(4, vm.TotalPages);
-		Assert.AreEqual(10, vm.TotalItems);
+		ClassicAssert.AreEqual(4, vm.TotalPages);
+		ClassicAssert.AreEqual(10, vm.TotalItems);
 
 		await vm.NextPageAsync();
 		await vm.NextPageAsync();
@@ -69,7 +70,7 @@ public class VirtualPagedTableViewModelTests {
 		await vm.PrevPageAsync();
 		await vm.PrevPageAsync();
 
-		Assert.AreEqual(1, vm.CurrentPage);
+		ClassicAssert.AreEqual(1, vm.CurrentPage);
 	}
 
 	[Test]
@@ -83,15 +84,15 @@ public class VirtualPagedTableViewModelTests {
 
 		await vm.InitAsync();
 
-		Assert.AreEqual(10, vm.TotalPages);
-		Assert.AreEqual(1, vm.CurrentPage);
+		ClassicAssert.AreEqual(10, vm.TotalPages);
+		ClassicAssert.AreEqual(1, vm.CurrentPage);
 
 		await vm.NextPageAsync();
 
-		Assert.AreEqual(2, vm.CurrentPage);
+		ClassicAssert.AreEqual(2, vm.CurrentPage);
 
 		await vm.SetPageSizeAsync(3);
 
-		Assert.AreEqual(1, vm.CurrentPage);
+		ClassicAssert.AreEqual(1, vm.CurrentPage);
 	}
 }

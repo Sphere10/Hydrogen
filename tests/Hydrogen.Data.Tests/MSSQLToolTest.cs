@@ -8,6 +8,7 @@
 
 using System;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Data.Tests;
 
@@ -21,7 +22,7 @@ public class MSSQLToolTest {
 
 	[Test]
 	public void Exists_False() {
-		Assert.IsFalse(Tools.MSSQL.Exists(Server, "__!__No_Database_Should_Ever_be_Called_This__!", Username, Password));
+		ClassicAssert.IsFalse(Tools.MSSQL.Exists(Server, "__!__No_Database_Should_Ever_be_Called_This__!", Username, Password));
 	}
 
 	[Test]
@@ -29,7 +30,7 @@ public class MSSQLToolTest {
 		var dbName = Guid.NewGuid().ToStrictAlphaString();
 		try {
 			Tools.MSSQL.CreateDatabase(Server, dbName, Username, Password);
-			Assert.IsTrue(Tools.MSSQL.Exists(Server, dbName, Username, Password));
+			ClassicAssert.IsTrue(Tools.MSSQL.Exists(Server, dbName, Username, Password));
 		} finally {
 			Tools.MSSQL.DropDatabase(Server, dbName, Username, Password);
 		}
@@ -73,9 +74,9 @@ public class MSSQLToolTest {
 	public void Drop() {
 		var dbName = Guid.NewGuid().ToStrictAlphaString();
 		Tools.MSSQL.CreateDatabase(Server, dbName, Username, Password);
-		Assert.IsTrue(Tools.MSSQL.Exists(Server, dbName, Username, Password));
+		ClassicAssert.IsTrue(Tools.MSSQL.Exists(Server, dbName, Username, Password));
 		Tools.MSSQL.DropDatabase(Server, dbName, Username, Password);
-		Assert.IsFalse(Tools.MSSQL.Exists(Server, dbName, Username, Password));
+		ClassicAssert.IsFalse(Tools.MSSQL.Exists(Server, dbName, Username, Password));
 	}
 
 	[Test]

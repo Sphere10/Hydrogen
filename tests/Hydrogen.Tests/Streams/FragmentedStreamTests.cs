@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using NUnit.Framework;
 using Hydrogen.NUnit;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -35,9 +36,9 @@ public class FragmentedStreamTests {
 		var stream = new FragmentedStream(fragments);
 		var expected = new MemoryStream();
 
-		Assert.AreEqual(expected.Position, stream.Position);
-		Assert.AreEqual(expected.Length, stream.Length);
-		Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.Length, stream.Length);
+		ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 	}
 
 	[Test]
@@ -48,7 +49,7 @@ public class FragmentedStreamTests {
 		var data = Array.Empty<byte>();
 		expected.WriteBytes(data);
 		stream.WriteBytes(data);
-		Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 	}
 
 	[Test]
@@ -60,7 +61,7 @@ public class FragmentedStreamTests {
 		var data = rng.NextBytes(rng.Next(0, 100));
 		expected.WriteBytes(data);
 		stream.WriteBytes(data);
-		Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 	}
 
 	[Test]
@@ -76,10 +77,10 @@ public class FragmentedStreamTests {
 		stream.Seek(0, SeekOrigin.Begin);
 		expected.Seek(0, SeekOrigin.Begin);
 
-		Assert.AreEqual(expected.Position, stream.Position);
-		Assert.AreEqual(expected.Length, stream.Length);
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.Length, stream.Length);
 
-		Assert.AreEqual(expected.ReadBytes(data.Length), stream.ReadBytes(data.Length));
+		ClassicAssert.AreEqual(expected.ReadBytes(data.Length), stream.ReadBytes(data.Length));
 	}
 
 	[Test]
@@ -92,23 +93,23 @@ public class FragmentedStreamTests {
 		stream.WriteBytes(data);
 		expected.WriteBytes(data);
 
-		Assert.AreEqual(expected.Position, stream.Position);
-		Assert.AreEqual(expected.Length, stream.Length);
-		Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.Length, stream.Length);
+		ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 
 		int halfway = data.Length / 2;
 		byte[] newData = Random.NextBytes(data.Length);
 
 		stream.Seek(halfway, SeekOrigin.Begin);
 		expected.Seek(halfway, SeekOrigin.Begin);
-		Assert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
 
 		stream.WriteBytes(newData);
 		expected.WriteBytes(newData);
 
-		Assert.AreEqual(expected.Position, stream.Position);
-		Assert.AreEqual(expected.Length, stream.Length);
-		Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.Length, stream.Length);
+		ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 	}
 
 	[Test]
@@ -129,8 +130,8 @@ public class FragmentedStreamTests {
 		stream.Seek(offset, origin);
 		expected.Seek(offset, origin);
 
-		Assert.AreEqual(expected.Position, stream.Position);
-		Assert.AreEqual(expected.ReadBytes(1), stream.ReadBytes(1));
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.ReadBytes(1), stream.ReadBytes(1));
 	}
 
 	[Test]
@@ -146,9 +147,9 @@ public class FragmentedStreamTests {
 		stream.SetLength(0);
 		expected.SetLength(0);
 
-		Assert.AreEqual(expected.Position, stream.Position);
-		Assert.AreEqual(expected.Length, stream.Length);
-		Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.Length, stream.Length);
+		ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 	}
 
 	[Test]
@@ -165,9 +166,9 @@ public class FragmentedStreamTests {
 		stream.SetLength(stream.Length + newSpace);
 		expected.SetLength(expected.Length + newSpace);
 
-		Assert.AreEqual(expected.Position, stream.Position);
-		Assert.AreEqual(expected.Length, stream.Length);
-		Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.Length, stream.Length);
+		ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 	}
 
 	[Test]
@@ -182,17 +183,17 @@ public class FragmentedStreamTests {
 		expected.WriteBytes(data);
 
 
-		Assert.AreEqual(expected.Length, stream.Length);
-		Assert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.Length, stream.Length);
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
 
 		int newSpace = Random.Next(0, (int)expected.Length);
 		expected.SetLength(expected.Length - newSpace);
 		stream.SetLength(stream.Length - newSpace);
 
 
-		Assert.AreEqual(expected.Position, stream.Position);
-		Assert.AreEqual(expected.Length, stream.Length);
-		Assert.AreEqual(expected.ToArray(), stream.ToArray());
+		ClassicAssert.AreEqual(expected.Position, stream.Position);
+		ClassicAssert.AreEqual(expected.Length, stream.Length);
+		ClassicAssert.AreEqual(expected.ToArray(), stream.ToArray());
 	}
 
 	[Test]

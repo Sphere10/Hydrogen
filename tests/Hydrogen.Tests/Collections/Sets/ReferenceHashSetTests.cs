@@ -9,6 +9,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -24,7 +25,7 @@ public class ReferenceHashSetTests {
 		referenceHashSet.Add(key2);
 		Assert.That(referenceHashSet.Count, Is.EqualTo(2));
 		Assert.That(referenceHashSet.Contains("one"), Is.True);
-		CollectionAssert.AreEqual(referenceHashSet.ToArray(), new [] { key1, key2 });
+		ClassicAssert.AreEqual(referenceHashSet.ToArray(), new [] { key1, key2 });
 	}
 
 	[Test]
@@ -35,7 +36,7 @@ public class ReferenceHashSetTests {
 		referenceHashSet.Add(key1);
 		referenceHashSet.Add(key2);
 		referenceHashSet.Remove("one");  // remove key1 value since compiler re-uses string literals
-		CollectionAssert.AreEqual(referenceHashSet.ToArray(), new [] { key2 });
+		ClassicAssert.AreEqual(referenceHashSet.ToArray(), new [] { key2 });
 
 	}
 }

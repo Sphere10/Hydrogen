@@ -9,6 +9,7 @@
 using System.Linq;
 using Hydrogen.NUnit;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Hydrogen.Tests;
 
@@ -38,7 +39,7 @@ public class ComparerBuilderTests {
 			items[0]
 		};
 		var actual = items.OrderBy(x => x, comparer).ToArray();
-		CollectionAssert.AreEqual(expected, actual);
+		ClassicAssert.AreEqual(expected, actual);
 	}
 	
 	[Test]

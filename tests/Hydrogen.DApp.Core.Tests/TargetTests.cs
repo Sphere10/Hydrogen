@@ -9,6 +9,7 @@
 using NUnit.Framework;
 using Hydrogen;
 using Hydrogen.DApp.Core.Maths;
+using NUnit.Framework.Legacy;
 
 namespace VelocityNET.Processing.Tests.Core;
 
@@ -21,7 +22,7 @@ public class MolinaTargetTests {
 		var expected = targetAlg.MinCompactTarget;
 		var target = targetAlg.ToDigest(expected);
 		var actual = targetAlg.FromDigest(target);
-		Assert.AreEqual(expected, actual);
+		ClassicAssert.AreEqual(expected, actual);
 	}
 
 	[Test]
@@ -32,8 +33,8 @@ public class MolinaTargetTests {
 			var bytes = HexEncoding.Decode(new string(hexBytes));
 			var compact = targetAlg.FromDigest(bytes);
 			var target = targetAlg.ToDigest(compact);
-			Assert.AreEqual(HexEncoding.Decode(expectedTarget), target);
-			Assert.AreEqual(expectedCompactTarget, compact);
+			ClassicAssert.AreEqual(HexEncoding.Decode(expectedTarget), target);
+			ClassicAssert.AreEqual(expectedCompactTarget, compact);
 
 		}
 

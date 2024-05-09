@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="WorkflowCore.Persistence.EntityFramework" Version="3.9.0" />
-    <PackageReference Include="WorkflowCore.Persistence.SqlServer" Version="3.9.0" />
+    <PackageReference Include="WorkflowCore.Persistence.EntityFramework" Version="3.10.0" />
+    <PackageReference Include="WorkflowCore.Persistence.SqlServer" Version="3.10.0" />
   </ItemGroup>
 
   <ItemGroup>

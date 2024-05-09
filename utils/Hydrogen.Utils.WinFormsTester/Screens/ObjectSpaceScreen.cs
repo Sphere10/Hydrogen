@@ -130,7 +130,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 
 	public class Account {
 
-		[UniqueProperty]
+		[UniqueIndex]
 		public string Name { get; set; }
 
 		public decimal Quantity { get; set; }
@@ -143,7 +143,7 @@ public partial class ObjectSpaceScreen : ApplicationScreen {
 
 		public DSS DSS { get; set; }
 
-		[UniqueProperty]
+		[UniqueIndex]
 		public byte[] Key { get; set; }
 	}
 

@@ -34,7 +34,7 @@ internal static class SerializerHelper {
 
 			// Ensure serializers for member types are registered
 			// (i.e. resolving serializer for List<UnregisteredType> serializer requires a serializer for UnregisteredType)
-			foreach (var unregisteredMemberType in GetUnregisteredMemberTypes(factory, itemType))
+			foreach (var unregisteredMemberType in GetUnregisteredDependentTypes(factory, itemType))
 				AssembleRecursively(factory, unregisteredMemberType);
 
 			// If serializer already exists for this type in factory, use that
@@ -47,10 +47,20 @@ internal static class SerializerHelper {
 				return typeSerializer;
 			}
 
+			// Special case: abstract types are serialized as polymorphic serializers
+
 			// Special Case: if we're serializing an enum (or nullable enum), we register it with the factory now and return
 			if (itemType.IsEnum || itemType.IsConstructedGenericTypeOf(typeof(Nullable<>)) && itemType.GenericTypeArguments[0].IsEnum) {
 				factory.RegisterEnum(itemType.IsEnum ? itemType : itemType.GenericTypeArguments[0]);
 				return factory.GetCachedSerializer(itemType);
+			}
+
+			// Special case: if we're serializing an abstract type, use a polymorphic serializer (and register it)
+			// NOTE: concrete sub-types must be registered via KnownSubTypeAttribute annotations (which were scanned above)
+			if (itemType.IsAbstract) {
+				var polymorphicSerializer = CreatePolymorphicSerializer(factory, itemType);
+				factory.RegisterInternal(factory.GenerateTypeCode(), itemType, polymorphicSerializer.GetType(), polymorphicSerializer, null);
+				return polymorphicSerializer;
 			}
 
 			// No serializer registered so we need to assemble one as a CompositeSerializer. First, we need to 
@@ -101,38 +111,42 @@ internal static class SerializerHelper {
 			return itemType.IsValueType ? compositeSerializer : compositeSerializer.AsReferenceSerializer();
 		}
 
-		IEnumerable<Type> GetUnregisteredMemberTypes(SerializerFactory factory, Type type, HashSet<Type> alreadyVisited = null) {
+		IEnumerable<Type> GetUnregisteredDependentTypes(SerializerFactory factory, Type type, HashSet<Type> alreadyVisited = null) {
 			alreadyVisited ??= new HashSet<Type>();
-
-			// List<Type>
-			// Type[]
-			// Type1<Type2, Type3>
 
 			// Avoid recursive loops
 			if (alreadyVisited.Contains(type))
 				yield break;
 			alreadyVisited.Add(type);
 
-			// Case 1: There is an explicit serializer for this type, no component types need to be assembled
+			// Case 1: An explicit serializer exists for this type, no dependent type serializers need to be assembled
 			if (factory.HasSerializer(type))
 				yield break;
 
-
-			// Case 2: Array element type may need assembling
+			// Case 2: An array element type may need assembling
 			if (type.IsArray) {
 				var elementType = type.GetElementType();
 				if (!factory.HasSerializer(elementType)) {
-					foreach (var elementTypeUnregisteredComponentTypes in GetUnregisteredMemberTypes(factory, elementType, alreadyVisited))
+					foreach (var elementTypeUnregisteredComponentTypes in GetUnregisteredDependentTypes(factory, elementType, alreadyVisited))
 						yield return elementTypeUnregisteredComponentTypes;
 					yield return elementType;
 				}
 			}
 
-			// Case 4: Serializer for generic type definition exists but not for generic type arguments 
+			// Case 3: Polymorphic dependencies may need to be assembled (these must be explicitly specified by annotation)
+			foreach(var subType in KnownSubTypeAttribute.GetKnownSubTypes(type)) {
+				if (!factory.HasSerializer(subType))
+					yield return subType;
+				foreach (var transitiveDependentType in GetUnregisteredDependentTypes(factory, subType, alreadyVisited)) {
+					yield return transitiveDependentType;
+				}
+			}
+
+			// Case 4: Generic type argument dependencies
 			// e.g. List<UnregType>, Dictionary<UnregType1, UnregType2>, etc
 			if (type.IsConstructedGenericType && factory.HasSerializer(type.GetGenericTypeDefinition())) {
 				foreach (var genericArgumentType in type.GetGenericArguments().Where(x => !factory.HasSerializer(x))) {
-					foreach (var subType in GetUnregisteredMemberTypes(factory, genericArgumentType, alreadyVisited))
+					foreach (var subType in GetUnregisteredDependentTypes(factory, genericArgumentType, alreadyVisited))
 						yield return subType;
 					yield return genericArgumentType;
 				}

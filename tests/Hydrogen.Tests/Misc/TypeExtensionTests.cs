@@ -18,20 +18,16 @@ namespace Hydrogen.Tests;
 public class TypeExtensionTests {
 
 	[Test]
-	public void IsCrossAssemblyType_False() {
-		Assert.That(typeof(Type).IsCrossAssemblyType(), Is.False);
-		Assert.That(typeof(AssemblySerializer).IsCrossAssemblyType(), Is.False);
-		Assert.That(typeof(Account).IsCrossAssemblyType(), Is.False);
-		Assert.That(typeof(IBijectiveDictionary<,>).IsCrossAssemblyType(), Is.False);
-		Assert.That(typeof(IBijectiveDictionary<Scope,Scope>).IsCrossAssemblyType(), Is.False);
-		Assert.That(typeof(IDictionary<int,string>).IsCrossAssemblyType(), Is.False);
-	}
+	public void IsCrossAssemblyType_False(
+		[Values(typeof(Type), typeof(AssemblySerializer), typeof(Account), typeof(IBijectiveDictionary<,>), typeof(IBijectiveDictionary<Scope,Scope>), typeof(IDictionary<int,string>))]
+		Type type
+	) => Assert.That(type.IsCrossAssemblyType(), Is.False);
 
 	[Test]
-	public void IsCrossAssemblyType_True() {
-		Assert.That(typeof(IBijectiveDictionary<string,int>).IsCrossAssemblyType(), Is.True);
-		Assert.That(typeof(IDictionary<Account,int>).IsCrossAssemblyType(), Is.True);
-	}
+	public void IsCrossAssemblyType_True(
+		[Values(typeof(IBijectiveDictionary<string,int>), typeof(IDictionary<Account,int>))]
+	    Type type
+	) => Assert.That(type.IsCrossAssemblyType(), Is.True);
 
 	[Test]
 	public void PartialGenericTypeDefinitionIsPartial() {

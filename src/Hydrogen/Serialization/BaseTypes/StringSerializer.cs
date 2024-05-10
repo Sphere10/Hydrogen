@@ -29,6 +29,8 @@ public class StringSerializer : ItemSerializerBase<string> {
 
 	public static StringSerializer UTF7 { get; } = new(Encoding.UTF7);
 
+	public static StringSerializer Unicode { get; } = new(Encoding.Unicode);
+
 	public static StringSerializer BigEndianUnicode { get; } = new(Encoding.BigEndianUnicode);
 
 	public static StringSerializer Default { get; } = new(Encoding.Default);

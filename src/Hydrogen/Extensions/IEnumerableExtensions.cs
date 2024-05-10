@@ -19,6 +19,18 @@ namespace Hydrogen;
 
 public static class IEnumerableExtensions {
 
+	public static (T[], T[]) SelectInto<T>(this IEnumerable<T> source, Predicate<T> predicate) {
+		var group1 = new List<T>();
+		var group2 = new List<T>();
+		foreach(var item in source) 
+			if (predicate(item))
+				group1.Add(item);
+			else
+				group2.Add(item);
+
+		return (group1.ToArray(), group2.ToArray());
+	}
+
 	public static IEnumerable<T> TakeL<T>(this IEnumerable<T> source, long count) {
 		Guard.ArgumentNotNull(source, nameof(source));
 		Guard.ArgumentGTE(count, 0, nameof(count));

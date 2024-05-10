@@ -23,6 +23,14 @@ namespace Hydrogen;
 /// <remarks></remarks>
 public static class TypeExtensions {
 
+	public static bool IsCrossAssemblyType(this Type type) {
+		if (!type.IsGenericType)
+			return false;
+		var typeArgAssemblies = type.GenericTypeArguments.Select(x => x.Assembly).Distinct().ToArray();
+		return typeArgAssemblies.Length != 0 && !typeArgAssemblies.SequenceEqual([type.Assembly]);
+	}
+	
+
 	public static bool IsAssignableTo(this Type type, [NotNullWhen(true)] Type? targetType) => targetType?.IsAssignableFrom(type) ?? false;
 	public static string ToStringCS(this Type type) {
 		if (!type.IsGenericType)

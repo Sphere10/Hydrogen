@@ -481,11 +481,17 @@ public static class IEnumerableExtensions {
 			action(item);
 	}
 
-	public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction) {
-		foreach (var value in source) {
-			await asyncAction(value);
+	public static void ForEachThenOnLast<T>(this IEnumerable<T> source, Action<T> eachAction, Action<T> lastAction) {
+		foreach(var item in source.WithDescriptions()) {
+			eachAction(item.Item);
+			if (item.Description.HasFlag(EnumeratedItemDescription.Last)) {
+				lastAction(item.Item);
+			}
 		}
 	}
+
+	public static Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction) 
+		=> source.ForEachAsync(asyncAction, CancellationToken.None);
 
 	public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction, CancellationToken cancellationToken) {
 		foreach (var value in source) {
@@ -701,15 +707,6 @@ public static class IEnumerableExtensions {
 		}
 		if (haveLast)
 			yield return new GroupOfAdjacent<TSource, TKey>(list, last);
-	}
-
-	public static IEnumerable<T> ForEachThenOnLast<T>(this IEnumerable<T> source, Action<T> eachAction, Action<T> lastAction) {
-		source.Reverse().Skip(1).Reverse().ForEach(eachAction);
-		var lastItem = source.LastOrDefault();
-		if (lastItem != null) {
-			lastAction(lastItem);
-		}
-		return source;
 	}
 
 	public static string ToDelimittedString<T>(this IEnumerable<T> source, string delimitter, string nullText = "", Func<T, string> toStringFunc = null) {

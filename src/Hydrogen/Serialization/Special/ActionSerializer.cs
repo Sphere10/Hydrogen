@@ -10,11 +10,11 @@ using System;
 
 namespace Hydrogen;
 
-public class ActionItemSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
+public class ActionSerializer<T> : ActionItemSizer<T>, IItemSerializer<T> {
 	private readonly Action<T, EndianBinaryWriter> _serializer;
 	private readonly Func<EndianBinaryReader, T> _deserializer;
 
-	public ActionItemSerializer(Func<T, long> sizer, Action<T, EndianBinaryWriter> serializer, Func<EndianBinaryReader, T> deserializer, bool supportsNull = false)
+	public ActionSerializer(Func<T, long> sizer, Action<T, EndianBinaryWriter> serializer, Func<EndianBinaryReader, T> deserializer, bool supportsNull = false)
 		: base(sizer, supportsNull) {
 		Guard.ArgumentNotNull(serializer, nameof(serializer));
 		Guard.ArgumentNotNull(deserializer, nameof(deserializer));

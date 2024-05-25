@@ -20,28 +20,31 @@ internal class SerializerSerializer : ItemSerializerBase<IItemSerializer>{
 
 	public override long CalculateSize(SerializationContext context, IItemSerializer item) {
 		Guard.ArgumentNotNull(item, nameof(item));
+		var factory = context.HasEphemeralFactory ? context.EphemeralFactory : SerializerFactory;
 		var serializerDataType = item.ItemType;
-		var serializerHierarchy = SerializerFactory.GetSerializerHierarchy(serializerDataType);
+		var serializerHierarchy = factory.GetSerializerHierarchy(serializerDataType);
 		return serializerHierarchy.Flatten().Sum(item1 => _sizeSerializer.CalculateSize(context, item1));
 	}
 
 	public override void Serialize(IItemSerializer item, EndianBinaryWriter writer, SerializationContext context) {
 		Guard.ArgumentNotNull(item, nameof(item));
+		var factory = context.HasEphemeralFactory ? context.EphemeralFactory : SerializerFactory;
 		var serializerDataType = item.ItemType;
-		var flattenedHierarchy = SerializerFactory.GetSerializerHierarchy(serializerDataType).Flatten().ToArray();
+		var flattenedHierarchy = factory.GetSerializerHierarchy(serializerDataType).Flatten().ToArray();
 		foreach(var serializer in flattenedHierarchy)
 			_sizeSerializer.Serialize(serializer, writer, context);
 	}
 
 	public override IItemSerializer Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		// deserialize the top-level serializer code
+		var factory = context.HasEphemeralFactory ? context.EphemeralFactory : SerializerFactory;
 		var rootSerializerCode = _sizeSerializer.Deserialize(reader, context);
 		var serializerHierarchy = RecursiveDataType<long>.Parse(
 			rootSerializerCode, 
-			SerializerFactory.CountSubSerializers, 
+			factory.CountSubSerializers, 
 			() => _sizeSerializer.Deserialize(reader, context)
 		);
-		var rootSerializer = SerializerFactory.FromSerializerHierarchy(serializerHierarchy);
+		var rootSerializer = factory.FromSerializerHierarchy(serializerHierarchy);
 		return rootSerializer;
 	}
 

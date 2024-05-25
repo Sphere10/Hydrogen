@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -13,16 +14,43 @@ public sealed class SerializationContext : SyncScope {
 	private readonly BijectiveDictionary<object, long> _processedObjects;
 	private readonly IDictionary<long, SerializationStatus> _objectSerializationStatus;
 	private readonly List<Action> _onRootContextEndActions;
-	long _currentlyDeserializingIndex;
+	private long _currentlyDeserializingIndex;
+	private SerializerFactory _serializerFactory;
+	private long _lastNonEphemeralTypeCode;
 
 	public SerializationContext() {
 		_processedObjects = new BijectiveDictionary<object, long>(ReferenceEqualityComparer.Instance, EqualityComparer<long>.Default);
 		_objectSerializationStatus = new Dictionary<long, SerializationStatus>();
 		_onRootContextEndActions = new List<Action>();
 		_currentlyDeserializingIndex = -1;
+		_serializerFactory = null;
+		_lastNonEphemeralTypeCode = 0;
 	}
 
 	public static SerializationContext New => new();
+
+	public SerializerFactory EphemeralFactory {
+		get  {
+			Guard.Ensure(_serializerFactory is not null, "On-the-fly serializer construction is not permitted in this serialization context");
+			return _serializerFactory;
+		}
+	}
+
+	public bool HasEphemeralFactory => _serializerFactory is not null;
+
+	public void SetEphemeralFactory(SerializerFactory factory) {
+		Guard.Ensure(factory is not null && _serializerFactory is null, "An ephemeral factory has already been set in this serialization context");
+		_serializerFactory = factory;
+		_lastNonEphemeralTypeCode = factory.MaxGeneratedTypeCode;
+	}
+
+	public IEnumerable<SerializerFactory.Registration> GetEphemeralRegistrations() => _serializerFactory.GetRegistrationsAfterTypeCode(_lastNonEphemeralTypeCode);
+
+	public void ClearEphemeralFactory() {
+		Guard.Ensure(_serializerFactory is not null , "No ephemeral factory was set in this context");
+		_serializerFactory = null;
+		_lastNonEphemeralTypeCode = 0;
+	}
 
 #if !DEBUG
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -102,7 +130,12 @@ public sealed class SerializationContext : SyncScope {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
 	public object GetDeserializedObject(long index) {
-		Debug.Assert(_objectSerializationStatus.TryGetValue(index, out var status) && status == SerializationStatus.Deserialized, $"No object was serialized in this serialization context at index {index}");
+		if(!_objectSerializationStatus.TryGetValue(index, out var status))
+			throw new InvalidOperationException($"No object at deserialization context index {index} exists");
+
+		if (status != SerializationStatus.Deserialized)
+			throw new InvalidOperationException($"Object at deserialization context index {index} was in status {status}");
+
 		return _processedObjects.Bijection[index];
 	}
 

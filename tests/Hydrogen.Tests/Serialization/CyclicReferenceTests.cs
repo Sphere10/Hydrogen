@@ -9,7 +9,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using FastSerialization;
+using FluentAssertions;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
@@ -18,17 +18,30 @@ namespace Hydrogen.Tests;
 [Parallelizable]
 public class CyclicReferenceTests {
 	
+	public enum SerializerType {
+		Binary,
+		Factory
+	}
 
 	public class SinglePropertyObject {
 		public object Property { get; set; }
 	}
 
-
+	private IItemSerializer<T> CreateSerializer<T>(SerializerType serializerType) {
+		switch (serializerType) {
+			case SerializerType.Binary:
+				return new BinarySerializer().AsCastedSerializer<object, T>();
+			case SerializerType.Factory:
+				return SerializerBuilder.FactoryAssemble<T>();
+			default:
+				throw new ArgumentOutOfRangeException();
+		}
+	}
 
 	[Test]
-	public void CyclicReference_1() {
+	public void CyclicReference_1([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj = new SinglePropertyObject();
 		obj.Property = obj;
 
@@ -38,11 +51,10 @@ public class CyclicReferenceTests {
 		Assert.That(deserialized.Property, Is.SameAs(deserialized));
 	}
 
-
 	[Test]
-	public void CyclicReference_1_CalculateSize() {
+	public void CyclicReference_1_CalculateSize([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj = new SinglePropertyObject();
 		obj.Property = obj;
 		var size = serializer.CalculateSize(obj);
@@ -51,9 +63,9 @@ public class CyclicReferenceTests {
 	}
 
 	[Test]
-	public void CyclicReference_2() {
+	public void CyclicReference_2([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj1 = new SinglePropertyObject();
 		var obj2 = new SinglePropertyObject();
 		obj1.Property = obj2;
@@ -68,9 +80,9 @@ public class CyclicReferenceTests {
 	}
 
 	[Test]
-	public void CyclicReference_2_CalculateSize() {
+	public void CyclicReference_2_CalculateSize([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj1 = new SinglePropertyObject();
 		var obj2 = new SinglePropertyObject();
 		obj1.Property = obj2;
@@ -82,9 +94,9 @@ public class CyclicReferenceTests {
 	}
 
 	[Test]
-	public void CyclicReference_3() {
+	public void CyclicReference_3([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj1 = new SinglePropertyObject();
 		var obj2 = new SinglePropertyObject();
 		obj1.Property = obj2;
@@ -99,9 +111,9 @@ public class CyclicReferenceTests {
 	}
 	
 	[Test]
-	public void CyclicReference_3_CalculateSize() {
+	public void CyclicReference_3_CalculateSize([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj1 = new SinglePropertyObject();
 		var obj2 = new SinglePropertyObject();
 		obj1.Property = obj2;
@@ -113,9 +125,9 @@ public class CyclicReferenceTests {
 	}
 
 	[Test]
-	public void CyclicReference_4() {
+	public void CyclicReference_4([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj1 = new SinglePropertyObject();
 		var obj2 = new SinglePropertyObject();
 		var obj3 = new SinglePropertyObject();
@@ -144,9 +156,9 @@ public class CyclicReferenceTests {
 	}
 
 	[Test]
-	public void CyclicReference_4_CalculateSize() {
+	public void CyclicReference_4_CalculateSize([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj1 = new SinglePropertyObject();
 		var obj2 = new SinglePropertyObject();
 		var obj3 = new SinglePropertyObject();
@@ -159,12 +171,11 @@ public class CyclicReferenceTests {
 		var serialized = serializer.SerializeBytesLE(obj1);
 		Assert.That(size, Is.EqualTo(serialized.Length));
 	}
-	
 
 	[Test]
-	public void CyclicReference_None() {
+	public void CyclicReference_None([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj1 = new SinglePropertyObject();
 		var obj2 = new SinglePropertyObject();
 		obj1.Property = obj2;
@@ -179,9 +190,9 @@ public class CyclicReferenceTests {
 	}
 
 	[Test]
-	public void CyclicReference_None_CalculateSize() {
+	public void CyclicReference_None_CalculateSize([Values] SerializerType serializerType) {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SinglePropertyObject>();
+		var serializer = CreateSerializer<SinglePropertyObject>(serializerType);
 		var obj1 = new SinglePropertyObject();
 		var obj2 = new SinglePropertyObject();
 		obj1.Property = obj2;
@@ -192,12 +203,9 @@ public class CyclicReferenceTests {
 		Assert.That(size, Is.EqualTo(serialized.Length));
 	}
 
-
-	
 	[Test]
-	public void CyclicReference_NestedType() {
-		var factory = SerializerFactory.Default;
-		var serializer = factory.GetSerializer<NestedType>();
+	public void CyclicReference_NestedType([Values] SerializerType serializerType) {
+		var serializer = CreateSerializer<NestedType>(serializerType);
 
 		var item = new NestedType();
 		item.Nested = item;
@@ -209,5 +217,23 @@ public class CyclicReferenceTests {
 		Assert.That(size, Is.EqualTo(serialized.Length));
 		Assert.That(deserialized, Is.TypeOf<NestedType>());
 		Assert.That(deserialized.Nested, Is.SameAs(deserialized));
+	}
+
+	[Test]
+	public void CyclicReference_BugCase([Values] SerializerType serializerType) {
+		var serializer = CreateSerializer<List<SinglePropertyObject>>(serializerType);
+
+		var obj = new SinglePropertyObject();
+		var item = new List<SinglePropertyObject> { obj };
+		obj.Property = item;
+
+		var size = serializer.CalculateSize(item);
+		var serialized = serializer.SerializeBytesLE(item);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(size, Is.EqualTo(serialized.Length));
+		deserialized.Should().BeEquivalentTo(item, x=> x.IgnoringCyclicReferences());
+		
+		
 	}
 }

@@ -216,7 +216,7 @@ public class ObjectSpaceBuilder {
 			if (type.TryGetCustomAttributeOfType<EqualityComparerAttribute>(false, out var equalityComparerAttribute))
 				dimensionBuilder.UsingEqualityComparer(equalityComparerAttribute.EqualityComparerType.ActivateWithCompatibleArgs());
 
-			foreach(var member in SerializerHelper.GetSerializableMembers(type)) {
+			foreach(var member in SerializerBuilder.GetSerializableMembers(type)) {
 				if (member.MemberInfo.TryGetCustomAttributeOfType<IdentityAttribute>(false, out var identityAttribute)) 
 					dimensionBuilder.WithIdentifier(member, identityAttribute.IndexName); 
 

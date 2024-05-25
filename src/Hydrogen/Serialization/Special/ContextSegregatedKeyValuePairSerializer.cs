@@ -30,7 +30,7 @@ public class ContextSegregatedKeyValuePairSerializer<TKey, TValue> : ItemSeriali
 	private readonly SizeDescriptorSerializer _sizeSerializer;
 	public ContextSegregatedKeyValuePairSerializer(IItemSerializer<TKey> keySerializer = null, IItemSerializer<TValue> valueSerializer = null, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
 		KeySerializer = keySerializer ?? ItemSerializer<TKey>.Default;
-		ValueSerializer = (valueSerializer ?? ItemSerializer<TValue>.Default).AsReferenceSerializer();
+		ValueSerializer = valueSerializer ?? ItemSerializer<TValue>.Default;
 		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 

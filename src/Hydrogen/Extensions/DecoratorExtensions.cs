@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Hydrogen;
 
@@ -326,18 +327,63 @@ public static partial class DecoratorExtensions {
 
 	#region Serializer
 
+	private static readonly MethodInfo _asUnwrappedGenericMethod = typeof(DecoratorExtensions).GetGenericMethod(nameof(AsUnwrapped), 1);
+	private static readonly MethodInfo _asWrappedGenericMethod1 = typeof(DecoratorExtensions).GetGenericMethods(nameof(AsWrapped), 1).FirstOrDefault(x => x.GetParameters().Length == 1);
+	private static readonly MethodInfo _asWrappedGenericMethod3 = typeof(DecoratorExtensions).GetGenericMethods(nameof(AsWrapped), 1).FirstOrDefault(x => x.GetParameters().Length == 3);
+	private static readonly MethodInfo _asReferenceSerializerMethod = typeof(DecoratorExtensions).GetGenericMethod(nameof(AsReferenceSerializer), 1);
+	private static readonly MethodInfo _asDereferencedSerializer = typeof(DecoratorExtensions).GetGenericMethod(nameof(AsDereferencedSerializer), 1);
+	private static readonly MethodInfo _asCastedSerializer = typeof(DecoratorExtensions).GetGenericMethod(nameof(AsCastedSerializer), 2);	
+	
+
+	public static IItemSerializer AsWrapped(this IItemSerializer serializer) 
+		=> _asWrappedGenericMethod1.MakeGenericMethod(serializer.ItemType).Invoke(null, [serializer]) as IItemSerializer;
+
+	public static IItemSerializer AsWrapped(this IItemSerializer serializer, SerializerFactory factory, ReferenceSerializerMode referenceMode) 
+		=> _asWrappedGenericMethod3.MakeGenericMethod(serializer.ItemType).Invoke(null, [serializer, factory, referenceMode]) as IItemSerializer;
+
+	public static IItemSerializer AsUnwrapped(this IItemSerializer serializer) 
+		=> _asUnwrappedGenericMethod.MakeGenericMethod(serializer.ItemType).Invoke(null, [serializer]) as IItemSerializer;
+
+	public static IItemSerializer AsCastedSerializer(this IItemSerializer serializer, Type baseType)
+		=> _asCastedSerializer.MakeGenericMethod(serializer.ItemType, baseType).Invoke(null, [serializer]) as IItemSerializer;
+
+	public static IItemSerializer AsReferenceSerializer(this IItemSerializer serializer, ReferenceSerializerMode mode = ReferenceSerializerMode.Default)
+		=> _asReferenceSerializerMethod.MakeGenericMethod(serializer.ItemType).Invoke(null, [serializer, mode]) as IItemSerializer;
+
+	public static IItemSerializer AsDereferencedSerializer(this IItemSerializer serializer)
+		=> _asDereferencedSerializer.MakeGenericMethod(serializer.ItemType).Invoke(null, [serializer]) as IItemSerializer;
+
+	public static IItemSerializer<T> AsWrapped<T>(this IItemSerializer<T> serializer)  
+		=> serializer.AsWrapped(SerializerFactory.Default, ReferenceSerializerMode.Default);
+
+	public static IItemSerializer<T> AsWrapped<T>(this IItemSerializer<T> serializer, SerializerFactory factory, ReferenceSerializerMode referenceMode)  {
+		var itemType = serializer.ItemType;
+		if (!itemType.IsSealed && serializer is not PolymorphicSerializer<T>) {
+			serializer = serializer.AsPolymorphicSerializer(factory);
+		}  if (!itemType.IsValueType) {
+			serializer = serializer.AsReferenceSerializer(referenceMode);
+		}
+		return serializer;
+	}
+
+	public static IItemSerializer<T> AsUnwrapped<T>(this IItemSerializer<T> serializer) 
+		=> serializer switch {
+			ReferenceSerializer<T> referenceSerializer => referenceSerializer.Internal.AsUnwrapped(),
+			PolymorphicSerializer<T> polymorphicSerializer when !typeof(T).IsAbstract => polymorphicSerializer.Factory.GetPureSerializer<T>(),
+			_ => serializer
+		};
+
+	public static IItemSerializer<TTo> AsCastedSerializer<TFrom, TTo>(this IItemSerializer<TFrom> serializer)
+		=> new CastedSerializer<TFrom, TTo>(serializer);
+
 	public static IItemSerializer<T> AsNullableSerializer<T>(this IItemSerializer<T> serializer)
 		=> (typeof(T).IsValueType || serializer.SupportsNull) ? serializer : new ReferenceSerializer<T>(serializer, ReferenceSerializerMode.SupportNull);
 
-	public static IItemSerializer AsReferenceSerializer(this IItemSerializer serializer, ReferenceSerializerMode mode = ReferenceSerializerMode.Default)
-		=> (serializer.ItemType.IsValueType || serializer.SupportsNull) ? serializer : (IItemSerializer)typeof(ReferenceSerializer<>).MakeGenericType(serializer.ItemType).ActivateWithCompatibleArgs(serializer, mode);
-	
 	public static IItemSerializer<T> AsReferenceSerializer<T>(this IItemSerializer<T> serializer, ReferenceSerializerMode mode = ReferenceSerializerMode.Default)
-		=> (typeof(T).IsValueType || serializer.SupportsNull) ? serializer : new ReferenceSerializer<T>(serializer, mode);
+		=> typeof(T).IsValueType ? serializer : new ReferenceSerializer<T>(serializer, mode);
 
-	public static IItemSerializer AsDereferencedSerializer(this IItemSerializer serializer)
-		=> serializer.GetType().IsSubtypeOfGenericType(typeof(ReferenceSerializer<>)) ? ((IItemSerializerDecorator)serializer).InternalSerializer : serializer;
-
+	public static IItemSerializer<T> AsPolymorphicSerializer<T>(this IItemSerializer<T> serializer, SerializerFactory factory)
+		=> new PolymorphicSerializer<T>(factory, serializer);
 	public static IItemSerializer<T> AsDereferencedSerializer<T>(this IItemSerializer<T> serializer)
 		=> (serializer is ReferenceSerializer<T> referenceSerializer) ? referenceSerializer.Internal : serializer;
 

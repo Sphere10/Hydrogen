@@ -21,7 +21,7 @@ public class KeyValuePairSerializerTests {
 	public void Simple() {
 		var kvp = new KeyValuePair<string, byte[]>("alpha", "alpha".ToAsciiByteArray());
 		var comparer = new KeyValuePairEqualityComparer<string, byte[]>(EqualityComparer<string>.Default, new ByteArrayEqualityComparer());
-		var serializer = new KeyValuePairSerializer<string, byte[]>(new StringSerializer(Encoding.UTF8), new ByteArraySerializer());
+		var serializer = new KeyValuePairSerializer<string, byte[]>(new StringSerializer(Encoding.UTF8), new ByteArraySerializer().AsWrapped());
 		var size = serializer.CalculateSize(kvp);
 		var serializedBytes = serializer.SerializeBytesLE(kvp);
 		var deserializedItem = serializer.DeserializeBytesLE(serializedBytes);
@@ -50,7 +50,7 @@ public class KeyValuePairSerializerTests {
 
 	private void RunTest(KeyValuePair<string, byte[]> item) {
 		var comparer = new KeyValuePairEqualityComparer<string, byte[]>(EqualityComparer<string>.Default, new ByteArrayEqualityComparer());
-		var serializer = new KeyValuePairSerializer<string, byte[]>(new StringSerializer(Encoding.UTF8), new ByteArraySerializer());
+		var serializer = new KeyValuePairSerializer<string, byte[]>(new StringSerializer(Encoding.UTF8), new ByteArraySerializer().AsWrapped());
 		var size = serializer.CalculateSize(item);
 		var serializedBytes = serializer.SerializeBytesLE(item);
 		var deserializedItem = serializer.DeserializeBytesLE(serializedBytes);

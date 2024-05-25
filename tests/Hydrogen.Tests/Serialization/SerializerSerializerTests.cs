@@ -20,7 +20,7 @@ public class SerializerSerializerTests {
 	public void IntSerializer() {
 		var factory = new SerializerFactory();
 		factory.Register(PrimitiveSerializer<int>.Instance);
-		var itemSerializer = factory.GetRegisteredSerializer<int>();
+		var itemSerializer = factory.GetPureSerializer<int>();
 		var serializerSerializer = new SerializerSerializer(factory);
 		var size = serializerSerializer.CalculateSize(itemSerializer);
 		var serializedSerializer = serializerSerializer.SerializeBytesLE(itemSerializer);
@@ -34,13 +34,13 @@ public class SerializerSerializerTests {
 	public void ListOfIntSerializer() {
 		var factory = new SerializerFactory();
 		factory.Register(PrimitiveSerializer<int>.Instance);
-		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>));
-		var itemSerializer = factory.GetRegisteredSerializer<IList<int>>();
+		factory.Register(typeof(List<>), typeof(ListSerializer<>));
+		var itemSerializer = factory.GetPureSerializer<List<int>>();
 		var serializerSerializer = new SerializerSerializer(factory);
 		var size = serializerSerializer.CalculateSize(itemSerializer);
 		var serializedSerializer = serializerSerializer.SerializeBytesLE(itemSerializer);
 		var deserializedSerializer = serializerSerializer.DeserializeBytesLE(serializedSerializer);
-		var itemSerializer2 = deserializedSerializer as IItemSerializer<IList<int>>;
+		var itemSerializer2 = deserializedSerializer as IItemSerializer<List<int>>;
 		Assert.That(serializedSerializer.Length, Is.EqualTo(size));
 		Assert.That(itemSerializer2, Is.Not.Null);
 	}
@@ -50,22 +50,22 @@ public class SerializerSerializerTests {
 		var factory = new SerializerFactory();
 		factory.Register(PrimitiveSerializer<int>.Instance); // 0
 		factory.Register(PrimitiveSerializer<float>.Instance); // 1
-		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>)); // 2
+		factory.Register(typeof(List<>), typeof(ListSerializer<>)); // 2
 		factory.Register(typeof(KeyValuePair<,>), typeof(KeyValuePairSerializer<,>)); // 3
-		// IList< 2
+		// List< 2
 		//	KeyValuePair< 3
-		//		IList< 2
+		//		List< 2
 		//			int>, 0
 		//		KeyValuePair< 3
 		//			float, 1 
-		//			IList< 2
+		//			List< 2
 		//				int>>>> 0
-		var itemSerializer = factory.GetRegisteredSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>();
+		var itemSerializer = factory.GetPureSerializer<List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>>();
 		var serializerSerializer = new SerializerSerializer(factory);
 		var size = serializerSerializer.CalculateSize(itemSerializer);
 		var serializedSerializer = serializerSerializer.SerializeBytesLE(itemSerializer);
 		var deserializedSerializer = serializerSerializer.DeserializeBytesLE(serializedSerializer);
-		var itemSerializer2 = deserializedSerializer as IItemSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>;
+		var itemSerializer2 = deserializedSerializer as IItemSerializer<List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>>;
 		Assert.That(serializedSerializer.Length, Is.EqualTo(size));
 		Assert.That(itemSerializer2, Is.Not.Null);
 	}
@@ -76,10 +76,10 @@ public class SerializerSerializerTests {
 		var factory = new SerializerFactory();
 		factory.Register(PrimitiveSerializer<int>.Instance); // 0
 		factory.Register(PrimitiveSerializer<float>.Instance); // 1
-		factory.Register(typeof(IList<>), typeof(ListInterfaceSerializer<>)); // 2
+		factory.Register(typeof(List<>), typeof(ListSerializer<>)); // 2
 		factory.Register(typeof(KeyValuePair<,>), typeof(KeyValuePairSerializer<,>)); // 3
 		
-		IItemSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<int, IList<int>>>>> specificSerializer = new ListInterfaceSerializer<KeyValuePair<IList<int>, KeyValuePair<int, IList<int>>>>(new KeyValuePairSerializer<IList<int>, KeyValuePair<int, IList<int>>>(new ListInterfaceSerializer<int>(PrimitiveSerializer<int>.Instance), new KeyValuePairSerializer<int, IList<int>>(PrimitiveSerializer<int>.Instance, new ListInterfaceSerializer<int>(PrimitiveSerializer<int>.Instance))));
+		IItemSerializer<List<KeyValuePair<List<int>, KeyValuePair<int, List<int>>>>> specificSerializer = new ListSerializer<KeyValuePair<List<int>, KeyValuePair<int, List<int>>>>(new KeyValuePairSerializer<List<int>, KeyValuePair<int, List<int>>>(new ListSerializer<int>(PrimitiveSerializer<int>.Instance), new KeyValuePairSerializer<int, List<int>>(PrimitiveSerializer<int>.Instance, new ListSerializer<int>(PrimitiveSerializer<int>.Instance))));
 		factory.Register(specificSerializer); // 4
 
 		// First:
@@ -104,22 +104,21 @@ public class SerializerSerializerTests {
 
 		
 		var serializerSerializer = new SerializerSerializer(factory);
-		var itemSerializer1 = factory.GetRegisteredSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>();
+		var itemSerializer1 = factory.GetPureSerializer<List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>>();
 		var size1 = serializerSerializer.CalculateSize(itemSerializer1);
 		var firstSerializerBytes = serializerSerializer.SerializeBytesLE(itemSerializer1);
 		Assert.That(firstSerializerBytes.Length, Is.EqualTo(size1));
 		Assert.That(firstSerializerBytes.Length, Is.EqualTo(8));  // there were 8 serializers referenced in the first serializer (stored as 8 cvarints)
-		var firstSerializer = serializerSerializer.DeserializeBytesLE( firstSerializerBytes) as IItemSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<float, IList<int>>>>>;
+		var firstSerializer = serializerSerializer.DeserializeBytesLE( firstSerializerBytes) as IItemSerializer<List<KeyValuePair<List<int>, KeyValuePair<float, List<int>>>>>;
 		Assert.That(firstSerializer, Is.Not.Null);
 
-
-		var itemSerializer2 = factory.GetRegisteredSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<int, IList<int>>>>>();
+		var itemSerializer2 = factory.GetPureSerializer<List<KeyValuePair<List<int>, KeyValuePair<int, List<int>>>>>();
 		var size2 = serializerSerializer.CalculateSize(itemSerializer2);
 		var secondSerializerBytes = serializerSerializer.SerializeBytesLE(itemSerializer2);
 		Assert.That(secondSerializerBytes.Length, Is.EqualTo(size2));
 		Assert.That(secondSerializerBytes.Length, Is.EqualTo(1));  // there was 1 serializer referenced in the first serializer 
 		Assert.That( CVarInt.Read(secondSerializerBytes), Is.EqualTo(SerializerFactory.PermanentTypeCodeStartDefault + 4));  // the serializer was the 4th serializer registered in the factory
-		var secondSerializer = serializerSerializer.DeserializeBytesLE( secondSerializerBytes) as IItemSerializer<IList<KeyValuePair<IList<int>, KeyValuePair<int, IList<int>>>>>;
+		var secondSerializer = serializerSerializer.DeserializeBytesLE( secondSerializerBytes) as IItemSerializer<List<KeyValuePair<List<int>, KeyValuePair<int, List<int>>>>>;
 		Assert.That(secondSerializer, Is.Not.Null);
 	}	
 }

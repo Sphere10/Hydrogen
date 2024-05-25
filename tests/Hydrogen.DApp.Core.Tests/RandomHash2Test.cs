@@ -94,8 +94,10 @@ internal abstract class RandomHash2TestBase {
 
 [TestFixture]
 internal class RandomHash2Test : RandomHash2TestBase {
+
 	[OneTimeSetUp]
 	public void Setup() {
+		Hydrogen.CryptoEx.ModuleConfiguration.InitializeInternal();
 	}
 
 	[Test]
@@ -139,9 +141,10 @@ internal class RandomHash2Test : RandomHash2TestBase {
 
 [TestFixture]
 internal class RandomHash2FastTest : RandomHash2TestBase {
+	
 	[OneTimeSetUp]
 	public void Setup() {
-
+		Hydrogen.CryptoEx.ModuleConfiguration.InitializeInternal();
 	}
 
 	[Test]

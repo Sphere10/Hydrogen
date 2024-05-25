@@ -6,16 +6,16 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Text;
-
 namespace Hydrogen;
 
-public abstract class ItemSerializerBase<TItem> : ItemSizer<TItem>, IItemSerializer<TItem> {
+public sealed class VoidSerializer() : ConstantSizeItemSerializerBase<Void>(0, false) {
 
-	public abstract void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context);
+	public static VoidSerializer Instance { get; } = new();
 
-	public abstract TItem Deserialize(EndianBinaryReader reader, SerializationContext context);
+	public override void Serialize(Void item, EndianBinaryWriter writer, SerializationContext context) {
+	}
 
+	public override Void Deserialize(EndianBinaryReader reader, SerializationContext context) {
+		return Void.Value;
+	}
 }

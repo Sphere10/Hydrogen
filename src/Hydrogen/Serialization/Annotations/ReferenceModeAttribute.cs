@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reflection;
+using Hydrogen.Mapping;
 
 namespace Hydrogen;
 
@@ -21,4 +23,12 @@ public class ReferenceModeAttribute : Attribute {
 	}
 
 	public ReferenceSerializerMode Mode { get; private set; } = ReferenceSerializerMode.Default;
+
+	public static ReferenceSerializerMode GetReferenceModeOrDefault(MemberInfo memberInfo)  {
+		var result = memberInfo.TryGetCustomAttributeOfType<ReferenceModeAttribute>(false, out var attr) ? attr.Mode : ReferenceSerializerMode.Default;
+		if (attr is not null && memberInfo is FieldInfo { FieldType.IsValueType: true } or PropertyInfo { PropertyType.IsValueType: true }) 
+			throw new InvalidOperationException($"Type member {memberInfo.DeclaringType.ToStringCS()}.{memberInfo.Name} incorrectly specifies a {nameof(ReferenceModeAttribute)} for a value-type");
+		return result;		
+
+	}
 }

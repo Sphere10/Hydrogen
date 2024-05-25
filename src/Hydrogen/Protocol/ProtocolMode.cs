@@ -20,7 +20,7 @@ public class ProtocolMode {
 		RequestHandlers = new Dictionary<Type, IRequestHandler>();
 		ResponseHandlers = new MultiKeyDictionary<Type, Type, IResponseHandler>();
 		MessageGenerators = new Dictionary<Type, IMessageGenerator>();
-		MessageSerializer = new PolymorphicSerializer<object>();
+		MessageSerializer = new PolymorphicSerializer<object>(SerializerFactory.Default);
 	}
 
 	public int Number { get; init; }

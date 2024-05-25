@@ -10,7 +10,7 @@ namespace Hydrogen;
 
 public class ProtocolSerializerBuilder<TBase> : ProtocolSerializerBuilderBase<TBase, ProtocolSerializerBuilder<TBase>> {
 
-	public ProtocolSerializerBuilder() : this(new PolymorphicSerializer<TBase>()) {
+	public ProtocolSerializerBuilder() : this(new PolymorphicSerializer<TBase>(SerializerFactory.Default)) {
 	}
 
 	internal ProtocolSerializerBuilder(PolymorphicSerializer<TBase> serializer)

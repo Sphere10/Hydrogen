@@ -5,7 +5,7 @@ using System.Linq;
 namespace Hydrogen;
 
 /// <summary>
-/// A recursive data type is a data type for values that may contain other values of the same type. Data of recursive types is usually viewed as directed graphs.
+/// A recursive data type is a data type for values that may contain other values of the same type. Data of recursive types is usually viewed as directed acyclic graphs.
 /// A = 0
 /// A(B) = 1 0
 /// A(B(C)) = 1 1 0

@@ -15,14 +15,14 @@ namespace Hydrogen;
 /// <summary>
 /// A serializer that re-interprets the arguments of another serializer arguments (useful for casting)
 /// </summary>
-public class CastedSerializer<TItem> : IItemSerializer<TItem> {
-	private readonly IItemSerializer _serializer;
+public class CastedSerializer<TFrom, TTo> : IItemSerializer<TTo>  {
+	private readonly IItemSerializer<TFrom> _serializer;
 
-	public CastedSerializer(IItemSerializer innerSerializer) {
+	public CastedSerializer(IItemSerializer<TFrom> innerSerializer) {
 		_serializer = innerSerializer;
 	}
 
-	Type IItemSizer.ItemType => _serializer.ItemType;
+	Type IItemSizer.ItemType => typeof(TFrom);	// NOTE: Only casts TItem -> TBase, doesn't serialize all instances of TBase
 
 	public bool SupportsNull => _serializer.SupportsNull;
 
@@ -30,15 +30,15 @@ public class CastedSerializer<TItem> : IItemSerializer<TItem> {
 
 	public long ConstantSize => _serializer.ConstantSize;
 
-	public long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) 
-		=> _serializer.CalculateTotalSize(context, items.Cast<object>(), calculateIndividualItems, out itemSizes);
+	public long CalculateTotalSize(SerializationContext context, IEnumerable<TTo> items, bool calculateIndividualItems, out long[] itemSizes) 
+		=> _serializer.CalculateTotalSize(context, items.Cast<TFrom>(), calculateIndividualItems, out itemSizes);
 
-	public long CalculateSize(SerializationContext context, TItem item) 
-		=> _serializer.CalculateSize(context, item);
+	public long CalculateSize(SerializationContext context, TTo item) 
+		=> _serializer.CalculateSize(context, (TFrom)(object)item);
 
-	public void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) 
-		=> _serializer.Serialize(item, writer, context);
+	public void Serialize(TTo item, EndianBinaryWriter writer, SerializationContext context) 
+		=> _serializer.Serialize((TFrom)(object)item, writer, context);
 
-	public TItem Deserialize(EndianBinaryReader reader, SerializationContext context) 
-		=> (TItem)_serializer.Deserialize(reader, context);
+	public TTo Deserialize(EndianBinaryReader reader, SerializationContext context) 
+		=> (TTo)(object)_serializer.Deserialize(reader, context);
 }

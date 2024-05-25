@@ -15,10 +15,12 @@ namespace Hydrogen;
 public sealed class AssemblySerializer : ItemSerializerBase<Assembly> {
 	
 	private readonly StringSerializer _fqnSerializer;
-	
-	public AssemblySerializer(SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
+
+	public AssemblySerializer(SizeDescriptorStrategy sizeDescriptorStrategy  = SizeDescriptorStrategy.UseCVarInt) {
 		_fqnSerializer = new StringSerializer(Encoding.Unicode, sizeDescriptorStrategy);
 	}
+
+	public static AssemblySerializer Instance { get; } = new ();
 
 	public override long CalculateSize(SerializationContext context, Assembly item) 
 		=> _fqnSerializer.CalculateSize(item.FullName);

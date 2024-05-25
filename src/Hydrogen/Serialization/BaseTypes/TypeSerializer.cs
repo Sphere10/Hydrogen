@@ -19,6 +19,8 @@ public sealed class TypeSerializer : ItemSerializerBase<Type> {
 		_fqnSerializer = new StringSerializer(Encoding.Unicode, sizeDescriptorStrategy);	
 	}
 
+	public static TypeSerializer Instance { get; } = new ();
+
 	public override long CalculateSize(SerializationContext context, Type item) 
 		=> _fqnSerializer.CalculateSize(item.AssemblyQualifiedName);
 

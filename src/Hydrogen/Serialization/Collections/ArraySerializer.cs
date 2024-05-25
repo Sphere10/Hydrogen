@@ -14,7 +14,7 @@ public class ArraySerializer<T> : ItemSerializerBase<T[]> {
 
 	public ArraySerializer(IItemSerializer<T> valueSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) {
 		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
-		_valueSerializer = valueSerializer.AsReferenceSerializer(); // support null values
+		_valueSerializer = valueSerializer; // support null values
 		_sizeSerializer = new SizeDescriptorSerializer(sizeDescriptorStrategy);
 	}
 
@@ -30,6 +30,7 @@ public class ArraySerializer<T> : ItemSerializerBase<T[]> {
 	public override T[] Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var arraySize = _sizeSerializer.Deserialize(reader, context);
 		var array = new T[arraySize];
+		context.SetDeserializingItem(array);
 		for (var i = 0; i < arraySize; i++) {
 			array[i] = _valueSerializer.Deserialize(reader, context);
 		}

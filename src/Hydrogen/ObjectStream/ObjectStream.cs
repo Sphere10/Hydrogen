@@ -151,11 +151,11 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 				if (_preAllocateOptimization) {
 					// pre-setting the stream length before serialization improves performance since it avoids
 					// re-allocating fragmented stream on individual properties of the serialized item
-					var expectedSize = ItemSerializer.CalculateSize(item);
+					var expectedSize = ItemSerializer.PackedCalculateSize(item);
 					stream.SetLength(expectedSize);
 					ItemSerializer.Serialize(item, writer);
 				} else {
-					var byteLength = ItemSerializer.SerializeReturnSize(item, writer);
+					var byteLength = ItemSerializer.PackedSerializeReturnSize(item, writer);
 					stream.SetLength(byteLength);
 				}
 
@@ -183,7 +183,7 @@ public class ObjectStream : SyncLoadableBase, ICriticalObject, IDisposable {
 			NotifyPreItemOperation(index, default, ObjectStreamOperationType.Read);
 			if (!stream.IsNull) {
 				using var reader = new EndianBinaryReader(EndianBitConverter.For(Streams.Endianness), stream);
-				item = ItemSerializer.Deserialize(reader);
+				item = ItemSerializer.PackedDeserialize(reader);
 				CheckItemType(item);
 			} else {
 				item = default;

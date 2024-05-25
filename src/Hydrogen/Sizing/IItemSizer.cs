@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
@@ -23,9 +24,9 @@ public interface IItemSizer {
 
 	long ConstantSize { get; }
 
-	long CalculateTotalSize(SerializationContext context, IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes);
+	long PackedCalculateTotalSize(SerializationContext context, IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes);
 
-	long CalculateSize(SerializationContext context, object item);
+	long PackedCalculateSize(SerializationContext context, object item);
 }
 
 public interface IItemSizer<in T> : IItemSizer  {
@@ -36,11 +37,12 @@ public interface IItemSizer<in T> : IItemSizer  {
 
 	long CalculateSize(SerializationContext context, T item);
 
-	long IItemSizer.CalculateTotalSize(SerializationContext context, IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes)
+	long IItemSizer.PackedCalculateTotalSize(SerializationContext context, IEnumerable<object> items, bool calculateIndividualItems, out long[] itemSizes)
 		=> CalculateTotalSize(context, items.Cast<T>(), calculateIndividualItems, out itemSizes);
 
-	long IItemSizer.CalculateSize(SerializationContext context, object item)
+	long IItemSizer.PackedCalculateSize(SerializationContext context, object item)
 		=> CalculateSize(context, (T)item);
+
 }
 
 
@@ -51,13 +53,13 @@ public static class IItemSizerExtensions {
 		return sizer.CalculateTotalSize(context, items, calculateIndividualItems, out itemSizes);
 	}
 
-	public static long CalculateSize(this IItemSizer sizer, object item) {
+	public static long CalculateSize<TItem>(this IItemSizer<TItem> sizer, TItem item) {
 		using var context = SerializationContext.New;
 		return sizer.CalculateSize(context, item);
 	}
 
-	public static long CalculateSize<TItem>(this IItemSizer<TItem> sizer, TItem item) {
+	public static long PackedCalculateSize(this IItemSizer sizer, object item) {
 		using var context = SerializationContext.New;
-		return sizer.CalculateSize(context, item);
+		return sizer.PackedCalculateSize(context, item);
 	}
 }

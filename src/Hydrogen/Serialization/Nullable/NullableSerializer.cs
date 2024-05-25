@@ -51,7 +51,7 @@ public class NullableSerializer<T> : ItemSerializerBase<T?> where T : struct  {
 		
 		long size = sizeof(bool);
 		if (item.HasValue)
-			size += ValueSerializer.CalculateSize(context, item);
+			size += ValueSerializer.CalculateSize(context, item.Value);
 
 		return size;
 	}
@@ -59,7 +59,7 @@ public class NullableSerializer<T> : ItemSerializerBase<T?> where T : struct  {
 	public override void Serialize(T? item, EndianBinaryWriter writer, SerializationContext context) {
 		if (item.HasValue) {
 			writer.Write(true);
-			ValueSerializer.Serialize(item, writer, context);
+			ValueSerializer.Serialize(item.Value, writer, context);
 		} else {
 			writer.Write(false);
 			if (IsConstantSize)

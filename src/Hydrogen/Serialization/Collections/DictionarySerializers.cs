@@ -1,16 +1,32 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿// Copyright (c) Sphere 10 Software. All rights reserved. (https://sphere10.com)
+// Author: Herman Schoenfeld
+//
+// Distributed under the MIT software license, see the accompanying file
+// LICENSE or visit http://www.opensource.org/licenses/mit-license.php.
+//
+// This notice must not be removed when duplicating this file or its contents, in whole or in part.
+
+using System.Collections.Generic;
 
 namespace Hydrogen;
 
-public class DictionarySerializer<TKey, TValue> : ItemSerializerDecorator<Dictionary<TKey, TValue>> {
+public class DictionarySerializer<TKey, TValue> : CollectionSerializerBase<Dictionary<TKey, TValue>, KeyValuePair<TKey, TValue>> {
 
-	public DictionarySerializer(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt)
-		: this(new KeyValuePairSerializer<TKey, TValue>(keySerializer, valueSerializer), sizeDescriptorStrategy) {
+	public DictionarySerializer(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer) 
+		: this(new KeyValuePairSerializer<TKey, TValue>(keySerializer, valueSerializer), SizeDescriptorStrategy.UseCVarInt) {
 	}
 
-	public DictionarySerializer(KeyValuePairSerializer<TKey, TValue> kvpSerializer, SizeDescriptorStrategy sizeDescriptorStrategy = SizeDescriptorStrategy.UseCVarInt) 
-		: base(new ArraySerializer<KeyValuePair<TKey, TValue>>(kvpSerializer, sizeDescriptorStrategy).AsProjection(x => x.ToDictionary(), x => x.ToArray())) {
+	public DictionarySerializer(IItemSerializer<KeyValuePair<TKey, TValue>> itemSerializer, SizeDescriptorStrategy sizeDescriptorStrategy) 
+		: base(itemSerializer, sizeDescriptorStrategy) {
+	}
+
+	protected override long GetLength(Dictionary<TKey, TValue> collection) => collection.Count;
+
+	protected override Dictionary<TKey, TValue> Activate(long capacity) => new(checked((int)capacity));
+
+	protected override void SetItem(Dictionary<TKey, TValue> collection, long index, KeyValuePair<TKey, TValue> item) {
+		Guard.Ensure(collection.Count == index, "Unexpected index");
+		collection.Add(item.Key, item.Value);
 	}
 
 }

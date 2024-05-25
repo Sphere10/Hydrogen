@@ -9,29 +9,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hydrogen.FastReflection;
 
 namespace Hydrogen;
 
-/// <summary>
-/// A serializer defined for objects of type <see cref="TBase"/> that uses a <see cref="SerializerFactory"/> to select serializers for concrete types.
-/// In addition to serializing the value, this serializer also serializes the serializer used to serialize the value. This permits it to ensure
-/// the same serializer is used for deserialization.
-/// </summary>
-/// <remarks>Ensure that the identical factory is used for both Serialization and Deserialization for consistent results.</remarks>
-/// <typeparam name="TBase">The base-types of objects being serialized/deserialized</typeparam>
-public class PolymorphicSerializer<TBase> : IItemSerializer<TBase> {
+public class PolymorphicSerializer<TItem> : IItemSerializer<TItem> {
 	private readonly SerializerFactory _factory;
 	private readonly SerializerSerializer _serializerSerializer;
+	private readonly IItemSerializer<TItem> _pureSerializer;
 
-	public PolymorphicSerializer() 
-		: this(new SerializerFactory()) {
+	public PolymorphicSerializer(SerializerFactory factory)
+		: this(factory, !typeof(TItem).IsAbstract ? factory.GetPureSerializer<TItem>() : null) {
 	}
 
-	public PolymorphicSerializer(SerializerFactory factory) {
+	public PolymorphicSerializer(SerializerFactory factory, IItemSerializer<TItem> pureSerializer) {
+		Guard.ArgumentNotNull(factory, nameof(factory));
+		if (typeof(TItem).IsAbstract)
+			Guard.Argument(pureSerializer is null, nameof(pureSerializer), "Must be null for abstract types");
+		else
+			Guard.Argument(pureSerializer is not null, nameof(pureSerializer), "Must not be null for non-abstract types");
+
 		_factory = factory;
 		_serializerSerializer = new SerializerSerializer(_factory);
+		_pureSerializer = pureSerializer;
 	}
+
+	public IItemSerializer<TItem> PureSerializer => _pureSerializer ?? throw new InvalidOperationException("Abstract types have no pure serializer");
 
 	public SerializerFactory Factory => _factory;
 
@@ -41,12 +43,12 @@ public class PolymorphicSerializer<TBase> : IItemSerializer<TBase> {
 
 	public long ConstantSize => -1;
 
-	public long CalculateTotalSize(SerializationContext context, IEnumerable<TBase> items, bool calculateIndividualItems, out long[] itemSizes) {
+	public long CalculateTotalSize(SerializationContext context, IEnumerable<TItem> items, bool calculateIndividualItems, out long[] itemSizes) {
 		var itemSizesL = new List<long>();
 		var totalSize = items.Aggregate(
 			0L,
 			(i, o) => {
-				var itemSize = GetItemSerializer(o).CalculateSize(o);
+				var itemSize = GetPackedItemSerializer(context, DetermineExplicitSerializationType(o)).PackedCalculateSize(o);
 				if (calculateIndividualItems)
 					itemSizesL.Add(itemSize);
 				return itemSize;
@@ -55,50 +57,53 @@ public class PolymorphicSerializer<TBase> : IItemSerializer<TBase> {
 		return totalSize;
 	}
 
-	public long CalculateSize(SerializationContext context, TBase item)  {
-		var serializer = GetItemSerializer(item);
-		return _serializerSerializer.CalculateSize(context, serializer) + serializer.CalculateSize(context, item);
+	public long CalculateSize(SerializationContext context, TItem item)  {
+		var serializer = GetPackedItemSerializer(context, DetermineExplicitSerializationType(item));
+		return _serializerSerializer.CalculateSize(context, serializer) + serializer.PackedCalculateSize(context, item);
 	}
 
-	public void Serialize(TBase item, EndianBinaryWriter writer, SerializationContext context) {
-		var serializer = GetItemSerializer(item);
+	public void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
+		var serializer = GetPackedItemSerializer(context, DetermineExplicitSerializationType(item));
 		_serializerSerializer.Serialize(serializer, writer, context);
-		serializer.Serialize(item, writer, context);
+		serializer.PackedSerialize(item, writer, context);
 	}
 
-	public TBase Deserialize(EndianBinaryReader reader, SerializationContext context) {
+	public TItem Deserialize(EndianBinaryReader reader, SerializationContext context) {
 		var serializerObj = _serializerSerializer.Deserialize(reader, context);
-		var serializer = ToUsableSerializer<TBase>(serializerObj);
+		var serializer = ToUsableSerializer(serializerObj);
 		return serializer.Deserialize(reader, context);
 	}
 
-	private IItemSerializer<TSerializerDataType> ToUsableSerializer<TSerializerDataType>(IItemSerializer serializerObj) {
-		// ensure the underlying serializer is not a Reference Serializer
-		serializerObj = serializerObj.AsDereferencedSerializer();  
+	private Type DetermineExplicitSerializationType(TItem item) 
+		=> item is null || typeof(TItem).IsConstructedGenericTypeOf(typeof(Nullable<>)) ? typeof(TItem) : item.GetType();
 
-		// If serializer gives the type we want, use it
-		if (serializerObj is IItemSerializer<TSerializerDataType> serializer)
-			return serializer;
+	private IItemSerializer GetPackedItemSerializer(SerializationContext context, Type dataType) {
+		if (dataType == typeof(TItem))
+			return PureSerializer;
 
-		// Cast the serializer to the type we want
-		var actualDataType = serializerObj.ItemType;
-		Guard.Ensure(actualDataType.FastIsSubTypeOf(typeof(TSerializerDataType)), $"Serializer object is not an {typeof(IItemSerializer<>).ToStringCS()}");
-		return new CastedSerializer<TSerializerDataType>(serializerObj);
-	}
+		var factory = context.HasEphemeralFactory ? context.EphemeralFactory : _factory;
 
-	private IItemSerializer<TBase> GetItemSerializer(TBase item) {
-		Type superType;
-		if (item is null || typeof(TBase).IsConstructedGenericTypeOf(typeof(Nullable<>))) {
-			superType = typeof(TBase);
-		} else {
-			superType = item.GetType();
-		} 
-
-		var serializer = _factory.GetRegisteredSerializer<TBase>(superType, false); 
-
-		// Ensure item serializer is not a reference serializer. Handling null, cyclic and other references is the
-		// responsibility of ReferenceSerializer.
-		Guard.Ensure(serializer is not ReferenceSerializer<TBase>, "A PolymorphicSerializer cannot wrap a ReferenceSerializer");
+		if (!factory.TryGetPureSerializer(dataType, out var serializer, out var missingSerializers)) {
+			if (!context.HasEphemeralFactory)
+				throw new InvalidOperationException($"No pure serializer for {dataType.ToStringCS()} was found");
+			foreach(var missing in missingSerializers) 
+				SerializerBuilder.FactoryAssemble(context.EphemeralFactory, missing, true);
+			serializer = context.EphemeralFactory.GetPureSerializer(dataType);
+		}
 		return serializer;
 	}
+
+	private IItemSerializer<TItem> ToUsableSerializer(IItemSerializer serializer) {
+		if (serializer.ItemType != typeof(TItem))
+			return (IItemSerializer<TItem>)serializer.AsCastedSerializer(typeof(TItem));
+		return (IItemSerializer<TItem>)serializer;
+	}
+
+}
+
+public static class PolymorphicSerializer {
+	public static IItemSerializer Create(SerializerFactory factory, Type itemType) 
+		=> (IItemSerializer)typeof(PolymorphicSerializer<>)
+			.MakeGenericType(itemType)
+			.ActivateWithCompatibleArgs(factory);
 }

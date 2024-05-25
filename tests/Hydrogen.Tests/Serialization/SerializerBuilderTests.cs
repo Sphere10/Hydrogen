@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using FastSerialization;
 using FluentAssertions;
 using NUnit.Framework;
@@ -66,6 +67,10 @@ public class SerializerBuilderTests {
 		public string Prop4 { get; set; }
 	}
 
+	public class GenericType<T1, T2> {
+		public T1 Prop1 { get; set; }
+		public T2 Prop2 { get; set; }
+	}
 
 	[Test]
 	public void TestObject_1() {
@@ -112,7 +117,7 @@ public class SerializerBuilderTests {
 			.Serialize(x => x.C, PrimitiveSerializer<bool>.Instance)
 			.Build();
 
-		var serializer2 = SerializerBuilder.AutoBuild<TestObject>();
+		var serializer2 = SerializerBuilder.FactoryAssemble<TestObject>();
 
 		var testObj1 = new TestObject("Hello", 123, true);
 		var testObj2 = new TestObject("", -1, false);
@@ -134,7 +139,7 @@ public class SerializerBuilderTests {
 
 	[Test]
 	public void AutoBuildComplex() {
-		var serializer = SerializerBuilder.AutoBuild<ComplexObject>();
+		var serializer = SerializerBuilder.FactoryAssemble<ComplexObject>();
 		var obj = new ComplexObject {
 			TestProperty = new TestObject("Hello", 123, true),
 			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", new TestObject("Hello", 123, true)),
@@ -155,7 +160,7 @@ public class SerializerBuilderTests {
 
 	[Test]
 	public void AutoBuildComplex_CalculateSize() {
-		var serializer = SerializerBuilder.AutoBuild<ComplexObject>();
+		var serializer = SerializerBuilder.FactoryAssemble<ComplexObject>();
 		var obj = new ComplexObject {
 			TestProperty = new TestObject("Hello", 123, true),
 			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", new TestObject("Hello", 123, true)),
@@ -173,7 +178,7 @@ public class SerializerBuilderTests {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TestObject>();
 
-		var serializer = SerializerBuilder.AutoBuild<ComplexObject>(factory);
+		var serializer = SerializerBuilder.FactoryAssemble<ComplexObject>(factory);
 		var obj = new ComplexObject {
 			TestProperty = null,
 			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", new TestObject(null, 123, true)),
@@ -197,7 +202,7 @@ public class SerializerBuilderTests {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TestObject>();
 
-		var serializer = SerializerBuilder.AutoBuild<ComplexObject>(factory);
+		var serializer = SerializerBuilder.FactoryAssemble<ComplexObject>(factory);
 		var obj = new ComplexObject {
 			TestProperty = null,
 			ObjectProperty = new KeyValuePair<string, TestObject>("Hello", new TestObject(null, 123, true)),
@@ -209,13 +214,41 @@ public class SerializerBuilderTests {
 		var serialized = serializer.SerializeBytesLE(obj);
 		Assert.That(size, Is.EqualTo(serialized.Length));
 	}
+	
+	[Test]
+	public void BugCase_ValueTuple7() {
+		var serializerType = typeof(ValueTupleSerializer<,,,,,,>);
+		var datType = typeof(ValueTuple<,,,,,,>);
+		Assert.That(serializerType.IsSubtypeOfGenericType(typeof(IItemSerializer<>).MakeGenericType(datType)), Is.True);
+	}
+
+	[Test]
+	public void BugCase_ValueTuple8() {
+		var serializerType = typeof(ValueTupleSerializer<,,,,,,,>);
+		var datType = typeof(ValueTuple<,,,,,,,>);
+		Assert.That(serializerType.IsSubtypeOfGenericType(typeof(IItemSerializer<>).MakeGenericType(datType)), Is.True);
+	}
+
+	[Test]
+	public void BugCase_Tuple7() {
+		var serializerType = typeof(TupleSerializer<,,,,,,>);
+		var datType = typeof(Tuple<,,,,,,>);
+		Assert.That(serializerType.IsSubtypeOfGenericType(typeof(IItemSerializer<>).MakeGenericType(datType)), Is.True);
+	}
+
+	[Test]
+	public void BugCase_Tuple8() {
+		var serializerType = typeof(TupleSerializer<,,,,,,,>);
+		var datType = typeof(Tuple<,,,,,,,>);
+		Assert.That(serializerType.IsSubtypeOfGenericType(typeof(IItemSerializer<>).MakeGenericType(datType)), Is.True);
+	}
 
 	[Test]
 	public void AutoBuildComplex_Cyclic() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TestObject>();
 
-		var serializer = SerializerBuilder.AutoBuild<ComplexObject>(factory);
+		var serializer = SerializerBuilder.FactoryAssemble<ComplexObject>(factory);
 		var testObj = new TestObject(null, 123, true);
 		var obj = new ComplexObject {
 			TestProperty = testObj,
@@ -241,7 +274,7 @@ public class SerializerBuilderTests {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TestObject>();
 
-		var serializer = SerializerBuilder.AutoBuild<ComplexObject>(factory);
+		var serializer = SerializerBuilder.FactoryAssemble<ComplexObject>(factory);
 		var testObj = new TestObject(null, 123, true);
 		var obj = new ComplexObject {
 			TestProperty = testObj,
@@ -258,7 +291,7 @@ public class SerializerBuilderTests {
 	public void BugCase_Cyclic1() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var serializer = SerializerBuilder.FactoryAssemble<TwoPropertyObject>(factory);
 		var obj = new TwoPropertyObject {
 			Prop1 = "Hello"
 		};
@@ -273,7 +306,7 @@ public class SerializerBuilderTests {
 	public void BugCase_Cyclic1_CalculateSize() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var serializer = SerializerBuilder.FactoryAssemble<TwoPropertyObject>(factory);
 		var obj = new TwoPropertyObject {
 			Prop1 = "Hello"
 		};
@@ -287,7 +320,7 @@ public class SerializerBuilderTests {
 	public void BugCase_Cyclic_2() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var serializer = SerializerBuilder.FactoryAssemble<TwoPropertyObject>(factory);
 		var obj = new TwoPropertyObject {
 			Prop1 = "Hello",
 			Prop2 = new TwoPropertyObject {
@@ -313,7 +346,7 @@ public class SerializerBuilderTests {
 	public void BugCase_Cyclic_2_CalculateSize() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var serializer = SerializerBuilder.FactoryAssemble<TwoPropertyObject>(factory);
 		var obj = new TwoPropertyObject {
 			Prop1 = "Hello",
 			Prop2 = new TwoPropertyObject {
@@ -330,7 +363,7 @@ public class SerializerBuilderTests {
 	public void BugCase_Cyclic_2_CalculateSize_2() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var serializer = SerializerBuilder.FactoryAssemble<TwoPropertyObject>(factory);
 		var obj = new TwoPropertyObject {
 			Prop1 = "Hello",
 			Prop2 = new TwoPropertyObject {
@@ -346,7 +379,7 @@ public class SerializerBuilderTests {
 	public void BugCase_Cyclic_2_CalculateSize_3() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<List<string>>(factory).AsReferenceSerializer();
+		var serializer = SerializerBuilder.FactoryAssemble<List<string>>(factory);
 		var obj = new List<string> { "4" };
 		var size = serializer.CalculateSize(obj);
 		var serialized = serializer.SerializeBytesLE(obj);
@@ -368,7 +401,7 @@ public class SerializerBuilderTests {
 	public void BugCase_Cyclic_3() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var serializer = SerializerBuilder.FactoryAssemble<TwoPropertyObject>(factory);
 		var obj = new TwoPropertyObject {
 			Prop1 = "Hello",
 			Prop2 = "Hello"
@@ -383,7 +416,7 @@ public class SerializerBuilderTests {
 	public void BugCase_Cyclic_3_CalculateSize() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory).AsReferenceSerializer();
+		var serializer = SerializerBuilder.FactoryAssemble<TwoPropertyObject>(factory);
 		var obj = new TwoPropertyObject {
 			Prop1 = "Hello",
 			Prop2 = "Hello"
@@ -398,7 +431,7 @@ public class SerializerBuilderTests {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TestObject>();
 
-		var serializer = SerializerBuilder.AutoBuild<SingleObjectPropertyClass>(factory);
+		var serializer = SerializerBuilder.FactoryAssemble<SingleObjectPropertyClass>(factory);
 
 		var obj = new SingleObjectPropertyClass {
 			Property = new KeyValuePair<string, TestObject>("Hello", new TestObject("Hello2", 123, true))
@@ -411,7 +444,7 @@ public class SerializerBuilderTests {
 	[Test]
 	public void BugCase_1A() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
-		var serializer = SerializerBuilder.AutoBuild<TestObject>(factory);
+		var serializer = SerializerBuilder.FactoryAssemble<TestObject>(factory);
 
 		var obj = new TestObject("Hello2", 123, true);
 
@@ -423,7 +456,7 @@ public class SerializerBuilderTests {
 	public void BugCase_2() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterAutoBuild<TwoPropertyObject>();
-		var serializer = SerializerBuilder.AutoBuild<TwoPropertyObject>(factory);
+		var serializer = SerializerBuilder.FactoryAssemble<TwoPropertyObject>(factory);
 		var obj = new TwoPropertyObject {
 			Prop1 = "Hello",
 			Prop2 = new TwoPropertyObject {
@@ -438,7 +471,7 @@ public class SerializerBuilderTests {
 	[Test]
 	public void NullableEnum_Null() {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<CrudAction?>();
+		var serializer = SerializerBuilder.FactoryAssemble<CrudAction?>();
 
 		var serialized = serializer.SerializeBytesLE(null);
 		var deserialized = serializer.DeserializeBytesLE(serialized);
@@ -449,7 +482,7 @@ public class SerializerBuilderTests {
 	[Test]
 	public void NullableEnum_Value() {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<CrudAction?>();
+		var serializer = SerializerBuilder.FactoryAssemble<CrudAction?>();
 
 		var serialized = serializer.SerializeBytesLE(CrudAction.Create);
 		var deserialized = serializer.DeserializeBytesLE(serialized);
@@ -460,18 +493,31 @@ public class SerializerBuilderTests {
 	[Test]
 	public void NullableEnumProperty_Null() {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<SingleNullableEnumPropertyClass>();
-
+		var serializer = SerializerBuilder.FactoryAssemble<SingleNullableEnumPropertyClass>();
 		var serialized = serializer.SerializeBytesLE(new SingleNullableEnumPropertyClass { Property = null });
 		var deserialized = serializer.DeserializeBytesLE(serialized);
-
 		Assert.That(deserialized.Property, Is.Null);
+	}
+
+	[Test]
+	public void GenericTypeTest() {
+		// test object
+		var serializer = SerializerBuilder.FactoryAssemble<GenericType<int, string>>();
+		var item = new GenericType<int, string> {
+			Prop1 = 123,
+			Prop2 = "Hello"
+		};
+		var serialized = serializer.SerializeBytesLE(item);
+		var deserialized = serializer.DeserializeBytesLE(serialized);
+
+		Assert.That(deserialized.Prop1, Is.EqualTo(item.Prop1));
+		Assert.That(deserialized.Prop2, Is.EqualTo(item.Prop2));
 	}
 
 	[Test]
 	public void NullableEnumProperty_Value() {
 
-		var serializer = SerializerBuilder.AutoBuild<SingleNullableEnumPropertyClass>();
+		var serializer = SerializerBuilder.FactoryAssemble<SingleNullableEnumPropertyClass>();
 		var serialized = serializer.SerializeBytesLE(new SingleNullableEnumPropertyClass { Property = CrudAction.Create });
 		var deserialized = serializer.DeserializeBytesLE(serialized);
 
@@ -482,7 +528,7 @@ public class SerializerBuilderTests {
 	public void NullableEnumPropertyAsObject_Null() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterEnum<CrudAction>();
-		var serializer = SerializerBuilder.AutoBuild<SingleObjectPropertyClass>(factory);
+		var serializer = SerializerBuilder.FactoryAssemble<SingleObjectPropertyClass>(factory);
 
 		var serialized = serializer.SerializeBytesLE(new SingleObjectPropertyClass { Property = null });
 		var deserialized = serializer.DeserializeBytesLE(serialized);
@@ -494,7 +540,7 @@ public class SerializerBuilderTests {
 	public void NullableEnumPropertyAsObject_Value() {
 		var factory = new SerializerFactory(SerializerFactory.Default);
 		factory.RegisterEnum<CrudAction>();
-		var serializer = SerializerBuilder.AutoBuild<SingleObjectPropertyClass>(factory);
+		var serializer = SerializerBuilder.FactoryAssemble<SingleObjectPropertyClass>(factory);
 
 		var serialized = serializer.SerializeBytesLE(new SingleObjectPropertyClass { Property = CrudAction.Create });
 		var deserialized = serializer.DeserializeBytesLE(serialized);
@@ -560,11 +606,12 @@ public class SerializerBuilderTests {
 		// Test with empty string field
 		var serializer = SerializerBuilder
 			.For<TestObject>()
-			.AllowNull()
+			//.AllowNull()
 			.Serialize(x => x.A, StringSerializer.UTF8.AsReferenceSerializer())
 			.Serialize(x => x.B, PrimitiveSerializer<int>.Instance)
 			.Serialize(x => x.C, PrimitiveSerializer<bool>.Instance)
-			.Build();
+			.Build()
+			.AsNullableSerializer();
 
 		Assert.That(serializer.SupportsNull, Is.True);	
 		
@@ -572,21 +619,21 @@ public class SerializerBuilderTests {
 		var deserialized = serializer.DeserializeBytesLE(serialized);
 
 		Assert.That(deserialized, Is.Null);
-			
 	}
 
 	[Test]
 	public void BadAnnotation_1() {
-		Assert.That(SerializerBuilder.AutoBuild<BadAnnotationObject>, Throws.InvalidOperationException);
+		Assert.That(SerializerBuilder.FactoryAssemble<BadAnnotationObject>, Throws.InvalidOperationException);
 	}
 
 	[Test]
 	public void SerializableMembersInBaseFirstOrder() {
-		var members = SerializerHelper.GetSerializableMembers(typeof(SubClass));
+		var members = SerializerBuilder.GetSerializableMembers(typeof(SubClass));
 		Assert.That(members.Length, Is.EqualTo(4));
 		Assert.That(members[0].Name, Is.EqualTo("Prop1"));
 		Assert.That(members[1].Name, Is.EqualTo("Prop2"));
 		Assert.That(members[2].Name, Is.EqualTo("Prop3"));
 		Assert.That(members[3].Name, Is.EqualTo("Prop4"));
 	}
+
 }

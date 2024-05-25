@@ -7,6 +7,8 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 
@@ -14,9 +16,9 @@ namespace Hydrogen;
 
 public interface IItemSerializer : IItemSizer {
 
-	internal void Serialize(object item, EndianBinaryWriter writer, SerializationContext context);
+	internal void PackedSerialize(object item, EndianBinaryWriter writer, SerializationContext context);
 
-	internal object Deserialize(EndianBinaryReader reader, SerializationContext context);
+	internal object PackedDeserialize(EndianBinaryReader reader, SerializationContext context);
 	
 }
 
@@ -26,11 +28,12 @@ public interface IItemSerializer<TItem> : IItemSizer<TItem>, IItemSerializer {
 
 	public new TItem Deserialize(EndianBinaryReader reader, SerializationContext context);
 
-	void IItemSerializer.Serialize(object item, EndianBinaryWriter writer, SerializationContext context)
+	void IItemSerializer.PackedSerialize(object item, EndianBinaryWriter writer, SerializationContext context)
 		=> Serialize((TItem)item, writer, context);
 
-	object IItemSerializer.Deserialize(EndianBinaryReader reader, SerializationContext context)
+	object IItemSerializer.PackedDeserialize(EndianBinaryReader reader, SerializationContext context)
 		=> Deserialize(reader, context);
+
 }
 
 public static class IItemSerializerExtensions {
@@ -38,7 +41,7 @@ public static class IItemSerializerExtensions {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void Serialize(this IItemSerializer serializer, object item, EndianBinaryWriter writer) {
 		using var context = SerializationContext.New;
-		serializer.Serialize(item, writer, context);
+		serializer.PackedSerialize(item, writer, context);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -48,34 +51,9 @@ public static class IItemSerializerExtensions {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static object Deserialize(this IItemSerializer serializer, EndianBinaryReader reader) {
-		using var context = SerializationContext.New;
-		return serializer.Deserialize(reader, context);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static TItem Deserialize<TItem>(this IItemSerializer<TItem> serializer, EndianBinaryReader reader) {
 		using var context = SerializationContext.New;
 		return serializer.Deserialize(reader, context);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static long SerializeReturnSize(this IItemSerializer serializer, object item, EndianBinaryWriter writer) {
-		using var context = SerializationContext.New;
-		return serializer.SerializeReturnSize(item, writer, context);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static long SerializeReturnSize(this IItemSerializer serializer, object item, EndianBinaryWriter writer, SerializationContext context) {
-		var startPos = writer.BaseStream.Position;
-		serializer.Serialize(item, writer, context);
-		return writer.BaseStream.Position - startPos;
-
-		// NOTE: if a malicious serializer writes more than it says, and rewinds stream Position
-		// to hide its hidden data, any subsequent serializations will overwrite that hidden data.
-		// Thus there is no attack vector of meaningful consequence here. Attempting to write
-		// bloated data is responsibility of underlying Stream itself and will not result in security
-		// vulnerability.
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -111,9 +89,52 @@ public static class IItemSerializerExtensions {
 		using var context = SerializationContext.New;
 		return serializer.Deserialize(reader, context);
 	}
-	
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static IItemSerializer<TBase> AsBaseSerializer<TItem, TBase>(this IItemSerializer<TItem> serializer) where TItem : TBase
-		=> new CastedSerializer<TBase>(serializer);
+	public static long SerializeReturnSize<TItem>(this IItemSerializer<TItem> serializer, TItem item, EndianBinaryWriter writer) {
+		using var context = SerializationContext.New;
+		return serializer.SerializeReturnSize(item, writer, context);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static long SerializeReturnSize<TItem>(this IItemSerializer<TItem> serializer, TItem item, EndianBinaryWriter writer, SerializationContext context) {
+		var startPos = writer.BaseStream.Position;
+		serializer.Serialize(item, writer, context);
+		return writer.BaseStream.Position - startPos;
+
+		// NOTE: if a malicious serializer writes more than it says, and rewinds stream Position
+		// to hide its hidden data, any subsequent serializations will overwrite that hidden data.
+		// Thus there is no attack vector of meaningful consequence here. Attempting to write
+		// bloated data is responsibility of underlying Stream itself and will not result in security
+		// vulnerability.
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static object PackedDeserialize(this IItemSerializer serializer, EndianBinaryReader reader) {
+		using var context = SerializationContext.New;
+		return serializer.PackedDeserialize(reader, context);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static long PackedSerializeReturnSize(this IItemSerializer serializer, object item, EndianBinaryWriter writer) {
+		using var context = SerializationContext.New;
+		return serializer.PackedSerializeReturnSize(item, writer, context);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static long PackedSerializeReturnSize(this IItemSerializer serializer, object item, EndianBinaryWriter writer, SerializationContext context) {
+		var startPos = writer.BaseStream.Position;
+		serializer.PackedSerialize(item, writer, context);
+		return writer.BaseStream.Position - startPos;
+
+		// NOTE: if a malicious serializer writes more than it says, and rewinds stream Position
+		// to hide its hidden data, any subsequent serializations will overwrite that hidden data.
+		// Thus there is no attack vector of meaningful consequence here. Attempting to write
+		// bloated data is responsibility of underlying Stream itself and will not result in security
+		// vulnerability.
+	}
+
+
+	
 
 }

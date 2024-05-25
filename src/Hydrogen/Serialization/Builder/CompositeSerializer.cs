@@ -21,12 +21,12 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 		_configured = false;
 	}
 
-	internal void Configure(Func<TItem> activator, MemberSerializationBinding[] memberBindings)  {
+	internal void Configure(Delegate activator, MemberSerializationBinding[] memberBindings)  {
 		// This is used to configure the serializer after it has been created by the serializer builder.
 		Guard.ArgumentNotNull(activator, nameof(activator));
 		Guard.ArgumentNotNull(memberBindings, nameof(memberBindings));
 		Guard.Ensure(!_configured, "Serializer has already been configured.");
-		_activator = activator;
+		_activator = (Func<TItem>)activator;
 		_memberBindings = memberBindings;
 		_isConstantSize = _memberBindings.All(x => x.Serializer.IsConstantSize);
 		_constantSize =  IsConstantSize ? _memberBindings.Sum(x => x.Serializer.ConstantSize) : -1;
@@ -47,7 +47,7 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 		var totalSize = 0L;
 		foreach(var (member, serializer) in _memberBindings) {
 			var itemMemberValues = itemsArr.Select(item => member.GetValue(item)).ToArray();
-			var itemMemberSizes = itemMemberValues.Select(serializer.CalculateSize).ToArray();
+			var itemMemberSizes = itemMemberValues.Select(serializer.PackedCalculateSize).ToArray();
 			totalSize += itemMemberSizes.Sum();
 
 			if (calculateIndividualItems) {
@@ -69,7 +69,7 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 		foreach(var binding in _memberBindings) {
 			var memberValue = binding.Member.GetValue(item);
 			var memberSerializer = binding.Serializer;
-			var itemSize = memberSerializer.CalculateSize(context, memberValue);
+			var itemSize = memberSerializer.PackedCalculateSize(context, memberValue);
 			size += itemSize;
 		}
 		return size;
@@ -78,7 +78,7 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 	public override void Serialize(TItem item, EndianBinaryWriter writer, SerializationContext context) {
 		foreach (var binding in _memberBindings) {
 			var memberValue = binding.Member.GetValue(item);
-			binding.Serializer.Serialize(memberValue, writer, context);
+			binding.Serializer.PackedSerialize(memberValue, writer, context);
 		}
 	}
 
@@ -86,10 +86,41 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 		var item = _activator();
 		context.SetDeserializingItem(item);
 		foreach (var binding in _memberBindings) {
-			var memberValue = binding.Serializer.Deserialize(reader, context);
+			var memberValue = binding.Serializer.PackedDeserialize(reader, context);
 			binding.Member.SetValue(item, memberValue);
 		}
 		return item;
 	}
+
+}
+
+
+public static class CompositeSerializer {
+	public static CompositeSerializer<TItem> Create<TItem>(Func<TItem> activator, MemberSerializationBinding[] memberBindings) 
+		=> new CompositeSerializer<TItem>(activator, memberBindings);
+	
+	public static IItemSerializer Create(Type itemType, Delegate activator, MemberSerializationBinding[] memberBindings) {
+		var serializer = Create(itemType);
+		Configure(serializer, activator, memberBindings);
+		return serializer;
+	}
+
+	public static IItemSerializer Create(Type itemType) 
+		=> (IItemSerializer)typeof(CompositeSerializer<>)
+			.MakeGenericType(itemType)
+			.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null)
+			.Invoke(null);
+
+	public static void Configure(IItemSerializer serializer, Type itemType, IEnumerable<MemberSerializationBinding> memberBindings)
+		=> Configure(serializer, Tools.Lambda.CastFunc( () => itemType.ActivateWithCompatibleArgs(), itemType), memberBindings);
+
+	public static void Configure(IItemSerializer serializer, Delegate activator, IEnumerable<MemberSerializationBinding> memberBindings) {
+		Guard.Ensure(serializer.GetType().IsConstructedGenericTypeOf(typeof(CompositeSerializer<>)), "Serializer must be a CompositeSerializer");
+		serializer
+			.GetType()
+			.GetMethod(nameof(CompositeSerializer<object>.Configure), BindingFlags.Instance | BindingFlags.NonPublic)
+			.Invoke(serializer, [ activator, memberBindings.ToArray() ]);
+	}
+
 
 }

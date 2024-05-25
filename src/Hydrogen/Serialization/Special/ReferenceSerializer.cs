@@ -22,6 +22,8 @@ public sealed class ReferenceSerializer<TItem> : ItemSerializerDecorator<TItem> 
 
 	public ReferenceSerializer(IItemSerializer<TItem> valueSerializer, ReferenceSerializerMode mode) 
 		: base(valueSerializer) {
+		Guard.ArgumentNotNull(valueSerializer, nameof(valueSerializer));
+		Guard.Argument(!valueSerializer.GetType().IsSubtypeOfGenericType(typeof(ReferenceSerializer<>), out _), nameof(valueSerializer), "Value serializer cannot be a reference serializer");
 		Guard.Ensure(!typeof(TItem).IsValueType, $"{nameof(TItem)} can only be used with reference types");
 		_supportsNull = mode.HasFlag(ReferenceSerializerMode.SupportNull);
 		_supportsContextReferences = mode.HasFlag(ReferenceSerializerMode.SupportContextReferences);

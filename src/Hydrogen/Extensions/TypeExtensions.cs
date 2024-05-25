@@ -23,15 +23,50 @@ namespace Hydrogen;
 /// <remarks></remarks>
 public static class TypeExtensions {
 
+
+	/// <summary>
+	/// Gets generic arguments (and their generic arguments) transitively.
+	/// </summary>
+	public static Type[] GetGenericArgumentsTransitively(this Type type) {
+		var alreadyVisited = new HashSet<Type>();
+		return Get(type).ToArray();
+
+		IEnumerable<Type> Get(Type type) {
+			if (!alreadyVisited.Add(type))
+				yield break;
+
+			yield return type;
+				foreach(var genericArgument in type.GetGenericArguments()) 
+					foreach (var subType in Get(genericArgument))
+						yield return subType;
+			
+		}
+	}
+
+	public static bool IsEnumOrNullableEnum(this Type type, out Type enumType) {
+		enumType = Nullable.GetUnderlyingType(type) ?? type;
+		return enumType.IsEnum;
+	}
+
+	public static MethodInfo GetGenericMethod(this Type type, string name, int genericArgs) {
+		var method = type.GetGenericMethods(name, genericArgs).FirstOrDefault();
+		if (method is null) 
+			throw new MissingMethodException(type.FullName, $"{name}<{Tools.Collection.Generate(() => ",").Take(genericArgs).ToDelimittedString(string.Empty)}>");
+		return method;
+	}
+
+	public static IEnumerable<MethodInfo> GetGenericMethods(this Type type, string name, int genericArgs)
+		=> type.GetMethods().Where(m => m.Name == name && m.IsGenericMethod && m.GetGenericArguments().Length == genericArgs);
+
 	public static bool IsCrossAssemblyType(this Type type) {
 		if (!type.IsGenericType)
 			return false;
 		var typeArgAssemblies = type.GenericTypeArguments.Select(x => x.Assembly).Distinct().ToArray();
 		return typeArgAssemblies.Length != 0 && !typeArgAssemblies.SequenceEqual([type.Assembly]);
 	}
-	
 
 	public static bool IsAssignableTo(this Type type, [NotNullWhen(true)] Type? targetType) => targetType?.IsAssignableFrom(type) ?? false;
+
 	public static string ToStringCS(this Type type) {
 		if (!type.IsGenericType)
 			return type.Name;

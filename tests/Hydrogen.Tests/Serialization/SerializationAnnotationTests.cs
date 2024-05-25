@@ -21,7 +21,7 @@ public class SerializationAnnotationTests {
 	[Test]
 	public void TransientMembers_1() {
 		// test object
-		var serializer = SerializerBuilder.AutoBuild<TransientOnlyMembersClass>();
+		var serializer = SerializerBuilder.FactoryAssemble<TransientOnlyMembersClass>();
 		
 		var testObj = new TransientOnlyMembersClass { NonTransientExemption = "alpha", TransientInt = 11, TransientString = "beta" };
 		testObj.Nested = testObj;
@@ -40,19 +40,19 @@ public class SerializationAnnotationTests {
 
 	[Test]
 	public void GetOnlyMembersAreNotSerializable() {
-		var members = SerializerHelper.GetSerializableMembers(typeof(GetOnlyMemberClass));
+		var members = SerializerBuilder.GetSerializableMembers(typeof(GetOnlyMemberClass));
 		Assert.That(members.Length, Is.EqualTo(1));
 	}
 
 	[Test]
 	public void TransientMembersAreNotSerializable() {
-		var members = SerializerHelper.GetSerializableMembers(typeof(TransientOnlyMembersClass));
+		var members = SerializerBuilder.GetSerializableMembers(typeof(TransientOnlyMembersClass));
 		Assert.That(members.Length, Is.EqualTo(1));
 	}
 
 	[Test]
 	public void NullableMembersSerialize() {
-		var serializer = SerializerBuilder.AutoBuild<NotNullableMembersClass>();
+		var serializer = SerializerBuilder.FactoryAssemble<NotNullableMembersClass>();
 		var testObj = new NotNullableMembersClass { AllowsNull = null, NotAllowsNull = "alpha" };
 		
 		var size = serializer.CalculateSize(testObj);
@@ -66,7 +66,7 @@ public class SerializationAnnotationTests {
 
 	[Test]
 	public void NotNullableMembersThrowOnNullSerialization() {
-		var serializer = SerializerBuilder.AutoBuild<NotNullableMembersClass>();
+		var serializer = SerializerBuilder.FactoryAssemble<NotNullableMembersClass>();
 		var testObj = new NotNullableMembersClass { AllowsNull = null, NotAllowsNull = "alpha" };
 		testObj = new NotNullableMembersClass { AllowsNull = null, NotAllowsNull = null };
 		Assert.That(() => serializer.SerializeBytesLE(testObj), Throws.InvalidOperationException);
@@ -74,7 +74,7 @@ public class SerializationAnnotationTests {
 	
 	[Test]
 	public void NoContextReferenceWhenDisallowed() {
-		var serializer = SerializerBuilder.AutoBuild<NoContextReferences>();
+		var serializer = SerializerBuilder.FactoryAssemble<NoContextReferences>();
 		var testObj = new NoContextReferences { StringA = "alpha", StringB = "alpha" };
 		
 		Assert.That(testObj.StringA, Is.SameAs(testObj.StringB));
@@ -89,7 +89,7 @@ public class SerializationAnnotationTests {
 
 	[Test]
 	public void RecursiveNoContextReferenceThrowsOnInfiniteLoop_1() {
-		var serializer = SerializerBuilder.AutoBuild<RecursiveNoContextReference>();
+		var serializer = SerializerBuilder.FactoryAssemble<RecursiveNoContextReference>();
 		var testObj = new RecursiveNoContextReference();
 		testObj.Item = testObj;
 		Assert.That(testObj.Item, Is.SameAs(testObj));
@@ -99,7 +99,7 @@ public class SerializationAnnotationTests {
 
 	[Test]
 	public void RecursiveNoContextReferenceThrowsOnInfiniteLoop_2() {
-		var serializer = SerializerBuilder.AutoBuild<RecursiveNoContextReference>();
+		var serializer = SerializerBuilder.FactoryAssemble<RecursiveNoContextReference>();
 		var testObj = new RecursiveNoContextReference();
 		testObj.Item = new RecursiveNoContextReference();
 		testObj.Item.Item = testObj;

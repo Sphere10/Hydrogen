@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Hydrogen;
@@ -47,10 +48,13 @@ public class MultiKeyDictionary<K1, K2, V> : Dictionary<K1, Dictionary<K2, V>> {
 		return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, out value);
 	}
 
-	public new IEnumerable<V> Values =>
-		from baseDict in base.Values
-		from baseKey in baseDict.Keys
-		select baseDict[baseKey];
+	public new IEnumerable<(K1, K2)> Keys => 
+		from k1 in base.Keys
+		from k2 in this[k1].Keys
+		select (k1, k2);
+
+	public new IEnumerable<V> Values 
+		=> base.Values.SelectMany(x => x.Values);
 }
 
 
@@ -87,6 +91,13 @@ public class MultiKeyDictionary<K1, K2, K3, V> : Dictionary<K1, MultiKeyDictiona
 		return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, out value);
 	}
 
+	public new IEnumerable<(K1, K2, K3)> Keys => 
+		from k1 in base.Keys
+		from tail in this[k1].Keys
+		select (k1, tail.Item1, tail.Item2);
+
+	public new IEnumerable<V> Values 
+		=> base.Values.SelectMany(x => x.Values);
 }
 
 
@@ -124,6 +135,14 @@ public class MultiKeyDictionary<K1, K2, K3, K4, V> : Dictionary<K1, MultiKeyDict
 		value = default;
 		return TryGetValue(key1, out var dict) && dict.TryGetValue(key2, key3, key4, out value);
 	}
+
+	public new IEnumerable<(K1, K2, K3, K4)> Keys => 
+		from k1 in base.Keys
+		from tail in this[k1].Keys
+		select (k1, tail.Item1, tail.Item2, tail.Item3);
+
+	public new IEnumerable<V> Values 
+		=> base.Values.SelectMany(x => x.Values);
 }
 
 

@@ -18,6 +18,10 @@ public class ActionResponseHandler : ResponseHandlerBase {
 		_action = action;
 	}
 
+	public override Type RequestType => typeof(object);
+
+	public override Type ResponseType => typeof(object);
+
 	public override void Execute(ProtocolOrchestrator orchestrator, object request, object response) {
 		Guard.ArgumentNotNull(orchestrator, nameof(orchestrator));
 		Guard.ArgumentNotNull(request, nameof(request));

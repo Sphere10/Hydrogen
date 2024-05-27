@@ -10,39 +10,70 @@ using System;
 
 namespace Hydrogen.Communications;
 
-public class ProtocolRequestBuilder : ProtocolBuilderMain {
-	ProtocolMode _mode;
 
-	public ProtocolRequestBuilder(ProtocolModeBuilder parent, ProtocolMode mode)
-		: base(parent) {
-		_mode = mode;
+public class ProtocolRequestBuilder<TRequest>  {
+
+	private IRequestHandler _requestHandler;
+	private IResponseHandler _responseHandler;
+	
+
+	public ProtocolRequestBuilder<TRequest> HandleRequestWith<TResponse>(Func<TResponse> handler)
+		=> HandleRequestWith(_ => handler());
+
+	public ResponseBuilder<TRequest, TResponse> HandleRequestWith<TResponse>(Func<TRequest, TResponse> handler)
+		=> HandleRequestWith((_, request) => handler(request));
+
+	public ResponseBuilder<TRequest, TResponse> HandleRequestWith<TResponse>(Func<ProtocolOrchestrator, TRequest, TResponse> handler) 
+		=> HandleRequestWith(new ActionRequestHandler<TRequest, TResponse>(handler));
+
+	public ResponseBuilder<TRequest, TResponse> HandleRequestWith<TResponse>(IRequestHandler<TRequest, TResponse>  handler) {
+		HandleRequestWith((IRequestHandler)handler);
+		return new ResponseBuilder<TRequest, TResponse>(this);
 	}
 
-	public HandlerBuilder<TRequest> ForRequest<TRequest>() {
-		return new(this);
+	public ProtocolRequestBuilder<TRequest> HandleRequestWith(IRequestHandler requestHandler) {
+		Guard.ArgumentNotNull(requestHandler, nameof(requestHandler));
+		Guard.Argument(requestHandler.RequestType == typeof(TRequest), nameof(requestHandler), "Request type mismatch");
+		_requestHandler = requestHandler;
+		return this;
 	}
 
-	protected void Add(Type type, IRequestHandler handler) {
-		_mode.RequestHandlers.Add(type, handler);
+	public ProtocolRequestBuilder<TRequest> HandleWith(IResponseHandler handler) {
+		Guard.ArgumentNotNull(handler, nameof(handler));
+		Guard.Argument(handler.RequestType == typeof(TRequest), nameof(handler), "Request type mismatch");
+		_responseHandler = handler;
+		return this;
+	}
+
+	public (IRequestHandler, IResponseHandler) Build() {
+		Guard.Ensure(_requestHandler is not null, "Request handler not set");
+		Guard.Ensure(_responseHandler is not null, "Response handler not set");
+		Guard.Ensure(_requestHandler.RequestType == _responseHandler.RequestType, "Request type mismatch on handlers");
+		Guard.Ensure(_requestHandler.ResponseType == _responseHandler.ResponseType, "Response type mismatch on handlers");
+		return (_requestHandler, _responseHandler);
 	}
 
 
-	public class HandlerBuilder<TRequest> {
-		private readonly ProtocolRequestBuilder _parent;
+	public class ResponseBuilder<TRequest, TResponse> : ProtocolRequestBuilder<TRequest>  {
 
-		public HandlerBuilder(ProtocolRequestBuilder parent) {
-			_parent = parent;
+		private ProtocolRequestBuilder<TRequest> _requestBuilder;
+
+		public ResponseBuilder(ProtocolRequestBuilder<TRequest> requestBuilder) {
+			_requestBuilder = requestBuilder;
 		}
 
-		public ProtocolRequestBuilder RespondWith<TResponse>(Func<TResponse> handler)
-			=> RespondWith(_ => handler());
+		public ProtocolRequestBuilder<TRequest> HandleResponseWith(Action<TResponse> handler)
+			=> HandleResponseWith((_, response) => handler(response));
 
-		public ProtocolRequestBuilder RespondWith<TResponse>(Func<TRequest, TResponse> handler)
-			=> RespondWith((_, request) => handler(request));
+		public ProtocolRequestBuilder<TRequest> HandleResponseWith(Action<TRequest, TResponse> handler)
+			=> HandleResponseWith((_, request, response) => handler(request, response));
 
-		public ProtocolRequestBuilder RespondWith<TResponse>(Func<ProtocolOrchestrator, TRequest, TResponse> handler) {
-			_parent._mode.RequestHandlers.Add(typeof(TRequest), new ActionRequestHandler<TRequest, TResponse>(handler));
-			return _parent;
-		}
+		public ProtocolRequestBuilder<TRequest> HandleResponseWith(Action<ProtocolOrchestrator, TRequest, TResponse> handler)
+			=> HandleResponseWith(new ActionResponseHandler<TRequest, TResponse>(handler));
+
+		public ProtocolRequestBuilder<TRequest> HandleResponseWith(IResponseHandler<TRequest, TResponse> handler) 
+			=> _requestBuilder.HandleWith(handler);
+
 	}
+
 }

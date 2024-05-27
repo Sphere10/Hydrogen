@@ -6,8 +6,13 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Hydrogen.Communications;
 
 public abstract class ResponseHandlerBase : IResponseHandler {
+	public abstract Type RequestType { get; }
+	public abstract Type ResponseType { get; }
+
 	public abstract void Execute(ProtocolOrchestrator orchestrator, object request, object response);
 }

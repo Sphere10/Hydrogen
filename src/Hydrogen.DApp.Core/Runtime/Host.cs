@@ -37,16 +37,11 @@ public class Host : IHost {
 
 	private Protocol BuildProtocol()
 		=> new ProtocolBuilder()
-			.Requests
-				.ForRequest<PingMessage>().RespondWith(() => new PongMessage())
-			.Responses
-				.ForResponse<PongMessage>().ToRequest<PingMessage>().HandleWith(() => Logger.Info("Received Pong"))
-			.Commands
-				.ForCommand<UpgradeMessage>().Execute(async upgradeMessage => await UpgradeApplication(upgradeMessage.HydrogenApplicationPackagePath))
-				.ForCommand<ShutdownMessage>().Execute(async () => await RequestShutdown())
-			.Messages
-				.UseOnly(HostProtocolHelper.BuildMessageSerializer())
-				.Build();
+			.AddRequestResponse<PingMessage, PongMessage>(() => new PongMessage(), () => Logger.Info("Received Pong"))
+			.AddCommand<UpgradeMessage>( async upgradeMessage => await UpgradeApplication(upgradeMessage.HydrogenApplicationPackagePath))
+			.AddCommand<ShutdownMessage>(async () => await RequestShutdown())
+			.AutoBuildSerializers()
+			.Build();
 
 	public virtual async Task DeployHAP(string hapPath) {
 		CheckStatus(HostStatus.Stopped, HostStatus.Upgrading);

@@ -18,6 +18,7 @@ public class ActionCommandHandler : CommandHandlerBase {
 		_action = action;
 	}
 
+	public override Type MessageType => typeof(object);
 	public override void Execute(ProtocolOrchestrator orchestrator, object command) {
 		Guard.ArgumentNotNull(orchestrator, nameof(orchestrator));
 		Guard.ArgumentNotNull(command, nameof(command));

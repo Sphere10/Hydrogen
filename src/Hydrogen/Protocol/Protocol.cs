@@ -6,26 +6,31 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Hydrogen.Communications;
 
 public class Protocol {
-
+	private ProtocolMode[] _modes;
 	public Protocol() {
 		Handshake = new ProtocolHandshake();
-		Modes = new List<ProtocolMode>();
+		_modes = Array.Empty<ProtocolMode>();
+		Factory = new SerializerFactory(SerializerFactory.Default);
+		AddMode();
 	}
 
-	public ProtocolHandshake Handshake { get; init; }
+	public ProtocolHandshake Handshake { get; set; }
 
-	public IList<ProtocolMode> Modes { get; init; }
+	public ProtocolMode[] Modes => _modes;
 
-	public ProtocolMode NewModeDefinition(int number) {
-		Guard.ArgumentEquals(number, Modes.Count, nameof(number));
-		var modeDef = new ProtocolMode { Number = number };
-		Modes.Add(modeDef);
+	public SerializerFactory Factory { get; set; }
+
+	public ProtocolMode AddMode() {
+		var modeDef = new ProtocolMode { Number = _modes.Length };
+		Array.Resize(ref _modes, _modes.Length + 1);
+		_modes[^1] = modeDef;
 		return modeDef;
 	}
 
@@ -36,19 +41,11 @@ public class Protocol {
 		if (Handshake is null)
 			result.AddError("Handshake is null");
 
-		if (Modes.Count < 1) {
+		if (Modes.Length < 1) {
 			result.AddError("Missing mode 0 definition");
 		}
 
-		// Validate Handshake
-		var supportedTypes = Modes[0].MessageSerializer.Factory.RegisteredTypes.ToHashSet(); // handshake uses Mode 0 serializers
-		if (Handshake.MessageTypes is not null) {
-			var missingSerializers = Handshake.MessageTypes.Where(t => !supportedTypes.Contains(t));
-			if (missingSerializers.Any())
-				foreach (var type in missingSerializers)
-					result.AddError($"Missing serializer for handshake type '{type.Name}'");
-		}
-
+		
 		// Validate all protocol modes are correct
 		foreach (var mode in Modes) {
 			var modeValidation = mode.Validate();
@@ -56,7 +53,20 @@ public class Protocol {
 				result.Merge(modeValidation);
 		}
 
+		// Check missing serializers
+		var missingSerializers = 
+			Handshake
+			.MessageTypes
+			.Union(Modes.SelectMany(x => x.GetAllUsedMessageTypes()))
+			.Where(x => !Factory.ContainsSerializer(x))
+			.ToArray();
 
-		return result;
-	}
+			if (missingSerializers.Any())
+				foreach (var type in missingSerializers)
+					result.AddError($"Missing serializer for type '{type.Name}'");
+			
+			return result;
+		}
+
 }
+

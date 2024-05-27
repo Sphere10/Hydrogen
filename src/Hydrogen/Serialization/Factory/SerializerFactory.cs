@@ -50,12 +50,11 @@ public class SerializerFactory {
 
 	public static SerializerFactory Default { get; }
 
-	internal long MinGeneratedTypeCode { get; init; } = PermanentTypeCodeStartDefault;
+	internal long MinGeneratedTypeCode { get; set; } = PermanentTypeCodeStartDefault;
 
 	internal long MaxGeneratedTypeCode { get; private set; } = 0;
 
 	#region Registration
-	internal long GenerateTypeCode() => _registrations.Count == 0 ? MinGeneratedTypeCode : Math.Max(MaxGeneratedTypeCode + 1, MinGeneratedTypeCode);
 
 	public static void RegisterDefaults(SerializerFactory factory) {
 		// register self-assembling factory for object
@@ -157,52 +156,72 @@ public class SerializerFactory {
 		}
 	}
 
-	public void RegisterEnum<TEnum>() where TEnum : struct, Enum 
-		=> RegisterEnum(typeof(TEnum));
+	public SerializerFactory SetMinTypeCode(long min) {
+		MinGeneratedTypeCode = min;
+		return this;
+	}
 
-	public void RegisterEnum(Type enumType) {
+	public SerializerFactory RegisterEnum<TEnum>(long? typeCode = null) where TEnum : struct, Enum 
+		=> RegisterEnum(typeof(TEnum), typeCode);
+
+	public SerializerFactory RegisterEnum(Type enumType, long? typeCode = null) {
 		Guard.ArgumentNotNull(enumType, nameof(enumType));
 		Guard.Argument(enumType.IsEnum, nameof(enumType), $"Type {enumType.Name} is not an enum");
 		var enumSerializer = (IItemSerializer) typeof(EnumSerializer<>).MakeGenericType(enumType).ActivateWithCompatibleArgs();
 		var nullableEnumSerializer = (IItemSerializer) typeof(NullableSerializer<>).MakeGenericType(enumType).ActivateWithCompatibleArgs(enumSerializer);
+		var code = typeCode ?? GenerateTypeCode();
 		if (!ContainsSerializer(enumType))
-			RegisterInternal(GenerateTypeCode(), enumType, enumSerializer.GetType(), enumSerializer, null);
+			RegisterInternal(code, enumType, enumSerializer.GetType(), enumSerializer, null);
 
 		var nullableEnumType  = typeof(Nullable<>).MakeGenericType(enumType);
 		if (!ContainsSerializer(nullableEnumType))
-			RegisterInternal(GenerateTypeCode(), nullableEnumType, nullableEnumSerializer.GetType(), nullableEnumSerializer, null);
+			RegisterInternal(code + 1, nullableEnumType, nullableEnumSerializer.GetType(), nullableEnumSerializer, null);
+		return this;
 	}
 
-	public void Register<TItem>(IItemSerializer<TItem> serializerInstance)
-		=> RegisterInternal(GenerateTypeCode(), typeof(TItem), serializerInstance.GetType(), serializerInstance, null);
+	public SerializerFactory Register<TItem>(IItemSerializer<TItem> serializerInstance, long? typeCode = null) {
+		 RegisterInternal(typeCode ?? GenerateTypeCode(), typeof(TItem), serializerInstance.GetType(), serializerInstance, null);
+		return this;
+	}
 
-	public void Register<TItem, TSerializer>() where TSerializer : IItemSerializer<TItem>, new()
-		=> RegisterInternal(GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (_,_) => new TSerializer());
+	public SerializerFactory Register<TItem, TSerializer>(long? typeCode = null) where TSerializer : IItemSerializer<TItem>, new() {
+		RegisterInternal(typeCode ?? GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (_,_) => new TSerializer());
+		return this;
+	}
 
-	public void Register<TItem, TSerializer>(Func<TSerializer> factory) 
-		=> Register<TItem, TSerializer>(_ => factory());
+	public SerializerFactory Register<TItem, TSerializer>(Func<TSerializer> factory, long? typeCode = null) 
+		=> Register<TItem, TSerializer>(_ => factory(), typeCode);
 
-	public void Register<TItem, TSerializer>(Func<SerializerFactory, TSerializer> factory) 
-		=> RegisterInternal(GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (r,_) => (IItemSerializer)factory(r.Owner));
+	public SerializerFactory Register<TItem, TSerializer>(Func<SerializerFactory, TSerializer> factory, long? typeCode = null) {
+		RegisterInternal(typeCode ?? GenerateTypeCode(), typeof(TItem), typeof(TSerializer), null, (r,_) => (IItemSerializer)factory(r.Owner));
+		return this;
+	}
 
-	public void Register<TItem>(Type serializerType) 
-		=> RegisterInternal(GenerateTypeCode(), typeof(TItem), serializerType, null, null);
+	public SerializerFactory Register<TItem>(Type serializerType, long? typeCode = null) {
+		RegisterInternal(typeCode ?? GenerateTypeCode(), typeof(TItem), serializerType, null, null);
+		return this;
+	}
 
-	public void Register(Type dataType, Type serializerType) 
-		=> RegisterInternal(GenerateTypeCode(), dataType, serializerType, null, null);
+	public SerializerFactory Register(Type dataType, Type serializerType, long? typeCode = null) {
+		RegisterInternal(typeCode ?? GenerateTypeCode(), dataType, serializerType, null, null);
+		return this;
+	}
 
-	public void Register(Type dataType, IItemSerializer serializerInstance) 
-		=> RegisterInternal(GenerateTypeCode(), dataType, serializerInstance.GetType(), serializerInstance, null);
+	public SerializerFactory Register(Type dataType, IItemSerializer serializerInstance, long? typeCode = null) {
+		RegisterInternal(typeCode ?? GenerateTypeCode(), dataType, serializerInstance.GetType(), serializerInstance, null);
+		return this;
+	}
 
-	public void RegisterAutoBuild<T>() 
-		=> RegisterAutoBuild(typeof(T));
+	public SerializerFactory RegisterAutoBuild<T>(long? typeCode = null) 
+		=> RegisterAutoBuild(typeof(T), typeCode);
 
-	public void RegisterAutoBuild(Type dataType) {
+	public SerializerFactory RegisterAutoBuild(Type dataType, long? typeCode = null) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		Guard.Argument(!dataType.ContainsGenericParameters, nameof(dataType), "Cannot auto-build serializers for open generic types");
-		SerializerBuilder.FactoryAssemble(this, dataType, true);
+		SerializerBuilder.FactoryAssemble(this, dataType, true, typeCodeStart: typeCode);
+		return this;
 	}
-
+	
 	internal void RegisterInternal(long typeCode, Type dataType, Type serializerType, IItemSerializer serializerInstance, Func<Registration, Type, IItemSerializer> factory) {
 		Guard.ArgumentNotNull(dataType, nameof(dataType));
 		Guard.ArgumentNotNull(serializerType, nameof(serializerType));
@@ -274,6 +293,8 @@ public class SerializerFactory {
 		_activatedSerializers.Clear();
 		_fromSerializerHierarchyCache.Purge();
 	}
+
+	internal long GenerateTypeCode() => _registrations.Count == 0 ? MinGeneratedTypeCode : Math.Max(MaxGeneratedTypeCode + 1, MinGeneratedTypeCode);
 
 	private static IItemSerializer CreateSerializerInstance(Registration registration, Type requestedDataType, Type registeredDataType, Type registeredSerializerType) {
 		Guard.Argument(!requestedDataType.IsGenericTypeDefinition, nameof(requestedDataType), $"Requested data type {requestedDataType.Name} cannot be a generic type definition");

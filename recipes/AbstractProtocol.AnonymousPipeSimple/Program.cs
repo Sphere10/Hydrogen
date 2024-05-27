@@ -133,9 +133,9 @@ public class Program {
 //			var protocol =
 //				new ProtocolBuilder()
 //					.Requests
-//						.ForRequest<Ping>().RespondWith((_, _) => new Pong())
+//						.ForRequest<Ping>().HandleRequestWith((_, _) => new Pong())
 //					.Responses
-//						.ForResponse<Pong>().ToRequest<Ping>().HandleWith((ch, pingMsg, pongMsg) => SystemLog.Info("Handled Pong OK!"))
+//						.ForResponse<Pong>().ToRequest<Ping>().HandleResponseWith((ch, pingMsg, pongMsg) => SystemLog.Info("Handled Pong OK!"))
 //					.Messages
 //                        .For<Ping>().SerializeWith(new BinaryFormattedSerializer<Ping>())
 //						.For<Pong>().SerializeWith(new BinaryFormattedSerializer<Pong>())

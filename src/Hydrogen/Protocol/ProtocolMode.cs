@@ -20,20 +20,17 @@ public class ProtocolMode {
 		RequestHandlers = new Dictionary<Type, IRequestHandler>();
 		ResponseHandlers = new MultiKeyDictionary<Type, Type, IResponseHandler>();
 		MessageGenerators = new Dictionary<Type, IMessageGenerator>();
-		MessageSerializer = new PolymorphicSerializer<object>(SerializerFactory.Default);
 	}
 
 	public int Number { get; init; }
-
-	public IDictionary<Type, ICommandHandler> CommandHandlers { get; init; }
 
 	public IDictionary<Type, IRequestHandler> RequestHandlers { get; init; }
 
 	public MultiKeyDictionary<Type, Type, IResponseHandler> ResponseHandlers { get; init; }
 
-	public IDictionary<Type, IMessageGenerator> MessageGenerators { get; init; }
+	public IDictionary<Type, ICommandHandler> CommandHandlers { get; init; }
 
-	public PolymorphicSerializer<object> MessageSerializer { get; init; }
+	public IDictionary<Type, IMessageGenerator> MessageGenerators { get; init; }
 
 	public Result Validate() {
 		var result = Result.Default;
@@ -50,9 +47,6 @@ public class ProtocolMode {
 		if (ResponseHandlers is null)
 			result.AddError($"Mode {Number}: ResponseHandlers is null");
 
-		if (MessageSerializer is null)
-			result.AddError("Serializer is null");
-
 		// Validate message generators generate correct type
 		if (MessageGenerators is not null) {
 			foreach (var (key, value) in MessageGenerators) {
@@ -64,25 +58,10 @@ public class ProtocolMode {
 			}
 		}
 
-		// Check missing serializers
-		if (MessageSerializer is not null) {
-			var supportedTypes = MessageSerializer.Factory.RegisteredTypes.ToHashSet();
-			var missingSerializers = Enumerable.Empty<Type>();
-
-			if (CommandHandlers is not null)
-				missingSerializers = missingSerializers.Union(CommandHandlers.Keys.Where(t => !supportedTypes.Contains(t)));
-
-			if (RequestHandlers is not null)
-				missingSerializers = missingSerializers.Union(RequestHandlers.Keys.Where(t => !supportedTypes.Contains(t)));
-
-			if (ResponseHandlers is not null)
-				missingSerializers = missingSerializers.Union(ResponseHandlers.Keys.Where(t => !supportedTypes.Contains(t)));
-
-			if (missingSerializers.Any())
-				foreach (var type in missingSerializers)
-					result.AddError($"Missing serializer for type '{type.Name}'");
-
-		}
 		return result;
 	}
+
+	internal IEnumerable<Type> GetAllUsedMessageTypes() 
+		=> RequestHandlers.Keys.Union(ResponseHandlers.Keys.SelectMany(x => new[] {x.Item1, x.Item2 })).Union(CommandHandlers.Keys).Union(MessageGenerators.Keys);
+
 }

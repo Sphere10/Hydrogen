@@ -17,6 +17,7 @@ public class ActionCommandHandler<TMessage> : CommandHandlerBase<TMessage> {
 		Guard.ArgumentNotNull(action, nameof(action));
 		_action = action;
 	}
+	public override Type MessageType => typeof(TMessage);
 
 	public override void Execute(ProtocolOrchestrator orchestrator, TMessage command) {
 		Guard.ArgumentNotNull(orchestrator, nameof(orchestrator));

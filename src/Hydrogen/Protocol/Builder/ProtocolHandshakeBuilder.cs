@@ -10,72 +10,88 @@ using System;
 
 namespace Hydrogen.Communications;
 
-public class ProtocolHandshakeBuilder : ProtocolBuilderMain {
-	ProtocolHandshake _handshake;
+public class ProtocolHandshakeBuilder {
+	ProtocolBuilder _parent;
+	object _specificBuilder;
 
-	public ProtocolHandshakeBuilder(ProtocolBuilder protocolBuilder, ProtocolHandshake definition)
-		: base(protocolBuilder) {
-		_handshake = definition;
+	public ProtocolHandshakeBuilder(ProtocolBuilder parent) {
+		_parent = parent;
 	}
 
 
-	public TwoWayHandshakeBuilder TwoWay {
-		get {
-			_handshake.Type = ProtocolHandshakeType.TwoWay;
-			return new(this);
-		}
+	public TwoWayHandshakeBuilder UseTwoWay() {
+		_specificBuilder = new TwoWayHandshakeBuilder(this);
+		return (TwoWayHandshakeBuilder)_specificBuilder;
 	}
 
-	public ThreeWayHandshakeBuilder ThreeWay {
-		get {
-			_handshake.Type = ProtocolHandshakeType.ThreeWay;
-			return new(this);
-		}
+	public ThreeWayHandshakeBuilder UseThreeWay() {
+		_specificBuilder = new ThreeWayHandshakeBuilder(this);
+		return (ThreeWayHandshakeBuilder)_specificBuilder;
+		return new(this);
+	}
+
+	public ProtocolHandshake Build() {
+		return _specificBuilder switch {
+			TwoWayHandshakeBuilder twoWayBuilder => twoWayBuilder.Build(),
+			ThreeWayHandshakeBuilder threeWayBuilder => threeWayBuilder.Build(),
+			_ => throw new InternalErrorException("0924E3CD-C144-4D4D-AFF2-E037C82D8CD2")
+		};
 	}
 
 
 	public class TwoWayHandshakeBuilder {
 		private readonly ProtocolHandshakeBuilder _parent;
+		private CommunicationRole? _initiator = null;
+		private IHandshakeHandler _handler = null;
+		private Type[] _messageTypes = null;
 
 		public TwoWayHandshakeBuilder(ProtocolHandshakeBuilder parent) {
 			_parent = parent;
 		}
 
 		public TwoWayHandshakeBuilder InitiatedBy(CommunicationRole initiatingParty) {
-			_parent._handshake.Initiator = initiatingParty;
+			_initiator = initiatingParty;
 			return this;
 		}
 
-		public ProtocolHandshakeBuilder HandleWith<THandshake, TAck>(ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake, Verify2WayHandshakeDelegate<THandshake, TAck> verifyHandshake) where THandshake : new()
+		public TwoWayHandshakeBuilder HandleWith<THandshake, TAck>(ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake, Verify2WayHandshakeDelegate<THandshake, TAck> verifyHandshake) where THandshake : new()
 			=> HandleWith((_) => new THandshake(), receiveHandshake, verifyHandshake);
 
-		public ProtocolHandshakeBuilder HandleWith<THandshake, TAck>(GenerateHandshakeDelegate<THandshake> generateHandshake, ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake, Verify2WayHandshakeDelegate<THandshake, TAck> verifyHandshake)
+		public TwoWayHandshakeBuilder HandleWith<THandshake, TAck>(GenerateHandshakeDelegate<THandshake> generateHandshake, ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake, Verify2WayHandshakeDelegate<THandshake, TAck> verifyHandshake)
 			=> HandleWith(new Action2WayHandshakeHandler<THandshake, TAck>(generateHandshake, receiveHandshake, verifyHandshake), typeof(THandshake), typeof(TAck));
 
 
-		public ProtocolHandshakeBuilder HandleWith(IHandshakeHandler handler, Type handshakeType, Type ackType) {
+		public TwoWayHandshakeBuilder HandleWith(IHandshakeHandler handler, Type handshakeType, Type ackType) {
 			Guard.ArgumentNotNull(handler, nameof(handler));
 			Guard.ArgumentNotNull(handshakeType, nameof(handshakeType));
 			Guard.ArgumentNotNull(ackType, nameof(ackType));
-			_parent._handshake.MessageTypes.Clear();
-			_parent._handshake.MessageTypes.Add(handshakeType);
-			_parent._handshake.MessageTypes.Add(ackType);
-			_parent._handshake.Handler = handler;
-			return _parent;
+			_handler = handler;
+			_messageTypes = [handshakeType, ackType];
+			return this;
 		}
 
+		internal ProtocolHandshake Build()
+			=> new() {
+				Type = ProtocolHandshakeType.TwoWay,
+				Initiator = _initiator ?? throw new InvalidOperationException("No initiator was specified"),
+				Handler = _handler ?? throw new InvalidOperationException("No handler was configured"),
+				MessageTypes = _messageTypes ?? Array.Empty<Type>()
+			};
 	}
 
 
 	public class ThreeWayHandshakeBuilder {
 		private readonly ProtocolHandshakeBuilder _parent;
+		private CommunicationRole? _initiator = null;
+		private IHandshakeHandler _handler = null;
+		private Type[] _messageTypes = null;
 
 		public ThreeWayHandshakeBuilder(ProtocolHandshakeBuilder parent) {
 			_parent = parent;
 		}
 
 		public ThreeWayHandshakeBuilder InitiatedBy(CommunicationRole initiatingParty) {
-			_parent._handshake.Initiator = initiatingParty;
+			_initiator = initiatingParty;
 			return this;
 		}
 
@@ -83,29 +99,34 @@ public class ProtocolHandshakeBuilder : ProtocolBuilderMain {
 		//public ProtocolHandshakeBuilder HandledBy<THandshake, TAck, TVerack>(ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake, Verify2WayHandshakeDelegate<THandshake, TAck> verifyHandshake) where THandshake : new() where TVerack : new()
 		//	=> HandledBy((_) => new THandshake(), receiveHandshake, verifyHandshake);
 
-		public ProtocolHandshakeBuilder HandleWith<THandshake, TAck, TVerack>(ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake, Verify3WayHandshakeDelegate<THandshake, TAck, TVerack> verifyHandshake) where THandshake : new()
+		public ThreeWayHandshakeBuilder HandleWith<THandshake, TAck, TVerack>(ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake, Verify3WayHandshakeDelegate<THandshake, TAck, TVerack> verifyHandshake) where THandshake : new()
 			=> HandleWith((_) => new THandshake(), receiveHandshake, verifyHandshake);
 
-		public ProtocolHandshakeBuilder HandleWith<THandshake, TAck, TVerack>(GenerateHandshakeDelegate<THandshake> generateHandshake, ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake,
-		                                                                      Verify3WayHandshakeDelegate<THandshake, TAck, TVerack> verifyHandshake)
+		public ThreeWayHandshakeBuilder HandleWith<THandshake, TAck, TVerack>(GenerateHandshakeDelegate<THandshake> generateHandshake, ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake,
+																			  Verify3WayHandshakeDelegate<THandshake, TAck, TVerack> verifyHandshake)
 			=> HandleWith(generateHandshake, receiveHandshake, verifyHandshake, (_, _, _, _) => true);
 
-		public ProtocolHandshakeBuilder HandleWith<THandshake, TAck, TVerack>(GenerateHandshakeDelegate<THandshake> generateHandshake, ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake,
-		                                                                      Verify3WayHandshakeDelegate<THandshake, TAck, TVerack> verifyHandshake, Acknowledge3WayHandshakeDelegate<THandshake, TAck, TVerack> acknowledgeHandshake)
+		public ThreeWayHandshakeBuilder HandleWith<THandshake, TAck, TVerack>(GenerateHandshakeDelegate<THandshake> generateHandshake, ReceiveHandshakeDelegate<THandshake, TAck> receiveHandshake,
+																			  Verify3WayHandshakeDelegate<THandshake, TAck, TVerack> verifyHandshake, Acknowledge3WayHandshakeDelegate<THandshake, TAck, TVerack> acknowledgeHandshake)
 			=> HandleWith(new Action3WayHandshakeHandler<THandshake, TAck, TVerack>(generateHandshake, receiveHandshake, verifyHandshake, acknowledgeHandshake), typeof(THandshake), typeof(TAck), typeof(TVerack));
 
-		public ProtocolHandshakeBuilder HandleWith(IHandshakeHandler handler, Type handshakeType, Type ackType, Type verackType) {
+		public ThreeWayHandshakeBuilder HandleWith(IHandshakeHandler handler, Type handshakeType, Type ackType, Type verackType) {
 			Guard.ArgumentNotNull(handler, nameof(handler));
 			Guard.ArgumentNotNull(handshakeType, nameof(handshakeType));
 			Guard.ArgumentNotNull(ackType, nameof(ackType));
 			Guard.ArgumentNotNull(verackType, nameof(verackType));
-			_parent._handshake.MessageTypes.Clear();
-			_parent._handshake.MessageTypes.Add(handshakeType);
-			_parent._handshake.MessageTypes.Add(ackType);
-			_parent._handshake.MessageTypes.Add(verackType);
-			_parent._handshake.Handler = handler;
-			return _parent;
+			_messageTypes = [handshakeType, ackType, verackType];
+			return this;
 		}
+
+
+		internal ProtocolHandshake Build()
+			=> new() {
+				Type = ProtocolHandshakeType.ThreeWay,
+				Initiator = _initiator ?? throw new InvalidOperationException("No initiator was specified"),
+				Handler = _handler ?? throw new InvalidOperationException("No handler was configured"),
+				MessageTypes = _messageTypes ?? Array.Empty<Type>()
+			};
 
 	}
 

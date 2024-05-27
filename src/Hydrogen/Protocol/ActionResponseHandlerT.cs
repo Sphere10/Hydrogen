@@ -17,6 +17,10 @@ public class ActionResponseHandler<TRequest, TResponse> : ResponseHandlerBase<TR
 		Guard.ArgumentNotNull(action, nameof(action));
 		_action = action;
 	}
+	
+	public override Type RequestType => typeof(TRequest);
+
+	public override Type ResponseType => typeof(TResponse);
 
 	public override void Execute(ProtocolOrchestrator orchestrator, TRequest request, TResponse response) {
 		Guard.ArgumentNotNull(orchestrator, nameof(orchestrator));

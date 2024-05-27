@@ -6,8 +6,12 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System;
+
 namespace Hydrogen.Communications;
 
 public abstract class CommandHandlerBase : ICommandHandler {
+	public abstract Type MessageType { get; }
+
 	public abstract void Execute(ProtocolOrchestrator orchestrator, object command);
 }

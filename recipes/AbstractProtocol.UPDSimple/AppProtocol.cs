@@ -15,22 +15,15 @@ namespace AbstractProtocol.UDPSimple;
 public class AppProtocol {
 	public static Protocol Build() {
 		return new ProtocolBuilder()
-			.Handshake
-			.ThreeWay
-			.InitiatedBy(CommunicationRole.Client)
-			.HandleWith<Sync, Ack, Verack>(InitiateHandshake, ReceiveHandshake, VerifyHandshake)
-			.Requests
-			.ForRequest<RequestBytes>().RespondWith(RequestBytes)
-			.Responses
-			.ForResponse<ReturnBytes>().ToRequest<RequestBytes>().HandleWith(HandleReturnBytes)
+			.ConfigureHandshake(hb => hb
+				.UseThreeWay()
+				.InitiatedBy(CommunicationRole.Client)
+				.HandleWith<Sync, Ack, Verack>(InitiateHandshake, ReceiveHandshake, VerifyHandshake)
+			)
+			.AddRequestResponse<RequestBytes, ReturnBytes>(RequestBytes, HandleReturnBytes)
 			//.Commands
 			//	.ForCommand<NotifyNewTransaction>().Execute(HandleNewTransaction)
-			.Messages
-			.For<RequestBytes>().SerializeWith(new BinaryFormattedSerializer<RequestBytes>())
-			.For<ReturnBytes>().SerializeWith(new BinaryFormattedSerializer<ReturnBytes>())
-			.For<Sync>().SerializeWith(new BinaryFormattedSerializer<Sync>())
-			.For<Ack>().SerializeWith(new BinaryFormattedSerializer<Ack>())
-			.For<Verack>().SerializeWith(new BinaryFormattedSerializer<Verack>())
+			.AutoBuildSerializers()
 			.Build();
 	}
 

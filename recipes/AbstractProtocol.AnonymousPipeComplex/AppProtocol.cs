@@ -17,36 +17,23 @@ namespace AbstractProtocol.AnonymousPipeComplex;
 public class AppProtocol {
 	public static Protocol Build() {
 		return new ProtocolBuilder()
-			.Handshake
-				.ThreeWay
-					.InitiatedBy(CommunicationRole.Client)
-					.HandleWith<Sync, Ack, Verack>(InitiateHandshake, ReceiveHandshake, VerifyHandshake, AcknowledgeHandshake)
-			.Requests
-				.ForRequest<Ping>().RespondWith(Ping)
-				.ForRequest<RequestListFolder>().RespondWith(ListFolder)
-				.ForRequest<RequestFilePart>().RespondWith(GetFilePart)
-			.Responses
-				.ForResponse<Pong>().ToRequest<Ping>().HandleWith(HandlePong)
-				.ForResponse<FilePart>().ToRequest<RequestFilePart>().HandleWith(SaveFilePart)
-				.ForResponse<FolderContents>().ToRequest<RequestListFolder>().HandleWith(PrintFolderContents)
-			.Commands
-				.ForCommand<NotifyNewTransaction>().Execute(HandleNewTransaction)
-				.ForCommand<NotifyNewBlock>().Execute(HandleNewBlock)
-				.ForCommand<NotifyLayer2Message>().Execute(HandleNewLayer2Message)
-			.Messages
-				.For<Ping>(AppProtocolMessageType.Ping).SerializeWith(new BinaryFormattedSerializer<Ping>())
-				.For<Pong>(AppProtocolMessageType.Pong).SerializeWith(new BinaryFormattedSerializer<Pong>())
-				.For<RequestListFolder>(AppProtocolMessageType.RequestListFolder)
-					.SerializeWith(new BinaryFormattedSerializer<RequestListFolder>())
-				.For<RequestFilePart>(AppProtocolMessageType.RequestFilePart).SerializeWith(new BinaryFormattedSerializer<RequestFilePart>())
-				.For<FolderContents>(AppProtocolMessageType.FolderContents).SerializeWith(new BinaryFormattedSerializer<FolderContents>())
-				.For<FilePart>(AppProtocolMessageType.FilePart).SerializeWith(new BinaryFormattedSerializer<FilePart>())
-				.For<NotifyNewTransaction>().SerializeWith(new BinaryFormattedSerializer<NotifyNewTransaction>())
-				.For<NotifyNewBlock>().SerializeWith(new BinaryFormattedSerializer<NotifyNewBlock>())
-				.For<NotifyLayer2Message>().SerializeWith(new BinaryFormattedSerializer<NotifyLayer2Message>())
-				.For<Sync>().SerializeWith(new BinaryFormattedSerializer<Sync>())
-				.For<Ack>().SerializeWith(new BinaryFormattedSerializer<Ack>())
-				.For<Verack>().SerializeWith(new BinaryFormattedSerializer<Verack>())
+			.ConfigureHandshake(hb => hb
+				.UseThreeWay()
+				.InitiatedBy(CommunicationRole.Client)
+				.HandleWith<Sync, Ack, Verack>(InitiateHandshake, ReceiveHandshake, VerifyHandshake, AcknowledgeHandshake)
+			)
+			.AddRequestResponse<Ping, Pong>(Ping, HandlePong)
+			.AddRequestResponse<RequestListFolder, FolderContents>(ListFolder, PrintFolderContents)
+			.ConfigureRequest<RequestFilePart>(rb => rb.HandleRequestWith(GetFilePart).HandleResponseWith(SaveFilePart))
+			.AddCommand<NotifyNewTransaction>(HandleNewTransaction)
+			.AddCommand<NotifyNewBlock>(HandleNewBlock)
+			.ConfigureCommand<NotifyLayer2Message>(cb => cb.HandleWith(HandleNewLayer2Message))
+			.ConfigureSerialization( sf => sf
+				.SetMinTypeCode(1000)
+				.RegisterAutoBuild<Ping>()
+				.RegisterAutoBuild<Pong>()
+			)
+			.AutoBuildSerializers()
 			.Build();
 	}
 

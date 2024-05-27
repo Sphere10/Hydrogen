@@ -10,39 +10,32 @@ using System;
 
 namespace Hydrogen.Communications;
 
-public class ProtocolCommandBuilder : ProtocolBuilderMain {
-	ProtocolMode _mode;
+public class ProtocolCommandBuilder<TMessage>  {
 
-	public ProtocolCommandBuilder(ProtocolModeBuilder parent, ProtocolMode mode)
-		: base(parent) {
-		_mode = mode;
+	private ICommandHandler _commandHandler;
+
+	public ProtocolCommandBuilder<TMessage> HandleWith(Action action)
+		=> HandleWith(_ => action());
+
+	public ProtocolCommandBuilder<TMessage> HandleWith(Action<TMessage> action)
+		=> HandleWith((_, message) => action(message));
+
+	public ProtocolCommandBuilder<TMessage> HandleWith(Action<ProtocolOrchestrator, TMessage> action)
+		=> HandleWith(new ActionCommandHandler<TMessage>(action));
+
+	public ProtocolCommandBuilder<TMessage> HandleWith(ICommandHandler<TMessage> handler) 
+		=> HandleWith((ICommandHandler)handler);
+
+	public ProtocolCommandBuilder<TMessage> HandleWith(ICommandHandler handler) {
+		Guard.ArgumentNotNull(handler, nameof(handler));
+		Guard.Argument(handler.MessageType == typeof(TMessage), nameof(handler), "Message type mismatch");
+		_commandHandler = handler;
+		return this;
 	}
 
-	public HandlerBuilder<TMessage> ForCommand<TMessage>() {
-		return new(this);
+	public ICommandHandler Build() {
+		Guard.Ensure(_commandHandler is not null, "Command handler not set");
+		return _commandHandler;
 	}
 
-
-	public class HandlerBuilder<TMessage> {
-		private readonly ProtocolCommandBuilder _parent;
-
-		public HandlerBuilder(ProtocolCommandBuilder parent) {
-			_parent = parent;
-		}
-
-		public ProtocolCommandBuilder Execute(Action action)
-			=> Execute(_ => action());
-
-		public ProtocolCommandBuilder Execute(Action<TMessage> action)
-			=> Execute((_, message) => action(message));
-
-		public ProtocolCommandBuilder Execute(Action<ProtocolOrchestrator, TMessage> action)
-			=> Execute(new ActionCommandHandler<TMessage>(action));
-
-		public ProtocolCommandBuilder Execute(ICommandHandler<TMessage> handler) {
-			_parent._mode.CommandHandlers.Add(typeof(TMessage), handler);
-			return _parent;
-		}
-
-	}
 }

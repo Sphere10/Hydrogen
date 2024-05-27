@@ -13,6 +13,10 @@ namespace Hydrogen.Communications;
 public class ActionRequestHandler<TRequest, TResponse> : RequestHandlerBase<TRequest, TResponse> {
 	private readonly Func<ProtocolOrchestrator, TRequest, TResponse> _action;
 
+	public override Type RequestType => typeof(TRequest);
+
+	public override Type ResponseType => typeof(TResponse);
+
 	public ActionRequestHandler(Func<ProtocolOrchestrator, TRequest, TResponse> action) {
 		Guard.ArgumentNotNull(action, nameof(action));
 		_action = action;

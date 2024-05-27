@@ -76,10 +76,10 @@ public class ProtocolOrchestrator {
 		get => _activeMode;
 		set {
 			Guard.Ensure(Protocol is not null, "Protocol not set");
-			Guard.ArgumentInRange(value, 0, Protocol.Modes.Count, nameof(value), "Protocol has no such mode");
+			Guard.ArgumentInRange(value, 0, Protocol.Modes.Length, nameof(value), "Protocol has no such mode");
 			_activeMode = value;
 			//_messageID = 0;  // do not reset message id on mode-change
-			EnvelopeSerializer = new ProtocolMessageEnvelopeSerializer(Protocol.Modes[_activeMode].MessageSerializer);
+			EnvelopeSerializer = new ProtocolMessageEnvelopeSerializer(Protocol.Factory.GetSerializer<object>());
 		}
 	}
 

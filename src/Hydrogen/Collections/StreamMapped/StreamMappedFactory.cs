@@ -159,7 +159,7 @@ public static class StreamMappedFactory {
 		valueComparer ??= EqualityComparer<TValue>.Default;
 
 		// ensure it can serialize null's
-		valueSerializer = valueSerializer.AsReferenceSerializer();
+		Guard.Ensure(valueSerializer.SupportsNull, $"Value serializer {keySerializer} does not support null values");
 
 		var useCLK = false;
 		switch (implementation) {

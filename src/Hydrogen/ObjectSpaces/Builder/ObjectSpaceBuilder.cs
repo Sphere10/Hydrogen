@@ -141,6 +141,10 @@ public class ObjectSpaceBuilder {
 		return this;
 	}
 
+	public bool ContainsSerializer<TItem>() => ContainsSerializer(typeof(TItem));
+
+	public bool ContainsSerializer(Type type) => _serializerFactory.ContainsSerializer(type);
+
 	public ObjectSpaceBuilder UsingSerializer<TItem, TItemSerializer>() where TItemSerializer : IItemSerializer<TItem>, new() {
 		Guard.Against(_usingCustomSerializerFactory, ErrMsgUsingSerializer);
 		_specifiedCustomSerializer = true;
@@ -152,6 +156,15 @@ public class ObjectSpaceBuilder {
 		Guard.Against(_usingCustomSerializerFactory, ErrMsgUsingSerializer);
 		_specifiedCustomSerializer = true;
 		_serializerFactory.Register(serializer);
+		return this;
+	}
+
+	public ObjectSpaceBuilder MakeSerializer<TItem>() => MakeSerializer(typeof(TItem));
+
+	public ObjectSpaceBuilder MakeSerializer(Type type) {
+		Guard.Ensure(!_serializerFactory.ContainsSerializer(type), $"Serializer for type {type.ToStringCS()} has already been registered.");
+		_specifiedCustomSerializer = true;
+		_serializerFactory.RegisterAutoBuild(type);
 		return this;
 	}
 

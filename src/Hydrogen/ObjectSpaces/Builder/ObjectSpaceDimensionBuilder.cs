@@ -42,6 +42,11 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		return this;
 	}
 
+	public ObjectSpaceDimensionBuilder<T> MakeSerializer() {
+		_parent.MakeSerializer<T>();
+		return this;
+	}
+
 	public ObjectSpaceDimensionBuilder<T> UsingComparer<TComparer>() where TComparer : IComparer<T>, new() {
 		_parent.UsingComparer<T, TComparer>();
 		return this;
@@ -161,6 +166,8 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 	}
 
 	public ObjectSpaceBuilder Done() {
+		if (!_parent.ContainsSerializer(typeof(T))) 
+			MakeSerializer();
 		return _parent;
 	}
 

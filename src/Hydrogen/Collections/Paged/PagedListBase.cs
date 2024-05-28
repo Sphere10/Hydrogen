@@ -375,7 +375,12 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	}
 
 	protected override void CheckIndex(long index, bool allowAtEnd = false) {
-		Guard.Ensure(InternalPages.Count > 0, "No pages");
+		if (allowAtEnd && index == 0)
+			return;
+
+		if (InternalPages.Count == 0)
+			throw new InvalidOperationException("No pages");
+
 		var startIX = InternalPages[0].StartIndex;
 		var lastIX = InternalPages[InternalPages.Count - 1].EndIndex;
 		var collectionCount = lastIX - startIX + 1;
@@ -383,7 +388,9 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 	}
 
 	protected override void CheckRange(long index, long count, bool rightAligned = false) {
-		Guard.Ensure(InternalPages.Count > 0, "No pages");
+		if (InternalPages.Count == 0)
+			throw new InvalidOperationException("No pages");
+
 		var startIX = InternalPages[0].StartIndex;
 		var lastIX = InternalPages[InternalPages.Count - 1].EndIndex;
 		var collectionCount = lastIX - startIX + 1;

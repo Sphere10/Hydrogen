@@ -34,6 +34,11 @@ public static class AssertEx {
 		expected ??= new List<T>();
 		itemComparer ??= EqualityComparer<T>.Default;
 
+		// Test 0: Adding via indexing operator fails
+		var val = randomItemGenerator(RNG, 1).Single();
+		Assert.That(() => expected[0] = val, Throws.Exception);
+		Assert.That(() => list[0] = val, Throws.Exception);
+
 		// Test 1: Add nothing
 		expected.AddRangeSequentially(Enumerable.Empty<T>());
 		list.AddRange(Enumerable.Empty<T>());
@@ -238,6 +243,11 @@ public static class AssertEx {
 		var RNG = new Random(31337);
 		expected ??= new BufferAdapter(new List<byte>());
 		var itemComparer = ByteArrayEqualityComparer.Instance;
+
+		// Test 0: Adding via indexing operator fails
+		byte val = 23;
+		Assert.That(() => expected[0] = val, Throws.Exception);
+		Assert.That(() => buffer[0] = val, Throws.Exception);
 
 		// Test 1: Add nothing
 		expected.AddRange(Tools.Spans.Empty<byte>());

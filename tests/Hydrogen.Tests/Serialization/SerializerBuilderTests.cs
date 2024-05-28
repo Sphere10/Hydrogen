@@ -72,6 +72,17 @@ public class SerializerBuilderTests {
 		public T2 Prop2 { get; set; }
 	}
 
+	public class NoConstructorClass {
+		private NoConstructorClass() {
+		}
+
+		public NoConstructorClass(string prop1) {
+			Prop1 = prop1;
+		}
+		public string Prop1 { get; set; }
+
+	}
+
 	[Test]
 	public void TestObject_1() {
 		// test object
@@ -636,4 +647,8 @@ public class SerializerBuilderTests {
 		Assert.That(members[3].Name, Is.EqualTo("Prop4"));
 	}
 
+	[Test]
+	public void NoSerializerForUnconstructableClass() {
+		Assert.That (() => ItemSerializer<NoConstructorClass>.Default, Throws.InvalidOperationException);
+	}
 }

@@ -94,7 +94,6 @@ public class CompositeSerializer<TItem> : ItemSerializerBase<TItem> {
 
 }
 
-
 public static class CompositeSerializer {
 	public static CompositeSerializer<TItem> Create<TItem>(Func<TItem> activator, MemberSerializationBinding[] memberBindings) 
 		=> new CompositeSerializer<TItem>(activator, memberBindings);
@@ -111,11 +110,14 @@ public static class CompositeSerializer {
 			.GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null)
 			.Invoke(null);
 
-	public static void Configure(IItemSerializer serializer, Type itemType, IEnumerable<MemberSerializationBinding> memberBindings)
-		=> Configure(serializer, Tools.Lambda.CastFunc( () => itemType.ActivateWithCompatibleArgs(), itemType), memberBindings);
+	public static void Configure(IItemSerializer serializer, Type itemType, IEnumerable<MemberSerializationBinding> memberBindings) {
+		var constructor = itemType.FindCompatibleConstructor(Array.Empty<Type>());
+		Guard.Ensure(constructor is not null, $"Unable to compose a serializer for type '{itemType.ToStringCS()}' as it did not have a public parameterless constructor");
+		Configure(serializer, Tools.Lambda.CastFunc(() => constructor.Invoke(null), itemType), memberBindings);
+	}
 
 	public static void Configure(IItemSerializer serializer, Delegate activator, IEnumerable<MemberSerializationBinding> memberBindings) {
-		Guard.Ensure(serializer.GetType().IsConstructedGenericTypeOf(typeof(CompositeSerializer<>)), "Serializer must be a CompositeSerializer");
+		Guard.Ensure(serializer.GetType().IsConstructedGenericTypeOf(typeof(CompositeSerializer<>)), $"Serializer must be a {typeof(CompositeSerializer<>).ToStringCS()}");
 		serializer
 			.GetType()
 			.GetMethod(nameof(CompositeSerializer<object>.Configure), BindingFlags.Instance | BindingFlags.NonPublic)

@@ -19,6 +19,11 @@ namespace Hydrogen.Tests;
 [Parallelizable]
 public class SerializerFactoryTests {
 
+	internal class PrimitiveTestObject {
+		public string A { get; set; }
+	}
+
+
 	[Test]
 	public void PureObjectSerializer() {
 		var serializer = SerializerFactory.Default.GetPureSerializer<object>();

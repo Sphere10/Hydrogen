@@ -11,13 +11,14 @@ using System.Collections;
 using System.Collections.Generic;
 using AutoFixture;
 using FluentAssertions;
-using Gee.External.Capstone.Arm64;
 using NUnit.Framework;
 
 namespace Hydrogen.Tests;
 
 [TestFixture]
-public class BinarySerializerTests {
+public class VariousSerializerTests {
+
+	#region Test types
 
 	public enum TestType {
 		BinarySerializer_Sizing_Then_Serialize,
@@ -26,20 +27,100 @@ public class BinarySerializerTests {
 		Factory_SerializeOnly,
 	}
 
-	//private IItemSerializer<T> CreateSerializer<T>(TestType test) {
-	//	switch (serializerType) {
-	//		case SerializerType.Binary:
-	//			return new BinarySerializer().AsCastedSerializer<object, T>();
-	//		case SerializerType.Factory:
-	//			return SerializerBuilder.FactoryAssemble<T>();
-	//		default:
-	//			throw new ArgumentOutOfRangeException();
-	//	}
-	//}
+	internal class PrimitiveTestObject {
+		public string A { get; set; }
+		public bool B { get; set; }
+		public int C { get; set; }
+		public uint D { get; set; }
+		public short E { get; set; }
+		public ushort F { get; set; }
+		public long G { get; set; }
+		public ulong H { get; set; }
+		public double I { get; set; }
+		public decimal J { get; set; }
+		public sbyte K { get; set; }
+		public byte L { get; set; }
+		public float M { get; set; }
+	}
+
+	internal class ValueTypeTestObject {
+		public int? A { get; set; }
+		public DateTime B { get; set; }
+		public DateTime? C { get; set; }
+		public DateTimeOffset D { get; set; }
+		public DateTimeOffset? E { get; set; }
+	}
+
+	internal class CollectionTestObject {
+		public List<DateTime> A { get; set; }
+		public ArrayList B { get; set; }
+		public PrimitiveTestObject[] C { get; set; }
+		public IDictionary<int, PrimitiveTestObject> D { get; set; }
+		public List<int> E { get; set; }
+		public byte[] F { get; set; }
+		public IList<PrimitiveTestObject> G { get; set; }
+		public SortedSet<bool> H { get; set; }
+	}
+
+	internal class NullTestObject {
+		public object U { get; set; }
+		public string V { get; set; }
+	}
+
+	internal class ReferenceTypeObject {
+		public ValueTypeTestObject V { get; set; }
+		public EnumObj W { get; set; }
+		public PrimitiveTestObject X { get; set; }
+		public CollectionTestObject Y { get; set; }
+		public NullTestObject Z { get; set; }
+	}
+
+	internal class GenericTypeObj {
+		public GenericTypeObj<ReferenceTypeObject, CollectionTestObject> A { get; set; }
+	}
+
+	internal class GenericTypeObj<T1, T2> {
+		public T1 A { get; set; }
+		public T2 B { get; set; }
+	}
+
+	internal class CircularReferenceObj {
+		public CircularReferenceObj A { get; set; }
+		public PrimitiveTestObject B { get; set; }
+	}
+
+
+	internal class ObjectObj {
+		public object A { get; set; }
+		public object B { get; set; }
+		public object C { get; set; }
+		public object D { get; set; }
+		public object E { get; set; }
+	}
+
+	internal class SubClassObj : PrimitiveTestObject {
+		public int X { get; set; }
+	}
+
+	internal class EnumObj {
+		[Flags]
+		internal enum TestEnum : byte {
+			A = 1,
+			B = 2,
+			C = 3,
+			D = 4
+		}
+
+		public TestEnum A { get; set; }
+
+		public TestEnum B { get; set; }
+	}
+
+	#endregion
 
 	public void DoTestForType(Type type, TestType testType, out object deserialized) {
 		var args = new object[] { testType, null };
-		typeof(BinarySerializerTests).GetGenericMethod("DoTest", 1).MakeGenericMethod([type]).Invoke(this, args);
+		typeof(VariousSerializerTests).GetGenericMethod("DoTest", 1).MakeGenericMethod([type]).Invoke(this, args);
 		deserialized = args[1];
 	}
 
@@ -81,7 +162,7 @@ public class BinarySerializerTests {
 					factory.RegisterAutoBuild<SubClassObj>();
 				if (!factory.ContainsSerializer<EnumObj>())
 					factory.RegisterAutoBuild<EnumObj>();
-				
+
 				serializer = new ObjectSerializer(factory);
 				break;
 			default:
@@ -94,7 +175,7 @@ public class BinarySerializerTests {
 				testSize = true;
 				break;
 		}
-		
+
 		var len = testSize ? serializer.CalculateSize(item) : 0;
 		var bytes = serializer.SerializeBytesLE(item);
 		deserialized = serializer.DeserializeBytesLE(bytes);
@@ -124,7 +205,7 @@ public class BinarySerializerTests {
 
 	[Test]
 	public void StandardTests(
-		[Values(typeof(ValueTypeTestObject), typeof(CollectionTestObject), typeof(ReferenceTypeObject), typeof(GenericTypeObj), typeof(EnumObj))] 
+		[Values(typeof(ValueTypeTestObject), typeof(CollectionTestObject), typeof(ReferenceTypeObject), typeof(GenericTypeObj), typeof(EnumObj))]
 		Type type,
 		[Values] TestType testType
 	) => DoTestForType(type, testType, out _);
@@ -139,7 +220,7 @@ public class BinarySerializerTests {
 	}
 
 	[Test]
-	public void CircularReferenceObj([Values] TestType testType) {
+	public void CircularReferenceObjTests([Values] TestType testType) {
 		var fixture = new Fixture();
 		var item = new CircularReferenceObj {
 			A = new CircularReferenceObj {
@@ -198,93 +279,7 @@ public class BinarySerializerTests {
 		DoTest(item, testType, out _);
 	}
 
-}
 
-internal class PrimitiveTestObject {
-	public string A { get; set; }
-	public bool B { get; set; }
-	public int C { get; set; }
-	public uint D { get; set; }
-	public short E { get; set; }
-	public ushort F { get; set; }
-	public long G { get; set; }
-	public ulong H { get; set; }
-	public double I { get; set; }
-	public decimal J { get; set; }
-	public sbyte K { get; set; }
-	public byte L { get; set; }
-	public float M { get; set; }
-}
-
-internal class ValueTypeTestObject {
-	public int? A { get; set; }
-	public DateTime B { get; set; }
-	public DateTime? C { get; set; }
-	public DateTimeOffset D { get; set; }
-	public DateTimeOffset? E { get; set; }
-}
-
-internal class CollectionTestObject {
-	public List<DateTime> A { get; set; }
-	public ArrayList B { get; set; }
-	public PrimitiveTestObject[] C { get; set; }
-	public IDictionary<int, PrimitiveTestObject> D { get; set; }
-	public List<int> E { get; set; }
-	public byte[] F { get; set; }
-	public IList<PrimitiveTestObject> G { get; set; }
-	public SortedSet<bool> H { get; set; }
-}
-
-internal class NullTestObject {
-	public object U { get; set; }
-	public string V { get; set; }
-}
-
-internal class ReferenceTypeObject {
-	public ValueTypeTestObject V { get; set; }
-	public EnumObj W { get; set; }
-	public PrimitiveTestObject X { get; set; }
-	public CollectionTestObject Y { get; set; }
-	public NullTestObject Z { get; set; }
-}
-
-internal class GenericTypeObj {
-	public GenericTypeObj<ReferenceTypeObject, CollectionTestObject> A { get; set; }
-}
-
-internal class GenericTypeObj<T1, T2> {
-	public T1 A { get; set; }
-	public T2 B { get; set; }
-}
-
-internal class CircularReferenceObj {
-	public CircularReferenceObj A { get; set; }
-	public PrimitiveTestObject B { get; set; }
 }
 
 
-internal class ObjectObj {
-	public object A { get; set; }
-	public object B { get; set; }
-	public object C { get; set; }
-	public object D { get; set; }
-	public object E { get; set; }
-}
-
-internal class SubClassObj : PrimitiveTestObject {
-	public int X { get; set; }
-}
-
-internal class EnumObj {
-	[Flags]
-	internal enum TestEnum : byte {
-		A = 1,
-		B = 2,
-		C = 3,
-		D = 4
-	}
-
-	public TestEnum A { get; set; }
-
-	public TestEnum B { get; set; }
-}

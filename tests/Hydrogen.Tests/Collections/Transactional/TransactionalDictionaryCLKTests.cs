@@ -31,7 +31,7 @@ public sealed class TransactionalDictionaryCLKTests : TransactionalDictionaryTes
 				containerPolicy:policy
 			),
 			new BrokenConstantLengthSerializer<string>(new PaddedSerializer<string>(256, new StringSerializer(Encoding.UTF8, SizeDescriptorStrategy.UseUInt32))),
-			new TestObjectSerializer(),
+			new TestObjectSerializer().AsNullableSerializer(),
 			null,
 			EqualityComparer<string>.Default,
 			new TestObjectEqualityComparer(),

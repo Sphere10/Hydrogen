@@ -393,7 +393,7 @@ public abstract class TransactionalDictionaryTestsBase : StreamPersistedCollecti
 	}
 
 	protected IDisposable Create(ClusteredStreamsPolicy policy, out ITransactionalDictionary<string, TestObject> dictionary)
-		=> Create(new StringSerializer(Encoding.UTF8), new TestObjectSerializer(), EqualityComparer<string>.Default, new TestObjectEqualityComparer(), policy, out dictionary, out _);
+		=> Create(new StringSerializer(Encoding.UTF8), new TestObjectSerializer().AsNullableSerializer(), EqualityComparer<string>.Default, new TestObjectEqualityComparer(), policy, out dictionary, out _);
 
 	protected abstract IDisposable Create<TKey, TValue>(IItemSerializer<TKey> keySerializer, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TKey> keyComparer, IEqualityComparer<TValue> valueComparer, ClusteredStreamsPolicy policy,
 	                                           out ITransactionalDictionary<TKey, TValue> clustered, out string file);

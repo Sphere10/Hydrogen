@@ -22,10 +22,10 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 	private const int ConstantKeySize = 200;
 
 	protected override IDisposable CreateTestObjectDictionary(CHF chf, out StreamMappedMerkleDictionary<string, TestObject> streamMappedMerkleDictionary)
-		=> CreateDictionaryImpl(chf, new TestObjectSerializer(), new TestObjectEqualityComparer(), out streamMappedMerkleDictionary);
+		=> CreateDictionaryImpl(chf, new TestObjectSerializer().AsNullableSerializer(), new TestObjectEqualityComparer(), out streamMappedMerkleDictionary);
 
 	protected override IDisposable CreateStringDictionary(CHF chf, out StreamMappedMerkleDictionary<string, string> merkleDictionary) 
-		=> CreateDictionaryImpl(chf, new StringSerializer(), StringComparer.InvariantCulture, out merkleDictionary);
+		=> CreateDictionaryImpl(chf, new StringSerializer().AsNullableSerializer(), StringComparer.InvariantCulture, out merkleDictionary);
 
 	internal static IDisposable CreateDictionaryImpl<TValue>(CHF chf, IItemSerializer<TValue> valueSerializer, IEqualityComparer<TValue> valueComparer, out StreamMappedMerkleDictionary<string, TValue> streamMappedMerkleDictionary) {
 		var memoryStream = new MemoryStream();
@@ -61,7 +61,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 			memStream1,
 			DefaultClusterSize,
 			keySerializer,
-			new TestObjectSerializer(),
+			new TestObjectSerializer().AsNullableSerializer(),
 			valueComparer: new TestObjectEqualityComparer(),
 			hashAlgorithm: chf,
 			implementation: StreamMappedDictionaryImplementation.ConstantLengthKeyBased,
@@ -73,7 +73,7 @@ public class StreamMappedMerkleDictionaryCLKTests : StreamMappedMerkleDictionary
 			memStream2,
 			DefaultClusterSize,
 			keySerializer,  // need to use consistent key serializer for generating same merkle tree
-			new TestObjectSerializer(),
+			new TestObjectSerializer().AsNullableSerializer(),
 			valueComparer: new TestObjectEqualityComparer(),
 			keyChecksummer: new ItemDigestor<string>(chf, keySerializer),
 			hashAlgorithm: chf,

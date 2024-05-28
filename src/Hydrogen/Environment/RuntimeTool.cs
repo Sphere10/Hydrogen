@@ -8,7 +8,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using Hydrogen;
 
@@ -21,15 +23,16 @@ public static class Runtime {
 	private static bool _isDesignMode = false;
 	private static Assembly _entryAssembly = null;
 	private static bool? _isWebApp = null;
-
+	private static readonly Func<IntPtr> GetExceptionPointers = BuildGetExceptionPointersFunc();
 
 	public static bool IsWasmExecutable() => (int)Environment.OSVersion.Platform == 7;
 
 	// https://stackoverflow.com/questions/64581054/how-do-i-get-the-name-of-the-current-executable-in-c-net-5-edition
 	public static string GetExecutablePath() => Process.GetCurrentProcess().MainModule.FileName;
 
-//        public static Func<bool> IsInExceptionContext => throw new NotSupportedException(".NET Standard & Core no longer support this. Refactor your code to avoid it");
-	//=> Marshal.GetExceptionPointers() != IntPtr.Zero ||  Marshal.GetExceptionCode() != 0;
+
+	public static bool IsInExceptionContext() 
+		=> GetExceptionPointers() != IntPtr.Zero;
 
 	public static bool IsDebugBuild {
 		get {
@@ -166,5 +169,12 @@ public static class Runtime {
 	public static void TouchAssembly(Type type) {
 		// used to introduce assembly into domain so it can be reflected
 		var assembly = type.Assembly;
+	}
+
+
+	private static Func<IntPtr> BuildGetExceptionPointersFunc() {
+		var memberAccess = Expression.Call(typeof(Marshal).GetMethod("GetExceptionPointers"));
+		var lambda = Expression.Lambda<Func<IntPtr>>(memberAccess);
+		return lambda.Compile();
 	}
 }

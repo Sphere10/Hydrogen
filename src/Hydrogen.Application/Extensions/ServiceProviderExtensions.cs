@@ -19,4 +19,9 @@ public static class ServiceProviderExtensions {
 		return impls.Any();
 	}
 
+	public static T GetServiceOrThrow<T>(this IServiceProvider serviceProvider) {
+		if (!serviceProvider.TryGetService(out T impl)) 
+			throw new InvalidOperationException($"No service of type {typeof(T).Name} was found.");
+		return impl;
+	}
 }

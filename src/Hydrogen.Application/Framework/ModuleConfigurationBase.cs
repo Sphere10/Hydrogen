@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Hydrogen.Application;
 
-public abstract class ModuleConfigurationBase : CoreModuleConfigurationBase {
+public abstract class ModuleConfigurationBase : CoreModuleConfigurationBase, IModuleConfiguration {
 
 	public virtual void RegisterComponents(IServiceCollection services) {
 	}

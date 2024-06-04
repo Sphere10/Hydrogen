@@ -166,6 +166,41 @@ public static class Runtime {
 		return quoted.ToString();
 	}
 
+	public static (string executable, string arguments) ParseCommandLine(string commandLine) {
+		if (string.IsNullOrEmpty(commandLine))
+			return (null, null);
+
+		commandLine = commandLine.Trim();
+
+		if (commandLine.StartsWith("\"")) {
+			// Find the closing quote for the executable
+			var endQuoteIndex = commandLine.IndexOf('\"', 1);
+			if (endQuoteIndex == -1)
+				throw new ArgumentException("Invalid command line: Missing closing quote for the executable path.");
+
+			// Extract the executable part
+			var executable = commandLine.Substring(1, endQuoteIndex - 1);
+
+			// Remaining part of the command line as arguments
+			var arguments = commandLine[(endQuoteIndex + 1)..].TrimStart();
+
+			return (executable, arguments);
+		} else {
+			// Find the first space to separate the executable from the arguments
+			var firstSpaceIndex = commandLine.IndexOf(' ');
+			if (firstSpaceIndex == -1) {
+				// No arguments provided, only executable
+				return (commandLine, "");
+			}
+
+			// Extract the executable and arguments
+			var executable = commandLine[..firstSpaceIndex];
+			var arguments = commandLine[(firstSpaceIndex + 1)..];
+
+			return (executable, arguments);
+		}
+	}
+
 	public static void TouchAssembly(Type type) {
 		// used to introduce assembly into domain so it can be reflected
 		var assembly = type.Assembly;

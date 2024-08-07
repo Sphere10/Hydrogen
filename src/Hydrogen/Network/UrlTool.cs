@@ -220,9 +220,15 @@ public static class Url {
 
 	public static string Combine(string url1, string url2) {
 		Guard.ArgumentNotNullOrWhitespace(url1, nameof(url1));
-		Guard.ArgumentNotNullOrWhitespace(url2, nameof(url2));
+		if (string.IsNullOrWhiteSpace(url2))
+			return url1;
 		Guard.Argument(!url2.StartsWithAny(StringComparison.InvariantCultureIgnoreCase, "http:", "https:"), nameof(url2), "Cannot be appended since contains protocol");
 		return url1.TrimEnd('/') + '/' + url2.TrimStart('/');
+	}
+
+	public static string Combine(IEnumerable<string> urlParts) {
+		var (head, tail) = urlParts.SplitTail();
+		return Combine(head, tail.Select(x => x.Trim('/')).ToDelimittedString("/"));
 	}
 
 	public static string ToQueryString(Dictionary<string, string> data) {

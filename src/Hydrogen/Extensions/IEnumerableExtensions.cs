@@ -739,6 +739,28 @@ public static class IEnumerableExtensions {
 		return items.Select((item, index) => Tuple.Create(item, index));
 	}
 
+	public static (T, IEnumerable<T>) SplitTail<T>(this IEnumerable<T> source) {
+		var enumerator = source.GetEnumerator();
+		T head;
+		IEnumerable<T> tail;
+		if (enumerator.MoveNext()) {
+			head = enumerator.Current;
+			tail = EnumerateTail();
+		} else {
+			head = default(T);
+			tail = Enumerable.Empty<T>();
+		}
+
+		return (head, tail);
+
+		IEnumerable<T> EnumerateTail() {
+			while (enumerator.MoveNext()) {
+				yield return enumerator.Current;
+			}
+			enumerator.Dispose();
+		}
+	}
+
 	public static IEnumerable<EnumeratedItem<T>> WithDescriptions<T>(this IEnumerable<T> items) {
 		// To avoid evaluating the whole collection up-front (which may be undesirable, for example
 		// if the collection contains infinitely many members), read-ahead just one item at a time.

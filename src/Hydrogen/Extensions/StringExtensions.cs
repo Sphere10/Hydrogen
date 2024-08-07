@@ -226,10 +226,10 @@ public static class StringExtensions {
 		return value.Trim();
 	}
 
-	public static string ReplaceMany(this string inputString, params string[] subStrings) {
+	public static string ReplaceMany(this string inputString, params (string Match, string Replacement)[] replacements) {
 		var sb = new StringBuilder(inputString);
-		foreach (var subString in subStrings)
-			sb.Replace(subString, string.Empty);
+		foreach (var replacement in replacements)
+			sb.Replace(replacement.Match, replacement.Replacement);
 		return sb.ToString();
 	}
 

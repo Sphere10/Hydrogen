@@ -19,5 +19,13 @@
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <None Remove="Text\StopWordList.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Text\StopWordList.txt" />
+	</ItemGroup>
+
 
 </Project>

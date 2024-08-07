@@ -552,4 +552,8 @@ public static class FileSystem {
 	public static int CountDirectoryContents(string directory)
 		=> GetDirectoryContents(directory, out _, out _);
 
+	public static void SplitFilePath(string filepath, out string folder, out string fileName) {
+		folder = Path.GetDirectoryName(filepath);
+		fileName = Path.GetFileName(filepath);
+	}
 }

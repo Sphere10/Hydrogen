@@ -17,6 +17,10 @@ namespace Hydrogen;
 /// </summary>
 public class DictionaryChain<TKey, TValue> : DictionaryDecorator<TKey, TValue> {
 
+	public DictionaryChain(IDictionary<TKey, TValue> head)
+		: this([head]) {
+	}
+
 	public DictionaryChain(IEnumerable<IDictionary<TKey, TValue>> chain)
 		: this(chain as IDictionary<TKey, TValue>[] ?? chain.ToArray()) {
 	}

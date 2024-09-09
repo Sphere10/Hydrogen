@@ -7,13 +7,15 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Linq;
 using System.Threading;
 
 namespace Hydrogen.Maths;
 
 /// <summary>
-/// A deterministic cryptographically secure random number generator. It generates a sequence of random bytes based on a given seed.
-/// The generator works by hashing the seed and then iteratively hashing the resulting bytes to produce new random bytes. This process ensures that the same seed always produces the same sequence of bytes.
+/// A deterministic cryptographically secure random number generator that generates a sequence of random bytes based on a given seed.
+/// The generator works by hashing the seed and then iteratively hashing the resulting bytes, combined with an index, to produce new random bytes.
+/// This process ensures that the same seed always produces the same sequence of bytes.
 /// The generator uses a counter to add entropy between hash invocations to ensure the output is not predictable within the same seed cycle.
 /// </summary>
 /// <remarks>
@@ -25,7 +27,7 @@ public sealed class HashRandom : IRandomNumberGenerator {
 	private readonly object _lock;
 	private readonly byte[] _data;
 	private int _index;
-	private long _counter = 0;
+	private long _counter;
 
 	public HashRandom(byte[] seed)
 		: this(CHF.SHA2_256, seed) {
@@ -37,10 +39,13 @@ public sealed class HashRandom : IRandomNumberGenerator {
 		Guard.ArgumentGTE(seed.Length, MinimumSeedLength, nameof(seed), $"Must contain at least {MinimumSeedLength} bytes");
 		_chf = chf;
 		_index = 0;
-		_data = Hashers.Hash(_chf, seed);
+		_counter = 0;
 		_lock = new object();
+		_data = Hashers.Hash(_chf, Tools.Array.Concat<byte>(seed, EndianBitConverter.Little.GetBytes(_counter)));
+		Seed = seed.ToArray();
 	}
 
+	public byte[] Seed { get; }
 
 	public void NextBytes(Span<byte> result) {
 		if (result.Length == 0)

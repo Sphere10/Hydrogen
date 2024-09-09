@@ -20,7 +20,6 @@ public sealed class HashRandom : IRandomNumberGenerator {
 	private byte[] _data;
 	private int _index;
 
-
 	public HashRandom(byte[] seed)
 		: this(CHF.SHA2_256, seed) {
 	}
@@ -36,11 +35,18 @@ public sealed class HashRandom : IRandomNumberGenerator {
 
 	public byte[] NextBytes(int count) {
 		var result = new byte[count];
+		NextBytes(count, result);
+		return result;
+	}
+
+	public void NextBytes(int count, Span<byte> result) {
+		Guard.ArgumentGTE(count, 0, nameof(count));
+		Guard.Argument(result.Length == count, nameof(result), $"Length ({result.Length}) must be equal to or greater than argument '{nameof(count)}' ({count})");
 		var resultIndex = 0;
 		while (count > 0) {
 			var remainingData = _data.Length - _index;
 			var amountToCopy = Math.Min(remainingData, count);
-			Buffer.BlockCopy(_data, _index, result, resultIndex, amountToCopy);
+			_data.AsSpan(_index, amountToCopy).CopyTo(result.Slice(resultIndex));
 			count -= amountToCopy;
 			resultIndex += amountToCopy;
 			_index += amountToCopy;
@@ -49,7 +55,6 @@ public sealed class HashRandom : IRandomNumberGenerator {
 				_index = 0;
 			}
 		}
-		return result;
 	}
 
 }

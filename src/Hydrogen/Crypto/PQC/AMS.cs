@@ -144,8 +144,8 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 	}
 
 	public override bool VerifyDigest(ReadOnlySpan<byte> signature, ReadOnlySpan<byte> digest, ReadOnlySpan<byte> publicKey) {
-		Guard.Argument(IsWellFormedSignature(signature), nameof(signature), "Not a valid AMS signature");
 		Guard.Argument(digest.Length == _ots.Config.DigestSize, nameof(digest), $"Message digest must be {_ots.Config.DigestSize} bytes");
+		Guard.Ensure(IsWellFormedSignature(signature), "Not a valid AMS signature");
 		var reader = new ByteSpanReader(EndianBitConverter.Little);
 		var height = reader.ReadByte(signature);
 		var otsIndex = reader.ReadUInt16(signature);

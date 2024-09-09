@@ -15,7 +15,7 @@ namespace Hydrogen.CryptoEx.Tests;
 public class VRFTests {
 
 	private IVRFAlgorithm BuildVRF(DSS dss, CHF chf)
-		=> VRF.CreateCryptographicVRF(dss, chf);
+		=> VRF.CreateCryptographicVRF(chf, dss);
 
 	[Test]
 	public void ValidProofAndOutputsPass(

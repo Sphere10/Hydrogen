@@ -26,6 +26,10 @@ public class VerfiableRandom : IRandomNumberGenerator {
 
 	public byte[] VRFOutput { get; }
 
+	public VerfiableRandom(CHF chf, DSS dss, ReadOnlySpan<byte> seed, IPrivateKey privateKey, ulong nonce = 0L) 
+		: this(Hydrogen.VRF.CreateCryptographicVRF(chf, dss), seed, privateKey, nonce) {
+	}
+
 	public VerfiableRandom(CryptographicVRF vrf, ReadOnlySpan<byte> seed, IPrivateKey privateKey, ulong nonce = 0L) 
 		: this(vrf.CHF, vrf, seed, privateKey, nonce) {
 	}
@@ -39,21 +43,23 @@ public class VerfiableRandom : IRandomNumberGenerator {
 		_rng = new HashRandom(chf, VRFOutput);
 	}
 	
-	public VerfiableRandom(CryptographicVRF vrf, ReadOnlySpan<byte> seed, IPublicKey publicKey, byte[] unverifiedProof) 
+	public VerfiableRandom(CHF chf, DSS dss, ReadOnlySpan<byte> seed, IPublicKey publicKey, ReadOnlySpan<byte> unverifiedProof)
+		: this(Hydrogen.VRF.CreateCryptographicVRF(chf, dss), seed, publicKey, unverifiedProof) { 
+	}
+
+	public VerfiableRandom(CryptographicVRF vrf, ReadOnlySpan<byte> seed, IPublicKey publicKey, ReadOnlySpan<byte> unverifiedProof) 
 		: this(vrf.CHF, vrf, seed, vrf.CalculateOutput(unverifiedProof),  publicKey, unverifiedProof) {
 	}
 
-	public VerfiableRandom(CHF chf, IVRFAlgorithm vrf, ReadOnlySpan<byte> seed, ReadOnlySpan<byte> output, IPublicKey publicKey, byte[] unverifiedProof) {
+	public VerfiableRandom(CHF chf, IVRFAlgorithm vrf, ReadOnlySpan<byte> seed, ReadOnlySpan<byte> output, IPublicKey publicKey, ReadOnlySpan<byte> unverifiedProof) {
 		vrf.VerifyProofOrThrow(seed, output, unverifiedProof, publicKey);
 		CHF = chf;
 		VRF = vrf;
 		VRFSeed = seed.ToArray();
-		VRFProof = unverifiedProof;
+		VRFProof = unverifiedProof.ToArray();
 		VRFOutput = output.ToArray();
 		_rng = new HashRandom(chf, VRFOutput);
 	}
 
-	public byte[] NextBytes(int count) {
-		return _rng.NextBytes(count);
-	}
+	public void NextBytes(Span<byte> result) => _rng.NextBytes(result);
 }

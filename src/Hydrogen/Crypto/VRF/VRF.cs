@@ -13,16 +13,16 @@ namespace Hydrogen;
 
 public class VRF {
 
-	public static IVRFAlgorithm CreateCryptographicVRF(DSS signatureScheme, CHF hasher) 
-		=> new CryptographicVRF(signatureScheme, hasher);
+	public static CryptographicVRF CreateCryptographicVRF(CHF chf, DSS dss) 
+		=> new CryptographicVRF(dss, chf);
 
-	public static byte[] Generate(DSS signatureScheme, CHF hasher, ReadOnlySpan<byte> seed, IPrivateKey privateKey, out byte[] proof, ulong nonce = 0UL)
-		=> CreateCryptographicVRF(signatureScheme, hasher).Run(seed, privateKey, nonce, out proof);
+	public static byte[] Generate(CHF chf, DSS dss, ReadOnlySpan<byte> seed, IPrivateKey privateKey, out byte[] proof, ulong nonce = 0UL)
+		=> CreateCryptographicVRF(chf, dss).Run(seed, privateKey, nonce, out proof);
 
-	public static bool TryVerify(DSS signatureScheme, CHF hasher, ReadOnlySpan<byte> seed, ReadOnlySpan<byte> output, ReadOnlySpan<byte> proof, IPublicKey publicKey) 
-		=> CreateCryptographicVRF(signatureScheme, hasher).TryVerify(seed, output, proof, publicKey);
+	public static bool TryVerify(CHF chf, DSS dss, ReadOnlySpan<byte> seed, ReadOnlySpan<byte> output, ReadOnlySpan<byte> proof, IPublicKey publicKey) 
+		=> CreateCryptographicVRF(chf, dss).TryVerify(seed, output, proof, publicKey);
 
-	public static void VerifyOrThrow(DSS signatureScheme, CHF hasher, ReadOnlySpan<byte> seed, ReadOnlySpan<byte> output, ReadOnlySpan<byte> proof, IPublicKey publicKey)
-		=> CreateCryptographicVRF(signatureScheme, hasher).VerifyProofOrThrow(seed, output, proof, publicKey);
+	public static void VerifyOrThrow(CHF chf, DSS dss, ReadOnlySpan<byte> seed, ReadOnlySpan<byte> output, ReadOnlySpan<byte> proof, IPublicKey publicKey)
+		=> CreateCryptographicVRF(chf, dss).VerifyProofOrThrow(seed, output, proof, publicKey);
 
 }

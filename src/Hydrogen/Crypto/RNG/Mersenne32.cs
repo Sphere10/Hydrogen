@@ -7,35 +7,61 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading;
 
 namespace Hydrogen.Maths;
 
+/// <summary>
+/// A random number generator based on the Mersenne Twister algorithm.
+/// </summary>
 public sealed class Mersenne32 : IRandomNumberGenerator {
 	private readonly Mersenne32Algorithm _mersenne32;
+	private readonly byte[] _data = new byte[4];
+	private int _index;
+	private readonly object _lock = new object();
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Mersenne32"/> class with the specified seed.
+	/// </summary>
+	/// <param name="seed">The seed value for initializing the random number generator.</param>
 	public Mersenne32(int seed) {
 		_mersenne32 = new Mersenne32Algorithm((uint)seed);
+		GenerateNext4Bytes();
 	}
 
+	/// <summary>
+	/// Fills the specified span of bytes with random bytes.
+	/// </summary>
+	/// <param name="result">The span to be filled with random bytes.</param>
+	public void NextBytes(Span<byte> result) {
+		if (result.Length == 0)
+			return;
 
-	public byte[] NextBytes(int count) {
-		Guard.ArgumentInRange(count, 0, int.MaxValue, nameof(count));
-		var bytes = new byte[count];
-		var i = 0;
+		lock (_lock) { // Critical to ensure deterministic generation in multi-threaded scenarios
+			var count = result.Length;
+			var resultIndex = 0;
 
-		while (i < count) {
-			// Generate the next random 32-bit unsigned integer
-			var randomUInt = _mersenne32.NextUInt32();
+			while (count > 0) {
+				var remainingData = _data.Length - _index;
+				var amountToCopy = Math.Min(remainingData, count);
+				_data.AsSpan(_index, amountToCopy).CopyTo(result.Slice(resultIndex));
+				count -= amountToCopy;
+				resultIndex += amountToCopy;
+				_index += amountToCopy;
 
-			// Convert it to bytes
-			var uintBytes = BitConverter.GetBytes(randomUInt);
-
-			// Copy the bytes into the result array, making sure not to exceed the 'count'
-			for (var j = 0; j < sizeof(uint) && i < count; j++, i++) {
-				bytes[i] = uintBytes[j];
+				if (_index >= _data.Length) {
+					GenerateNext4Bytes();
+					_index = 0;
+				}
 			}
 		}
+	}
 
-		return bytes;
+	/// <summary>
+	/// Generates a new 4-byte array from the Mersenne Twister algorithm.
+	/// </summary>
+	private void GenerateNext4Bytes() {
+		var randomUInt = _mersenne32.NextUInt32();
+		EndianBitConverter.Little.WriteTo(randomUInt, _data);
 	}
 }

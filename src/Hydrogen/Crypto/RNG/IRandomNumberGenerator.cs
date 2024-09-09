@@ -11,11 +11,17 @@ using System;
 namespace Hydrogen.Maths;
 
 public interface IRandomNumberGenerator {
-	byte[] NextBytes(int count);
+	void NextBytes(Span<byte> output);
 }
 
 
 public static class IRandomNumberGeneratorExtensions {
+
+	public static byte[] NextBytes(this IRandomNumberGenerator randomNumberGenerator, int length) {
+		var bytes = new byte[length];
+		randomNumberGenerator.NextBytes(bytes);
+		return bytes;
+	}
 
 	public static byte NextByte(this IRandomNumberGenerator randomNumberGenerator)
 		=> randomNumberGenerator.NextBytes(1)[0];

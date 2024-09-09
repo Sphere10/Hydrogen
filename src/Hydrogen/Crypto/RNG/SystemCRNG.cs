@@ -6,8 +6,9 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using System.Security.Cryptography;
 using Hydrogen.Maths;
+using System;
+using System.Security.Cryptography;
 
 namespace Hydrogen;
 
@@ -18,15 +19,22 @@ public class SystemCRNG : IRandomNumberGenerator {
 
 	private readonly RNGCryptoServiceProvider _rng;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="SystemCRNG"/> class.
+	/// </summary>
 	public SystemCRNG() {
 		_rng = new RNGCryptoServiceProvider();
 	}
 
-	public byte[] NextBytes(int count) {
-		Guard.ArgumentInRange(count, 0, int.MaxValue, nameof(count));
-		var bytes = new byte[count];
-		_rng.GetBytes(bytes);
-		return bytes;
-	}
+	/// <summary>
+	/// Fills the specified span of bytes with cryptographically secure random bytes.
+	/// </summary>
+	/// <param name="result">The span to be filled with random bytes.</param>
+	public void NextBytes(Span<byte> result) {
+		if (result.Length == 0)
+			return;
 
+		// Fill the byte array with random bytes
+		_rng.GetBytes(result);
+	}
 }

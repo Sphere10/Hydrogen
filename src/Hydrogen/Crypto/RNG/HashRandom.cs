@@ -7,18 +7,25 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Threading;
 
 namespace Hydrogen.Maths;
 
 /// <summary>
-/// A deterministic cryptographically-secure random number generator suitable for blockchain consensus. It works by extracting bytes from an iteratively hashed seed. The cryptographic security
-/// of <see cref="HashRandom"/> derives from that of the underlying <see cref="CHF"/>. It will always generate the same sequence of bytes given a seed.
+/// A deterministic cryptographically secure random number generator. It generates a sequence of random bytes based on a given seed.
+/// The generator works by hashing the seed and then iteratively hashing the resulting bytes to produce new random bytes. This process ensures that the same seed always produces the same sequence of bytes.
+/// The generator uses a counter to add entropy between hash invocations to ensure the output is not predictable within the same seed cycle.
 /// </summary>
+/// <remarks>
+/// This class is designed to be thread-safe and ensures deterministic behavior across multiple threads.
+/// </remarks>
 public sealed class HashRandom : IRandomNumberGenerator {
 	public const int MinimumSeedLength = 16;
 	private readonly CHF _chf;
-	private byte[] _data;
+	private readonly object _lock;
+	private readonly byte[] _data;
 	private int _index;
+	private long _counter = 0;
 
 	public HashRandom(byte[] seed)
 		: this(CHF.SHA2_256, seed) {
@@ -31,28 +38,35 @@ public sealed class HashRandom : IRandomNumberGenerator {
 		_chf = chf;
 		_index = 0;
 		_data = Hashers.Hash(_chf, seed);
+		_lock = new object();
 	}
 
-	public byte[] NextBytes(int count) {
-		var result = new byte[count];
-		NextBytes(count, result);
-		return result;
-	}
 
-	public void NextBytes(int count, Span<byte> result) {
-		Guard.ArgumentGTE(count, 0, nameof(count));
-		Guard.Argument(result.Length == count, nameof(result), $"Length ({result.Length}) must be equal to or greater than argument '{nameof(count)}' ({count})");
-		var resultIndex = 0;
-		while (count > 0) {
-			var remainingData = _data.Length - _index;
-			var amountToCopy = Math.Min(remainingData, count);
-			_data.AsSpan(_index, amountToCopy).CopyTo(result.Slice(resultIndex));
-			count -= amountToCopy;
-			resultIndex += amountToCopy;
-			_index += amountToCopy;
-			if (_index >= _data.Length) {
-				_data = Hashers.Hash(_chf, _data);
-				_index = 0;
+	public void NextBytes(Span<byte> result) {
+		if (result.Length == 0)
+			return;
+
+		lock (_lock) { // Critical to ensure deterministic generation in multi-threaded scenarios
+			var count = result.Length;
+			var resultIndex = 0;
+			Span<byte> counterBytes = stackalloc byte[sizeof(ulong)];
+			while (count > 0) {
+				var remainingData = _data.Length - _index;
+				var amountToCopy = Math.Min(remainingData, count);
+				_data.AsSpan(_index, amountToCopy).CopyTo(result.Slice(resultIndex));
+				count -= amountToCopy;
+				resultIndex += amountToCopy;
+				_index += amountToCopy;
+				if (_index >= _data.Length) {
+					Interlocked.Increment(ref _counter);
+					EndianBitConverter.Little.WriteTo(_counter, counterBytes);
+					using (Hashers.BorrowHasher(_chf, out var hasher)) {
+						hasher.Transform(_data);
+						hasher.Transform(counterBytes);
+						hasher.GetResult(_data);
+					}
+					_index = 0;
+				}
 			}
 		}
 	}

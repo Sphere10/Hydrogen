@@ -75,6 +75,8 @@ public static class RandomExtensions {
 
 	public static char NextAnsiChar(this Random random) => (char)random.Next(-127, 127);
 
+	public static byte NextByte(this Random random) => (byte)random.Next(0, byte.MaxValue + 1);
+
 	public static bool NextBool(this Random random) {
 		return random.Next(0, 2) > 0;
 	}

@@ -33,10 +33,11 @@ public static class IRandomNumberGeneratorExtensions {
 		=> EndianBitConverter.Little.ToUInt16(randomNumberGenerator.NextBytes(8));
 
 	public static float NextFloat(this IRandomNumberGenerator randomNumberGenerator) {
-		return (float)(randomNumberGenerator.NextUInt32() * 4.6566128730773926E-010);
+		return (float)(randomNumberGenerator.NextUInt32() * 4.6566128730773926E-010M);
 	}
+
 	public static float NextUFloat(this IRandomNumberGenerator randomNumberGenerator) {
-		return (float)(randomNumberGenerator.NextUInt32() * 2.32830643653869628906E-10);
+		return (float)(randomNumberGenerator.NextUInt32() * 2.32830643653869628906E-10M);
 	}
 
 }

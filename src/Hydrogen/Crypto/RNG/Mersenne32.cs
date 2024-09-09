@@ -11,16 +11,31 @@ using System;
 namespace Hydrogen.Maths;
 
 public sealed class Mersenne32 : IRandomNumberGenerator {
-	private readonly Mersenne32Algorithm _Mersenne32;
+	private readonly Mersenne32Algorithm _mersenne32;
 
 	public Mersenne32(int seed) {
-		_Mersenne32 = new Mersenne32Algorithm((uint)seed);
+		_mersenne32 = new Mersenne32Algorithm((uint)seed);
 	}
 
 
 	public byte[] NextBytes(int count) {
-		// implement based on generating int's to fill an array
-		// must be wary of endianness compatibility
-		throw new NotImplementedException();
+		Guard.ArgumentInRange(count, 0, int.MaxValue, nameof(count));
+		var bytes = new byte[count];
+		var i = 0;
+
+		while (i < count) {
+			// Generate the next random 32-bit unsigned integer
+			var randomUInt = _mersenne32.NextUInt32();
+
+			// Convert it to bytes
+			var uintBytes = BitConverter.GetBytes(randomUInt);
+
+			// Copy the bytes into the result array, making sure not to exceed the 'count'
+			for (var j = 0; j < sizeof(uint) && i < count; j++, i++) {
+				bytes[i] = uintBytes[j];
+			}
+		}
+
+		return bytes;
 	}
 }

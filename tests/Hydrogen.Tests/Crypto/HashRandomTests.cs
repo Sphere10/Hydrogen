@@ -53,7 +53,7 @@ public class HashRandomTests {
 		var expected = new ByteArrayBuilder();
 		var lastValue = seed;
 		for (var i = 0; i < TotalHashIterations; i++) {
-			var nextHash = Hashers.Hash(chf, lastValue);
+			var nextHash = Hashers.Hash(chf, Tools.Array.Concat<byte>(lastValue, EndianBitConverter.Little.GetBytes((long)i)));
 			expected.Append(nextHash);
 			lastValue = nextHash;
 		}

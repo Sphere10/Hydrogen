@@ -22,9 +22,13 @@ public abstract class DigitalSignatureSchemeBase<TPrivateKey, TPublicKey> : IDig
 
 	public CHF MessageDigestCHF { get; }
 
+	public int MessageDigestLength => Hashers.GetDigestSizeBytes(MessageDigestCHF);
+
 	public DigitalSignatureSchemeTraits Traits { get; protected set; }
 
 	public abstract IIESAlgorithm IES { get; }
+	
+	
 
 	public abstract bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out TPublicKey publicKey);
 

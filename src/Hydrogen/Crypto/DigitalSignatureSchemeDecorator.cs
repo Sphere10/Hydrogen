@@ -24,6 +24,8 @@ public abstract class DigitalSignatureSchemeDecorator<TPrivateKey, TPublicKey, T
 	public virtual DigitalSignatureSchemeTraits Traits => Internal.Traits;
 
 	public virtual IIESAlgorithm IES => Internal.IES;
+	
+	public int MessageDigestLength => Internal.MessageDigestLength;
 
 	public virtual IPrivateKey CreatePrivateKey(ReadOnlySpan<byte> secret256) {
 		return Internal.CreatePrivateKey(secret256);

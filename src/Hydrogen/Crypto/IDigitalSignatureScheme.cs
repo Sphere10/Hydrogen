@@ -13,7 +13,10 @@ namespace Hydrogen;
 
 public interface IDigitalSignatureScheme {
 	DigitalSignatureSchemeTraits Traits { get; }
+	
 	IIESAlgorithm IES { get; }
+
+	public int MessageDigestLength { get; }
 
 	bool TryParsePublicKey(ReadOnlySpan<byte> bytes, out IPublicKey publicKey);
 

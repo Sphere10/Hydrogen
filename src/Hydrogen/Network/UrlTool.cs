@@ -9,6 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -32,6 +33,12 @@ public static class Url {
 		return url;
 	}
 
+	public static IEnumerable<string> CalculateBreadcrumbFromPath(string urlPath) {
+		var urlParts = Tools.Url.StripAnchorTag(urlPath.TrimStart("/")).Split('/').Reverse().Reverse().ToArray();
+		for (var i = urlParts.Length; i > 0; i--) {
+			yield return Tools.Url.Combine(urlParts.Take(i));
+		}
+	}
 
 	public static string ToHtml4DOMObjectID(string text, string prefixIfRequired = "obj_") {
 		var slug = ToUrlSlug(text);
@@ -121,7 +128,6 @@ public static class Url {
 	public static bool IsVideoSharingUrl(string url)
 		=> IsYouTubeUrl(url) || IsVimeoUrl(url);
 
-
 	public static bool IsYouTubeUrl(string url)
 		=> TryParseYouTubeUrl(url, out _);
 
@@ -140,7 +146,6 @@ public static class Url {
 
 		return videoID != null;
 	}
-
 
 	public static bool IsVimeoUrl(string url)
 		=> TryParseVimeoUrl(url, out _);
@@ -217,7 +222,6 @@ public static class Url {
 		return queryParams.Where(x => !string.IsNullOrWhiteSpace(x.Value));
 	}
 
-
 	public static string Combine(string url1, string url2) {
 		Guard.ArgumentNotNullOrWhitespace(url1, nameof(url1));
 		if (string.IsNullOrWhiteSpace(url2))
@@ -244,7 +248,7 @@ public static class Url {
 		return sb.ToString();
 	}
 
-	public static bool TryParse(string url, out string protocol, out int port, out string host, out string path, out string queryString) {
+	public static bool TryParse(string url, out string protocol, out int? port, out string host, out string path, out string queryString) {
 		if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri)) {
 			protocol = host = path = queryString = null;
 			port = -1;
@@ -255,15 +259,16 @@ public static class Url {
 			port = 0;
 			return false;
 		}
+		
 		protocol = uri.Scheme;
-		port = uri.Port;
+		port = uri.Authority.Contains(":") ? uri.Port : null;
 		host = uri.Host;
 		path = uri.AbsolutePath;
 		queryString = uri.Query;
 		return true;
 	}
 
-	public static (string protocol, int port, string host, string path, string queryString) Parse(string url) {
+	public static (string protocol, int? port, string host, string path, string queryString) Parse(string url) {
 		if (!TryParse(url, out var protocol, out var port, out var host, out var path, out var queryString))
 			throw new InvalidOperationException($"Unable to parse '{url}'");
 		return (protocol, port, host, path, queryString);

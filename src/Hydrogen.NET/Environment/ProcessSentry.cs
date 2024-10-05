@@ -80,7 +80,7 @@ public class ProcessSentry {
 			var syncObj = new SynchronizedObject();
 			process.OutputDataReceived += async (_, data) => {
 				using (syncObj.EnterWriteScope())
-					output.WriteLine(data.Data);
+					await output.WriteLineAsync(data.Data);
 			};
 		}
 
@@ -92,7 +92,7 @@ public class ProcessSentry {
 			Tools.Exceptions.ExecuteIgnoringException(process.BeginErrorReadLine);
 		}
 
-		await process.WaitForExitAsync();
+		await process.WaitForExitAsync(cancellationToken);
 		return process.ExitCode;
 
 	}

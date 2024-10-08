@@ -480,7 +480,7 @@ public static class MimeHelper {
 			".xlv" => "application/vnd.ms-excel",
 			".xlw" => "application/vnd.ms-excel",
 			".xm" => "audio/xm",
-			".xml" => "application/xml",
+			".xml" => "text/xml",
 			".xmz" => "xgl/movie",
 			".xpix" => "application/x-vnd.ls-xpix",
 			".xpm" => "image/xpm",

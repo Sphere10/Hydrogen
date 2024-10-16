@@ -72,7 +72,7 @@ public static class IEnumerableExtensions {
 				yield return node;
 				visited.Add(node);
 				foreach (var connectedNode in VisitInternal(edgeIterator(node)))
-					yield return connectedNode;
+					 yield return connectedNode;
 			}
 		}
 	}

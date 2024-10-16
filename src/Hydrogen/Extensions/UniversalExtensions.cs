@@ -36,7 +36,7 @@ public static class UniversalExtensions {
 		};
 
 	public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, TItem> ancestorIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null)
-		=> Visit(node, x => x != null ? new[] { ancestorIterator(x) } : Array.Empty<TItem>(), discriminator, comparer);
+		=> Visit(node, x => x != null ? [ancestorIterator(x)] : Array.Empty<TItem>(), discriminator, comparer);
 
 	public static IEnumerable<TItem> Visit<TItem>(this TItem node, Func<TItem, IEnumerable<TItem>> edgeIterator, Func<TItem, bool> discriminator = null, IEqualityComparer<TItem> comparer = null)
 		=> new[] { node }.Visit(edgeIterator, discriminator, comparer);

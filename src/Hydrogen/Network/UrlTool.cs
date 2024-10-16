@@ -34,7 +34,7 @@ public static class Url {
 	}
 
 	public static IEnumerable<string> CalculateBreadcrumbFromPath(string urlPath) {
-		var urlParts = Tools.Url.StripAnchorTag(urlPath.TrimStart("/")).Split('/').Reverse().Reverse().ToArray();
+		var urlParts = Tools.Url.StripAnchorTag(urlPath.TrimStart("/")).Split('/').ToArray();
 		for (var i = urlParts.Length; i > 0; i--) {
 			yield return Tools.Url.Combine(urlParts.Take(i));
 		}
@@ -223,7 +223,7 @@ public static class Url {
 	}
 
 	public static string Combine(string url1, string url2) {
-		Guard.ArgumentNotNullOrWhitespace(url1, nameof(url1));
+		//Guard.ArgumentNotNullOrWhitespace(url1, nameof(url1));
 		if (string.IsNullOrWhiteSpace(url2))
 			return url1;
 		Guard.Argument(!url2.StartsWithAny(StringComparison.InvariantCultureIgnoreCase, "http:", "https:"), nameof(url2), "Cannot be appended since contains protocol");

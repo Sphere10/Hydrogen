@@ -274,6 +274,13 @@ public static class FileSystem {
 	public static void DeleteFile(string path)
 		=> File.Delete(path);
 
+	public static void DeleteFileThenEmptyDir(string path, bool recurseEmptyDirs = false) {
+		DeleteFile(path);
+		var parentPath =  GetParentDirectoryPath(path);
+		DeleteEmptyDirectory(parentPath, recurseEmptyDirs);
+	}
+
+
 	public static async Task DeleteFileAsync(string path) {
 		await Task.Run(() => DeleteFile(path));
 	}
@@ -369,6 +376,21 @@ public static class FileSystem {
 	public static Task DeleteDirectoryAsync(string directory, bool ignoreIfLocked = false) {
 		return Task.Run(() => DeleteDirectory(directory, ignoreIfLocked));
 	}
+
+	public static void DeleteEmptyDirectory(string directory, bool recurseSubDirs = false) {
+		if (!Directory.Exists(directory))
+			return;
+
+		if (recurseSubDirs) {
+			foreach(var subDir in GetSubDirectories(directory, FileSystemPathType.Absolute)) {
+				DeleteEmptyDirectory(subDir, recurseSubDirs);
+			}
+		}
+
+		if (GetDirectoryContents(directory, out _, out _) == 0)
+			DeleteDirectory(directory);
+	}
+
 
 	public static void DeleteAllFiles(string directory, bool deleteSubDirectories = true,
 	                                  bool ignoreIfLocked = false) {

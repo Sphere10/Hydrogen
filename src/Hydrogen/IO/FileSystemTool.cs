@@ -36,6 +36,27 @@ public static class FileSystem {
 	}
 
 
+	public static bool DoPathsReferToSameFileName(string path1, string path2) {
+		
+		// Get the filename from the first path by splitting on '/' and '\'
+		string fileName1 = GetFileNameFromPath(path1);
+
+		// Get the filename from the second path by splitting on '/' and '\'
+		string fileName2 = GetFileNameFromPath(path2);
+
+		// Compare the filenames, ignoring case
+		return fileName1.Equals(fileName2, StringComparison.OrdinalIgnoreCase);
+
+		string GetFileNameFromPath(string path) {
+			// Split by both '/' and '\' to handle URLs and local file paths
+			char[] separators = new char[] { '/', '\\' };
+			string[] tokens = path.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+			// Return the last token, which should be the filename
+			return tokens[^1];
+		}
+	}
+
 	public static IDisposable MonitorFile(string filePath, Action<WatcherChangeTypes, string> handler) {
 		var watcher = new FileSystemWatcher();
 		watcher.Path = Path.GetDirectoryName(filePath);

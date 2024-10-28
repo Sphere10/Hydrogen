@@ -151,7 +151,6 @@ public static class StringFormatter {
 		if (alreadyVisited.TryGetValue(token, out value))
 			return true;
 
-		value = null;
 		var origToken = token;
 		token = token.TrimWithCapture(out var trimmedStart, out var trimmedEnd);
 

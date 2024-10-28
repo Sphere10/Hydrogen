@@ -496,6 +496,107 @@ public class StringFormatterTests {
 		Assert.That(StringFormatter.FormatWithDictionary(input, new Dictionary<string, object> { ["foo"] = "bar" }, true), Is.EqualTo(input));
 	}
 	
+		[Test]
+	public void LocalNotionBugCase_5() {
+		var input =
+			"""
+			<script language="javascript">
+				// TODO: this needs to be cleaned up
+				function MakeDownloadLink(target) {
+					var text = $(target).text().trim().toUpperCase();
+					var isWindows = text === "WINDOWS";
+					var isWindowsStore = text === "WINDOWS STORE";
+					var isMacOS = text === "MACOS";
+					var isAppleStore = text === "APPLE STORE";
+					var isLinux = text == "LINUX";
+					var isGooglePlay = text === "GOOGLE STORE";
+					var isPlatform = isWindows || isMacOS || isLinux;
+					var isStore = isWindowsStore || isAppleStore || isGooglePlay;
+					var isDownload = isPlatform || isStore;
+					var isButton = text.startsWith("[") && text.endsWith("]");
+					if (!isDownload && !isButton)
+						return;
+			
+					if (isButton) {
+						$(target).html($(target).html().replace("[", "").replace("]", ""));
+						$(target).attr('class', 'btn btn-sm btn-primary lift');
+						$(target).attr('target', '_blank');
+						return;
+					}
+			
+			
+					// remove <p> envelope
+					var parent = $(target).parent();
+					$(target).insertAfter(parent);
+					parent.remove();
+			
+					// Remove underline
+					var firstChildSpan = $(target).find('span:first');
+					if (firstChildSpan.length) {
+						firstChildSpan.attr('class', 'text-decoration-none');
+					}
+			
+					if (isPlatform) {
+						// Minify all links adjacent to download button
+						$(target).nextAll(':not(:empty)').attr('class', 'small fw-light text-start');
+			
+						// add btn styling
+						$(target).attr('class', 'btn btn-sm fw-bold btn-danger text-start');
+						$(target).css('width', '9em');
+						$(target).css('border-radius', '50em');
+						$(target).css('padding-top', '0.7em');
+						$(target).css('padding-bottom', '0.7em');
+						$(target).css('padding-left', '1em');
+					}
+			
+					if (isStore) {
+						$(target).removeAttr('class');
+						$(target).text('');
+					}
+			
+					// add OS icon
+					var platformImageStyle = "width: 16px; height: 16px; fill: currentcolor;margin-bottom: 0.27em;margin-right:0.5em; filter:  brightness(0) invert(1);";
+					var storeImageStyle = "width:7.5em";
+			
+					if (isWindows) {
+						$(target).prepend('<img src="{theme://resources/img/windows.svg}" style="' + platformImageStyle + '">');
+					}
+					if (isWindowsStore) {
+						$(target).prepend('<img src="{theme://resources/img/microsoft-store.svg}" style="' + storeImageStyle + '">');
+					}
+					if (isMacOS) {
+						$(target).prepend('<img src="{theme://resources/img/apple.svg}" style="' + platformImageStyle + '">');
+					}
+					if (isAppleStore) {
+						$(target).prepend('<img src="{theme://resources/img/apple-store.svg}" style="' + storeImageStyle + '">');
+					}
+					if (isLinux) {
+						$(target).prepend('<img src="{theme://resources/img/linux.svg}" style="' + platformImageStyle + '">');
+					}
+					if (isGooglePlay) {
+						$(target).prepend('<img src="{theme://resources/img/google-play.svg}" style="' + storeImageStyle + '">');
+					}
+				}
+			
+				$(document).ready(function () {
+					$("a").each(function () {
+						MakeDownloadLink(this);
+					});
+				});
+			</script>
+			""";
+
+		var counter = 0;
+		StringFormatter.FormatEx(input, x => {
+			if (x.IsIn("theme://resources/img/windows.svg", "theme://resources/img/microsoft-store.svg", "theme://resources/img/apple.svg", "theme://resources/img/apple-store.svg", "theme://resources/img/linux.svg", "theme://resources/img/google-play.svg")) {
+				counter++;
+			}
+			return null;
+		}, true);
+		Assert.That(counter, Is.EqualTo(6));
+	}
+	
+
 	[Test]
 	public void LocalNotionBugCase_2_Variant_2() {
 		var input = "{ }";

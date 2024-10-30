@@ -101,7 +101,7 @@ public class WOTS : IOTSAlgorithm {
 		}
 
 		// Sign the checksum
-		var checksumBytes = new byte[4];
+		Span<byte> checksumBytes = stackalloc byte[4];
 		Bits.WriteBinaryNumber(checksum, checksumBytes, 0, 32, IterateDirection.LeftToRight);
 		for (var i = 0; i < Config.ChecksumDigits; i++) {
 			var signValue = (int)Bits.ReadBinaryNumber(checksumBytes, Config.W * i, Config.W, IterateDirection.LeftToRight);
@@ -130,7 +130,7 @@ public class WOTS : IOTSAlgorithm {
 		}
 
 		// Verify checksum
-		var checksumBytes = new byte[4];
+		Span<byte> checksumBytes = stackalloc byte[4];
 		Bits.WriteBinaryNumber(checksum, checksumBytes, 0, 32, IterateDirection.LeftToRight);
 		for (var i = 0; i < Config.ChecksumDigits; i++) {
 			var signValue = (int)Bits.ReadBinaryNumber(checksumBytes, Config.W * i, Config.W, IterateDirection.LeftToRight);

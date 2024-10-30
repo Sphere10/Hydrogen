@@ -249,7 +249,7 @@ public class AMS : DigitalSignatureSchemeBase<AMS.PrivateKey, AMS.PublicKey> {
 		public readonly byte Version;
 		public readonly byte Height;
 		public readonly uint KeyCode;
-		public readonly Dictionary<ulong, PublicKeyWithBatch> _derivedKeys;
+		private readonly Dictionary<ulong, PublicKeyWithBatch> _derivedKeys;
 
 		internal PrivateKey(byte[] immutableRawBytes, CHF chf)
 			: base(immutableRawBytes) {

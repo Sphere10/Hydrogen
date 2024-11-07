@@ -126,7 +126,32 @@ public static class Url {
 	}
 
 	public static bool IsVideoSharingUrl(string url)
-		=> IsYouTubeUrl(url) || IsVimeoUrl(url);
+		=> IsVideoSharingUrl(url, out _, out _);
+
+	public static bool IsVideoSharingUrl(string url, out VideoSharingPlatform platform, out string videoID) {
+		if (TryParseYouTubeUrl(url, false, out videoID)) {
+			platform = VideoSharingPlatform.YouTube;
+			return true;
+		}
+
+		if (TryParseRumbleUrl(url, false, out videoID)) {
+			platform = VideoSharingPlatform.Rumble;
+			return true;
+		}
+
+		if (TryParseBitChuteUrl(url, false, out videoID)) {
+			platform = VideoSharingPlatform.BitChute;
+			return true;
+		}			
+
+		if (TryParseVimeoUrl(url, out videoID)) {
+			platform = VideoSharingPlatform.Vimeo;
+			return true;
+		}			
+		platform = 0;
+		videoID = null;
+		return false;
+	}
 
 	public static bool IsYouTubeUrl(string url)
 		=> TryParseYouTubeUrl(url, out _);
@@ -147,12 +172,43 @@ public static class Url {
 		return videoID != null;
 	}
 
+	public static bool IsRumbleUrl(string url)
+		=> TryParseRumbleUrl(url, out _);
+
+	public static bool TryParseRumbleUrl(string url, out string videoID) 
+		=> TryParseRumbleUrl(url, true, out videoID);
+
+	public static bool TryParseRumbleUrl(string url, bool allowIdOnly, out string videoID) {
+		Guard.ArgumentNotNullOrWhitespace(url, nameof(url));
+		videoID = url.GetRegexMatch(@"rumble.com/embed/(?<videoid>[a-zA-Z0-9]+)", "videoid") ??
+		          url.GetRegexMatch(@"rumble.com/(?<videoid>v[a-zA-Z0-9]+)-", "videoid") ??
+		          (allowIdOnly ? url.GetRegexMatch(@"^(?<videoid>[a-zA-Z0-9]+)$", "videoid") : null);
+
+		return videoID != null;
+	}
+
 	public static bool IsVimeoUrl(string url)
 		=> TryParseVimeoUrl(url, out _);
 
 	public static bool TryParseVimeoUrl(string url, out string videoID) {
 		Guard.ArgumentNotNullOrWhitespace(url, nameof(url));
 		videoID = url.GetRegexMatch(@"player.vimeo.com/video/(?<videoid>[0-9_-]+)", "videoid");
+		return videoID != null;
+	}
+
+	public static bool IsBitChuteUrl(string url)
+		=> TryParseVimeoUrl(url, out _);
+
+	public static bool TryParseBitChuteUrl(string url, out string videoID)
+		=> TryParseBitChuteUrl(url, true, out videoID);
+
+	public static bool TryParseBitChuteUrl(string url, bool allowIdOnly, out string videoID) {
+		Guard.ArgumentNotNullOrWhitespace(url, nameof(url));
+
+		videoID = url.GetRegexMatch(@"bitchute.com/video/(?<videoid>[a-zA-Z0-9]+)", "videoid") ??
+		          url.GetRegexMatch(@"bitchute.com/embed/(?<videoid>[a-zA-Z0-9]+)", "videoid") ??
+		          (allowIdOnly ? url.GetRegexMatch(@"^(?<videoid>[a-zA-Z0-9]+)$", "videoid") : null);
+
 		return videoID != null;
 	}
 

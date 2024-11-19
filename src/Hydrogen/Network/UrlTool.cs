@@ -317,11 +317,19 @@ public static class Url {
 		}
 		
 		protocol = uri.Scheme;
-		port = uri.Authority.Contains(":") ? uri.Port : null;
+		port = SpecifiedPortExplicitly() ? uri.Port : null;
 		host = uri.Host;
 		path = uri.AbsolutePath;
 		queryString = uri.Query;
 		return true;
+
+		bool SpecifiedPortExplicitly() {
+			var hostStart = url.IndexOf(uri.Host, StringComparison.Ordinal);
+			var portColonStart = hostStart + uri.Host.Length;
+			if (portColonStart < url.Length)
+				return url[portColonStart] == ':';
+			return false;
+		}
 	}
 
 	public static (string protocol, int? port, string host, string path, string queryString) Parse(string url) {

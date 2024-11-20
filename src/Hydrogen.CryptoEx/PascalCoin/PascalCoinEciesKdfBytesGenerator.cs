@@ -31,27 +31,24 @@ public class PascalCoinEciesKdfBytesGenerator : IDerivationFunction {
 		}
 	}
 
-	public virtual int GenerateBytes(byte[] output, int outOff, int length) {
-		if ((output.Length - length) < outOff) {
+	public int GenerateBytes(Span<byte> output) {
+		if (output.Length < Digest.GetDigestSize()) {
 			throw new DataLengthException("Output Buffer too Small");
 		}
 
-		int outLen = Digest.GetDigestSize();
-
-		if (length > outLen) {
-			throw new DataLengthException(
-				"Specified Hash Cannot Produce Sufficient Data for the Specified Operation.");
-		}
-
-		byte[] temp = new byte[Digest.GetDigestSize()];
+		Span<byte> temp = stackalloc byte[Digest.GetDigestSize()];
 
 		Digest.BlockUpdate(_shared, 0, _shared.Length);
-		Digest.DoFinal(temp, 0);
+		Digest.DoFinal(temp);
 
-		Array.Copy(temp, 0, output, outOff, length);
+		temp.Slice(0, output.Length).CopyTo(output);
 
 		Digest.Reset();
-		return length;
+		return output.Length;
 	}
-	
+
+	public int GenerateBytes(byte[] output, int outOff, int length)
+		=> this.GenerateBytes(output.AsSpan(outOff, length));
+
+
 }

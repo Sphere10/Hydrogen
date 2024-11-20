@@ -13,7 +13,7 @@ static class TokenPartitioner {
 		Tuple<IEnumerable<KeyValuePair<string, IEnumerable<string>>>, IEnumerable<string>, IEnumerable<Token>> Partition(
 			IEnumerable<Token> tokens,
 			Func<string, Maybe<TypeDescriptor>> typeLookup) {
-		IEqualityComparer<Token> tokenComparer = ReferenceEqualityComparer.Default;
+		IEqualityComparer<Token> tokenComparer = ReferenceEqualityComparer.Instance;
 
 		var tokenList = tokens.Memoize();
 		var partitioned = PartitionTokensByType(tokenList, typeLookup);

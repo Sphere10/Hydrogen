@@ -140,7 +140,7 @@ public class ProtocolOrchestrator {
 	public async Task RunToEnd(CancellationToken cancellationToken) {
 		CheckState(ProtocolOrchestratorState.Started);
 		// Run until channel closed by other end (or cancelled by token)
-		var tcs = new TaskCompletionSourceEx();
+		var tcs = new TaskCompletionSource();
 		cancellationToken.Register(async () => {
 			// cancellation token wants to cancel, so call Finish here (will trigger Finish state changed event)
 			if (State != ProtocolOrchestratorState.Finished)

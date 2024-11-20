@@ -191,24 +191,35 @@ public abstract class HavalDigest
 		}
 	}
 
-	public void BlockUpdate(byte[] input, int inOff, int length) {
-		while (length > 0) {
-			Update(input[inOff]);
-			++inOff;
-			--length;
+	public void BlockUpdate(ReadOnlySpan<byte> input) {
+		for (int i = 0; i < input.Length; i++) {
+			Update(input[i]);
 		}
 	}
 
-	public int DoFinal(byte[] output, int outOff) {
+	public void BlockUpdate(byte[] input, int inOff, int length) {
+		BlockUpdate(input.AsSpan(inOff, length));
+	}
+
+	public void BlockUpdate(byte[] input) {
+		BlockUpdate(input.AsSpan());
+	}
+
+
+	public int DoFinal(Span<byte> output) {
 		Finish();
 
 		TailorDigestBits();
 
-		Pack.UInt32_To_LE(MHash, output, outOff);
+		Pack.UInt32_To_LE(MHash, output, 0);
 
 		Reset();
 
 		return GetDigestSize();
+	}
+
+	public int DoFinal(byte[] output, int outOff) {
+		return DoFinal(output.AsSpan(outOff));
 	}
 
 	public void Reset() {

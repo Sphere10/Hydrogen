@@ -18,7 +18,7 @@ public class Host : IHost {
 	public event EventHandlerEx NodeEnded;
 
 	private ProtocolOrchestrator _hostProtocolOrchestrator;
-	private TaskCompletionSourceEx _hostTask;
+	private TaskCompletionSource _hostTask;
 	private Task _protocolRunner;
 
 	public Host(ILogger logger, IApplicationPaths paths) {
@@ -53,7 +53,7 @@ public class Host : IHost {
 
 	public virtual async Task Run() {
 		CheckStatus(HostStatus.Stopped);
-		_hostTask = new TaskCompletionSourceEx();
+		_hostTask = new TaskCompletionSource();
 		await StartNode(); // starts the node child-process
 		await _hostTask.Task; // wait until host task is finished (host finishes when node channel closed and protocol finishes
 		await _protocolRunner; // wait for protocol to finish

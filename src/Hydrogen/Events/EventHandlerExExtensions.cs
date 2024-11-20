@@ -28,7 +28,7 @@ public static class EventHandlerExExtensions {
 	public static Task WaitNext(this EventHandlerEx @event) => WaitNext(@event, CancellationToken.None);
 
 	public static Task WaitNext(this EventHandlerEx @event, CancellationToken token) {
-		var tcs = new TaskCompletionSourceEx();
+		var tcs = new TaskCompletionSource();
 		@event += () => tcs.SetResult();
 		token.Register(tcs.SetCanceled);
 		return tcs.Task;

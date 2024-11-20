@@ -115,7 +115,7 @@ public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem
 
 		var task = Task.Run(async () => {
 			// start the blocking
-			var tcs = new TaskCompletionSourceEx();
+			var tcs = new TaskCompletionSource();
 
 			ProtocolChannel.ReceivedBytes += message => {
 
@@ -191,7 +191,7 @@ public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem
 
 		var task = Task.Run(async () => {
 			// start the blocking
-			var tcs = new TaskCompletionSourceEx();
+			var tcs = new TaskCompletionSource();
 
 			ProtocolChannel.ReceivedBytes += message => {
 				var returnPacket = new WebSocketsPacket(message.ToArray());
@@ -252,7 +252,7 @@ public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem
 
 				var task = Task.Run(async () => {
 					// start the blocking
-					var tcs = new TaskCompletionSourceEx();
+					var tcs = new TaskCompletionSource();
 
 					ProtocolChannel.ReceivedBytes += message => {
 						var returnPacket = new WebSocketsPacket(message.ToArray());
@@ -341,7 +341,7 @@ public class ClientWebSocketsDataSource<TItem> : ProtocolChannelDataSource<TItem
 
 				var task = Task.Run(async () => {
 					// start the blocking
-					var tcs = new TaskCompletionSourceEx();
+					var tcs = new TaskCompletionSource();
 
 					ProtocolChannel.ReceivedBytes += message => {
 						var returnPacket = new WebSocketsPacket(message.ToArray());

@@ -102,7 +102,7 @@ namespace Tools {
 			}
 
 			using (var stream = new MemoryStream()) {
-				var formatter = new BinaryFormatter();
+				var formatter = new BinarySerializer();
 				formatter.Serialize(stream, obj);
 				var bytes = stream.ToArray();
 				stream.Flush();
@@ -123,7 +123,7 @@ namespace Tools {
 
 			using (var stream = new MemoryStream(bytes)) {
 				stream.Position = 0;
-				var formatter = new BinaryFormatter();
+				var formatter = new BinarySerializer();
 				var obj = formatter.Deserialize(stream);
 				stream.Close();
 				return obj;

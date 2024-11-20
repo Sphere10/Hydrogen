@@ -233,7 +233,7 @@ public static class TaskExtensions {
 	/// <remarks>Inspired by https://johnthiriet.com/cancel-asynchronous-operation-in-csharp/</remarks>
 	public static async Task WithCancellationToken(this Task task, CancellationToken cancellationToken) {
 		// We create a TaskCompletionSource of decimal
-		var taskCompletionSource = new TaskCompletionSourceEx();
+		var taskCompletionSource = new TaskCompletionSource();
 
 		// Registering a lambda into the cancellationToken
 		cancellationToken.Register(() => {

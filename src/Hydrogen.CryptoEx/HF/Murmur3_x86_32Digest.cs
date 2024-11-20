@@ -12,8 +12,7 @@ using Org.BouncyCastle.Utilities;
 
 namespace Hydrogen.CryptoEx.HF;
 
-public class Murmur3_x86_32Digest
-	: IDigest, IMemoable {
+public class Murmur3_x86_32Digest : IDigest, IMemoable {
 
 	#region Consts
 
@@ -131,20 +130,19 @@ public class Murmur3_x86_32Digest
 	}
 
 	public void Update(byte input) {
-		BlockUpdate(new[] { input }, 0, 1);
+		BlockUpdate([input], 0, 1);
 	}
 
-	public void BlockUpdate(byte[] input, int inOff, int length) {
-		int len = length;
-		int i = inOff;
+	public void BlockUpdate(ReadOnlySpan<byte> input) {
+		int len = input.Length;
+		int i = 0;
 
 		// consume last pending bytes
-
-		if ((_idx != 0) & (length != 0)) {
+		if ((_idx != 0) & (len != 0)) {
 			while ((_idx < 4) & (len != 0)) {
-				_buffer[_idx] = input[inOff];
+				_buffer[_idx] = input[i];
 				_idx++;
-				inOff++;
+				i++;
 				len--;
 			}
 
@@ -153,52 +151,53 @@ public class Murmur3_x86_32Digest
 				TransformUInt32Fast(k);
 				_idx = 0;
 			}
-		} else {
-			i = 0;
 		}
 
 		int nBlocks = len >> 2;
 
-
 		// body
-
-		while (i < nBlocks) {
-			uint k = Pack.LE_To_UInt32(input, inOff + (i * 4));
+		for (int j = 0; j < nBlocks; j++) {
+			uint k = Pack.LE_To_UInt32(input.Slice(i + (j * 4), 4));
 			TransformUInt32Fast(k);
-			i++;
 		}
 
 		// save pending end bytes
-		int offset = inOff + (i * 4);
-		while (offset < (len + inOff)) {
+		int offset = i + (nBlocks * 4);
+		while (offset < input.Length) {
 			ByteUpdate(input[offset]);
 			offset++;
 		}
 
-
-		_processedBytes += (uint)length;
+		_processedBytes += (uint)input.Length;
 	}
 
-	public int DoFinal(byte[] output, int outOff) {
+	public void BlockUpdate(byte[] input, int inOff, int length) {
+		BlockUpdate(input.AsSpan(inOff, length));
+	}
+
+	public int DoFinal(Span<byte> output) {
 		Finish();
 
 		uint[] tempBuf = { _h };
-		Pack.UInt32_To_BE(tempBuf, output, outOff);
+		Pack.UInt32_To_BE(tempBuf, output, 0);
 
 		Reset();
 
 		return GetDigestSize();
 	}
 
-	public uint DoFinal() {
-		byte[] tempBuf = new byte[GetDigestSize()];
+	public int DoFinal(byte[] output, int outOff) {
+		return DoFinal(output.AsSpan(outOff));
+	}
 
-		DoFinal(tempBuf, 0);
+	public uint DoFinal() {
+		Span<byte> tempBuf = stackalloc byte[GetDigestSize()];
+
+		DoFinal(tempBuf);
 
 		return ((uint)(tempBuf[0]) << 24) | ((uint)(tempBuf[1]) << 16) |
 		       ((uint)(tempBuf[2]) << 8) | tempBuf[3];
 	}
-
 	public void Reset() {
 		_h = _seed;
 		_processedBytes = 0;

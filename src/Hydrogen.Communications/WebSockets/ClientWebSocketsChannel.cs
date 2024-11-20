@@ -55,7 +55,7 @@ public class ClientWebSocketsChannel : ProtocolChannel, IDisposable {
 		if (CloseInitiator != LocalRole)
 			return;
 
-		var tcs = new TaskCompletionSourceEx();
+		var tcs = new TaskCompletionSource();
 
 		ReceivedWebSocketMessage += async message => { tcs.SetResult(); };
 		cancellationToken.Register(() => tcs.TrySetCanceled());

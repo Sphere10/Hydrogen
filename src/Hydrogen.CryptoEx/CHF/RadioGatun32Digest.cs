@@ -7,13 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Runtime.CompilerServices;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities;
 
 namespace Hydrogen.CryptoEx;
 
-public class RadioGatun32Digest
-	: IDigest, IMemoable {
+public class RadioGatun32Digest : IDigest, IMemoable {
 
 	#region Consts
 
@@ -132,6 +132,7 @@ public class RadioGatun32Digest
 		return ByteLength;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Update(byte input) {
 		_buffer[_bufferPos] = input;
 
@@ -144,29 +145,36 @@ public class RadioGatun32Digest
 		}
 	}
 
-	public void BlockUpdate(byte[] input, int inOff, int length) {
-		while (length > 0) {
-			Update(input[inOff]);
-			++inOff;
-			--length;
+	public void BlockUpdate(ReadOnlySpan<byte> input) {
+		while (!input.IsEmpty) {
+			Update(input[0]);
+			input = input.Slice(1);
 		}
 	}
 
-	public int DoFinal(byte[] output, int outOff) {
+	public void BlockUpdate(byte[] input, int inOff, int length) {
+		BlockUpdate(input.AsSpan(inOff, length));
+	}
+
+	public int DoFinal(Span<byte> output) {
 		Finish();
 
-		uint[] temp = new uint[8];
+		Span<uint> temp = stackalloc uint[8];
 
-		for (int i = 0; i < 4; i++) {
+		for (var i = 0; i < 4; i++) {
 			RoundFunction();
-			Array.Copy(_mMill, 1, temp, i * 2, 2);
+			_mMill.AsSpan(1, 2).CopyTo(temp.Slice(i * 2, 2));
 		}
 
-		Pack.UInt32_To_LE(temp, output, outOff);
+		Pack.UInt32_To_LE(temp, output, 0);
 
 		Reset();
 
 		return GetDigestSize();
+	}
+
+	public int DoFinal(byte[] output, int outOff) {
+		return DoFinal(output.AsSpan(outOff));
 	}
 
 	public void Reset() {

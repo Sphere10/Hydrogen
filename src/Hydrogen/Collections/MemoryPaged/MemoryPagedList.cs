@@ -27,7 +27,7 @@ public class MemoryPagedList<TItem> : MemoryPagedListBase<TItem> {
 	}
 
 	protected override IPage<TItem> NewPageInstance(long pageNumber) {
-		return new BinaryFormattedPage<TItem>(this.PageSize, _sizer);
+		return new BinarySerializedPage<TItem>(this.PageSize, _sizer);
 	}
 
 	protected override IPage<TItem>[] LoadPages() {

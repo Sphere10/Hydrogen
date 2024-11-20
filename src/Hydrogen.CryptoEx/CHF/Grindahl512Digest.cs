@@ -7,13 +7,13 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using System.Runtime.CompilerServices;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities;
 
 namespace Hydrogen.CryptoEx;
 
-public class Grindahl512Digest
-	: IDigest, IMemoable {
+public class Grindahl512Digest : IDigest, IMemoable {
 
 	#region Consts
 
@@ -347,6 +347,7 @@ public class Grindahl512Digest
 		return ByteLength;
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public void Update(byte input) {
 		_buffer[_bufferPos] = input;
 
@@ -359,25 +360,34 @@ public class Grindahl512Digest
 		}
 	}
 
-	public void BlockUpdate(byte[] input, int inOff, int length) {
-		while (length > 0) {
-			Update(input[inOff]);
-			++inOff;
-			--length;
+	public void BlockUpdate(ReadOnlySpan<byte> input) {
+		for (var i = 0; i < input.Length; i++) {
+			Update(input[i]);
 		}
 	}
 
-	public int DoFinal(byte[] output, int outOff) {
+	public void BlockUpdate(byte[] input, int inOff, int length) {
+		BlockUpdate(input.AsSpan(inOff, length));
+	}
+
+	public void BlockUpdate(byte[] input) {
+		BlockUpdate(input.AsSpan());
+	}
+
+	public int DoFinal(Span<byte> output) {
 		Finish();
 		ulong[] temp = new ulong[GetByteLength()];
 		Array.Copy(_state, 5, temp, 0, 8);
-		Pack.UInt64_To_BE(temp, output, outOff);
+		Pack.UInt64_To_BE(temp, output, 0);
 
 		Reset();
 
 		return GetDigestSize();
 	}
 
+	public int DoFinal(byte[] output, int outOff) {
+		return DoFinal(output.AsSpan(outOff));
+	}
 	public void Reset() {
 		Array.Clear(_state, 0, _state.Length);
 		Array.Clear(_buffer, 0, _buffer.Length);

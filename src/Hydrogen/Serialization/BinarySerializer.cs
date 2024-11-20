@@ -41,6 +41,14 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 		}
 	}
 
+	// Compatible with BinaryFormatter.Serialize
+	public void Serialize(Stream stream, object item) { 
+		using var writer = new EndianBinaryWriter(EndianBitConverter.Little, stream.AsNonClosing());
+		using var context = SerializationContext.New;
+		Serialize(item, writer, context); 
+	}
+
+
 	public override void Serialize(object item, EndianBinaryWriter writer, SerializationContext context) {
 		context.SetEphemeralFactory(new SerializerFactory(_staticFactory));
 		try {
@@ -62,6 +70,13 @@ public sealed class BinarySerializer : ItemSerializerDecorator<object, Reference
 		}
 	}
 
+
+	// Compatible with BinaryFormatter.Deserialize
+	public object Deserialize(Stream stream) {
+		using var reader = new EndianBinaryReader(EndianBitConverter.Little, stream.AsNonClosing());
+		using var context = SerializationContext.New;
+		return Deserialize(reader, context); 
+	}
 
 	public override object Deserialize(EndianBinaryReader reader, SerializationContext context) {
 	

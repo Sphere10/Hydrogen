@@ -10,18 +10,17 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Hydrogen;
 
-public sealed class BinaryFormattedPage<TItem> : FileSwappedMemoryPage<TItem> {
+public sealed class BinarySerializedPage<TItem> : FileSwappedMemoryPage<TItem> {
 
-	public BinaryFormattedPage(long pageSize, IItemSizer<TItem> sizer)
+	public BinarySerializedPage(long pageSize, IItemSizer<TItem> sizer)
 		: base(pageSize, sizer, new ExtendedList<TItem>()) {
 	}
 
 	protected override void SaveInternal(IExtendedList<TItem> memoryPage, Stream stream) {
-		var formatter = new BinaryFormatter();
+		var formatter = new BinarySerializer();
 		var itemsArr = memoryPage as TItem[] ?? memoryPage.ToArray();
 		formatter.Serialize(stream, itemsArr);
 		stream.SetLength(Math.Max(0, stream.Position)); // end stream after serialization
@@ -30,7 +29,7 @@ public sealed class BinaryFormattedPage<TItem> : FileSwappedMemoryPage<TItem> {
 	protected override void LoadInternal(Stream stream, IExtendedList<TItem> memoryPage) {
 		TItem[] result;
 		if (stream.Length > 0) {
-			var formatter = new BinaryFormatter();
+			var formatter = new BinarySerializer();
 			result = (TItem[])formatter.Deserialize(stream);
 		} else {
 			result = new TItem[0];

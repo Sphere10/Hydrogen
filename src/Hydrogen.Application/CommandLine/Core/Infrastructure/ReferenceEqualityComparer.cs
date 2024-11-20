@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace CommandLine.Infrastructure;
 
+#if NETSTANDARD
 internal sealed class ReferenceEqualityComparer : IEqualityComparer, IEqualityComparer<object> {
 	public static readonly ReferenceEqualityComparer Default = new ReferenceEqualityComparer();
 
@@ -17,3 +18,4 @@ internal sealed class ReferenceEqualityComparer : IEqualityComparer, IEqualityCo
 		return RuntimeHelpers.GetHashCode(obj);
 	}
 }
+#endif

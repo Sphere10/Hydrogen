@@ -6,6 +6,8 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+#if NETSTANDARD
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -54,3 +56,5 @@ public sealed class ReferenceEqualityComparer : IEqualityComparer<object?>, IEqu
 		return RuntimeHelpers.GetHashCode(obj!);
 	}
 }
+
+#endif

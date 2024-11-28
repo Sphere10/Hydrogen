@@ -12,7 +12,7 @@ using Hydrogen.NUnit;
 using System.Linq;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.CryptoEx;
+namespace Hydrogen.CryptoEx.Tests;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]

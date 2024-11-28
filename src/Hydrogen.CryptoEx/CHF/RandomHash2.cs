@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Hydrogen.Maths;
 
-namespace Hydrogen.DApp.Core.Maths;
+namespace Hydrogen.CryptoEx;
 
 public class RandomHash2 {
 	protected const string InvalidRound = "Round must be between 0 and N inclusive";
@@ -152,7 +152,7 @@ public class RandomHash2 {
 		var chunkLength = chunk.Length;
 		var result = new byte[chunkLength];
 		for (var idx = 0; idx < chunkLength; idx++)
-			result[idx] = chunk[XorShift.Next(ref state) % chunkLength];
+			result[idx] = chunk[XorShift32.Next(ref state) % chunkLength];
 
 		return result;
 	}

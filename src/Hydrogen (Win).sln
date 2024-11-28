@@ -92,6 +92,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{AA4A8AEA-0
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashLib4CSharp.Tests", "..\tests\HashLib4CSharp.Tests\HashLib4CSharp.Tests.csproj", "{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -404,6 +406,14 @@ Global
 		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Release|x86.ActiveCfg = Release|Any CPU
 		{56AF156F-8C1D-4D61-923F-8019F9E89AC4}.Release|x86.Build.0 = Release|Any CPU
+		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Debug|x86.Build.0 = Debug|Any CPU
+		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Release|x86.ActiveCfg = Release|Any CPU
+		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -423,6 +433,7 @@ Global
 		{172EF8A1-9839-4ECA-9EAF-A850435D1112} = {5BA10B8B-3C32-4EE2-9C5F-AA2DD0D8BD6A}
 		{B6F7E3E8-5BE3-4BA5-B4F4-444F367EDB9D} = {5BA10B8B-3C32-4EE2-9C5F-AA2DD0D8BD6A}
 		{56AF156F-8C1D-4D61-923F-8019F9E89AC4} = {E7705E7B-D04B-488C-8442-149A029F34B8}
+		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D} = {E7705E7B-D04B-488C-8442-149A029F34B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A6BF0BD3-FB17-4EDB-AFBF-08A34BD2E2B6}

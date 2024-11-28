@@ -97,7 +97,7 @@ public class MerkleMathTests {
 		for (var i = 0; i < NumTests; i++) {
 			if (randomInt == 0)
 				randomInt = 1;
-			randomInt = XorShift.Next(ref randomInt);
+			randomInt = XorShift32.Next(ref randomInt);
 
 			var leafCount = (int)randomInt % int.MaxValue;
 			if (leafCount < 0)

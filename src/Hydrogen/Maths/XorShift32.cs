@@ -6,14 +6,17 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Runtime.CompilerServices;
+
 namespace Hydrogen;
 
-public static class XorShift {
+public static class XorShift32 {
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static uint Next(ref uint aState) {
-		aState = aState ^ (aState << 13);
-		aState = aState ^ (aState >> 17);
-		aState = aState ^ (aState << 5);
+		aState ^= (aState << 13);
+		aState ^= (aState >> 17);
+		aState ^= (aState << 5);
 		return aState;
 	}
 }

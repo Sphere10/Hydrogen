@@ -6,7 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
-using Hydrogen.DApp.Core.Maths;
+using Hydrogen.CryptoEx;
 
 namespace Hydrogen.DApp.Core.Mining;
 

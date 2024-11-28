@@ -10,7 +10,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Hydrogen.DApp.Core.Maths;
+namespace Hydrogen.CryptoEx;
 
 public static class RandomHashUtils {
 

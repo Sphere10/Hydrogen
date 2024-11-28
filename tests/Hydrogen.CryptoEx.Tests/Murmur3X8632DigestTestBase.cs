@@ -12,7 +12,7 @@ using Org.BouncyCastle.Utilities.Encoders;
 using Hydrogen.CryptoEx.HF;
 using NUnit.Framework.Legacy;
 
-namespace NPascalCoin.UnitTests.Crypto;
+namespace Hydrogen.CryptoEx.Tests;
 
 /**
       * Test vectors for Murmur3_x86_32Digest
@@ -20,8 +20,7 @@ namespace NPascalCoin.UnitTests.Crypto;
       */
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class Murmur3_x86_32DigestTest
-	: DigestTest {
+public class Murmur3_x86_32DigestTest : DigestTest {
 	private static readonly string[] Messages = {
 		"",
 		"a",

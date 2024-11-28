@@ -24,8 +24,8 @@ public sealed class Mersenne32 : IRandomNumberGenerator {
 	/// Initializes a new instance of the <see cref="Mersenne32"/> class with the specified seed.
 	/// </summary>
 	/// <param name="seed">The seed value for initializing the random number generator.</param>
-	public Mersenne32(int seed) {
-		_mersenne32 = new Mersenne32Algorithm((uint)seed);
+	public Mersenne32(uint seed) {
+		_mersenne32 = new Mersenne32Algorithm(seed);
 		GenerateNext4Bytes();
 	}
 

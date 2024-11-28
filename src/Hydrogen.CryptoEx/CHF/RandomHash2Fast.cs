@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Hydrogen.Maths;
 
-namespace Hydrogen.DApp.Core.Maths;
+namespace Hydrogen.CryptoEx;
 
 public sealed class RandomHash2Fast : RandomHash2 {
 	private const string OverlappingArgs = "Overlapping read/write regions";
@@ -72,7 +72,7 @@ public sealed class RandomHash2Fast : RandomHash2 {
 
 		// Select random bytes from input using XorShift RNG
 		for (var idx = writeStart; idx <= writeEnd; idx++)
-			chunk[idx] = chunk[readStart + XorShift.Next(ref state) % length];
+			chunk[idx] = chunk[readStart + XorShift32.Next(ref state) % length];
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

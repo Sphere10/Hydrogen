@@ -46,6 +46,21 @@ public class Bits {
 		return (value >> nBits) | (value << (64 - nBits));
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static byte RotateLeft8(byte b, int i) {
+		Debug.Assert(i >= 0);
+		i &= 7;
+		return (byte) ((b << i) | (b >> (8 - i)));
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static byte RotateRight8(byte b, int i) {
+		Debug.Assert(i >= 0);
+		i &= 7;
+		return (byte) ((b >> i) | (b << (8 - i)));
+	}
+
+
 	//[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	//public static ushort ReadBinaryNumberIntoWord(ReadOnlySpan<byte> source, int sourceBitOffset, int binaryDigitsToRead, IterateDirection direction) {
 	//	var dest = new byte[2];

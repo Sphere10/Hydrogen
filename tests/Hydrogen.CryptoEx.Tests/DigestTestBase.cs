@@ -12,7 +12,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.Utilities.Encoders;
 
-namespace NPascalCoin.UnitTests.Crypto;
+namespace Hydrogen.CryptoEx.Tests;
 
 /* This class is a modified version of the BouncyCastle Cryptographic Library Test class "DigestTest" and was borrowed from 
 <a href="https://github.com/bcgit/bc-csharp/blob/master/crypto/test/src/test/DigestTest.cs">https://github.com/bcgit/bc-csharp/blob/master/crypto/test/src/test/DigestTest.cs</a>

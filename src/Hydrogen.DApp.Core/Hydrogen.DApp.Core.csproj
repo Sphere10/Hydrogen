@@ -26,6 +26,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
 		<ProjectReference Include="..\Hydrogen.Communications\Hydrogen.Communications.csproj" />
+		<ProjectReference Include="..\Hydrogen.CryptoEx\Hydrogen.CryptoEx.csproj" />
 		<ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />
 	</ItemGroup>
 

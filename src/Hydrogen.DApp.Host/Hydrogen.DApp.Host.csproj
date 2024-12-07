@@ -6,6 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Hydrogen.Application\Hydrogen.Application.csproj" />
     <ProjectReference Include="..\Hydrogen.DApp.Core\Hydrogen.DApp.Core.csproj" />
     <ProjectReference Include="..\Hydrogen\Hydrogen.csproj" />

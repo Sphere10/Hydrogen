@@ -32,6 +32,8 @@ public interface IObjectSpaceDimensionBuilder {
 
 	IObjectSpaceDimensionBuilder WithUniqueIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull);
 
+	IObjectSpaceDimensionBuilder WithChangeTrackingVia(Member member);
+
 	IObjectSpaceDimensionBuilder OptimizeAssumingAverageItemSize(int bytes);
 
 	ObjectSpaceDefinition.DimensionDefinition BuildDefinition();

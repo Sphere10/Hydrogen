@@ -16,4 +16,7 @@ public class Account {
 
 	public Identity Identity { get; set; }
 
+	[Transient]
+	public bool Dirty { get; set; }
+
 }

@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
@@ -18,9 +17,10 @@ namespace Hydrogen.ObjectSpaces;
 public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	protected readonly ClusteredStreams _streams;
-	protected readonly DictionaryList<Type, IStreamMappedCollection> _dimensions;
+	protected readonly DictionaryList<Type, Dimension> _dimensions;
 	private readonly InstanceTracker _instanceTracker;
 	private bool _loaded;
+	protected readonly bool AutoSave;
 
 	protected ObjectSpaceBase(ClusteredStreams streams, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default) {
 		Guard.ArgumentNotNull(streams, nameof(streams));
@@ -32,9 +32,11 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		Serializers = serializerFactory;
 		Comparers = comparerFactory;
 		_loaded = false;
-		_dimensions = new DictionaryList<Type, IStreamMappedCollection>(TypeEquivalenceComparer.Instance, ReferenceEqualityComparer.Instance);
+		_dimensions = new DictionaryList<Type, Dimension>(TypeEquivalenceComparer.Instance, ReferenceEqualityComparer.Instance);
 		_instanceTracker = new InstanceTracker();
+		AutoSave = objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.AutoSave);
 		Disposables = Disposables.None;
+		FlushOnDispose = true;
 	}
 
 	public override bool RequiresLoad => !_loaded || _streams.RequiresLoad;
@@ -53,9 +55,11 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 
 	internal ClusteredStreams Streams => _streams;
 
-	public IReadOnlyList<IStreamMappedCollection> Dimensions => _dimensions;
+	public IReadOnlyList<Dimension> Dimensions => _dimensions;
 
 	public Disposables Disposables { get; }
+
+	protected bool FlushOnDispose { get; set; }
 
 	public IDisposable EnterAccessScope() => _streams.EnterAccessScope();
 
@@ -83,21 +87,22 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 				return true;	
 			
 			// Get underlying stream mapped collection
-			var objectList = GetDimension<TItem>();
+			var dimension = GetDimension<TItem>();
 			
 			// Range check
-			if (0 > index || index >= objectList.Count)
+			if (0 > index || index >= dimension.Container.Count)
 				return false;
 
 			// Reap check
-			if (objectList.ObjectStream.IsReaped(index))
+			if (dimension.Container.ObjectStream.IsReaped(index))
 				return false;
 
 			// Deserialize from stream
-			item = objectList.ObjectStream.LoadItem(index);
+			item = dimension.Container.ObjectStream.LoadItem(index);
 
 			// Track item instance
 			_instanceTracker.Track(item, index);
+			dimension.Definition.ChangeTracker.SetChanged(item, false);
 
 			return true;
 		}
@@ -107,10 +112,10 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		using (EnterAccessScope()) {
 
 			// Get underlying stream mapped collection
-			var objectList = GetDimension<TItem>();
+			var dimension = GetDimension<TItem>();
 
 			// Get index for member
-			var index = objectList.ObjectStream.GetUniqueIndexFor(memberExpression);
+			var index = dimension.Container.ObjectStream.GetUniqueIndexFor(memberExpression);
 
 			// Find the item in the index
 			if (!index.Values.TryGetValue(memberValue, out var itemIndex)) {
@@ -130,27 +135,30 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 	public long Count<TItem>() {
 		using (EnterAccessScope()) {
 			// Get underlying stream mapped collection
-			var objectList = GetDimension<TItem>();
-			return objectList.Count;
+			var dimension = GetDimension<TItem>();
+			return dimension.Container.Count;
 		}
 	}
 
 	public long Save<TItem>(TItem item) {
 		using (EnterAccessScope()) {
 			// Get underlying stream mapped collection
-			var objectList = GetDimension<TItem>();
+			var dimension = GetDimension<TItem>();
 
 			// Get the item index (if applicable)
 			var existingItem = _instanceTracker.TryGetIndexOf(item, out var index);
 			
 			if (existingItem) {
 				// Update existing
-				objectList.Update(index, item);
+				dimension.Container.Update(index, item);
 			} else {
 				// Add if new
-				objectList.Add(item, out index);
+				dimension.Container.Add(item, out index);
 				_instanceTracker.Track(item, index);
 			}
+
+			// Mark as unchanged
+			dimension.Definition.ChangeTracker.SetChanged(item, false);
 
 			return index;
 		}
@@ -165,34 +173,48 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 			// Stop tracking instance
 			_instanceTracker.Untrack(item);
 
-			// Remove it from the list 
-			var objectList = GetDimension<TItem>();
-			objectList.Recycle(index);
+			// Remove it from the dimension 
+			var dimension = GetDimension<TItem>();
+			dimension.Container.Recycle(index);
 		}
 	}
 
-	public void Clear() {
+	/// <summary>
+	/// Clears all data in the object space. This is a destructive operation and cannot be undone. Must pass <b>"I CONSENT TO CLEAR ALL DATA"</b> for execution.
+	/// </summary>
+	/// <param name="consentGuard">Must be: "I CONSENT TO CLEAR ALL DATA"</param>
+	public void Clear(string consentGuard) {
+		Guard.ArgumentNotNull(consentGuard, nameof(consentGuard));
+		Guard.Argument(consentGuard == "I CONSENT TO CLEAR ALL DATA", nameof(consentGuard), "Consent guard not provided");
 		using (EnterAccessScope()) {
 			foreach(var dimension in Dimensions) {
-				dimension.Clear();
+				dimension.Container.Clear();
 			}
 		}
+		_instanceTracker.Clear();
 	}
 
 	public virtual void Flush() {
+		// save any modified objects (persistence ignorance)
+		if (AutoSave)
+			SaveModifiedObjects();
+
 		// ensure all dirty merkle-trees are fully calculated
 		foreach(var dimension in _dimensions.Values) 
-		foreach(var merkleTreeIndex in dimension.ObjectStream.Streams.Attachments.Values.Where(x => x is MerkleTreeIndex).Cast<MerkleTreeIndex>())
+		foreach(var merkleTreeIndex in dimension.Container.ObjectStream.Streams.Attachments.Values.Where(x => x is MerkleTreeIndex).Cast<MerkleTreeIndex>())
 			merkleTreeIndex.Flush();
 
 		// ensure any spatial merkle-trees are fully calculated
 		foreach (var spatialTreeIndex in _streams.Attachments.Values.Where(x => x is ObjectSpaceMerkleTreeIndex).Cast<ObjectSpaceMerkleTreeIndex>())
 			spatialTreeIndex.Flush();
 
+		// flush the underlying stream that maps entire object-space
 		Streams.RootStream.Flush();
 	}
 
 	public virtual void Dispose() {
+		if (FlushOnDispose)
+			Flush();
 		Unload();
 		_streams.Dispose();
 		Disposables.Dispose();
@@ -224,13 +246,13 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 
 		// Add dimensions to object space
 		for (var ix = 0; ix < Definition.Dimensions.Length; ix++) {
-			var containerDefinition = Definition.Dimensions[ix];
-			var dimension = BuildDimension(containerDefinition, ix);
-			_dimensions.Add(containerDefinition.ObjectType, dimension);
+			var dimensionDefinition = Definition.Dimensions[ix];
+			var dimension = BuildDimension(dimensionDefinition, ix);
+			_dimensions.Add(dimensionDefinition.ObjectType, dimension);
 		}
 
 		// Attach object space merkle-tree (if applicable)
-		if (Definition.Merkleized) {
+		if (Definition.Traits.HasFlag(ObjectSpaceTraits.Merkleized)) {
 			if (isFirstTimeLoad) {
 				// On first load, we need to pre-fill the spatial-tree with an empty tree that denotes all null leafs for each dimension.
 				// This is to ensure when spatial tree is loaded that it's buffer matches what is expected. This is ugly
@@ -259,6 +281,24 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		_loaded = true;
 	}
 
+	
+	protected void SaveModifiedObjects() {
+		Guard.Ensure(AutoSave, "AutoSave is not enabled");
+		using (EnterAccessScope()) {
+			var changedObjects = 
+				_instanceTracker
+					.GetInstances()
+					.Select(x => (Type: x.GetType(), Instance: x))
+					.Where(x => _dimensions[x.Type].Definition.ChangeTracker.HasChanged(x.Instance))
+					.Select(x => x.Instance);
+			foreach(var changedObject in changedObjects) {
+				// check if still changed (prior connected object may have saved it recursively)
+				if (_dimensions[changedObject.GetType()].Definition.ChangeTracker.HasChanged(changedObject))
+					Save(changedObject);
+			}
+		}
+	}
+
 	protected void Unload() {
 		// close all object containers when rolling back
 		foreach (var disposable in _dimensions.Values.Cast<IDisposable>())
@@ -274,12 +314,12 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		_loaded = false;
 	}
 
-	protected virtual IStreamMappedCollection BuildDimension(ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, int spatialStreamIndex) {
-		// Get the stream within the object space which will comprise the object dimension
+	protected virtual Dimension BuildDimension(ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, int spatialStreamIndex) {
+
+		// Get the stream designated for this dimension from the object space
 		var dimensionStream = _streams.Open(_streams.Header.ReservedStreams + spatialStreamIndex, false, true); // note: locking scope is kept here?
 
-		// Create a ClusteredStreams that is mapped to the dimension stream. The object stream
-		// will write itself over this clustered stream.
+		// Create a ClusteredStreamCollection which maps over the dimension's stream. This will be used by the ObjectStream to store the objects.
 		var clusteredDimensionStream = new ClusteredStreams(
 			dimensionStream,
 			SanitizeContainerClusterSize(dimensionDefinition.AverageObjectSizeBytes),
@@ -291,8 +331,8 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 			OwnsStream = true
 		};
 
-		// Construct the object stream dimension, mapped to the stream
-		var dimension =
+		// Construct the object stream collection which uses the clustered stream collection which maps over the dimension's stream
+		var objectStream =
 			typeof(ObjectStream<>)
 				.MakeGenericType(dimensionDefinition.ObjectType)
 				.ActivateWithCompatibleArgs(
@@ -300,29 +340,29 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 					CreateItemSerializer(dimensionDefinition.ObjectType),
 					false
 				) as ObjectStream;
-		dimension.OwnsStreams = true;
+		objectStream.OwnsStreams = true;
 
-		// construct indexes of the object stream
+		// construct the required indexes for the dimension
 		foreach (var index in dimensionDefinition.Indexes) {
 			IClusteredStreamsAttachment metaDataObserver = index.Type switch {
-				ObjectSpaceDefinition.IndexType.Identifier => BuildIdentifier(dimension, dimensionDefinition, index),
-				ObjectSpaceDefinition.IndexType.UniqueKey => BuildUniqueKey(dimension, dimensionDefinition, index),
-				ObjectSpaceDefinition.IndexType.Index => BuildIndex(dimension, dimensionDefinition, index),
-				ObjectSpaceDefinition.IndexType.RecyclableIndexStore => BuildRecyclableIndexStore(dimension, dimensionDefinition, index),
-				ObjectSpaceDefinition.IndexType.MerkleTree => BuildMerkleTreeIndex(dimension, dimensionDefinition, index),
+				ObjectSpaceDefinition.IndexType.Identifier => BuildIdentifier(objectStream, dimensionDefinition, index),
+				ObjectSpaceDefinition.IndexType.UniqueKey => BuildUniqueKey(objectStream, dimensionDefinition, index),
+				ObjectSpaceDefinition.IndexType.Index => BuildIndex(objectStream, dimensionDefinition, index),
+				ObjectSpaceDefinition.IndexType.RecyclableIndexStore => BuildRecyclableIndexStore(objectStream, dimensionDefinition, index),
+				ObjectSpaceDefinition.IndexType.MerkleTree => BuildMerkleTreeIndex(objectStream, dimensionDefinition, index),
 				_ => throw new ArgumentOutOfRangeException()
 			};
-			dimension.Streams.RegisterAttachment(metaDataObserver);
+			objectStream.Streams.RegisterAttachment(metaDataObserver);
 		}
 	
-		// Get a comparer
+		// Construct a suitable a comparer
 		var comparer = Comparers.GetEqualityComparer(dimensionDefinition.ObjectType);
 
-		// construct the collection
+		// Construct the object collection which uses the underlying object stream
 		var list = (IStreamMappedCollection)typeof(StreamMappedRecyclableList<>)
 			.MakeGenericType(dimensionDefinition.ObjectType)
 			.ActivateWithCompatibleArgs(
-				dimension,
+				objectStream,
 				dimensionDefinition.Indexes.First(x => x.Type == ObjectSpaceDefinition.IndexType.RecyclableIndexStore).Name,
 				comparer,
 				false
@@ -333,7 +373,14 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		if (list is ILoadable { RequiresLoad: true } loadable)
 			loadable.Load();
 
-		return list;
+
+		// construct a typed dimension object for client
+		var dimension = (Dimension)Activator.CreateInstance(
+			typeof(Dimension<>).MakeGenericType(dimensionDefinition.ObjectType),
+			new object[] { dimensionDefinition, list }
+		);
+
+		return dimension;
 	}
 
 	protected virtual IClusteredStreamsAttachment BuildIdentifier(ObjectStream dimension, ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, ObjectSpaceDefinition.IndexDefinition indexDefinition) {
@@ -383,13 +430,24 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 			HydrogenDefaults.LargestRecommendedClusterSize
 		);
 
-	private StreamMappedRecyclableList<TItem> GetDimension<TItem>() {
+	private Dimension<TItem> GetDimension<TItem>() {
 		var itemType = typeof(TItem);
 
 		if (!_dimensions.TryGetValue(itemType, out var dimension))
 			throw new InvalidOperationException($"A dimension for type '{itemType.ToStringCS()}' was not registered");
 
-		return (StreamMappedRecyclableList<TItem>)dimension;
+		return (Dimension<TItem>)dimension;
 	}
+
+
+	#region Aux Types
+	public record Dimension(ObjectSpaceDefinition.DimensionDefinition Definition, IStreamMappedCollection Container) : IDisposable {
+		public void Dispose() => (Container as IDisposable)?.Dispose();
+	};
+	public record Dimension<T>(ObjectSpaceDefinition.DimensionDefinition Definition, StreamMappedRecyclableList<T> Container) : Dimension(Definition, Container) {
+		public new StreamMappedRecyclableList<T> Container => (StreamMappedRecyclableList<T>)base.Container;
+	}
+
+	#endregion
 
 }

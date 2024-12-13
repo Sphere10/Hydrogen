@@ -8,19 +8,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-///  Used to track instances of fetched objects within an <see cref="ObjectSpace"/>.
+///  Used to track instances of fetched objects within an <see cref="ObjectSpaceBase"/>.
 /// </summary>
 /// <remarks>Not thread-safe by design</remarks>
 internal class InstanceTracker {
 
-	private readonly Dictionary<Type, BijectiveDictionary<long, object>> _objects;
+	private readonly Dictionary<Type, BijectiveDictionary<long, object>> _objectsByType;
 
 	public InstanceTracker() {
-		_objects = new Dictionary<Type, BijectiveDictionary<long, object>>(TypeEquivalenceComparer.Instance);
+		_objectsByType = new Dictionary<Type, BijectiveDictionary<long, object>>(TypeEquivalenceComparer.Instance);
 	}
 
 
@@ -40,7 +41,7 @@ internal class InstanceTracker {
 	}
 
 	public bool TryGet(Type itemType, long index, out object item) {
-		if (!_objects.TryGetValue(itemType, out var instances)) {
+		if (!_objectsByType.TryGetValue(itemType, out var instances)) {
 			item = default;
 			return false;
 		}
@@ -51,13 +52,20 @@ internal class InstanceTracker {
 		return true;
 	}
 
+	public IEnumerable<object> GetInstances() 
+		=> _objectsByType.Values.SelectMany(instances => instances.Values);
+
+
+	public IEnumerable<object> GetInstances(Type itemType) 
+		=> _objectsByType.TryGetValue(itemType, out var instances) ? instances.Values : Array.Empty<object>();
+
 
 	public void Track(object item, long index) {
 		var itemType = item.GetType();
 		
-		if (!_objects.TryGetValue(itemType, out var instances)) {
+		if (!_objectsByType.TryGetValue(itemType, out var instances)) {
 			instances = CreateInstanceDictionary();
-			_objects.Add(itemType, instances);
+			_objectsByType.Add(itemType, instances);
 		}
 
 		if (instances.TryGetValue(index, out var _)) 
@@ -69,12 +77,12 @@ internal class InstanceTracker {
 	public void Untrack(object item) {
 		var itemType = item.GetType();
 		
-		if (!_objects.TryGetValue(itemType, out var instances) || !instances.TryGetKey(item, out var index)) 
+		if (!_objectsByType.TryGetValue(itemType, out var instances) || !instances.TryGetKey(item, out var index)) 
 			throw new InvalidOperationException("Object instance was not tracked");
 
 		instances.Remove(index);
 		if (instances.Count == 0)
-			_objects.Remove(itemType);
+			_objectsByType.Remove(itemType);
 	}
 
 	public long GetIndexOf(object item) {
@@ -86,7 +94,7 @@ internal class InstanceTracker {
 	public bool TryGetIndexOf(object item, out long index) {
 		var itemType = item.GetType();
 
-		if (!_objects.TryGetValue(itemType, out var instances)) {
+		if (!_objectsByType.TryGetValue(itemType, out var instances)) {
 			index = default;
 			return false;
 		}
@@ -98,7 +106,7 @@ internal class InstanceTracker {
 	}
 
 	public void Clear() {
-		_objects.Clear();
+		_objectsByType.Clear();
 	}
 
 	private BijectiveDictionary<long, object> CreateInstanceDictionary() => new(EqualityComparer<long>.Default, ReferenceEqualityComparer.Instance);

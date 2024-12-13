@@ -18,11 +18,13 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 	protected readonly ObjectSpaceBuilder _parent;
 	private readonly IList<ObjectSpaceDefinition.IndexDefinition> _indexes;
 	private int? _averageItemSize;
+	private ObjectChangeTracker _changeTracker;
 
 	public ObjectSpaceDimensionBuilder(ObjectSpaceBuilder parent) {
 		_parent = parent;
 		_averageItemSize = null;
 		_indexes = new List<ObjectSpaceDefinition.IndexDefinition>();
+		_changeTracker = ObjectChangeTracker.Default;
 
 		// Add recyclable free index store by default
 		WithRecyclableIndexes();
@@ -127,6 +129,7 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 	public ObjectSpaceDimensionBuilder<T> WithUniqueIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) 
 		=> (ObjectSpaceDimensionBuilder<T>)((IObjectSpaceDimensionBuilder)this).WithUniqueIndexOn(member, indexName, nullPolicy);
 
+
 	IObjectSpaceDimensionBuilder IObjectSpaceDimensionBuilder.WithUniqueIndexOn(Member member, string indexName = null, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) {
 		Guard.ArgumentNotNull(member, nameof(member));
 		Guard.Argument(member.DeclaringType == typeof(T), nameof(member), $"Not a member of {typeof(T).ToStringCS()}");
@@ -160,6 +163,14 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		return this;
 	}
 
+	public ObjectSpaceDimensionBuilder<T> WithChangeTrackingVia<TMember>(Expression<Func<T, TMember>> memberExpression) 
+		=> (ObjectSpaceDimensionBuilder<T>)WithChangeTrackingVia(memberExpression.ToMember());
+
+	public IObjectSpaceDimensionBuilder WithChangeTrackingVia(Member member) {
+		_changeTracker = new ObjectChangeTracker(member);
+		return this;
+	}
+
 	public ObjectSpaceDimensionBuilder<T> OptimizeAssumingAverageItemSize(int bytes) {
 		_averageItemSize = bytes;
 		return this;
@@ -175,7 +186,8 @@ public class ObjectSpaceDimensionBuilder<T> : IObjectSpaceDimensionBuilder {
 		return new ObjectSpaceDefinition.DimensionDefinition {
 			ObjectType = typeof(T),
 			AverageObjectSizeBytes = _averageItemSize,
-			Indexes = _indexes.ToArray()
+			Indexes = _indexes.ToArray(),
+			ChangeTracker = _changeTracker
 		};
 	}
 

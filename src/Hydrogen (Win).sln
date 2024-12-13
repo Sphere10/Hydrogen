@@ -92,6 +92,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Misc", "Misc", "{AA4A8AEA-0
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HashLib4CSharp.Tests", "..\tests\HashLib4CSharp.Tests\HashLib4CSharp.Tests.csproj", "{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hydrogen.Generators", "Hydrogen.Generators\Hydrogen.Generators.csproj", "{E4B09863-F1C9-4AEC-83CA-DAD3D13A7478}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -404,6 +406,14 @@ Global
 		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Release|x86.ActiveCfg = Release|Any CPU
 		{9A1EF7C9-A988-0039-A0DB-D84F5F25BD0D}.Release|x86.Build.0 = Release|Any CPU
+		{E4B09863-F1C9-4AEC-83CA-DAD3D13A7478}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4B09863-F1C9-4AEC-83CA-DAD3D13A7478}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4B09863-F1C9-4AEC-83CA-DAD3D13A7478}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E4B09863-F1C9-4AEC-83CA-DAD3D13A7478}.Debug|x86.Build.0 = Debug|Any CPU
+		{E4B09863-F1C9-4AEC-83CA-DAD3D13A7478}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4B09863-F1C9-4AEC-83CA-DAD3D13A7478}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4B09863-F1C9-4AEC-83CA-DAD3D13A7478}.Release|x86.ActiveCfg = Release|Any CPU
+		{E4B09863-F1C9-4AEC-83CA-DAD3D13A7478}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

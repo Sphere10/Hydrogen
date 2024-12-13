@@ -66,7 +66,7 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 
 	private void SubscribeToDimensionTreeChanges(int i) {
 		var dimension = _objectSpace.Dimensions[i];
-		var dimensionMerkleTree = (MerkleTreeIndex)dimension.ObjectStream.Streams.Attachments[_childTreeIndexName];
+		var dimensionMerkleTree = (MerkleTreeIndex)dimension.Container.ObjectStream.Streams.Attachments[_childTreeIndexName];
 
 		// Listen to underlying collection root changes (and track the handler for unsub later)
 		var capturedIndex = i;
@@ -97,7 +97,7 @@ internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<
 		for (var i = 0; i < _objectSpace.Dimensions.Count; i++) {
 			// Get the object dimension and it's root
 			var dimension = _objectSpace.Dimensions[i];
-			if (!dimension.ObjectStream.Streams.Attachments.TryGetValue(_childTreeIndexName, out var treeAttachment) || treeAttachment is not MerkleTreeIndex dimensionTree)
+			if (!dimension.Container.ObjectStream.Streams.Attachments.TryGetValue(_childTreeIndexName, out var treeAttachment) || treeAttachment is not MerkleTreeIndex dimensionTree)
 				throw new InvalidDataException($"ObjectSpace dimension {i} requires a {nameof(MerkleTreeIndex)} called '{nameof(MerkleTreeIndex)}' for the spatial tree to track");
 			var dimensionRoot = dimensionTree.MerkleTree.Root;
 			

@@ -41,6 +41,7 @@ public class ObjectSpaceBuilder {
 	private ComparerFactory _comparerFactory;
 	private bool _usingCustomComparerFactory;
 	private bool _specifiedCustomComparer;
+	private bool _autoSave;
 
 	public ObjectSpaceBuilder() {
 		_type = null;
@@ -64,6 +65,8 @@ public class ObjectSpaceBuilder {
 		_comparerFactory = new ComparerFactory(ComparerFactory.Default);
 		_usingCustomComparerFactory = false;
 		_specifiedCustomComparer = false;
+
+		_autoSave = false;
 	}
 
 	public ObjectSpaceBuilder UseFile(string filePath) {
@@ -122,6 +125,11 @@ public class ObjectSpaceBuilder {
 
 	public ObjectSpaceBuilder WithEndianness(Endianness endianness) {
 		_endianness = endianness;
+		return this;
+	}
+
+	public ObjectSpaceBuilder AutoSave() {
+		_autoSave = true;
 		return this;
 	}
 
@@ -252,8 +260,7 @@ public class ObjectSpaceBuilder {
 	}	
 	
 	public ObjectSpaceDefinition BuildDefinition() {
-		var definition = new ObjectSpaceDefinition {
-			Merkleized = _merkleized,
+		var definition = new ObjectSpaceDefinition(_merkleized, _autoSave) {
 			HashFunction = _hashFunction,
 			Dimensions = _dimensions.Select(x => x.BuildDefinition()).ToArray()
 		};

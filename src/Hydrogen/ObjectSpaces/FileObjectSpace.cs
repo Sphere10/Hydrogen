@@ -21,7 +21,7 @@ public class FileObjectSpace : ObjectSpaceBase, ITransactionalObject{
 	private readonly TransactionalStream _fileStream;
 
 	public FileObjectSpace(HydrogenFileDescriptor file, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default)
-		: base(CreateStreams(file, objectSpaceDefinition.Merkleized, accessMode, out var fileStream), objectSpaceDefinition, serializerFactory, comparerFactory, accessMode) {
+		: base(CreateStreams(file, objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.Merkleized), accessMode, out var fileStream), objectSpaceDefinition, serializerFactory, comparerFactory, accessMode) {
 		Guard.ArgumentNotNull(file, nameof(file));
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
@@ -29,6 +29,8 @@ public class FileObjectSpace : ObjectSpaceBase, ITransactionalObject{
 
 		File = file;
 		AccessMode = accessMode;
+
+		FlushOnDispose = false; // this flushes on Commiting event, on Dispose we don't want to risk changing the file (Rollback scenario)
 
 		// Create the file stream
 		_fileStream = fileStream;
@@ -60,7 +62,7 @@ public class FileObjectSpace : ObjectSpaceBase, ITransactionalObject{
 
 	public void Commit()  {
 		using (EnterAccessScope()) {
-			// flush all cached changes
+			// flush all changed (stored in uncommitted pages)
 			_fileStream.Commit();
 		}
 	}

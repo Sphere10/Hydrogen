@@ -11,4 +11,8 @@ public class Identity {
 
 	[Index]
 	public int Group { get; set; }
+
+	[Transient]
+	public bool Dirty { get; set; }
+
 }

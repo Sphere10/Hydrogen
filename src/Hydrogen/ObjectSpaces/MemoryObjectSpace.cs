@@ -32,7 +32,7 @@ public class MemoryObjectSpace : ObjectSpaceBase {
 		int clusterSize = HydrogenDefaults.ClusterSize, 
 		ClusteredStreamsPolicy clusteredStreamsPolicy = HydrogenDefaults.ContainerPolicy, 
 		Endianness endianness = HydrogenDefaults.Endianness
-	) : base(CreateStreams(memoryStream, clusterSize, clusteredStreamsPolicy, endianness, objectSpaceDefinition.Merkleized), objectSpaceDefinition, serializerFactory, comparerFactory) {
+	) : base(CreateStreams(memoryStream, clusterSize, clusteredStreamsPolicy, endianness, objectSpaceDefinition.Traits.HasFlag(ObjectSpaceTraits.Merkleized)), objectSpaceDefinition, serializerFactory, comparerFactory) {
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));
 		Guard.ArgumentNotNull(comparerFactory, nameof(comparerFactory));

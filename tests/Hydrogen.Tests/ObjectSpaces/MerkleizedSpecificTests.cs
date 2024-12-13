@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Hydrogen.ObjectSpaces;
 using NUnit.Framework;
@@ -16,34 +15,35 @@ using NUnit.Framework;
 
 namespace Hydrogen.Tests;
 
-[TestFixture, Timeout(60000)]
-public class MerkleizedMemoryObjectSpacesTest : MemoryObjectSpacesTest {
+[TestFixture]
+public class MerkleizedSpecificTests {
 
-	protected override MemoryObjectSpace CreateMemoryObjectSpace(MemoryStream stream, bool keepStreamOnDispose, ObjectSpaceBuilder builder) 
-		=> base.CreateMemoryObjectSpace(stream, keepStreamOnDispose, builder.Merkleized());
 
 	[Test]
-	public void CheckRootsChanged() {
-		using var objectSpace = CreateObjectSpace();
+	[TestCaseSource(typeof(ObjectSpaceTestsHelper), nameof(ObjectSpaceTestsHelper.MerkleizedTestCases))]
+	public void CheckRootsChanged(ObjectSpaceTestTraits testTraits) {
+		using var objectSpace = ObjectSpaceTestsHelper.CreateStandard(testTraits);
 		var chf = objectSpace.Definition.HashFunction;
 		var digestSize = Hashers.GetDigestSizeBytes(chf);
 
-		var savedAccount = CreateAccount();
+		var savedAccount = ObjectSpaceTestsHelper.CreateAccount();
 		var accountDigest = Hashers.Hash(chf, objectSpace.Serializers.GetSerializer<Account>().SerializeBytesLE(savedAccount));
 		objectSpace.Save(savedAccount);
-		objectSpace.Flush(); // This is necessary to flush out merkle tree changes
+		
+		// This is necessary to flush out merkle tree changes
+		objectSpace.Flush(); 
 
 		var dim1 = objectSpace.Dimensions[0];
 		var dim2 = objectSpace.Dimensions[1];
 
 		// Verify account dimension has single item root
-		using var dim1Scope = dim1.ObjectStream.EnterAccessScope();
-		var accountRoot = dim1.ObjectStream.Streams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
+		using var dim1Scope = dim1.Container.ObjectStream.EnterAccessScope();
+		var accountRoot = dim1.Container.ObjectStream.Streams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
 		Assert.That(accountRoot, Is.EqualTo(accountDigest).Using(ByteArrayEqualityComparer.Instance));
 
 		// Verify identity dimension has null root  (note: null is stored as 0 bytes)
-		using var dim2Scope = dim2.ObjectStream.EnterAccessScope();
-		var identityRoot = dim2.ObjectStream.Streams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
+		using var dim2Scope = dim2.Container.ObjectStream.EnterAccessScope();
+		var identityRoot = dim2.Container.ObjectStream.Streams.Header.MapExtensionProperty(0, digestSize, new ConstantSizeByteArraySerializer(digestSize)).Value;
 		Assert.That(identityRoot, Is.EqualTo(new byte[digestSize]).Using(ByteArrayEqualityComparer.Instance));
 			
 		// Verify spatial root is both account/identity

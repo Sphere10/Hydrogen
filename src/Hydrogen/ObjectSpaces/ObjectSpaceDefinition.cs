@@ -9,15 +9,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
 
-
 public class ObjectSpaceDefinition {
 
-	public bool Merkleized { get; set ; } = false;
+
+	public ObjectSpaceDefinition() : this(false, false) {
+	}
+
+	public ObjectSpaceDefinition(bool merkleized, bool autosave) {
+		Traits = ObjectSpaceTraits.None;
+		if (merkleized)
+			Traits |= ObjectSpaceTraits.Merkleized;
+		if (autosave)
+			Traits |= ObjectSpaceTraits.AutoSave;
+	}
+
+	public ObjectSpaceTraits Traits { get; set ; } = ObjectSpaceTraits.None;
 		
 	public CHF HashFunction { get; set; } = HydrogenDefaults.HashFunction;
 
@@ -35,6 +45,12 @@ public class ObjectSpaceDefinition {
 		if (Dimensions.Length == 0) {
 			result.AddError("At least 1 Dimension must be defined.");
 		}
+
+		// All containers must have a unique type
+		Dimensions
+			.GroupBy(x => x.ObjectType)
+			.Where(x => x.Count() > 1)
+			.ForEach(x => result.AddError($"Container type '{x.Key}' is defined more than once."));
 
 		// Verify all dimensions
 		for(var i = 0; i < Dimensions.Length; i++) {
@@ -58,7 +74,7 @@ public class ObjectSpaceDefinition {
 					result.AddError($"{dimensionErrorPrefix} has more than one {nameof(IndexType.MerkleTree)} defined");
 
 				// Ensure has merkle-tree if object space is merkelized
-				if (Merkleized && dimensionMerkleTrees < 1)
+				if (Traits.HasFlag(ObjectSpaceTraits.Merkleized) && dimensionMerkleTrees < 1)
 					result.AddError($"{dimensionErrorPrefix} requires a {nameof(IndexType.MerkleTree)} as the parent object space is merkleized");
 
 				// Verify all indexes
@@ -81,20 +97,19 @@ public class ObjectSpaceDefinition {
 						result.AddError($"{dimensionErrorPrefix} contains multiple index's on member {index.Member.Name}");
 						alreadyProcessedMembers.Add(index.Member);
 					}
-					
 				}
+
 			} else {
 				result.AddError("Dimension requires index definition");
 			}
 		}
 
-		// All containers must have a unique type
-		Dimensions
-			.GroupBy(x => x.ObjectType)
-			.Where(x => x.Count() > 1)
-			.ForEach(x => result.AddError($"Container type '{x.Key}' is defined more than once."));
-
-		// Each objectStream index correctly maps to an object property
+		// Verify PI
+		if (Traits.HasFlag(ObjectSpaceTraits.AutoSave)) {
+			Dimensions
+				.Where(x => !x.ChangeTracker.SupportsChangeTracking)
+				.ForEach(x => result.AddError($"Dimension {x.ObjectType.ToStringCS()} does not support change tracking"));
+		}
 
 		return result;
 
@@ -111,6 +126,8 @@ public class ObjectSpaceDefinition {
 	}
 
 	public class DimensionDefinition {
+
+		internal ObjectChangeTracker ChangeTracker { get; set; } = ObjectChangeTracker.Default;
 
 		public Type ObjectType { get; set; }
 

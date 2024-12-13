@@ -26,10 +26,10 @@ public class MemoryMappedTests {
 		using var stream = new MemoryStream();
 		var activationArgs = new Dictionary<string, object> { ["stream"] = stream };
 
-		using (var objectSpace = TestsHelper.CreateStandard(testTraits, activationArgs)) {
+		using (var objectSpace = TestsHelper.CreateObjectSpace(testTraits, activationArgs)) {
 			objectSpace.Flush();
 		}
-		Assert.That(() => { using var _ = TestsHelper.CreateStandard(testTraits, activationArgs); }, Throws.Nothing);
+		Assert.That(() => { using var _ = TestsHelper.CreateObjectSpace(testTraits, activationArgs); }, Throws.Nothing);
 	}
 
 	[Test]
@@ -38,12 +38,12 @@ public class MemoryMappedTests {
 		var stream = new MemoryStream();
 		var activationArgs = new Dictionary<string, object> { ["stream"] = stream };
 
-		using (var objectSpace =  TestsHelper.CreateStandard(testTraits, activationArgs)) {
+		using (var objectSpace =  TestsHelper.CreateObjectSpace(testTraits, activationArgs)) {
 			var savedAccount = TestsHelper.CreateAccount();
 			objectSpace.Save(savedAccount);
 			objectSpace.Flush();
 		}
-		Assert.That(() => { using var _ = TestsHelper.CreateStandard(testTraits, activationArgs); }, Throws.Nothing);
+		Assert.That(() => { using var _ = TestsHelper.CreateObjectSpace(testTraits, activationArgs); }, Throws.Nothing);
 	}
 
 	#endregion

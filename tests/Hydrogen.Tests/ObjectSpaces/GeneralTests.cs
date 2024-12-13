@@ -25,7 +25,7 @@ public class GeneralTests {
 	[Test]
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void CheckMerkleTraitSet(TestTraits testTraits) {
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		Assert.That(objectSpace.Definition.Traits.HasFlag(ObjectSpaceTraits.Merkleized), Is.EqualTo(testTraits.HasFlag(TestTraits.Merklized)));
 	}
 
@@ -37,7 +37,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void ConstructorThrowsNothing(TestTraits testTraits) {
 
-		Assert.That(() => { using var _ = TestsHelper.CreateStandard(testTraits); }, Throws.Nothing);
+		Assert.That(() => { using var _ = TestsHelper.CreateObjectSpace(testTraits); }, Throws.Nothing);
 	}
 
 	#endregion
@@ -47,7 +47,7 @@ public class GeneralTests {
 	[Test]
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void SaveThrowsNothing(TestTraits testTraits) {
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var account = TestsHelper.CreateAccount();
 		Assert.That(() => objectSpace.Save(account), Throws.Nothing);
 
@@ -61,7 +61,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void DeleteThrowsNothing(TestTraits testTraits) {
 		// note: long based property will index the property value (not checksum) since constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random(31337);
 		var account1 = TestsHelper.CreateAccount(rng);
 		objectSpace.Save(account1);
@@ -75,7 +75,7 @@ public class GeneralTests {
 	[Test]
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void Clear_1(TestTraits testTraits) {
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var savedAccount = TestsHelper.CreateAccount();
 		objectSpace.Save(savedAccount);
 		objectSpace.Clear("I CONSENT TO CLEAR ALL DATA");
@@ -94,7 +94,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_Checksummed_GetViaIndex(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		account1.Name = "alpha";
@@ -118,7 +118,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_Checksummed_ProhibitsDuplicate_ViaAdd(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);
@@ -131,7 +131,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_Checksummed_ProhibitsDuplicate_ViaUpdate_1(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);
@@ -147,7 +147,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_Checksummed_ProhibitsDuplicate_ViaUpdate_2(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);
@@ -163,7 +163,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_Checksummed_AllowsUpdate_ThrowsNothing(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		account1.Name = "alpha";
@@ -175,7 +175,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_Checksummed_SaveThenDeleteThenSave_ThrowsNothing(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);
@@ -193,7 +193,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_Checksummed_IgnoreNullPolicy(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits, nullPolicy: IndexNullPolicy.IgnoreNull);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits, nullPolicy: IndexNullPolicy.IgnoreNull);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);
@@ -207,7 +207,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_Checksummed_IndexNullValue(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits, nullPolicy: IndexNullPolicy.IndexNullValue);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits, nullPolicy: IndexNullPolicy.IndexNullValue);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);
@@ -221,7 +221,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_Checksummed_ThrowOnNullValue(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits, nullPolicy: IndexNullPolicy.ThrowOnNull);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits, nullPolicy: IndexNullPolicy.ThrowOnNull);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		account1.Name = null;
@@ -236,7 +236,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_GetViaIndex(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random();
 		var account1 = TestsHelper.CreateAccount(rng);
 		account1.UniqueNumber = 1;
@@ -260,7 +260,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_ProhibitsDuplicate_ViaAdd(TestTraits testTraits) {
 		// note: long based property will index the property value (not checksum) since constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random(31337);
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);
@@ -273,7 +273,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_ProhibitsDuplicate_ViaUpdate_1(TestTraits testTraits) {
 		// note: long based property will index the property value (not checksum) since constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random(31337);
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);
@@ -288,7 +288,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_ProhibitsDuplicate_ViaUpdate_2(TestTraits testTraits) {
 		// note: long based property will index the property value (not checksum) since constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random(31337);
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);
@@ -303,7 +303,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_AllowsUpdate_ThrowsNothing(TestTraits testTraits) {
 		// note: long based property will index the property value (not checksum) since constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random(31337);
 		var account1 = TestsHelper.CreateAccount(rng);
 		objectSpace.Save(account1);
@@ -314,7 +314,7 @@ public class GeneralTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.AllTestCases))]
 	public void UniqueMember_SaveThenDeleteThenSave_ThrowsNothing(TestTraits testTraits) {
 		// note: string based property will use a checksum-based index since not constant length key
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var rng = new Random(31337);
 		var account1 = TestsHelper.CreateAccount(rng);
 		var account2 = TestsHelper.CreateAccount(rng);

@@ -22,13 +22,13 @@ public class FileMappedTests {
 
 		// Create object space and keep files after dispose
 		var activationArgs = new Dictionary<string, object> { ["folder"] = folder };
-		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateStandard(traits, activationArgs)) {
+		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits, activationArgs)) {
 			objectSpace.Commit();
 		}
 
 		// Load object space from same files
 		Assert.That(() => {
-			using var space = (FileObjectSpace)TestsHelper.CreateStandard(traits, activationArgs);
+			using var space = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits, activationArgs);
 			if (space.RequiresLoad)
 				space.Load();
 		}, Throws.Nothing);
@@ -41,7 +41,7 @@ public class FileMappedTests {
 		var disposables = new Disposables(Tools.Scope.DeleteDirOnDispose(folder));
 
 		var activationArgs = new Dictionary<string, object> { ["folder"] = folder };
-		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateStandard(traits, activationArgs)) {
+		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits, activationArgs)) {
 			var savedAccount = TestsHelper.CreateAccount();
 			objectSpace.Save(savedAccount);
 			objectSpace.Commit();
@@ -49,7 +49,7 @@ public class FileMappedTests {
 
 		// Load object space from same files
 		Assert.That(() => {
-			using var space = (FileObjectSpace)TestsHelper.CreateStandard(traits, activationArgs);
+			using var space = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits, activationArgs);
 			if (space.RequiresLoad)
 				space.Load();
 		}, Throws.Nothing);
@@ -62,7 +62,7 @@ public class FileMappedTests {
 	[Test]
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.FileMappedTestCases))]
 	public void CommitNotThrows(TestTraits traits) {
-		using var objectSpace = (FileObjectSpace)TestsHelper.CreateStandard(traits);
+		using var objectSpace = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits);
 		var account = TestsHelper.CreateAccount();
 		objectSpace.Save(account);
 		Assert.That(objectSpace.Commit, Throws.Nothing);
@@ -74,13 +74,13 @@ public class FileMappedTests {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
 		var accountComparer = TestsHelper.CreateAccountComparer();
 		Account savedAccount, loadedAccount;
-		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateStandard(traits, new Dictionary<string, object> { ["folder"] = folder })) {
+		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits, new Dictionary<string, object> { ["folder"] = folder })) {
 			savedAccount = TestsHelper.CreateAccount();
 			objectSpace.Save(savedAccount);
 			objectSpace.Commit();
 		}
 
-		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateStandard(traits, new Dictionary<string, object> { ["folder"] = folder })) {
+		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits, new Dictionary<string, object> { ["folder"] = folder })) {
 			loadedAccount = objectSpace.Get<Account>(0);
 		}
 
@@ -94,7 +94,7 @@ public class FileMappedTests {
 	[Test]
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.FileMappedTestCases))]
 	public void RollbackNotThrows(TestTraits traits) {
-		using var objectSpace = (FileObjectSpace)TestsHelper.CreateStandard(traits);
+		using var objectSpace = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits);
 		var account = TestsHelper.CreateAccount();
 		objectSpace.Save(account);
 		Assert.That(objectSpace.Rollback, Throws.Nothing);
@@ -104,13 +104,13 @@ public class FileMappedTests {
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.FileMappedTestCases))]
 	public void Rollback(TestTraits traits) {
 		var folder = Tools.FileSystem.GetTempEmptyDirectory(true);
-		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateStandard(traits, new Dictionary<string, object> { ["folder"] = folder })) {
+		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits, new Dictionary<string, object> { ["folder"] = folder })) {
 			var account = TestsHelper.CreateAccount();
 			objectSpace.Save(account);
 			objectSpace.Rollback();
 		}
 
-		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateStandard(traits, new Dictionary<string, object> { ["folder"] = folder })) {
+		using (var objectSpace = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits, new Dictionary<string, object> { ["folder"] = folder })) {
 			Assert.That(objectSpace.Count<Account>(), Is.EqualTo(0));
 		}
 	}
@@ -129,7 +129,7 @@ public class FileMappedTests {
 	[Test]
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.FileMappedTestCases))]
 	public void ClearCommit(TestTraits traits) {
-		using var objectSpace = (FileObjectSpace)TestsHelper.CreateStandard(traits);
+		using var objectSpace = (FileObjectSpace)TestsHelper.CreateObjectSpace(traits);
 		var savedAccount = TestsHelper.CreateAccount();
 		objectSpace.Save(savedAccount);
 		objectSpace.Clear("I CONSENT TO CLEAR ALL DATA");

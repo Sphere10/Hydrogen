@@ -11,7 +11,7 @@ namespace Hydrogen.Tests.ObjectSpaces;
 public static class TestsHelper {
 
 
-	public static ObjectSpaceBase CreateStandard(TestTraits traits, Dictionary<string, object> activationArgs = default, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) {
+	public static ObjectSpaceBase CreateObjectSpace(TestTraits traits, Dictionary<string, object> activationArgs = default, IndexNullPolicy nullPolicy = IndexNullPolicy.IgnoreNull) {
 		activationArgs ??= [];
 		var disposables = new Disposables();
 

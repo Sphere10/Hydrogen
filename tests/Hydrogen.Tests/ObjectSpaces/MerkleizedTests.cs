@@ -22,7 +22,7 @@ public class MerkleizedTests {
 	[Test]
 	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.MerkleizedTestCases))]
 	public void CheckRootsChanged(TestTraits testTraits) {
-		using var objectSpace = TestsHelper.CreateStandard(testTraits);
+		using var objectSpace = TestsHelper.CreateObjectSpace(testTraits);
 		var chf = objectSpace.Definition.HashFunction;
 		var digestSize = Hashers.GetDigestSizeBytes(chf);
 

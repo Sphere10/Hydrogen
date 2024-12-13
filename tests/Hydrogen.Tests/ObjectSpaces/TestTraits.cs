@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.ObjectSpaces;
 
 [Flags]
-public enum ObjectSpaceTestTraits {
+public enum TestTraits {
 	MemoryMapped,
 	FileMapped,
 	Merklized,

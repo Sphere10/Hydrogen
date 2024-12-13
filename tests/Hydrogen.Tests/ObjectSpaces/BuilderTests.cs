@@ -13,10 +13,10 @@ using Hydrogen.ObjectSpaces;
 using NUnit.Framework;
 
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.ObjectSpaces;
 
 [TestFixture]
-public class ObjectSpacesBuilderTests {
+public class BuilderTests {
 
 	
 	[Test]

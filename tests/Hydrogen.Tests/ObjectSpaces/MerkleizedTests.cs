@@ -13,20 +13,20 @@ using Hydrogen.ObjectSpaces;
 using NUnit.Framework;
 
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.ObjectSpaces;
 
 [TestFixture]
-public class MerkleizedSpecificTests {
+public class MerkleizedTests {
 
 
 	[Test]
-	[TestCaseSource(typeof(ObjectSpaceTestsHelper), nameof(ObjectSpaceTestsHelper.MerkleizedTestCases))]
-	public void CheckRootsChanged(ObjectSpaceTestTraits testTraits) {
-		using var objectSpace = ObjectSpaceTestsHelper.CreateStandard(testTraits);
+	[TestCaseSource(typeof(TestsHelper), nameof(TestsHelper.MerkleizedTestCases))]
+	public void CheckRootsChanged(TestTraits testTraits) {
+		using var objectSpace = TestsHelper.CreateStandard(testTraits);
 		var chf = objectSpace.Definition.HashFunction;
 		var digestSize = Hashers.GetDigestSizeBytes(chf);
 
-		var savedAccount = ObjectSpaceTestsHelper.CreateAccount();
+		var savedAccount = TestsHelper.CreateAccount();
 		var accountDigest = Hashers.Hash(chf, objectSpace.Serializers.GetSerializer<Account>().SerializeBytesLE(savedAccount));
 		objectSpace.Save(savedAccount);
 		

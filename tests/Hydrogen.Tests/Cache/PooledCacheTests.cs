@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.Cache;
 
 [TestFixture]
 public class PooledCacheTests {

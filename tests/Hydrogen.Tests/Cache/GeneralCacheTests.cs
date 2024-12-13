@@ -13,11 +13,11 @@ using System.Linq;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
 
-namespace Hydrogen.Tests;
+namespace Hydrogen.Tests.Cache;
 
 [TestFixture]
 [Parallelizable(ParallelScope.Children)]
-public class CacheTests {
+public class GeneralCacheTests {
 
 	[Test]
 	public void PackedEventHandlerRemovedCorrectly() {

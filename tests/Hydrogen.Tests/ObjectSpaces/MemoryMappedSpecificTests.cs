@@ -18,7 +18,6 @@ namespace Hydrogen.Tests;
 [TestFixture]
 public class MemoryMappedSpecificTests {
 
-
 	#region Load
 
 	[Test]

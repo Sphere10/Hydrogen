@@ -19,9 +19,11 @@ namespace Hydrogen.ObjectSpaces;
 internal class InstanceTracker {
 
 	private readonly Dictionary<Type, BijectiveDictionary<long, object>> _objectsByType;
+	private int _newInstances;
 
 	public InstanceTracker() {
 		_objectsByType = new Dictionary<Type, BijectiveDictionary<long, object>>(TypeEquivalenceComparer.Instance);
+		_newInstances = 0;
 	}
 
 
@@ -60,6 +62,12 @@ internal class InstanceTracker {
 		=> _objectsByType.TryGetValue(itemType, out var instances) ? instances.Values : Array.Empty<object>();
 
 
+	public int TrackNew(object item) {
+		var newIndex = -(++_newInstances);
+		Track(item, newIndex);
+		return newIndex;
+	}
+
 	public void Track(object item, long index) {
 		var itemType = item.GetType();
 		
@@ -68,10 +76,16 @@ internal class InstanceTracker {
 			_objectsByType.Add(itemType, instances);
 		}
 
+		// check if the index is already in use
 		if (instances.TryGetValue(index, out var _)) 
-			throw new InvalidOperationException($"An instance of {itemType.ToStringCS()} with index {index} has already been tracked"); 
+			throw new InvalidOperationException($"An instance of {itemType.ToStringCS()} with index {index} has already been tracked");
 
-		instances.Add(index, item);
+		// if the item is already tracked, update the index
+		if (instances.Bijection.ContainsKey(item))
+			instances.Bijection[item] = index;
+		else
+			// otherwise, add the item
+			instances.Add(index, item);
 	}
 
 	public void Untrack(object item) {
@@ -107,6 +121,7 @@ internal class InstanceTracker {
 
 	public void Clear() {
 		_objectsByType.Clear();
+		_newInstances = 0;
 	}
 
 	private BijectiveDictionary<long, object> CreateInstanceDictionary() => new(EqualityComparer<long>.Default, ReferenceEqualityComparer.Instance);

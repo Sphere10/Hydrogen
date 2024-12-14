@@ -6,6 +6,7 @@
 //
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 
@@ -19,15 +20,27 @@ namespace Hydrogen;
 /// - Subsequent additions will reuse these free slots before increasing the size of the data structure.
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public interface IRecyclableList<T> : IExtendedList<T> {
+public interface IRecyclableList<T> : IExtendedList<T>, IRecyclableList {
+	void Add(T item, out long index);
+
+	void IRecyclableList.Add(object item, out long index) 
+		=> Add((T) item, out index);
+
+	void IRecyclableList.Update(long index, object item) 
+		=> Update(index, (T)item);
+
+}
+
+public interface IRecyclableList  {
 	long ListCount { get; }
 
 	long RecycledCount { get; }
-
-	void Add(T item, out long index);
 
 	void Recycle(long index);
 
 	bool IsRecycled(long index);
 
+	void Add(object item, out long index);
+
+	void Update(long index, object item);
 }

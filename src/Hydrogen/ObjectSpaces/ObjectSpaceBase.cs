@@ -8,8 +8,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
@@ -62,6 +64,23 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 	protected bool FlushOnDispose { get; set; }
 
 	public IDisposable EnterAccessScope() => _streams.EnterAccessScope();
+
+	public TItem New<TItem>() where TItem : new() {
+		var instance = new TItem();
+		AcceptNew(instance);
+		return instance;
+	}
+
+	public int AcceptNew<TItem>(TItem item)
+		=> AcceptNewInternal(typeof(TItem), item);
+
+	public int AcceptNewInternal(Type itemType, object item) {
+		var dimension = GetDimension(itemType);
+		if (AutoSave)
+			dimension.Definition.ChangeTracker.SetChanged(item, true);
+		return _instanceTracker.TrackNew(item);
+	}
+
 
 	public IEnumerable<TItem> GetAll<TItem>() {
 		throw new NotImplementedException();
@@ -140,21 +159,28 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		}
 	}
 
-	public long Save<TItem>(TItem item) {
-		using (EnterAccessScope()) {
-			// Get underlying stream mapped collection
-			var dimension = GetDimension<TItem>();
+	public long Save<TItem>(TItem item) 
+		=> SaveInternal(typeof(TItem), item);
 
+	public long Save(object item) 
+		=> SaveInternal(item.GetType(), item);
+
+	protected long SaveInternal(Type itemType, object item) {
+		using (EnterAccessScope()) {
 			// Get the item index (if applicable)
-			var existingItem = _instanceTracker.TryGetIndexOf(item, out var index);
-			
-			if (existingItem) {
+			if (!_instanceTracker.TryGetIndexOf(item, out var index)) 
+				index = AcceptNewInternal(itemType, item);
+
+			// Get underlying stream mapped collection
+			var dimension = GetDimension(itemType);
+
+			if (index >= 0) {
 				// Update existing
 				dimension.Container.Update(index, item);
 			} else {
 				// Add if new
 				dimension.Container.Add(item, out index);
-				_instanceTracker.Track(item, index);
+				_instanceTracker.Track(item, index); // updates index from negative value to actual index
 			}
 
 			// Mark as unchanged
@@ -164,7 +190,13 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 		}
 	}
 
-	public void Delete<TItem>(TItem item) {
+	public void Delete<TItem>(TItem item) 
+		=> DeleteInternal(typeof(TItem), item);
+
+	public void Delete(object item) 
+		=> DeleteInternal(item.GetType(), item);
+
+	public void DeleteInternal(Type itemType, object item) {
 		using (EnterAccessScope()) {
 			// Get tracked index of item instance
 			if (!_instanceTracker.TryGetIndexOf(item, out var index)) 
@@ -174,10 +206,12 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 			_instanceTracker.Untrack(item);
 
 			// Remove it from the dimension 
-			var dimension = GetDimension<TItem>();
-			dimension.Container.Recycle(index);
+			var dimension = GetDimension(itemType);
+			if (index >= 0)
+				dimension.Container.Recycle(index);
 		}
 	}
+
 
 	/// <summary>
 	/// Clears all data in the object space. This is a destructive operation and cannot be undone. Must pass <b>"I CONSENT TO CLEAR ALL DATA"</b> for execution.
@@ -290,7 +324,8 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 					.GetInstances()
 					.Select(x => (Type: x.GetType(), Instance: x))
 					.Where(x => _dimensions[x.Type].Definition.ChangeTracker.HasChanged(x.Instance))
-					.Select(x => x.Instance);
+					.Select(x => x.Instance)
+					.ToArray();
 			foreach(var changedObject in changedObjects) {
 				// check if still changed (prior connected object may have saved it recursively)
 				if (_dimensions[changedObject.GetType()].Definition.ChangeTracker.HasChanged(changedObject))
@@ -430,18 +465,18 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 			HydrogenDefaults.LargestRecommendedClusterSize
 		);
 
-	private Dimension<TItem> GetDimension<TItem>() {
-		var itemType = typeof(TItem);
+	private Dimension<TItem> GetDimension<TItem>() 
+		=> (Dimension<TItem>)GetDimension(typeof(TItem));
 
+	private Dimension GetDimension(Type itemType) {
 		if (!_dimensions.TryGetValue(itemType, out var dimension))
 			throw new InvalidOperationException($"A dimension for type '{itemType.ToStringCS()}' was not registered");
 
-		return (Dimension<TItem>)dimension;
+		return dimension;
 	}
 
-
 	#region Aux Types
-	public record Dimension(ObjectSpaceDefinition.DimensionDefinition Definition, IStreamMappedCollection Container) : IDisposable {
+	public record Dimension(ObjectSpaceDefinition.DimensionDefinition Definition, IStreamMappedRecylableList Container) : IDisposable {
 		public void Dispose() => (Container as IDisposable)?.Dispose();
 	};
 	public record Dimension<T>(ObjectSpaceDefinition.DimensionDefinition Definition, StreamMappedRecyclableList<T> Container) : Dimension(Definition, Container) {

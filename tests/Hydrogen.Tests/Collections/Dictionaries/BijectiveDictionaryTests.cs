@@ -89,4 +89,17 @@ public class BijectiveDictionaryTests {
 		ClassicAssert.AreEqual(dictionary.Keys, new [] { "one updated" });
 		ClassicAssert.AreEqual(dictionary.Values, new [] { 1 });
 	}
+
+	[Test]
+	public void TestUpdate() {
+		var dictionary = new BijectiveDictionary<string, int>();
+		dictionary["one"] = 1;
+		dictionary["two"] = 2;
+		dictionary["one"] = 11;
+
+		Assert.That(dictionary.Count, Is.EqualTo(2));
+		Assert.That(dictionary["one"], Is.EqualTo(11));
+		Assert.That(dictionary.Bijection[11], Is.EqualTo("one"));
+		Assert.That(dictionary.Bijection.ContainsKey(1), Is.False);
+	}
 }

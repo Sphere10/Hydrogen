@@ -19,7 +19,7 @@ public class SessionCacheTests {
 
 	[Test]
 	public void Simple_1() {
-		var cache = new Session<int, string>(TimeSpan.FromMilliseconds(100));
+		var cache = new SessionCache<int, string>(TimeSpan.FromMilliseconds(100));
 		cache.Set(1, "one");
 		Thread.Sleep(300);
 		cache.Cleanup(); // Need to call this manually since https://dzone.com/articles/unit-testing-multi-threaded
@@ -28,7 +28,7 @@ public class SessionCacheTests {
 
 	[Test]
 	public void Simple_2() {
-		var cache = new Session<int, string>(TimeSpan.FromMilliseconds(100));
+		var cache = new SessionCache<int, string>(TimeSpan.FromMilliseconds(100));
 		cache.Set(1, "one");
 		cache.Set(2, "two");
 		cache.Set(3, "three");
@@ -44,7 +44,7 @@ public class SessionCacheTests {
 
 	[Test]
 	public void Complex_1() {
-		var cache = new Session<int, string>(TimeSpan.FromMilliseconds(200));
+		var cache = new SessionCache<int, string>(TimeSpan.FromMilliseconds(200));
 		cache.Set(1, "one");
 		cache.Set(2, "two");
 		cache.Set(3, "three");
@@ -68,7 +68,7 @@ public class SessionCacheTests {
 
 	[Test]
 	public void Complex_2() {
-		var cache = new Session<int, string>(TimeSpan.FromMilliseconds(150));
+		var cache = new SessionCache<int, string>(TimeSpan.FromMilliseconds(150));
 		cache.Set(1, "one");
 		cache.Set(2, "two");
 		cache.Set(3, "three");
@@ -94,7 +94,7 @@ public class SessionCacheTests {
 	[Test]
 	public void SessionDisposed() {
 		var disposed = false;
-		var cache = new Session<int, IDisposable>(TimeSpan.FromMilliseconds(100));
+		var cache = new SessionCache<int, IDisposable>(TimeSpan.FromMilliseconds(100));
 		cache.ItemRemoved += (i, item) => { item.Dispose(); };
 		cache.Set(1, Tools.Scope.ExecuteOnDispose(() => disposed = true));
 		Thread.Sleep(200);
@@ -105,7 +105,7 @@ public class SessionCacheTests {
 	[Test]
 	public void SessionDisposedOnFlush() {
 		var disposed = false;
-		var cache = new Session<int, IDisposable>(TimeSpan.FromMilliseconds(100));
+		var cache = new SessionCache<int, IDisposable>(TimeSpan.FromMilliseconds(100));
 		cache.ItemRemoved += (i, item) => item.Dispose();
 		cache.Set(1, Tools.Scope.ExecuteOnDispose(() => disposed = true));
 		cache.Purge();
@@ -115,7 +115,7 @@ public class SessionCacheTests {
 
 	[Test]
 	public void Throws_1() {
-		var cache = new Session<int, string>(TimeSpan.FromMilliseconds(100));
+		var cache = new SessionCache<int, string>(TimeSpan.FromMilliseconds(100));
 		cache.Set(1, "one");
 		ClassicAssert.AreEqual("one", cache[1]);
 		Thread.Sleep(300);
@@ -127,7 +127,7 @@ public class SessionCacheTests {
 
 	[Test]
 	public void DoesNotExpire() {
-		var cache = new Session<int, string>(TimeSpan.FromMilliseconds(100));
+		var cache = new SessionCache<int, string>(TimeSpan.FromMilliseconds(100));
 		cache.Set(1, "one");
 		DateTime start = DateTime.Now;
 		while (DateTime.Now.Subtract(start).TotalSeconds <= 1.0D) {

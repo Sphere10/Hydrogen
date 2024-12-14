@@ -16,7 +16,7 @@ using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
 
-public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisposable {
+public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	protected readonly ClusteredStreams _streams;
 	protected readonly DictionaryList<Type, Dimension> _dimensions;
@@ -24,7 +24,7 @@ public abstract class ObjectSpaceBase : SyncLoadableBase, ICriticalObject, IDisp
 	private bool _loaded;
 	protected readonly bool AutoSave;
 
-	protected ObjectSpaceBase(ClusteredStreams streams, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default) {
+	protected ObjectSpace(ClusteredStreams streams, ObjectSpaceDefinition objectSpaceDefinition, SerializerFactory serializerFactory, ComparerFactory comparerFactory, FileAccessMode accessMode = FileAccessMode.Default) {
 		Guard.ArgumentNotNull(streams, nameof(streams));
 		Guard.ArgumentNotNull(objectSpaceDefinition, nameof(objectSpaceDefinition));
 		Guard.ArgumentNotNull(serializerFactory, nameof(serializerFactory));

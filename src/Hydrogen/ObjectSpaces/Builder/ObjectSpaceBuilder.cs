@@ -268,7 +268,7 @@ public class ObjectSpaceBuilder {
 		return definition;
 	}
 
-	public ObjectSpaceBase Build() {
+	public ObjectSpace Build() {
 		var definition = BuildDefinition();
 		var fileDescriptor = HydrogenFileDescriptor.From(_filepath, _pagesPath, _pageSize, _maxMemory, _clusterSize, _clusteredStreamsPolicy, _endianness);
 		switch(_type) {

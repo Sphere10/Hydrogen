@@ -11,7 +11,7 @@ using System.IO;
 
 namespace Hydrogen.ObjectSpaces;
 
-public class MemoryObjectSpace : ObjectSpaceBase {
+public class MemoryObjectSpace : ObjectSpace {
 
 	public MemoryObjectSpace(
 		ObjectSpaceDefinition objectSpaceDefinition, 

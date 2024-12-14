@@ -13,7 +13,7 @@ using System.Linq;
 namespace Hydrogen.ObjectSpaces;
 
 /// <summary>
-///  Used to track instances of fetched objects within an <see cref="ObjectSpaceBase"/>.
+///  Used to track instances of fetched objects within an <see cref="ObjectSpace"/>.
 /// </summary>
 /// <remarks>Not thread-safe by design</remarks>
 internal class InstanceTracker {

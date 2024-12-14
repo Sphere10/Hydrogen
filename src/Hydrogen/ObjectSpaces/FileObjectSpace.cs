@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Hydrogen.ObjectSpaces;
 
-public class FileObjectSpace : ObjectSpaceBase, ITransactionalObject{
+public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 
 	public event EventHandlerEx Committing { add => _fileStream.Committing += value; remove => _fileStream.Committing -= value; }
 	public event EventHandlerEx Committed { add => _fileStream.Committed += value; remove => _fileStream.Committed -= value; }

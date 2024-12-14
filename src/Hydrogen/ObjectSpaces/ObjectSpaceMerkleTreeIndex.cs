@@ -19,11 +19,11 @@ namespace Hydrogen.ObjectSpaces;
 /// </summary>
 /// <remarks>A dimension of an object space is a <see cref="ObjectStream"/> of a specific type of object.</remarks>
 internal class ObjectSpaceMerkleTreeIndex : ClusteredStreamsAttachmentDecorator<MerkleTreeStorageAttachment> {
-	private readonly ObjectSpaceBase _objectSpace;
+	private readonly ObjectSpace _objectSpace;
 	private readonly IList<(MerkleTreeStorageAttachment, EventHandlerEx<byte[], byte[]>)> _collectionTreeListeners;
 	private readonly string _childTreeIndexName;
 
-	public ObjectSpaceMerkleTreeIndex(ObjectSpaceBase objectSpace, ClusteredStreams objectSpaceStreams, string indexName, string childTreeIndexName, CHF chf, bool isFirstLoad) 
+	public ObjectSpaceMerkleTreeIndex(ObjectSpace objectSpace, ClusteredStreams objectSpaceStreams, string indexName, string childTreeIndexName, CHF chf, bool isFirstLoad) 
 		: base (new MerkleTreeStorageAttachment(objectSpaceStreams, indexName, chf, isFirstLoad) ){
 		Guard.ArgumentNotNull(objectSpace, nameof(objectSpace));
 		_objectSpace = objectSpace;

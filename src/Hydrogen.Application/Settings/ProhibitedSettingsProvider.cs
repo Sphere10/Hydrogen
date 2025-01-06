@@ -12,6 +12,8 @@ namespace Hydrogen.Application;
 
 public class ProhibitedSettingsProvider : ISettingsProvider {
 	private const string ExceptionMessage = "Settings are prohibited in this application";
+	
+	public event EventHandlerEx Changed { add => throw new NotSupportedException(ExceptionMessage); remove => throw new NotSupportedException(ExceptionMessage); }
 	public bool AutoSaveNewSettings => throw new NotSupportedException(ExceptionMessage);
 
 	public bool EncryptSettings => throw new NotSupportedException(ExceptionMessage);

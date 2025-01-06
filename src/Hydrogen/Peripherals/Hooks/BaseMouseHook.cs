@@ -42,6 +42,7 @@ public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook {
 		_distanceMovedSinceClick = 0D;
 	}
 
+	public TimeSpan MovingStoppedInterval { get; set; }
 	public int CurrentMouseX { get; protected set; }
 	public int CurrentMouseY { get; protected set; }
 	public int LastClickX { get; protected set; }
@@ -49,7 +50,7 @@ public abstract class BaseMouseHook : BaseDeviceHook, IMouseHook {
 	public int MotionStartX { get; protected set; }
 	public int MotionStartY { get; protected set; }
 	protected IActiveApplicationMonitor ActiveApplicationMonitor { get; private set; }
-	protected TimeSpan MovingStoppedInterval { get; private set; }
+	
 	protected int PreviousMouseX { get; private set; }
 	protected int PreviousMouseY { get; private set; }
 

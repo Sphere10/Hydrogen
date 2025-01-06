@@ -24,6 +24,7 @@ public interface IMouseHook : IDeviceHook {
 	int MotionStartX { get; }
 	int MotionStartY { get; }
 
+	TimeSpan MovingStoppedInterval { get; set; }
 
 	void Simulate(MouseButton button, MouseButtonState buttonState, int screenX, int screenY);
 

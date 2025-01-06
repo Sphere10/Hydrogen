@@ -7,10 +7,14 @@
 // This notice must not be removed when duplicating this file or its contents, in whole or in part.
 
 using System;
+using static Hydrogen.Application.ProductLicenseEnforcer;
 
 namespace Hydrogen.Application;
 
 public abstract class BaseSettingsProvider : ISettingsProvider {
+
+
+	public event EventHandlerEx Changed;
 
 	public virtual bool AutoSaveNewSettings => false;
 
@@ -42,6 +46,7 @@ public abstract class BaseSettingsProvider : ISettingsProvider {
 				Tools.Object.EncryptMembers(settings);
 				undoEncryption = true;
 			}
+			FireChanged();
 			SaveInternal(settings);
 		} finally {
 			if (undoEncryption)
@@ -58,5 +63,7 @@ public abstract class BaseSettingsProvider : ISettingsProvider {
 	protected abstract SettingsObject LoadInternal(Type settingsObjectType, object id = null);
 
 	protected abstract void SaveInternal(SettingsObject settings);
+
+	protected void FireChanged() => Changed?.Invoke();
 
 }

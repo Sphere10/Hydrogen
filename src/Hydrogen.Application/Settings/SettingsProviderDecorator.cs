@@ -16,6 +16,8 @@ public class SettingsProviderDecorator : ISettingsProvider {
 		InternalSettingsProvider = internalSettingsProvider;
 	}
 
+	public event EventHandlerEx Changed { add => InternalSettingsProvider.Changed += value; remove => InternalSettingsProvider.Changed -= value; }
+
 	public virtual bool AutoSaveNewSettings => InternalSettingsProvider.AutoSaveNewSettings;
 
 	public virtual bool EncryptSettings => InternalSettingsProvider.EncryptSettings;

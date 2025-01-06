@@ -12,6 +12,8 @@ namespace Hydrogen.Application;
 
 public interface ISettingsProvider {
 
+	event EventHandlerEx Changed;
+
 	bool AutoSaveNewSettings { get; }
 
 	bool EncryptSettings { get; }

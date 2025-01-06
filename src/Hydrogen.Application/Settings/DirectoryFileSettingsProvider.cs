@@ -44,6 +44,7 @@ public class DirectoryFileSettingsProvider : BaseSettingsProvider {
 		var filename = DetermineFilepath(settings);
 		if (File.Exists(filename))
 			File.Delete(filename);
+		FireChanged();
 	}
 
 	public override void ClearSettings() {
@@ -53,6 +54,7 @@ public class DirectoryFileSettingsProvider : BaseSettingsProvider {
 					File.Delete(filePath);
 			}
 		}
+		FireChanged();
 	}
 
 	protected override SettingsObject LoadInternal(Type settingsObjectType, object id = null) {

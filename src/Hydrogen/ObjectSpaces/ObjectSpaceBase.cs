@@ -65,23 +65,6 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	public IDisposable EnterAccessScope() => _streams.EnterAccessScope();
 
-	public TItem New<TItem>() where TItem : new() {
-		var instance = new TItem();
-		AcceptNew(instance);
-		return instance;
-	}
-
-	public int AcceptNew<TItem>(TItem item)
-		=> AcceptNewInternal(typeof(TItem), item);
-
-	public int AcceptNewInternal(Type itemType, object item) {
-		var dimension = GetDimension(itemType);
-		if (AutoSave)
-			dimension.Definition.ChangeTracker.SetChanged(item, true);
-		return _instanceTracker.TrackNew(item);
-	}
-
-
 	public IEnumerable<TItem> GetAll<TItem>() {
 		throw new NotImplementedException();
 	}
@@ -151,13 +134,19 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 		}
 	}
 
-	public long Count<TItem>() {
-		using (EnterAccessScope()) {
-			// Get underlying stream mapped collection
-			var dimension = GetDimension<TItem>();
-			return dimension.Container.Count;
-		}
+	public TItem New<TItem>() where TItem : new() {
+		var instance = new TItem();
+		AcceptNew(instance);
+		return instance;
 	}
+
+	public int AcceptNew<TItem>(TItem item)
+		=> AcceptNewInternal(typeof(TItem), item);
+
+	public int AcceptNew(object item)
+		=> AcceptNewInternal(item.GetType(), item);
+
+	public long Count<TItem>() => CountInternal(typeof(TItem));
 
 	public long Save<TItem>(TItem item) 
 		=> SaveInternal(typeof(TItem), item);
@@ -165,53 +154,11 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 	public long Save(object item) 
 		=> SaveInternal(item.GetType(), item);
 
-	protected long SaveInternal(Type itemType, object item) {
-		using (EnterAccessScope()) {
-			// Get the item index (if applicable)
-			if (!_instanceTracker.TryGetIndexOf(item, out var index)) 
-				index = AcceptNewInternal(itemType, item);
-
-			// Get underlying stream mapped collection
-			var dimension = GetDimension(itemType);
-
-			if (index >= 0) {
-				// Update existing
-				dimension.Container.Update(index, item);
-			} else {
-				// Add if new
-				dimension.Container.Add(item, out index);
-				_instanceTracker.Track(item, index); // updates index from negative value to actual index
-			}
-
-			// Mark as unchanged
-			dimension.Definition.ChangeTracker.SetChanged(item, false);
-
-			return index;
-		}
-	}
-
 	public void Delete<TItem>(TItem item) 
 		=> DeleteInternal(typeof(TItem), item);
 
 	public void Delete(object item) 
 		=> DeleteInternal(item.GetType(), item);
-
-	public void DeleteInternal(Type itemType, object item) {
-		using (EnterAccessScope()) {
-			// Get tracked index of item instance
-			if (!_instanceTracker.TryGetIndexOf(item, out var index)) 
-				throw new InvalidOperationException($"Instance of {item.GetType().ToStringCS()} was not tracked");
-			
-			// Stop tracking instance
-			_instanceTracker.Untrack(item);
-
-			// Remove it from the dimension 
-			var dimension = GetDimension(itemType);
-			if (index >= 0)
-				dimension.Container.Recycle(index);
-		}
-	}
-
 
 	/// <summary>
 	/// Clears all data in the object space. This is a destructive operation and cannot be undone. Must pass <b>"I CONSENT TO CLEAR ALL DATA"</b> for execution.
@@ -244,6 +191,9 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 		// flush the underlying stream that maps entire object-space
 		Streams.RootStream.Flush();
+
+		// Reset instance tracker
+		_instanceTracker.Clear();
 	}
 
 	public virtual void Dispose() {
@@ -314,7 +264,6 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 		_loaded = true;
 	}
-
 	
 	protected void SaveModifiedObjects() {
 		Guard.Ensure(AutoSave, "AutoSave is not enabled");
@@ -347,6 +296,62 @@ public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 		// Mark as loaded
 		_loaded = false;
+	}
+
+	protected int AcceptNewInternal(Type itemType, object item) {
+		var dimension = GetDimension(itemType);
+		if (AutoSave)
+			dimension.Definition.ChangeTracker.SetChanged(item, true);
+		return _instanceTracker.TrackNew(item);
+	}
+
+	protected long CountInternal(Type itemType) {
+		using (EnterAccessScope()) {
+			// Get underlying stream mapped collection
+			var dimension = GetDimension(itemType);
+			return dimension.Container.Count;
+		}
+	}
+
+	protected long SaveInternal(Type itemType, object item) {
+		using (EnterAccessScope()) {
+			// Get the item index (if applicable)
+			if (!_instanceTracker.TryGetIndexOf(item, out var index)) 
+				index = AcceptNewInternal(itemType, item);
+
+			// Get underlying stream mapped collection
+			var dimension = GetDimension(itemType);
+
+			if (index >= 0) {
+				// Update existing
+				dimension.Container.Update(index, item);
+			} else {
+				// Add if new
+				dimension.Container.Add(item, out index);
+				_instanceTracker.Track(item, index); // updates index from negative value to actual index
+			}
+
+			// Mark as unchanged
+			dimension.Definition.ChangeTracker.SetChanged(item, false);
+
+			return index;
+		}
+	}
+
+	protected void DeleteInternal(Type itemType, object item) {
+		using (EnterAccessScope()) {
+			// Get tracked index of item instance
+			if (!_instanceTracker.TryGetIndexOf(item, out var index)) 
+				throw new InvalidOperationException($"Instance of {item.GetType().ToStringCS()} was not tracked");
+			
+			// Stop tracking instance
+			_instanceTracker.Untrack(item);
+
+			// Remove it from the dimension 
+			var dimension = GetDimension(itemType);
+			if (index >= 0)
+				dimension.Container.Recycle(index);
+		}
 	}
 
 	protected virtual Dimension BuildDimension(ObjectSpaceDefinition.DimensionDefinition dimensionDefinition, int spatialStreamIndex) {

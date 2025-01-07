@@ -211,7 +211,7 @@ public class ThroughputOptimizerTests {
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
 		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
-		Assert.That(Math.Round(lastSample.Item1 * (1.0 + adjustment), 0), Is.EqualTo(op.SuggestedBatchSize).Within(tolerance));
+		Assert.That(Math.Round(lastSample.Item1 * (1.0 + adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
 	[Test]
@@ -237,7 +237,7 @@ public class ThroughputOptimizerTests {
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
 		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
-		Assert.That(Math.Round(lastSample.Item1 * (1.0 + adjustment), 0), Is.EqualTo(op.SuggestedBatchSize).Within(tolerance));
+		Assert.That(Math.Round(lastSample.Item1 * (1.0 + adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
 	[Test]
@@ -263,7 +263,7 @@ public class ThroughputOptimizerTests {
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
 		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Decreasing, op.AdjustmentDirection);
-		Assert.That(Math.Round(lastSample.Item1 * (1.0 - adjustment), 0), Is.EqualTo(op.SuggestedBatchSize).Within(tolerance));
+		Assert.That(Math.Round(lastSample.Item1 * (1.0 - adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
 	[Test]
@@ -289,7 +289,7 @@ public class ThroughputOptimizerTests {
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
 		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
-		Assert.That(Math.Round(lastSample.Item1 * (1.0 + adjustment), 0), Is.EqualTo(op.SuggestedBatchSize).Within(tolerance));
+		Assert.That(Math.Round(lastSample.Item1 * (1.0 + adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
 	[Test]
@@ -394,7 +394,7 @@ public class ThroughputOptimizerTests {
 
 		op.RegisterSample(lastSample.Item1, lastSample.Item2);
 		ClassicAssert.AreEqual(ThroughputOptimizer.SamplingAdjustmentDirection.Increasing, op.AdjustmentDirection);
-		Assert.That(Math.Round(samples[samples.Length - 2].Item1 * (1.0 + adjustment), 0), Is.EqualTo(op.SuggestedBatchSize).Within(tolerance));
+		Assert.That(Math.Round(samples[samples.Length - 2].Item1 * (1.0 + adjustment), 0), Is.EqualTo((double)op.SuggestedBatchSize).Within(tolerance));
 	}
 
 

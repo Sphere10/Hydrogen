@@ -306,7 +306,7 @@ public static class AssertEx {
 				var moveNext = enumerator.MoveNext();
 				Assert.That(expectedMoveNext, Is.EqualTo(moveNext).Using(itemComparer));
 				if (expectedMoveNext)
-					Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current).Using(itemComparer));
+					Assert.That(expectedEnumerator.Current, Is.EqualTo(enumerator.Current));
 			} while (expectedMoveNext);
 		}
 

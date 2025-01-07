@@ -36,7 +36,7 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 
 	protected override void OnAdding(TItem item, long index, TKey key) {
 		if (!IsUnique(key, null, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique projection violation occurs with projected key '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
+			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique projection violation occurs on projected key '{AttachmentID}' with value '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
 	}
 
 	protected override void OnAdded(TItem item, long index, TKey keyChecksum) {
@@ -45,7 +45,7 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 
 	protected override void OnUpdating(TItem item, long index, TKey key) {
 		if (!IsUnique(key, index, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} as a unique projection violation occurs with projected key '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
+			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} as a unique projection violation occurs on projected key '{AttachmentID}' with value '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
 	}
 
 	protected override void OnUpdated(TItem item, long index, TKey keyChecksum) {
@@ -54,7 +54,7 @@ internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<T
 
 	protected override void OnInserting(TItem item, long index, TKey key) {
 		if (!IsUnique(key, index, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} as a unique projection violation occurs with projected key '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
+			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} as a unique projection violation occurs on projected key '{AttachmentID}' with value '{key?.ToString() ?? "NULL"}' with index {clashIndex}");
 	}
 
 	protected override void OnInserted(TItem item, long index, TKey keyChecksum) {

@@ -65,7 +65,7 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 
 	protected override void OnAdding(TItem item, long index, (TKey, int) keyChecksum) {
 		if (!IsUnique(keyChecksum, null, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs with projected key '{keyChecksum.Item1?.ToString() ?? "NULL"}' ({keyChecksum.Item2}) with index {clashIndex}");
+			throw new InvalidOperationException($"Unable to add {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs on projected key '{AttachmentID}' with value '{keyChecksum.Item1?.ToString() ?? "NULL"}' ({keyChecksum.Item2}) with index {clashIndex}");
 	}
 
 	protected override void OnAdded(TItem item, long index, (TKey, int) keyChecksum) {
@@ -75,7 +75,7 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 
 	protected override void OnUpdating(TItem item, long index, (TKey, int) keyChecksum) {
 		if (!IsUnique(keyChecksum, index, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs with projected key '{keyChecksum.Item1?.ToString() ?? "NULL"}' ({keyChecksum.Item2}) with index {clashIndex}");
+			throw new InvalidOperationException($"Unable to update {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs on projected key '{AttachmentID}' with value '{keyChecksum.Item1?.ToString() ?? "NULL"}' ({keyChecksum.Item2}) with index {clashIndex}");
 	}
 
 	protected override void OnUpdated(TItem item, long index, (TKey, int) keyChecksum) {
@@ -85,7 +85,7 @@ internal class UniqueProjectionChecksumIndex<TItem, TKey> : ProjectionIndexBase<
 
 	protected override void OnInserting(TItem item, long index, (TKey, int) keyChecksum) {
 		if (!IsUnique(keyChecksum, index, out var clashIndex)) 
-			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs with projected key '{keyChecksum.Item1?.ToString() ?? "NULL"}' ({keyChecksum.Item2}) with index {clashIndex}");
+			throw new InvalidOperationException($"Unable to insert {typeof(TItem).ToStringCS()} as a unique projection (checksummed) violation occurs on projected key ' {AttachmentID}' with value '{keyChecksum.Item1?.ToString() ?? "NULL"}' ({keyChecksum.Item2}) with index {clashIndex}");
 	}
 
 	protected override void OnInserted(TItem item, long index, (TKey, int) keyChecksum) {

@@ -22,7 +22,7 @@ using HashLib4CSharp.Utils;
 
 namespace HashLib4CSharp.Interfaces
 {
-    public interface IHash
+    public interface IHash : IDisposable
     {
         string Name { get; }
         int BlockSize { get; }

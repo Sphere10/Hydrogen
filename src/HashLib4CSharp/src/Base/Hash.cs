@@ -14,10 +14,11 @@ for the purposes of supporting the XXX (https://YYY) project.
 using System;
 using System.Diagnostics;
 using HashLib4CSharp.Interfaces;
+using Hydrogen;
 
 namespace HashLib4CSharp.Base
 {
-    internal abstract class Hash : IHash
+    internal abstract class Hash : SyncDisposable, IHash
     {
         private const string CloneNotYetImplemented = "Clone not yet implemented for '{0}'";
         private const string InvalidBufferSize = "'BufferSize' must be greater than zero";
@@ -55,5 +56,7 @@ namespace HashLib4CSharp.Base
 
         public abstract void Initialize();
         public abstract IHashResult TransformFinal();
-    }
+
+		protected override void FreeManagedResources() {}
+	}
 }

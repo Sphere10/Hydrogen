@@ -64,7 +64,7 @@ appCore.LoadPlugin<MyDApp>();
 
 ## 📖 Architecture Documentation
 
-See [What is the Hydrogen Framework?](../../blackhole/docs/Architecture/Hydrogen.md) and [Framework Domains](../../blackhole/docs/Architecture/Domains.md) for comprehensive architecture details.
+See [What is the Hydrogen Framework?](../../docs/Architecture/Hydrogen.md) and [Framework Domains](../../docs/Architecture/Domains.md) for comprehensive architecture details.
 
 ## 📄 Related Projects
 

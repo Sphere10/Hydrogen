@@ -98,9 +98,9 @@ The Hydrogen framework consists of multiple interconnected projects organized as
 
 ### Architecture
 
-1. [What is the Hydrogen Framework?](blackhole/docs/Architecture/Hydrogen.md)
-2. [Hydrogen Runtime](blackhole/docs/Architecture/Runtime.md)
-3. [Framework Domains](blackhole/docs/Architecture/Domains.md)
+1. [What is the Hydrogen Framework?](docs/Architecture/Hydrogen.md)
+2. [Hydrogen Runtime](docs/Architecture/Runtime.md)
+3. [Framework Domains](docs/Architecture/Domains.md)
 
 ### Blockchain Technology
 
@@ -112,8 +112,8 @@ The Hydrogen framework consists of multiple interconnected projects organized as
 
 ### Guidelines
 
-9. [What is a 3-tier Architecture?](blackhole/docs/Guidelines/3-tier-Architecture.md)
-10. [Code-Styling Guidelines](blackhole/docs/Guidelines/Code-Styling.md)
+9. [What is a 3-tier Architecture?](docs/Guidelines/3-tier-Architecture.md)
+10. [Code-Styling Guidelines](docs/Guidelines/Code-Styling.md)
 
 ## 🔗 Quick Navigation
 

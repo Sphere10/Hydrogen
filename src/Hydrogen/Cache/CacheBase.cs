@@ -12,10 +12,16 @@ using System.Linq;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Provides core synchronization, expiration, and reaping behavior for cache implementations.
+/// </summary>
 public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 
+	/// <inheritdoc />
 	public event EventHandlerEx<object> ItemFetching;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, object> ItemFetched;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, CachedItem> ItemRemoved;
 
 	internal IDictionary<object, CachedItem> InternalStorage;
@@ -46,47 +52,65 @@ public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 		Reaper.Register(this);
 	}
 
+	/// <inheritdoc />
 	public IEnumerable<CachedItem> CachedItems => InternalStorage.Values;
 
+	/// <inheritdoc />
 	public int ItemCount => InternalStorage.Count;
 
+	/// <inheritdoc />
 	public long CurrentSize { get; internal set; }
 
+	/// <inheritdoc />
 	public long MaxCapacity { get; internal set; }
 
+	/// <inheritdoc />
 	public DateTime LastUpdateOn { get; internal set; }
 
+	/// <inheritdoc />
 	public DateTime LastAccessedOn { get; internal set; }
 
+	/// <inheritdoc />
 	public long TotalAccesses { get; internal set; }
 
+	/// <inheritdoc />
 	public TimeSpan ExpirationDuration { get; internal set; }
 
+	/// <inheritdoc />
 	public CacheReapPolicy ReapPolicy { get; internal set; }
 
+	/// <inheritdoc />
 	public NullValuePolicy NullValuePolicy { get; internal set; }
 
+	/// <summary>
+	/// Indicates how staleness checks are performed.
+	/// </summary>
 	public StaleValuePolicy StaleValuePolicy { get; internal set; }
 
+	/// <inheritdoc />
 	public ExpirationPolicy ExpirationPolicy { get; internal set; }
 
 	protected ICacheReaper Reaper { get; }
 
+	/// <inheritdoc />
 	public virtual bool ContainsCachedItem(object key) {
 		return InternalStorage.TryGetValue(key, out var item) && !IsExpired(item);
 	}
 
+	/// <inheritdoc />
 	public virtual object this[object key] {
 		get => Get(key).Value;
 		set => Set(key, value);
 	}
 
+	/// <inheritdoc />
 	public void Invalidate(object key) {
 		if (InternalStorage.TryGetValue(key, out var item)) {
 			item.Traits = item.Traits.CopyAndSetFlags(CachedItemTraits.Invalidated, true);
 		}
 	}
 
+	/// <inheritdoc />
 	public virtual CachedItem Get(object key) {
 		Guard.ArgumentNotNull(key, nameof(key));
 		if (!InternalStorage.TryGetValue(key, out var item)) {
@@ -126,6 +150,7 @@ public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 		return item;
 	}
 
+	/// <inheritdoc />
 	public virtual void Set(object key, object value) {
 		using (this.EnterWriteScope()) {
 			if (InternalStorage.ContainsKey(key)) {
@@ -138,6 +163,7 @@ public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 		}
 	}
 
+	/// <inheritdoc />
 	public virtual void Remove(object key) {
 		using (this.EnterWriteScope()) {
 			RemoveItemInternal(key);
@@ -174,6 +200,7 @@ public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 		}
 	}
 
+	/// <inheritdoc />
 	public virtual void Purge() {
 		using (this.EnterWriteScope()) {
 			foreach (var key in InternalStorage.Keys.ToArray())
@@ -182,6 +209,7 @@ public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 		}
 	}
 
+	/// <inheritdoc />
 	public virtual void BulkLoad(IEnumerable<KeyValuePair<object, object>> bulkLoadedValues) {
 		using (this.EnterWriteScope()) {
 			foreach (var kvp in bulkLoadedValues)
@@ -189,6 +217,7 @@ public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 		}
 	}
 
+	/// <inheritdoc />
 	public virtual void Dispose() {
 		using (this.EnterWriteScope()) {
 			foreach (var key in InternalStorage.ToArray())
@@ -207,10 +236,19 @@ public abstract class CacheBase : SynchronizedObject, ICache, IDisposable {
 	protected virtual void OnItemRemoved(object key, CachedItem val) {
 	}
 
+	/// <summary>
+	/// Estimates the size contribution of a value for capacity enforcement.
+	/// </summary>
 	protected abstract long EstimateSize(object value);
 
+	/// <summary>
+	/// Resolves a value for the supplied key when a cache miss occurs.
+	/// </summary>
 	protected abstract object Fetch(object key);
 
+	/// <summary>
+	/// Determines whether an item should be considered stale and refetched.
+	/// </summary>
 	protected abstract bool CheckStaleness(object key, CachedItem item);
 
 	protected void NotifyItemFetching(object key) {

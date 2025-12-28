@@ -12,6 +12,9 @@ using System.IO;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Manages the 256-byte header stored at the start of a clustered streams root, including standard fields and user extension properties.
+/// </summary>
 public class ClusteredStreamsHeader {
 
 	public const int ByteLength = 256;

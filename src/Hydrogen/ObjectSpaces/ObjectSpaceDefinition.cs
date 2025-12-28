@@ -13,6 +13,9 @@ using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
 
+/// <summary>
+/// Defines the structure and policies for an <see cref="ObjectSpace"/>, including dimensions, indexes, and optional merkle/autosave traits.
+/// </summary>
 public class ObjectSpaceDefinition {
 
 
@@ -29,8 +32,14 @@ public class ObjectSpaceDefinition {
 
 	public ObjectSpaceTraits Traits { get; set ; } = ObjectSpaceTraits.None;
 		
+	/// <summary>
+	/// Hash function used for merkle-enabled object spaces.
+	/// </summary>
 	public CHF HashFunction { get; set; } = HydrogenDefaults.HashFunction;
 
+	/// <summary>
+	/// Dimensions (tables) that compose the object space.
+	/// </summary>
 	public DimensionDefinition[] Dimensions { get; set; } = Array.Empty<DimensionDefinition>();
 
 	public Result Validate() {
@@ -129,22 +138,43 @@ public class ObjectSpaceDefinition {
 
 		internal ObjectChangeTracker ChangeTracker { get; set; } = ObjectChangeTracker.Default;
 
+		/// <summary>
+		/// CLR type of the objects stored in the dimension.
+		/// </summary>
 		public Type ObjectType { get; set; }
 
+		/// <summary>
+		/// Index definitions for this dimension.
+		/// </summary>
 		public IndexDefinition[] Indexes { get; set; } = Array.Empty<IndexDefinition>();
 
+		/// <summary>
+		/// Optional average serialized size hint used for allocation strategies.
+		/// </summary>
 		public int? AverageObjectSizeBytes { get; set; } = null;
 
 	}
 
 	public class IndexDefinition {
 		
+		/// <summary>
+		/// Index storage type.
+		/// </summary>
 		public IndexType Type { get; set; }
 
+		/// <summary>
+		/// Unique name for the index within the dimension.
+		/// </summary>
 		public string Name { get; set; }
 
+		/// <summary>
+		/// Member to index where required.
+		/// </summary>
 		public Member Member { get; set; }
 
+		/// <summary>
+		/// Defines how nulls are handled when indexing.
+		/// </summary>
 		public IndexNullPolicy NullPolicy { get; set; }
 
 	}

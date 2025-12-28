@@ -12,12 +12,23 @@ using System.Collections.Generic;
 namespace Hydrogen;
 
 /// <summary>
-/// 1 invalidated item, invalidates all. 1 fetched item fetches all
+/// Bulk cache that refreshes all entries in a single fetch operation when any entry is missing, expired, or invalidated.
 /// </summary>
 public sealed class BulkFetchActionCache<TKey, TValue> : BulkFetchCacheBase<TKey, TValue> {
 	private readonly Func<IDictionary<TKey, TValue>> _bulkFetcher = null;
 	private readonly Func<TKey, CachedItem<TValue>, bool> _stalenessChecker = null;
 
+	/// <summary>
+	/// Creates a bulk-fetch cache backed by the supplied delegate.
+	/// </summary>
+	/// <param name="bulkFetcher">Delegate that returns the complete key/value set.</param>
+	/// <param name="expirationStrategy">Expiration policy applied to fetched entries.</param>
+	/// <param name="expirationDuration">Duration before entries expire.</param>
+	/// <param name="fetchOnceOnly">If true, fetches only once and then serves results until manually refreshed.</param>
+	/// <param name="nullValuePolicy">Determines how <c>null</c> values are handled.</param>
+	/// <param name="staleValuePolicy">Defines how staleness is evaluated.</param>
+	/// <param name="stalenessChecker">Optional predicate used when on-demand staleness checks are enabled.</param>
+	/// <param name="keyComparer">Key comparer.</param>
 	public BulkFetchActionCache(
 		Func<IDictionary<TKey, TValue>> bulkFetcher,
 		ExpirationPolicy expirationStrategy = ExpirationPolicy.None,

@@ -8,6 +8,9 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Indicates which backing storage strategy to use for stream-mapped dictionaries.
+/// </summary>
 public enum StreamMappedDictionaryImplementation {
 	Auto,
 	KeyValueListBased,

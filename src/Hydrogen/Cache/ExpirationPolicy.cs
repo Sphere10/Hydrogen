@@ -8,8 +8,20 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Defines how expiration windows are measured for cached items.
+/// </summary>
 public enum ExpirationPolicy {
+	/// <summary>
+	/// Expiration is measured from the time the value was fetched.
+	/// </summary>
 	SinceFetchedTime,
+	/// <summary>
+	/// Expiration is measured from the last access time.
+	/// </summary>
 	SinceLastAccessedTime,
+	/// <summary>
+	/// Items do not expire automatically.
+	/// </summary>
 	None
 }

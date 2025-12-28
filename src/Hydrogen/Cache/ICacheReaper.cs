@@ -8,13 +8,28 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Coordinates freeing capacity across caches.
+/// </summary>
 public interface ICacheReaper {
 
+	/// <summary>
+	/// Registers a cache so the reaper can manage its capacity.
+	/// </summary>
 	void Register(ICache cache);
 
+	/// <summary>
+	/// Deregisters a previously registered cache.
+	/// </summary>
 	void Deregister(ICache cache);
 
+	/// <summary>
+	/// Indicates how much space is currently free.
+	/// </summary>
 	long AvailableSpace();
 
+	/// <summary>
+	/// Attempts to free the requested number of bytes for the specified cache.
+	/// </summary>
 	long MakeSpace(ICache requestingCache, long requestedBytes);
 }

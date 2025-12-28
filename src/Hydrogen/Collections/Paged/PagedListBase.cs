@@ -15,21 +15,39 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Base implementation for paged lists that handles page lifecycle bookkeeping, event dispatching, and range operations.
+/// Subclasses provide the storage mechanics for creating, loading, and persisting individual pages.
+/// </summary>
 public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<TItem> {
 
+	/// <inheritdoc />
 	public event EventHandlerEx<object> Accessing;
+	/// <inheritdoc />
 	public event EventHandlerEx<object> Accessed;
+	/// <inheritdoc />
 	public event EventHandlerEx<object> Loading;
+	/// <inheritdoc />
 	public event EventHandlerEx<object> Loaded;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IPage<TItem>> PageAccessing;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IPage<TItem>> PageAccessed;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, long> PageCreating;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IPage<TItem>> PageCreated;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IPage<TItem>> PageReading;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IPage<TItem>> PageRead;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IPage<TItem>> PageWriting;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IPage<TItem>> PageWrite;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IPage<TItem>> PageDeleting;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IPage<TItem>> PageDeleted;
 
 	private long _count;
@@ -49,14 +67,26 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 			Load();
 	}
 
+	/// <summary>
+	/// Gets the current item count across all pages.
+	/// </summary>
 	public override long Count => _count;
 
+	/// <summary>
+	/// Exposes the pages composing the list in read-only form.
+	/// </summary>
 	public virtual IReadOnlyList<IPage<TItem>> Pages => _pagesAdapter;
 
+	/// <summary>
+	/// Indicates whether the list must be loaded before accessing data.
+	/// </summary>
 	public bool RequiresLoad { get; protected set; }
 
 	protected bool IsLoading { get; private set; }
 
+	/// <summary>
+	/// Loads all persisted pages into the list, rebuilding the in-memory index.
+	/// </summary>
 	public void Load() {
 		if (!RequiresLoad)
 			return;
@@ -76,16 +106,28 @@ public abstract class PagedListBase<TItem> : RangedListBase<TItem>, IPagedList<T
 		NotifyLoaded();
 	}
 
+	/// <summary>
+	/// Asynchronously invokes <see cref="Load"/>.
+	/// </summary>
 	public Task LoadAsync() => Task.Run(Load);
 
 	public override IEnumerable<bool> ContainsRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
 	public override IEnumerable<long> IndexOfRange(IEnumerable<TItem> items) => throw new NotSupportedException();
 
+	/// <summary>
+	/// Reads items across one or more pages, yielding each page segment in order.
+	/// </summary>
+	/// <param name="index">Zero-based starting index.</param>
+	/// <param name="count">Number of items to read.</param>
+	/// <returns>Sequential batches aligned to page boundaries.</returns>
 	public override IEnumerable<TItem> ReadRange(long index, long count) {
 		return ReadRangeByPage(index, count).SelectMany(x => x);
 	}
 
+	/// <summary>
+	/// Reads items grouped by the pages they fall into, issuing page lifecycle notifications as needed.
+	/// </summary>
 	public virtual IEnumerable<IEnumerable<TItem>> ReadRangeByPage(long index, long count) {
 		CheckRange(index, count);
 		CheckLoaded();

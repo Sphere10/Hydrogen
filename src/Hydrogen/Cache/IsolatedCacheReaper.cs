@@ -12,6 +12,9 @@ using System.Linq;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Reaper that manages capacity for a single cache instance without coordination with others.
+/// </summary>
 public class IsolatedCacheReaper : CacheReaperBase {
 
 	private CacheBase _cache;

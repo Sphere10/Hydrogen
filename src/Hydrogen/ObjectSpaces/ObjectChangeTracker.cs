@@ -3,6 +3,9 @@ using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
 
+/// <summary>
+/// Encapsulates how change tracking is performed on objects, optionally mapping to a boolean property for automatic dirty flagging.
+/// </summary>
 internal class ObjectChangeTracker {
 
 	public ObjectChangeTracker()  {

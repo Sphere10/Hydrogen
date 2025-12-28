@@ -10,9 +10,21 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Flags describing where a cluster sits within a chain.
+/// </summary>
 [Flags]
 public enum ClusterTraits : byte {
+	/// <summary>
+	/// Interior cluster within a chain.
+	/// </summary>
 	None = 0,
+	/// <summary>
+	/// First cluster in a chain.
+	/// </summary>
 	Start = 1 << 0,
+	/// <summary>
+	/// Last cluster in a chain.
+	/// </summary>
 	End = 1 << 1,
 }

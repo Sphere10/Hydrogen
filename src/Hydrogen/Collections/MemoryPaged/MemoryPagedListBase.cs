@@ -12,13 +12,23 @@ using System.Linq;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Implements page caching and lifecycle management for paged lists that keep only a subset of pages resident in memory.
+/// Eviction, loading, and persistence hooks are surfaced via events so consumers can observe paging behavior.
+/// </summary>
 public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemoryPagedList<TItem> {
 
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoading;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IMemoryPage<TItem>> PageLoaded;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IMemoryPage<TItem>> PageSaving;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IMemoryPage<TItem>> PageSaved;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloading;
+	/// <inheritdoc />
 	public event EventHandlerEx<object, IMemoryPage<TItem>> PageUnloaded;
 
 	private readonly ICache<long, IMemoryPage<TItem>> _loadedPages;
@@ -76,22 +86,47 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 			Load();
 	}
 
+	/// <summary>
+	/// Exposes the pages managed by this list, including those that may be currently unloaded.
+	/// </summary>
 	public new IReadOnlyList<IMemoryPage<TItem>> Pages { get; }
 
+	/// <summary>
+	/// Maximum logical size of each page in items (not bytes).
+	/// </summary>
 	public long PageSize { get; }
 
+	/// <summary>
+	/// Number of pages currently cached in memory.
+	/// </summary>
 	public long CurrentOpenPages => _loadedPages.ItemCount;
 
+	/// <summary>
+	/// Indicates whether the list has been disposed.
+	/// </summary>
 	public bool Disposed { get; protected set; }
 
+	/// <summary>
+	/// Maximum number of bytes that can be occupied by loaded pages.
+	/// </summary>
 	public long MaxMemory => _loadedPages.MaxCapacity;
 
+	/// <summary>
+	/// Returns <c>true</c> when any page in the list is dirty.
+	/// </summary>
 	public virtual bool Dirty => InternalPages.Any(p => p.Dirty);
 
+	/// <summary>
+	/// When set, calls to <see cref="Dispose"/> automatically flush dirty pages and unload cached ones.
+	/// </summary>
 	public bool FlushOnDispose { get; set; }
 
+	/// <summary>
+	/// Calculates the aggregate size of every page, respecting implementations that measure size differently.
+	/// </summary>
 	public long CalculateTotalSize() => InternalPages.Sum(p => p.Size);
 
+	/// <inheritdoc />
 	public sealed override IDisposable EnterOpenPageScope(IPage<TItem> page) {
 		// dont need to do much since cache manages life-cycle of page
 		CheckNotDisposed();
@@ -100,12 +135,18 @@ public abstract class MemoryPagedListBase<TItem> : PagedListBase<TItem>, IMemory
 		return new ActionScope(() => cachedItem.CanPurge = true);
 	}
 
+	/// <summary>
+	/// Saves all dirty pages and unloads everything currently cached.
+	/// </summary>
 	public virtual void Flush() {
 		// Causes all dirty pages to be saved
 		// and all loaded pages to be unloaded
 		_loadedPages.Purge();
 	}
 
+	/// <summary>
+	/// Disposes the list, optionally flushing dirty pages first and clearing page metadata.
+	/// </summary>
 	public virtual void Dispose() {
 		if (FlushOnDispose)
 			Flush();

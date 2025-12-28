@@ -11,6 +11,9 @@ using System;
 namespace Hydrogen;
 
 /// <inheritdoc />
+/// <summary>
+/// Generic wrapper that wires type parameters for <see cref="MerkleTreeIndex"/> creation.
+/// </summary>
 internal class MerkleTreeIndex<TItem> : MerkleTreeIndex {
 	public MerkleTreeIndex(ObjectStream<TItem> objectStream, string indexName, IItemHasher<long> itemHasher, CHF hashAlgorithm)
 		: base(

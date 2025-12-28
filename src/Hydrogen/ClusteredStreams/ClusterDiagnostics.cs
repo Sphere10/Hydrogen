@@ -13,6 +13,9 @@ using System.Text;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Diagnostic helpers for validating and visualizing clustered stream topology.
+/// </summary>
 public static class ClusterDiagnostics {
 
 	public static string ToTextDump(ClusteredStreams streams) {

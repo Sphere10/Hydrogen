@@ -10,6 +10,9 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Provides cluster-level fragments that back a single logical clustered stream, handling resizing and cluster map updates.
+/// </summary>
 internal class ClusteredStreamFragmentProvider : IStreamFragmentProvider {
 	public event EventHandlerEx<ClusteredStreamFragmentProvider, long> StreamLengthChanged;
 

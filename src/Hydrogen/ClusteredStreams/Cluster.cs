@@ -8,6 +8,9 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Represents a single cluster within a cluster chain, storing links to neighboring clusters and the raw data payload.
+/// </summary>
 public class Cluster {
 	public const long Null = -1L;
 

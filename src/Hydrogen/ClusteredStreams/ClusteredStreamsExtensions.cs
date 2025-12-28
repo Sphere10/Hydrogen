@@ -23,6 +23,9 @@ internal static class ClusteredStreamsExtensions {
 	//	return streams.GetStreamDescriptor(index).Traits.HasFlag(ClusteredStreamTraits.Reaped);
 	//}
 
+	/// <summary>
+	/// Reads the entire contents of the stream at <paramref name="index"/> into memory.
+	/// </summary>
 	public static byte[] ReadAll(this ClusteredStreams streams, long index) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.OpenRead(index);
@@ -31,12 +34,18 @@ internal static class ClusteredStreamsExtensions {
 		return stream.ReadAll();
 	}
 
+	/// <summary>
+	/// Appends a new stream containing the supplied bytes.
+	/// </summary>
 	public static void AddBytes(this ClusteredStreams streams, ReadOnlySpan<byte> bytes) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.Add();
 		stream.Write(bytes);
 	}
 
+	/// <summary>
+	/// Replaces the contents of the stream at <paramref name="index"/> with <paramref name="bytes"/>.
+	/// </summary>
 	public static void UpdateBytes(this ClusteredStreams streams, long index, ReadOnlySpan<byte> bytes) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.OpenWrite(index);
@@ -44,6 +53,9 @@ internal static class ClusteredStreamsExtensions {
 		stream.Write(bytes);
 	}
 
+	/// <summary>
+	/// Appends <paramref name="bytes"/> to the end of the stream at <paramref name="index"/>.
+	/// </summary>
 	public static void AppendBytes(this ClusteredStreams streams, long index, ReadOnlySpan<byte> bytes) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.OpenWrite(index);
@@ -51,6 +63,9 @@ internal static class ClusteredStreamsExtensions {
 		stream.Write(bytes);
 	}
 
+	/// <summary>
+	/// Inserts a new stream at <paramref name="index"/> populated with <paramref name="bytes"/>.
+	/// </summary>
 	public static void InsertBytes(this ClusteredStreams streams, long index, ReadOnlySpan<byte> bytes) {
 		using var _ = streams.EnterAccessScope();
 		using var stream = streams.Insert(index);

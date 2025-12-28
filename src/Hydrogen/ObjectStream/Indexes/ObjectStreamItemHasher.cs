@@ -8,6 +8,9 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Hashes items in an <see cref="ObjectStream"/> by serializing the item bytes and applying the configured hash algorithm.
+/// </summary>
 internal class ObjectStreamItemHasher : IItemHasher<long> {
 	private readonly ObjectStream _objectStream;
 	private readonly CHF _chf;
@@ -26,4 +29,3 @@ internal class ObjectStreamItemHasher : IItemHasher<long> {
 	}
 	
 }
-

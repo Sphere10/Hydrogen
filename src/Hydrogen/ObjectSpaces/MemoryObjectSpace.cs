@@ -11,6 +11,9 @@ using System.IO;
 
 namespace Hydrogen.ObjectSpaces;
 
+/// <summary>
+/// In-memory object space that stores data in a <see cref="MemoryStream"/> while reusing the same object space plumbing as file-backed instances.
+/// </summary>
 public class MemoryObjectSpace : ObjectSpace {
 
 	public MemoryObjectSpace(

@@ -12,17 +12,15 @@ using System.IO;
 namespace Hydrogen;
 
 /// <summary>
-/// Logger which simply appends a file.
+/// Logger implementation that writes formatted entries to a <see cref="TextWriter"/>.
 /// </summary>
-/// <remarks></remarks>
 public class TextWriterLogger : LoggerBase {
 
 	private readonly TextWriter _writer;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="T:System.Object"/> class.
+	/// Initializes a new logger that writes to the debug output window.
 	/// </summary>
-	/// <remarks></remarks>
 	public TextWriterLogger()
 		: this(new DebugTextWriter()) {
 	}
@@ -41,10 +39,7 @@ public class TextWriterLogger : LoggerBase {
 	/// <summary>
 	/// Logs the message.
 	/// </summary>
-	/// <param name="writer">The writer.</param>
 	/// <param name="message">The message.</param>
-	/// <param name="formatOptions">The format options.</param>
-	/// <remarks></remarks>
 	protected override void Log(LogLevel level, string message) {
 		try {
 			_writer.Write($"[{level}] ");

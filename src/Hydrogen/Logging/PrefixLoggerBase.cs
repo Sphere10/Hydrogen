@@ -10,6 +10,9 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Decorator that adds a prefix to every log message produced by the wrapped logger.
+/// </summary>
 public abstract class PrefixLoggerBase : LoggerDecorator {
 	protected PrefixLoggerBase(ILogger decoratedLogger)
 		: base(decoratedLogger) {
@@ -36,6 +39,9 @@ public abstract class PrefixLoggerBase : LoggerDecorator {
 			Error(!string.IsNullOrWhiteSpace(message) ? $"{message}. {exceptionMessage}" : exceptionMessage);
 	}
 
+	/// <summary>
+	/// Returns the prefix to prepend to each message.
+	/// </summary>
 	protected abstract string GetPrefix();
 
 }

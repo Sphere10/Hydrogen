@@ -8,9 +8,17 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Adds a static prefix to every message emitted by the decorated logger.
+/// </summary>
 public class PrefixLogger : PrefixLoggerBase {
 	private readonly string _prefix;
 
+	/// <summary>
+	/// Creates a prefixing logger.
+	/// </summary>
+	/// <param name="decoratedLogger">Logger to wrap.</param>
+	/// <param name="prefix">Prefix text prepended to every message.</param>
 	public PrefixLogger(ILogger decoratedLogger, string prefix)
 		: base(decoratedLogger) {
 		_prefix = prefix;

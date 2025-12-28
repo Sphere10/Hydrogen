@@ -10,6 +10,9 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Dispatches log messages to user-supplied delegates so callers can hook logging into arbitrary sinks.
+/// </summary>
 public class ActionLogger : LoggerBase {
 
 	private readonly Action<string> _debugAction;
@@ -17,10 +20,21 @@ public class ActionLogger : LoggerBase {
 	private readonly Action<string> _warningAction;
 	private readonly Action<string> _errorAction;
 
+	/// <summary>
+	/// Creates an <see cref="ActionLogger"/> that routes every log level to the same action.
+	/// </summary>
+	/// <param name="action">Delegate invoked for debug, info, warning, and error messages.</param>
 	public ActionLogger(Action<string> action)
 		: this(action, action, action, action) {
 	}
 
+	/// <summary>
+	/// Creates an <see cref="ActionLogger"/> with per-level handlers.
+	/// </summary>
+	/// <param name="debugAction">Action invoked for <see cref="LogLevel.Debug"/> entries.</param>
+	/// <param name="infoAction">Action invoked for <see cref="LogLevel.Info"/> entries.</param>
+	/// <param name="warningAction">Action invoked for <see cref="LogLevel.Warning"/> entries.</param>
+	/// <param name="errorAction">Action invoked for <see cref="LogLevel.Error"/> entries.</param>
 	public ActionLogger(Action<string> debugAction, Action<string> infoAction, Action<string> warningAction, Action<string> errorAction) {
 		_debugAction = debugAction;
 		_infoAction = infoAction;

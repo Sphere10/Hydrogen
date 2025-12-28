@@ -10,10 +10,18 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Wraps another logger and performs all logging calls on a dedicated worker thread.
+/// </summary>
 public class AsyncLogger : LoggerDecorator {
 
 	private readonly SerialThreadPool _serialThreadPool;
 
+	/// <summary>
+	/// Creates an asynchronous logger that forwards messages to <paramref name="decoratedLogger"/>.
+	/// </summary>
+	/// <param name="decoratedLogger">Underlying logger that performs the actual write.</param>
+	/// <param name="errorHandler">Optional callback invoked if the worker thread encounters an exception.</param>
 	public AsyncLogger(ILogger decoratedLogger, Action<Exception> errorHandler = null) : base(decoratedLogger) {
 		_serialThreadPool = new SerialThreadPool(errorHandler);
 	}

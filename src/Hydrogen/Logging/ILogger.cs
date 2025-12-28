@@ -16,6 +16,9 @@ namespace Hydrogen;
 /// <remarks></remarks>
 public interface ILogger {
 
+	/// <summary>
+	/// Controls which log levels and exception details are emitted by the logger implementation.
+	/// </summary>
 	LogOptions Options { get; set; }
 
 	/// <summary>
@@ -60,6 +63,9 @@ public static class ILoggerExtensions {
 	//	logger.Error($"{ComponentPrefix(componentName, methodName)} {exception.ToDiagnosticString()}");
 	//}
 
+	/// <summary>
+	/// Forwards a message to the appropriate method on <see cref="ILogger"/> based on <paramref name="logLevel"/>.
+	/// </summary>
 	public static void Log(this ILogger logger, LogLevel logLevel, string message) {
 		switch (logLevel) {
 			case LogLevel.None:
@@ -80,31 +86,55 @@ public static class ILoggerExtensions {
 				throw new ArgumentOutOfRangeException(nameof(logLevel), logLevel, null);
 		}
 	}
+
+	/// <summary>
+	/// Logs a debug message with a component and method prefix.
+	/// </summary>
 	public static void Debug(this ILogger logger, string componentName, string methodName, string message) {
 		logger.Debug($"{ComponentPrefix(componentName, methodName)} {message}");
 	}
 
+	/// <summary>
+	/// Logs an informational message with a component and method prefix.
+	/// </summary>
 	public static void Info(this ILogger logger, string componentName, string methodName, string message) {
 		logger.Info($"{ComponentPrefix(componentName, methodName)} {message}");
 	}
 
+	/// <summary>
+	/// Logs a warning message with a component and method prefix.
+	/// </summary>
 	public static void Warning(this ILogger logger, string componentName, string methodName, string message) {
 		logger.Warning($"{ComponentPrefix(componentName, methodName)} {message}");
 	}
 
+	/// <summary>
+	/// Logs an error message with a component and method prefix.
+	/// </summary>
 	public static void Error(this ILogger logger, string componentName, string methodName, string message) {
 		logger.Error($"{ComponentPrefix(componentName, methodName)} {message}");
 	}
 
+	/// <summary>
+	/// Emits every error in a <see cref="Result"/> to the logger using component and method prefixes.
+	/// </summary>
 	public static void Result(this ILogger logger, string componentName, string methodName, Result result) {
 		foreach (var code in result.ErrorCodes)
 			logger.Log(code.Severity, $"{ComponentPrefix(componentName, methodName)} {code.Payload}");
 	}
 
+	/// <summary>
+	/// Logs an exception with component and method prefixes, preserving the optional message.
+	/// </summary>
 	public static void Exception(this ILogger logger, Exception exception,  string componentName, string methodName, string message = null) {
 		logger.Exception(exception, $"{ComponentPrefix(componentName, methodName)} {message}");
 	}
 
+	/// <summary>
+	/// Measures and logs the duration of a scoped operation using <see cref="ILogger.Debug(string)"/>.
+	/// </summary>
+	/// <param name="messagePrefix">Text prefixed before the elapsed milliseconds.</param>
+	/// <returns>An <see cref="IDisposable"/> that logs the elapsed time when disposed.</returns>
 	public static IDisposable LogDuration(this ILogger logger, string messagePrefix) {
 		var start = DateTime.Now;
 		return new ActionScope(

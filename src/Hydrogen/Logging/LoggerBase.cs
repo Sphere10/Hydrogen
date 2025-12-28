@@ -11,8 +11,15 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Base implementation of <see cref="ILogger"/> that filters messages using <see cref="Options"/>.
+/// </summary>
 public abstract class LoggerBase : ILogger {
 
+	/// <summary>
+	/// Gets or sets the flags that control which messages are emitted.
+	/// Defaults to <see cref="LogOptions.VerboseProfile"/> in debug builds and <see cref="LogOptions.StandardProfile"/> otherwise.
+	/// </summary>
 	public LogOptions Options { get; set; } = Tools.Runtime.IsDebugBuild ? LogOptions.VerboseProfile : LogOptions.StandardProfile;
 
 	/// <summary>
@@ -63,11 +70,11 @@ public abstract class LoggerBase : ILogger {
 	/// Logs an exception.
 	/// </summary>
 	/// <param name="exception">The exception.</param>
-	/// <param name="message1"></param>
+	/// <param name="message">Additional context to append to the exception details.</param>
 	public void Exception(Exception exception, string message = null) {
 		if (LoggerHelper.TryHydrateErrorMessage(exception, Options, out var exceptionMessage))
 			Log(LogLevel.Error, !string.IsNullOrWhiteSpace(message) ? $"{message}. {exceptionMessage}" : exceptionMessage);
-		}
+	}
 
 	/// <summary>
 	/// Implemented by sub-class.

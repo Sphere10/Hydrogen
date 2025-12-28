@@ -13,7 +13,6 @@ namespace Hydrogen;
 /// <summary>
 /// Provides application-wide logging functionality. Use it anywhere in the code.
 /// </summary>
-/// <remarks></remarks>
 public static class SystemLog {
 
 	static readonly MulticastLogger _logger;
@@ -27,7 +26,7 @@ public static class SystemLog {
 	}
 
 	/// <summary>
-	/// The internal logger.
+	/// The internal logger that broadcasts to registered sinks.
 	/// </summary>
 	public static ILogger Logger => _logger;
 
@@ -39,6 +38,9 @@ public static class SystemLog {
 		_logger.Debug(message);
 	}
 
+	/// <summary>
+	/// Logs a debug message with component and method prefixes.
+	/// </summary>
 	public static void Debug(string componentName, string methodName, string message) {
 		_logger.Debug(componentName, methodName, message);
 	}
@@ -52,6 +54,9 @@ public static class SystemLog {
 		_logger.Info(message);
 	}
 
+	/// <summary>
+	/// Logs an informational message with component and method prefixes.
+	/// </summary>
 	public static void Info(string componentName, string methodName, string message) {
 		_logger.Info(componentName, methodName, message);
 	}
@@ -64,6 +69,9 @@ public static class SystemLog {
 		_logger.Warning(message);
 	}
 
+	/// <summary>
+	/// Logs a warning message with component and method prefixes.
+	/// </summary>
 	public static void Warning(string componentName, string methodName, string message) {
 		_logger.Warning(componentName, methodName, message);
 	}
@@ -76,13 +84,22 @@ public static class SystemLog {
 		_logger.Error(message);
 	}
 
+	/// <summary>
+	/// Logs an error message with component and method prefixes.
+	/// </summary>
 	public static void Error(string componentName, string methodName, string message) {
 		_logger.Error(componentName, methodName, message);
 	}
 
 
+	/// <summary>
+	/// Logs an exception using the configured log options.
+	/// </summary>
 	public static void Exception(Exception exception, string message = null) => _logger.Exception(exception, message);
 
+	/// <summary>
+	/// Logs an exception with component and method prefixes, honoring the logger's exception detail settings.
+	/// </summary>
 	public static void Exception(string componentName, string methodName, Exception exception) {
 		if (LoggerHelper.TryHydrateErrorMessage(exception, _logger.Options, out var message))
 			_logger.Error(componentName, methodName, message);

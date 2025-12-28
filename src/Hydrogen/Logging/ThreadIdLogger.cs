@@ -10,14 +10,25 @@ using System.Threading;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Adds the current managed thread identifier as a prefix to log messages.
+/// </summary>
 public class ThreadIdLogger : PrefixLoggerBase {
 
 	public const string DefaultThreadIdFormat = "(TID: {0})";
 
+	/// <summary>
+	/// Creates a thread-aware logger.
+	/// </summary>
+	/// <param name="decoratedLogger">Logger to wrap.</param>
+	/// <param name="threadIdFormat">Optional composite format string for the thread id.</param>
 	public ThreadIdLogger(ILogger decoratedLogger, string threadIdFormat = null) : base(decoratedLogger) {
 		Format = threadIdFormat ?? DefaultThreadIdFormat;
 	}
 
+	/// <summary>
+	/// Format string used to render the managed thread id.
+	/// </summary>
 	public string Format { get; set; }
 
 	protected override string GetPrefix()

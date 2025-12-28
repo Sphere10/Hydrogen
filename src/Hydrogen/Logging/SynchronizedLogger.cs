@@ -10,14 +10,21 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Wraps a logger with read/write synchronization so callers can safely log from multiple threads.
+/// </summary>
 public class SynchronizedLogger : SynchronizedObject, ILogger {
 	private readonly ILogger _internalLogger;
 
+	/// <summary>
+	/// Creates a synchronized wrapper around the provided logger.
+	/// </summary>
 	public SynchronizedLogger(ILogger internalLogger) {
 		Guard.ArgumentNotNull(internalLogger, nameof(internalLogger));
 		_internalLogger = internalLogger;
 	}
 
+	/// <inheritdoc />
 	public LogOptions Options {
 		get {
 			using (EnterReadScope())

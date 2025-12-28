@@ -8,7 +8,13 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Writes log messages to the console using <see cref="ConsoleTextWriter"/>.
+/// </summary>
 public class ConsoleLogger : TextWriterLogger {
+	/// <summary>
+	/// Creates a console logger that emits every log level by default.
+	/// </summary>
 	public ConsoleLogger()
 		: base(new ConsoleTextWriter()) {
 	}

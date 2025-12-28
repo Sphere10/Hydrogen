@@ -10,14 +10,22 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Base decorator that forwards all logging calls to an underlying <see cref="ILogger"/>.
+/// </summary>
 public class LoggerDecorator : ILogger {
 
 	private readonly ILogger _decoratedLogger;
 
+	/// <summary>
+	/// Wraps the specified logger.
+	/// </summary>
+	/// <param name="decoratedLogger">Logger to forward calls to.</param>
 	public LoggerDecorator(ILogger decoratedLogger) {
 		_decoratedLogger = decoratedLogger;
 	}
 
+	/// <inheritdoc />
 	public LogOptions Options {
 		get => _decoratedLogger.Options;
 		set => _decoratedLogger.Options = value;

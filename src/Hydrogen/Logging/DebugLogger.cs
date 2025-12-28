@@ -8,7 +8,13 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Writes log messages to the debugger output window.
+/// </summary>
 public class DebugLogger : TextWriterLogger {
+	/// <summary>
+	/// Creates a logger that writes to <see cref="DebugTextWriter"/>.
+	/// </summary>
 	public DebugLogger()
 		: base(new DebugTextWriter()) {
 	}

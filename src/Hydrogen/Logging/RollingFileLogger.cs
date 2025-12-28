@@ -20,7 +20,7 @@ namespace Hydrogen;
 /// web.log
 /// web_20210914120111.log
 /// web_20211014110100.log
-/// </example>>
+/// </example>
 public class RollingFileLogger : LoggerBase, IDisposable {
 	public const int DefaultMaxFiles = 10;
 	public const int DefaultMaxFileSizeB = 1000000;
@@ -100,6 +100,9 @@ public class RollingFileLogger : LoggerBase, IDisposable {
 		_currentFileSizeBytes += messageSize;
 	}
 
+	/// <summary>
+	/// Flushes and releases the underlying file writer.
+	/// </summary>
 	public void Dispose() {
 		_textWriter.Close();
 	}

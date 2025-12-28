@@ -10,10 +10,22 @@ using System.IO;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Writes log messages to a file by appending through a <see cref="FileAppendTextWriter"/>.
+/// </summary>
 public class FileAppendLogger : TextWriterLogger {
+	/// <summary>
+	/// Creates a logger that appends to the specified file.
+	/// </summary>
+	/// <param name="file">Target file path.</param>
 	public FileAppendLogger(string file) : this(file, false) {
 	}
 
+	/// <summary>
+	/// Creates a logger that appends to the specified file, optionally creating the directory tree if missing.
+	/// </summary>
+	/// <param name="file">Target file path.</param>
+	/// <param name="createDirectories">Create directories and the file if they do not exist.</param>
 	public FileAppendLogger(string file, bool createDirectories)
 		: base(new FileAppendTextWriter(file)) {
 		if (createDirectories) {

@@ -10,14 +10,25 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Adds a timestamp prefix to every log entry.
+/// </summary>
 public class TimestampLogger : PrefixLoggerBase {
 
 	public const string DefaultDateFormat = "yyyy-MM-dd HH:mm:ss";
 
+	/// <summary>
+	/// Creates a timestamping logger.
+	/// </summary>
+	/// <param name="decoratedLogger">Logger to wrap.</param>
+	/// <param name="dateFormat">Optional date/time format string.</param>
 	public TimestampLogger(ILogger decoratedLogger, string dateFormat = default) : base(decoratedLogger) {
 		Format = dateFormat ?? DefaultDateFormat;
 	}
 
+	/// <summary>
+	/// Format string used to render the timestamp.
+	/// </summary>
 	public string Format { get; set; }
 
 	protected override string GetPrefix() {

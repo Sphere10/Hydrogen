@@ -8,6 +8,9 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Determines how projection indexes treat <c>null</c> key values.
+/// </summary>
 public enum IndexNullPolicy {
 	IgnoreNull,
 	IndexNullValue,

@@ -10,8 +10,17 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Bulk cache seeded with a fixed set of values, optionally keyed by a custom comparer.
+/// </summary>
 public sealed class PreloadedCache<TKey, TValue> : BulkFetchCacheBase<TKey, TValue> {
 	private readonly IDictionary<TKey, TValue> _preloadedValues = null;
+
+	/// <summary>
+	/// Creates a cache that serves a predefined dictionary of values.
+	/// </summary>
+	/// <param name="preloadedValues">Key/value pairs to expose through the cache.</param>
+	/// <param name="keyComparer">Optional key comparer.</param>
 	public PreloadedCache(
 		IDictionary<TKey, TValue> preloadedValues,
 		IEqualityComparer<TKey> keyComparer = null

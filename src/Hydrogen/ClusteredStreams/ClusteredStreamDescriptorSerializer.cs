@@ -10,6 +10,9 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Serializes and deserializes <see cref="ClusteredStreamDescriptor"/> entries in a fixed-width format.
+/// </summary>
 public class ClusteredStreamDescriptorSerializer : ConstantSizeItemSerializerBase<ClusteredStreamDescriptor> {
 
 	internal const int TraitsLength = sizeof(byte);

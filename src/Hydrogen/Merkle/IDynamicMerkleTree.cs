@@ -12,6 +12,9 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Merkle tree that supports mutable leaf collections and exposes the raw leaf data.
+/// </summary>
 public interface IDynamicMerkleTree : IMerkleTree {
 	IExtendedList<byte[]> Leafs { get; }
 }

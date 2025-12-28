@@ -14,5 +14,8 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Dictionary that tracks a merkle root over its key/value pairs.
+/// </summary>
 public interface IMerkleDictionary<TKey, TValue> : IDictionary<TKey, TValue>, IMerkleCollection<KeyValuePair<TKey, TValue>> {
 }

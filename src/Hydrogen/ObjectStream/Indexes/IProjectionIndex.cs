@@ -10,6 +10,9 @@ using System.Linq;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Read-only projection index that maps projected keys to one or more item positions.
+/// </summary>
 public interface IProjectionIndex<TKey> : IClusteredStreamsAttachment {
 	ILookup<TKey, long> Values { get ; }
 }

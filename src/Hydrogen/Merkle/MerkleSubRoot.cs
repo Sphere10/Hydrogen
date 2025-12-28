@@ -12,6 +12,9 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Represents a sub-root hash at a given height within a merkle tree.
+/// </summary>
 public record MerkleSubRoot {
 	public readonly int Height;
 	public readonly byte[] Hash;

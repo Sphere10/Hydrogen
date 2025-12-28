@@ -16,6 +16,9 @@ using System.Linq;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Represents a merkle tree capable of reporting its root, size, and node values by coordinate.
+/// </summary>
 public interface IMerkleTree {
 	CHF HashAlgorithm { get; }
 

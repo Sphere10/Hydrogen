@@ -14,5 +14,8 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Base contract for collections that maintain a merkle root alongside traditional collection semantics.
+/// </summary>
 public interface IMerkleCollection<TItem> : ICollection<TItem>, IMerkleObject {
 }

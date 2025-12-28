@@ -11,6 +11,9 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Projection index that enforces uniqueness on projected keys via a <see cref="UniqueKeyStorageAttachment{TKey}"/>.
+/// </summary>
 internal sealed class UniqueProjectionIndex<TItem, TKey> : ProjectionIndexBase<TItem, TKey, UniqueKeyStorageAttachment<TKey>>, IUniqueProjectionIndex<TKey> {
 	private readonly Func<TItem, TKey> _projection;
 

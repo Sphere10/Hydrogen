@@ -16,6 +16,9 @@ using Tools;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Helper methods for computing merkle roots from collections of items or pre-hashed leaves.
+/// </summary>
 public static class MerkleTree {
 
 	// NOTE: avoid method signatures with "params TItem[] items" since passed in collections of type C are interpreted as arrays of 1 item containing C

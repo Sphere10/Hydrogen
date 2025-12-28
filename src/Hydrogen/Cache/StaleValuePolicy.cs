@@ -8,8 +8,20 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Indicates how cached items are checked for staleness beyond expiration rules.
+/// </summary>
 public enum StaleValuePolicy {
+	/// <summary>
+	/// Items are assumed to remain valid until expiration.
+	/// </summary>
 	AssumeNeverStale,
+	/// <summary>
+	/// Staleness is evaluated on-demand using the cache-provided predicate.
+	/// </summary>
 	CheckStaleOnDemand,
+	/// <summary>
+	/// Placeholder for background staleness monitoring (not currently implemented).
+	/// </summary>
 	BackgroundCheck,
 }

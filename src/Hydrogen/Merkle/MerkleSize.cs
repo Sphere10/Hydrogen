@@ -12,6 +12,9 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Captures the leaf count and height for a merkle tree.
+/// </summary>
 public record MerkleSize {
 	public long LeafCount;
 	public int Height;

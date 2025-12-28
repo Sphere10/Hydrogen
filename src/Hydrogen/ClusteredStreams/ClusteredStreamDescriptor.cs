@@ -8,6 +8,9 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Describes where a clustered stream begins and ends within the cluster map, along with its logical size.
+/// </summary>
 public struct ClusteredStreamDescriptor {
 
 	public ClusteredStreamTraits Traits { get; set; }

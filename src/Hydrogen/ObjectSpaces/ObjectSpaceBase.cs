@@ -16,6 +16,9 @@ using Hydrogen.Mapping;
 
 namespace Hydrogen.ObjectSpaces;
 
+/// <summary>
+/// Core implementation of an object space that orchestrates clustered streams, dimensions, serializers, and indexes for persisted objects.
+/// </summary>
 public class ObjectSpace : SyncLoadableBase, ICriticalObject, IDisposable {
 
 	protected readonly ClusteredStreams _streams;

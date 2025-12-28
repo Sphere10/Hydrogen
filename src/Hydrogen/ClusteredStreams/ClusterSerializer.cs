@@ -10,6 +10,9 @@ using System.Diagnostics;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Serializes and deserializes <see cref="Cluster"/> records with a fixed layout.
+/// </summary>
 public class ClusterSerializer : ConstantSizeItemSerializerBase<Cluster> {
 	public const int TraitsLength = sizeof(byte);
 	public const int PrevLength = sizeof(long);

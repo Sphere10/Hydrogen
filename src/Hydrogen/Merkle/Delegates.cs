@@ -15,10 +15,17 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Delegate that retrieves a leaf value by index as a byte span.
+/// </summary>
 public delegate ReadOnlySpan<byte> MerkleTreeLeafGetter(int index);
 
-
+/// <summary>
+/// Delegate that returns the current number of leaves in a merkle tree.
+/// </summary>
 public delegate int MerkleTreeLeafCounter();
 
-
+/// <summary>
+/// Delegate that yields sub-roots representing independent merkle subtrees.
+/// </summary>
 public delegate IEnumerable<MerkleSubRoot> MerkleTreeSubRootsGetter();

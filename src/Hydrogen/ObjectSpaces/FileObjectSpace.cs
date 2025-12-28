@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace Hydrogen.ObjectSpaces;
 
+/// <summary>
+/// Object space backed by a transactional file, wiring commit/rollback semantics to the underlying <see cref="TransactionalStream"/>.
+/// </summary>
 public class FileObjectSpace : ObjectSpace, ITransactionalObject{
 
 	public event EventHandlerEx Committing { add => _fileStream.Committing += value; remove => _fileStream.Committing -= value; }

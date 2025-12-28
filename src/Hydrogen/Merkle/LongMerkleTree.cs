@@ -17,14 +17,9 @@ using System.Linq;
 
 namespace Hydrogen;
 
-// A merkle-tree implementation that only keeps the roots.
-// Streams is O(1), root calculation is O(1) and append leaf operation is O(1). 
-//
-// This tree is suitable for building very large merkle-trees, but is limited to the following use-cases:
-//  - verifying existence proofs (but not generating)
-//  - verifying and generating append-proofs 
-//  - appending leaves
-// TODO: write ExtendedList that keeps partial items only
+/// <summary>
+/// Merkle tree optimized for very large datasets by keeping only sub-root hashes in memory; supports append and proof verification scenarios.
+/// </summary>
 public class LongMerkleTree : IDynamicMerkleTree {
 	private readonly List<MerkleSubRoot> _subRoots;
 	private List<MerkleCoordinate> _subRootCoords;

@@ -16,6 +16,9 @@ using System.Threading.Tasks;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Stream-mapped list that maintains a merkle tree index over its items for integrity proofs.
+/// </summary>
 public class StreamMappedMerkleList<TItem> : ExtendedListDecorator<TItem, IStreamMappedList<TItem>>, IStreamMappedList<TItem>, IMerkleList<TItem> {
 	
 	public event EventHandlerEx<object> Loading { add => InternalCollection.Loading += value; remove => InternalCollection.Loading -= value; }

@@ -14,6 +14,9 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Represents a merkle node with its coordinate and hash value.
+/// </summary>
 public record MerkleNode : IEquatable<MerkleNode> {
 	public readonly MerkleCoordinate Coordinate;
 	public readonly byte[] Hash;

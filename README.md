@@ -1,69 +1,68 @@
 <p align="center">
-  <img  src="resources/branding/hydrogen-white-bg.gif" alt="HydrogenP2P logo">
+  <img  src="resources/branding/hydrogen-white-bg.gif" alt="Hydrogen logo">
 </p>
 
-# Hydrogen: P2P Framework
+# Hydrogen: Comprehensive .NET Application Framework
 
 Copyright © Sphere 10 Software 2018 - Present
 
-Hydrogen is a .NET-based framework for building scalable P2P blockchain applications. It is a broad framework that can be used for building  layer-1 blockchain-based systems as well as layer-2 extensions to those systems. 
+Hydrogen is a mature, production-grade .NET framework providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, it has evolved into a general-purpose framework offering battle-tested abstractions and utilities for enterprise .NET development.
 
-The Hydrogen framework offers the following features:
+## 🎯 What Hydrogen Provides
 
-- **Node**: a fully functional node with it's own console-based GUI. The node provides data-persistence for blockchain and consensus databases, networking layer for P2P protocols, key management for wallets, JSON APIs for integration and all the core functionality typically offered by a node.
-- **GUI**: a Blazor-based GUI for interacting with the node. This piece includes a rich-set of widgets useful for composing applications.
-- **In-protocol upgrades**: applications control how they are upgraded and can be upgraded automatically from the blockchain itself (typically through governance protocol).  Absolutely everything can be upgraded including the node and UI. 
-- **Automatic Interoperability**: hydrogen applications can easily interoperate with one another with complex workflows and patterns (publish-subscribe, send-and-forget, sagas) via the Helium framework.
-- **Plug-n-Play**:  plugins that can extend both the Node and/or GUI and which can be installed dynamically.
-- **Extensible**: in addition to plugins, the the framework offers extension points at various layers of the architecture.
-- **Cross-platform**: runs on any OS that supports .NET 5 framework.
+**Core Foundation**
+- **Unified Architecture**: Consistent patterns for application lifecycle, dependency injection, configuration, and component lifecycle across all platforms
+- **Enterprise Data Access**: Abstracted data layer with support for multiple database engines (SQL Server, SQLite, Firebird, NHibernate) and advanced query building
+- **Advanced Cryptography**: Comprehensive cryptographic implementations including post-quantum algorithms, digital signatures, and multiple hashing algorithms
+- **Multi-Protocol Networking**: TCP, UDP, WebSockets, and RPC frameworks for building distributed systems
+- **Rich Serialization**: Flexible binary serialization, JSON support, and streaming implementations
+
+**Application Development**
+- **Desktop UI Framework**: Full-featured Windows Forms component library with data binding, validation, and plugin support
+- **Web UI**: Blazor-based component library with wizards, modals, grids, and responsive layouts for modern web applications
+- **Cross-Platform**: Run applications on Windows, macOS, iOS, Android, or .NET Core/5+
+- **Plugin Architecture**: Dynamic plugin loading and lifecycle management for extensible applications
+
+**Specialized Features**
+- **Memory Efficiency**: Advanced collections, paged data structures, and streaming for handling large datasets
+- **Graphics & Drawing**: Cross-platform drawing utilities and image manipulation
+- **Performance**: Caching, connection pooling, and optimized algorithms for production workloads
+- **Testing**: Comprehensive testing framework and utilities for unit and integration testing
 
 
 
 ## 📁 Project Structure
 
-The Hydrogen framework consists of multiple interconnected projects organized as follows:
+The Hydrogen framework consists of multiple interconnected projects organized by category within `/src`:
 
-### Core Framework (`src/`)
+### Core Framework & Utilities
 
 | Project | Purpose |
 |---------|---------|
 | [**Hydrogen**](src/Hydrogen/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more |
 | [**Hydrogen.Application**](src/Hydrogen.Application/README.md) | Application lifecycle, dependency injection, command-line interface, and presentation framework |
 | [**Hydrogen.Communications**](src/Hydrogen.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes |
-| [**Hydrogen.CryptoEx**](src/Hydrogen.CryptoEx/README.md) | Extended cryptography: Bitcoin (SECP256k1), elliptic curves, hash functions, post-quantum algorithms |
-| [**Hydrogen.Consensus**](src/Hydrogen.Consensus/README.md) | Blockchain consensus mechanisms and validation rules framework |
-| [**Hydrogen.Data**](src/Hydrogen.Data/README.md) | Data access abstraction layer with ADO.NET enhancements, SQL query building, CSV support |
+| [**Hydrogen.Generators**](src/Hydrogen.Generators/README.md) | C# source generators for compile-time code generation |
 | [**HashLib4CSharp**](src/HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more |
 
-### DApp Framework (`src/`)
+### Cryptography & Security
 
 | Project | Purpose |
 |---------|---------|
-| [**Hydrogen.DApp.Core**](src/Hydrogen.DApp.Core/README.md) | Core blockchain and DApp framework: blocks, transactions, wallets, plugins, persistence |
-| [**Hydrogen.DApp.Node**](src/Hydrogen.DApp.Node/README.md) | Full-featured blockchain node with terminal UI, consensus, networking, wallet, and JSON APIs |
-| [**Hydrogen.DApp.Host**](src/Hydrogen.DApp.Host/README.md) | Host process for running DApp nodes as services |
+| [**Hydrogen.CryptoEx**](src/Hydrogen.CryptoEx/README.md) | Extended cryptography: Bitcoin (SECP256k1), elliptic curves, hash functions, post-quantum algorithms |
+| [**Hydrogen.Consensus**](src/Hydrogen.Consensus/README.md) | Blockchain consensus mechanisms and validation rules framework |
 
-### Presentation Layer (`blackhole/`)
-
-| Project | Purpose |
-|---------|---------|
-| [**Hydrogen.DApp.Presentation**](blackhole/Hydrogen.DApp.Presentation/README.md) | Blazor component library with wizards, modals, grids, and UI components |
-| [**Hydrogen.DApp.Presentation.Loader**](blackhole/Hydrogen.DApp.Presentation.Loader/README.md) | Blazor WebAssembly host for the presentation layer |
-| [**Hydrogen.DApp.Presentation.WidgetGallery**](blackhole/Hydrogen.DApp.Presentation.WidgetGallery/README.md) | Component showcase and demonstration plugin |
-| [**Hydrogen.DApp.Presentation2**](blackhole/Hydrogen.DApp.Presentation2/README.md) | Alternative presentation implementation with advanced patterns |
-| [**Hydrogen.DApp.Presentation2.Loader**](blackhole/Hydrogen.DApp.Presentation2.Loader/README.md) | WebAssembly host for the alternative presentation |
-
-### Database Implementations (`src/`)
+### Data Access & Persistence
 
 | Project | Purpose |
 |---------|---------|
+| [**Hydrogen.Data**](src/Hydrogen.Data/README.md) | Data access abstraction layer with ADO.NET enhancements, SQL query building, CSV support |
 | [**Hydrogen.Data.Sqlite**](src/Hydrogen.Data.Sqlite/README.md) | SQLite implementation for embedded databases |
 | [**Hydrogen.Data.Firebird**](src/Hydrogen.Data.Firebird/README.md) | Firebird database implementation |
 | [**Hydrogen.Data.MSSQL**](src/Hydrogen.Data.MSSQL/README.md) | Microsoft SQL Server implementation |
 | [**Hydrogen.Data.NHibernate**](src/Hydrogen.Data.NHibernate/README.md) | NHibernate ORM integration |
 
-### Windows Desktop (`src/`)
+### Desktop & Windows
 
 | Project | Purpose |
 |---------|---------|
@@ -74,7 +73,7 @@ The Hydrogen framework consists of multiple interconnected projects organized as
 | [**Hydrogen.Windows.Forms.MSSQL**](src/Hydrogen.Windows.Forms.MSSQL/README.md) | Windows Forms with SQL Server data binding |
 | [**Hydrogen.Windows.LevelDB**](src/Hydrogen.Windows.LevelDB/README.md) | LevelDB integration for fast key-value storage |
 
-### Web & Cross-Platform (`src/`)
+### Web & Cross-Platform
 
 | Project | Purpose |
 |---------|---------|
@@ -86,13 +85,42 @@ The Hydrogen framework consists of multiple interconnected projects organized as
 | [**Hydrogen.Android**](src/Hydrogen.Android/README.md) | Xamarin.Android integration for native Android apps |
 | [**Hydrogen.macOS**](src/Hydrogen.macOS/README.md) | Xamarin.macOS integration for native macOS apps |
 
-### Testing & Utilities (`src/` & `tests/`)
+### Blockchain & DApps
 
 | Project | Purpose |
 |---------|---------|
-| [**Hydrogen.NUnit**](src/Hydrogen.NUnit/README.md) | NUnit testing framework and utilities |
-| [**Hydrogen.NUnit.DB**](src/Hydrogen.NUnit.DB/README.md) | Database testing utilities |
-| [**Hydrogen.Generators**](src/Hydrogen.Generators/README.md) | C# source generators for compile-time code generation |
+| [**Hydrogen.DApp.Core**](src/Hydrogen.DApp.Core/README.md) | Core blockchain and DApp framework: blocks, transactions, wallets, plugins, persistence |
+| [**Hydrogen.DApp.Node**](src/Hydrogen.DApp.Node/README.md) | Full-featured blockchain node with terminal UI, consensus, networking, wallet, and JSON APIs |
+| [**Hydrogen.DApp.Host**](src/Hydrogen.DApp.Host/README.md) | Host process for running DApp nodes as services |
+
+## 🧪 Test Projects
+
+The `/tests` directory contains comprehensive test suites for the framework:
+
+| Test Project | Purpose |
+|--------------|---------|
+| **HashLib4CSharp.Tests** | Tests for hashing algorithms |
+| **Hydrogen.Communications.Tests** | Networking and RPC tests |
+| **Hydrogen.CryptoEx.Tests** | Cryptography implementation tests |
+| **Hydrogen.DApp.Core.Tests** | DApp framework tests |
+| **Hydrogen.Data.Tests** | Database access layer tests |
+| **Hydrogen.NET.Tests** | .NET framework utility tests |
+| **Hydrogen.NETCore.Tests** | .NET Core utility tests |
+| **Hydrogen.Tests** | Core framework tests |
+| **Hydrogen.Windows.LevelDB.Tests** | LevelDB integration tests |
+| **Hydrogen.Windows.Tests** | Windows platform tests |
+
+## 🎨 Presentation Layer
+
+The `/blackhole` directory contains the Blazor-based presentation layer and alternative implementations:
+
+| Project | Purpose |
+|---------|---------|
+| [**Hydrogen.DApp.Presentation**](blackhole/Hydrogen.DApp.Presentation/README.md) | Blazor component library with wizards, modals, grids, and UI components |
+| [**Hydrogen.DApp.Presentation.Loader**](blackhole/Hydrogen.DApp.Presentation.Loader/README.md) | Blazor WebAssembly host for the presentation layer |
+| [**Hydrogen.DApp.Presentation.WidgetGallery**](blackhole/Hydrogen.DApp.Presentation.WidgetGallery/README.md) | Component showcase and demonstration plugin |
+| [**Hydrogen.DApp.Presentation2**](blackhole/Hydrogen.DApp.Presentation2/README.md) | Alternative presentation implementation with advanced patterns |
+| [**Hydrogen.DApp.Presentation2.Loader**](blackhole/Hydrogen.DApp.Presentation2.Loader/README.md) | WebAssembly host for the alternative presentation |
 
 ## 📚 Documentation Links
 

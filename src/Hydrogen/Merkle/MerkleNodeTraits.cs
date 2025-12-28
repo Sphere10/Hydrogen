@@ -14,6 +14,9 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Flags describing structural properties of a merkle node within a tree.
+/// </summary>
 [Flags]
 public enum MerkleNodeTraits : ushort {
 	Root = 1 << 0,

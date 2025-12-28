@@ -17,6 +17,9 @@ using Hydrogen.ObjectSpaces;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Stream-mapped recyclable list that maintains merkle integrity data alongside recyclable index metadata.
+/// </summary>
 public class StreamMappedMerkleRecyclableList<TItem> : RecyclableListDecorator<TItem, IStreamMappedRecyclableList<TItem>>, IStreamMappedRecyclableList<TItem>, IMerkleList<TItem> {
 
 	public event EventHandlerEx<object> Loading { add => InternalCollection.Loading += value; remove => InternalCollection.Loading -= value; }

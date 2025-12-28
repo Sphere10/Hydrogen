@@ -14,5 +14,8 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Set that maintains a merkle root for its contents.
+/// </summary>
 public interface IMerkleSet<TItem> : ISet<TItem>, IMerkleCollection<TItem> {
 }

@@ -12,5 +12,8 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// List that exposes merkle metadata for its ordered items.
+/// </summary>
 public interface IMerkleList<TItem> : IExtendedList<TItem>, IMerkleCollection<TItem> {
 }

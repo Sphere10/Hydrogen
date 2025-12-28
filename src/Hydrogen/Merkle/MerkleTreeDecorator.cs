@@ -14,6 +14,9 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Decorator base for merkle trees, forwarding calls to an inner tree while allowing subclasses to extend behavior.
+/// </summary>
 public abstract class MerkleTreeDecorator<TMerkleTree> : IMerkleTree where TMerkleTree : IMerkleTree {
 
 	protected MerkleTreeDecorator(TMerkleTree internalMerkleTree) {
@@ -32,6 +35,9 @@ public abstract class MerkleTreeDecorator<TMerkleTree> : IMerkleTree where TMerk
 	public virtual ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate) => InternalMerkleTree.GetValue(coordinate);
 }
 
+/// <summary>
+/// Non-generic convenience decorator base for merkle trees.
+/// </summary>
 public abstract class MerkleTreeDecorator : MerkleTreeDecorator<IMerkleTree> {
 	protected MerkleTreeDecorator(IMerkleTree internalMerkleTree) : base(internalMerkleTree) {
 	}

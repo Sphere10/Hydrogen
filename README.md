@@ -6,7 +6,7 @@
 
 Copyright © Sphere 10 Software 2018 - Present
 
-Hydrogen is a mature, production-grade .NET framework providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, it has evolved into a general-purpose framework offering battle-tested abstractions and utilities for enterprise .NET development.
+Hydrogen is a mature, comprehensive .NET framework providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, it has evolved into a general-purpose framework offering robust abstractions and utilities for .NET development.
 
 ## 🎯 What Hydrogen Provides
 
@@ -26,7 +26,7 @@ Hydrogen is a mature, production-grade .NET framework providing a complete found
 **Specialized Features**
 - **Memory Efficiency**: Advanced collections, paged data structures, and streaming for handling large datasets
 - **Graphics & Drawing**: Cross-platform drawing utilities and image manipulation
-- **Performance**: Caching, connection pooling, and optimized algorithms for production workloads
+- **Performance**: Caching, connection pooling, and optimized algorithms
 - **Testing**: Comprehensive testing framework and utilities for unit and integration testing
 
 

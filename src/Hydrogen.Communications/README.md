@@ -1,55 +1,84 @@
 # Hydrogen.Communications
 
-A comprehensive communication framework for building networked applications with support for multiple protocols, RPC, and real-time data exchange.
+Network communication framework for .NET 8.0+ with support for RPC (Remote Procedure Call) APIs, protocol abstraction, and distributed system communication patterns.
 
-## 📋 Overview
+**Developed by [Sphere 10 Software](https://sphere10.com)**
 
-`Hydrogen.Communications` provides a complete networking layer for Hydrogen applications, enabling peer-to-peer communication, remote procedure calls, and efficient data exchange across various transport protocols.
+## 📋 Key Features
 
-## 🏗️ Architecture
+### RPC (Remote Procedure Call) Framework
+- **Attribute-Based Service Definition**: Use `[RpcAPIService]` and `[RpcAPIMethod]` attributes to expose methods remotely
+- **Type-Safe Communication**: Strongly-typed parameters and return values
+- **JSON Serialization**: Automatic JSON serialization of complex types
+- **Custom Parameter Names**: Use `[RpcAPIArgument]` to specify explicit parameter names for JSON requests
 
-The library is organized into key protocol and utility modules:
+### Protocol Abstraction
+- **Protocol Agnostic**: Support for multiple transport protocols
+- **Network Communication**: Built on top of standard .NET networking
+- **Message Serialization**: Flexible serialization for RPC messages
 
-- **Protocols**: Abstract protocol definitions and implementations
-- **TCP**: TCP/IP socket communication layer
-- **UDP**: UDP-based datagram communication
-- **WebSockets**: WebSocket protocol implementation for real-time communication
-- **RPC**: Remote Procedure Call infrastructure for service invocation
-- **JSON**: JSON serialization utilities for message payloads
-- **DataSource**: Data source abstractions for communication endpoints
-- **EndPoint**: Network endpoint configuration and management
-- **Pipes**: Named pipe communication support
+### Advanced Type Support
+- **Complex Objects**: Serialize/deserialize custom objects as RPC parameters
+- **Arrays & Collections**: Support for arrays, dictionaries, and generic collections
+- **Enums**: Both string and numeric enum serialization
+- **Byte Arrays**: Special handling for binary data with hex encoding
 
-## 🚀 Key Features
+## 🚀 Quick Start
 
-- **Multi-Protocol Support**: TCP, UDP, WebSockets, and pipes
-- **RPC Framework**: Service-oriented remote procedure calls
-- **Abstracted Communication**: Protocol-agnostic interfaces for flexibility
-- **Data Serialization**: JSON support for message payloads
-- **Endpoint Management**: Unified interface for managing connection endpoints
-- **Async/Await Compatible**: Modern async communication patterns
+### Installation
 
-## 🔧 Usage
-
-Establish communication between nodes:
-
-```csharp
-using Hydrogen.Communications;
-
-// TCP Communication
-var endpoint = new TcpEndPoint("192.168.1.100", 8080);
-
-// WebSocket Real-time communication
-var wsEndpoint = new WebSocketEndPoint("ws://localhost:9000");
+Add via NuGet:
+```bash
+dotnet add package Hydrogen.Communications
 ```
 
-## 📦 Dependencies
+### Defining RPC Services
 
-- **Hydrogen**: Core framework utilities
-- Custom serialization and protocol implementations
+```csharp
+using Hydrogen;
+using Hydrogen.Communications.RPC;
 
-## 📄 Related Projects
+// Define a simple RPC service with multiple methods
+[RpcAPIService("math")]
+public class MathService {
+	[RpcAPIMethod]
+	public int Add(int a, int b) {
+		return a + b;
+	}
 
-- [Hydrogen](../Hydrogen) - Core framework library
-- [Hydrogen.DApp.Node](../Hydrogen.DApp.Node) - Node implementation using communications
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - DApp core services
+	[RpcAPIMethod]
+	public uint AddUInt(uint a, uint b) {
+		return a + b;
+	}
+
+	[RpcAPIMethod]
+	public float AddFloat(float a, float b) {
+		return a + b;
+	}
+
+	[RpcAPIMethod]
+	public double AddDouble(double a, double b) {
+		return a + b;
+	}
+
+	[RpcAPIMethod]
+	public string ConcatString(string a, string b) {
+		return a + b;
+	}
+}
+
+// Use explicit parameter names in JSON requests
+[RpcAPIService("advanced")]
+public class AdvancedService {
+	[RpcAPIMethod]
+	public string AddStrings([RpcAPIArgument("s1")] string str1, [RpcAPIArgument("s2")] string str2) {
+		return str1 + str2;
+	}
+
+	[RpcAPIMethod]
+	public uint Add2Different([RpcAPIArgument("arg1")] uint unsigned, [RpcAPIArgument("arg2")] int signed) {
+		return unsigned + (uint)signed;
+	}
+}
+```
+

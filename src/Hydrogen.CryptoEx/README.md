@@ -29,16 +29,89 @@ The library is organized by cryptographic scheme families:
 
 ## 🔧 Usage
 
-Digital signature generation and verification:
+### ECDSA Digital Signatures
+
+Generate keys, sign messages, and verify signatures with ECDSA:
 
 ```csharp
-using Hydrogen.CryptoEx;
+using Hydrogen.CryptoEx.EC;
+using System.Text;
 
-// SECP256k1 (Bitcoin)
-var signer = new SECP256k1Signer();
-var privateKey = signer.GeneratePrivateKey();
-var signature = signer.Sign(message, privateKey);
-var valid = signer.Verify(message, signature, publicKey);
+// Create ECDSA instance with SECP256K1 (Bitcoin curve)
+var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
+
+// Generate a private key from a deterministic seed
+var secret = new byte[] { 0, 1, 2, 3, 4 };
+var privateKey = ecdsa.GeneratePrivateKey(secret);
+
+// Derive the corresponding public key
+var publicKey = ecdsa.DerivePublicKey(privateKey);
+
+// Sign a message
+var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
+var signature = ecdsa.Sign(privateKey, message);
+
+// Verify the signature
+bool isValid = ecdsa.Verify(signature, message, publicKey); // true
+```
+
+### Supported Elliptic Curves
+
+All curves are supported with the same interface:
+
+```csharp
+var ecdsa256 = new ECDSA(ECDSAKeyType.SECP256K1);      // 256-bit (Bitcoin)
+var ecdsa384 = new ECDSA(ECDSAKeyType.SECP384R1);      // 384-bit
+var ecdsa521 = new ECDSA(ECDSAKeyType.SECP521R1);      // 521-bit
+var ecdsa283 = new ECDSA(ECDSAKeyType.SECT283K1);      // 283-bit (Binary curve)
+```
+
+### ECIES Asymmetric Encryption
+
+Encrypt data with a public key and decrypt with the corresponding private key:
+
+```csharp
+using Hydrogen.CryptoEx.EC;
+using System.Text;
+
+var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
+
+// Generate keypair
+var privateKey = ecdsa.GeneratePrivateKey();
+var publicKey = ecdsa.DerivePublicKey(privateKey);
+
+// Encrypt message with public key
+var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
+var encryptedData = ecdsa.IES.Encrypt(message, publicKey);
+
+// Decrypt with private key
+if (ecdsa.IES.TryDecrypt(encryptedData, out var decryptedData, privateKey)) {
+	// Decrypted data matches original message
+	bool success = message.SequenceEqual(decryptedData.ToArray()); // true
+}
+```
+
+### Multiple Encryption Attempts
+
+For testing randomized encryption (each encryption produces different ciphertext):
+
+```csharp
+var ecdsa = new ECDSA(ECDSAKeyType.SECP384R1);
+var privateKey = ecdsa.GeneratePrivateKey();
+var publicKey = ecdsa.DerivePublicKey(privateKey);
+
+var message = Encoding.ASCII.GetBytes(RandomString(100));
+
+// Encrypt multiple times
+for (int i = 0; i < 1000; i++) {
+	var encrypted = ecdsa.IES.Encrypt(message, publicKey);
+    
+	// Each encryption produces different ciphertext due to ECIES randomization
+	if (ecdsa.IES.TryDecrypt(encrypted, out var decrypted, privateKey)) {
+		// Verify decryption matches original
+		bool match = message.SequenceEqual(decrypted.ToArray());
+	}
+}
 ```
 
 ## 📦 Dependencies
@@ -47,12 +120,22 @@ var valid = signer.Verify(message, signature, publicKey);
 - **BouncyCastle.Cryptography**: Cryptographic primitives
 - Platform-specific cryptography libraries
 
-## 📄 Documentation
+## 📖 Documentation
 
 See [Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)](https://sphere10.com/tech/ams) for advanced signature scheme documentation.
 
+## 🧮 Key Concepts
+
+- **Private Key**: Used for signing and decryption - must be kept secret
+- **Public Key**: Derived from private key, used for verification and encryption - can be shared
+- **ECDSA**: Elliptic Curve Digital Signature Algorithm - signs messages with private key, verifies with public key
+- **ECIES**: Elliptic Curve Integrated Encryption Scheme - encrypts with public key, decrypts with private key
+- **Deterministic Generation**: Providing a seed produces the same keypair every time (useful for testing)
+- **Non-Deterministic Encryption**: ECIES adds randomness, so each encryption of the same message produces different ciphertext
+
 ## 📄 Related Projects
 
-- [Hydrogen](../Hydrogen) - Core framework library
+- [Hydrogen](../Hydrogen) - Core framework
 - [Hydrogen.Consensus](../Hydrogen.Consensus) - Consensus mechanisms using cryptography
 - [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - DApp blockchain core
+

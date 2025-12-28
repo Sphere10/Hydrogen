@@ -11,6 +11,9 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Base class for caches that populate all entries in a single bulk fetch operation.
+/// </summary>
 public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue> {
 	private readonly bool _fetchOnceOnly;
 	internal uint FetchCount;
@@ -66,6 +69,9 @@ public abstract class BulkFetchCacheBase<TKey, TValue> : CacheBase<TKey, TValue>
 		return base.ContainsCachedItem(key);
 	}
 
+	/// <summary>
+	/// Immediately refetches all items and resets fetch counters.
+	/// </summary>
 	public void ForceRefresh() {
 		Purge();
 		BulkLoad(BulkFetch());

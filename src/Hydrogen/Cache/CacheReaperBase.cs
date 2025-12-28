@@ -8,13 +8,20 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Base implementation for cache reapers that enforces registration semantics.
+/// </summary>
 public abstract class CacheReaperBase : ICacheReaper {
 
+	/// <inheritdoc />
 	public abstract void Register(ICache cache);
 
+	/// <inheritdoc />
 	public abstract void Deregister(ICache cache);
 
+	/// <inheritdoc />
 	public abstract long AvailableSpace();
 
+	/// <inheritdoc />
 	public abstract long MakeSpace(ICache requestingCache, long requestedBytes);
 }

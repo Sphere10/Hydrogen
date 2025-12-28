@@ -13,19 +13,25 @@ using System.Linq;
 namespace Hydrogen;
 
 
+/// <summary>
+/// Generic cache base class that projects strongly-typed API onto the object-based <see cref="CacheBase"/>.
+/// </summary>
 public abstract class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> {
 	private readonly ProjectionMemoizer _eventHandlerProjections = new ();
 
+	/// <inheritdoc />
 	public new event EventHandlerEx<TKey> ItemFetching {
 		add => ((CacheBase)this).ItemFetching += _eventHandlerProjections.RememberProjection<EventHandlerEx<TKey>, EventHandlerEx<object>>(value, handler => (k) => handler((TKey)k));
 		remove => ((CacheBase)this).ItemFetching -= _eventHandlerProjections.ForgetProjection<EventHandlerEx<TKey>, EventHandlerEx<object>>(value);
 	}
 
+	/// <inheritdoc />
 	public new event EventHandlerEx<TKey, TValue> ItemFetched {
 		add => ((CacheBase)this).ItemFetched += _eventHandlerProjections.RememberProjection<EventHandlerEx<TKey, TValue>, EventHandlerEx<object, object>>(value, handler => (k, v) => handler((TKey)k, (TValue)v));
 		remove => ((CacheBase)this).ItemFetched -= _eventHandlerProjections.ForgetProjection<EventHandlerEx<TKey, TValue>, EventHandlerEx<object, object>>(value);
 	}
 
+	/// <inheritdoc />
 	public new event EventHandlerEx<TKey, CachedItem<TValue>> ItemRemoved {
 		add => ((CacheBase)this).ItemRemoved += _eventHandlerProjections.RememberProjection<EventHandlerEx<TKey, CachedItem<TValue>>, EventHandlerEx<object, CachedItem>>(value, handler => (k, v) => handler((TKey)k, (CachedItem<TValue>)v));
 		remove => ((CacheBase)this).ItemRemoved -= _eventHandlerProjections.ForgetProjection<EventHandlerEx<TKey, CachedItem<TValue>>, EventHandlerEx<object, CachedItem>>(value);
@@ -43,24 +49,32 @@ public abstract class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> 
 	) : base((keyComparer ?? EqualityComparer<TKey>.Default).AsProjection(x => (object)x, x => (TKey)x), reapStrategy, expirationStrategy, maxCapacity, expirationDuration, nullValuePolicy, staleValuePolicy, reaper) {
 	}
 
+	/// <inheritdoc />
 	public new IEnumerable<CachedItem<TValue>> CachedItems => ((CacheBase)this).CachedItems.Cast<CachedItem<TValue>>();
 
+	/// <inheritdoc />
 	public bool ContainsCachedItem(TKey key) => ((CacheBase)this).ContainsCachedItem(key);
 
+	/// <inheritdoc />
 	public void Invalidate(TKey key) => ((CacheBase)this).Invalidate(key);
 
+	/// <inheritdoc />
 	public CachedItem<TValue> Get(TKey key) => (CachedItem<TValue>)((CacheBase)this).Get(key);
 
+	/// <inheritdoc />
 	public void Set(TKey key, TValue value) => ((CacheBase)this).Set(key, value);
 
+	/// <inheritdoc />
 	public TValue this[TKey index] {
 		get => (TValue)((CacheBase)this)[index];
 		set => ((CacheBase)this)[index] = value;
 	}
 
+	/// <inheritdoc />
 	public void BulkLoad(IEnumerable<KeyValuePair<TKey, TValue>> bulkLoadedValues)
 		=> ((CacheBase)this).BulkLoad(bulkLoadedValues.Select(x => new KeyValuePair<object, object>(x.Key, x.Value)));
 
+	/// <inheritdoc />
 	public void Remove(TKey key)
 		=> ((CacheBase)this).Remove(key);
 
@@ -108,5 +122,4 @@ public abstract class CacheBase<TKey, TValue> : CacheBase, ICache<TKey, TValue> 
 	}
 
 }
-
 

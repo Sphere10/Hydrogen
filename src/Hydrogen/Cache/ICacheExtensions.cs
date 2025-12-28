@@ -11,8 +11,14 @@ using System.Linq;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Convenience extensions for working with cache implementations.
+/// </summary>
 public static class ICacheExtensions {
 
+	/// <summary>
+	/// Returns all currently cached values, forcing an initial bulk fetch when applicable.
+	/// </summary>
 	public static IEnumerable<V> GetAllCachedValues<K, V>(this ICache<K, V> cache) {
 		if (cache is BulkFetchCacheBase<K, V> bulkFetchCache && bulkFetchCache.FetchCount == 0) {
 			bulkFetchCache.ForceRefresh();

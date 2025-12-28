@@ -8,12 +8,36 @@
 
 namespace Hydrogen;
 
+/// <summary>
+/// Determines which items are evicted when a cache needs to free space.
+/// </summary>
 public enum CacheReapPolicy {
+	/// <summary>
+	/// Prefer removing items that have been accessed the least.
+	/// </summary>
 	LeastUsed,
+	/// <summary>
+	/// Prefer removing the largest items first.
+	/// </summary>
 	Largest,
+	/// <summary>
+	/// Prefer removing the smallest items first.
+	/// </summary>
 	Smallest,
+	/// <summary>
+	/// Prefer removing items idle for the longest duration.
+	/// </summary>
 	LongestIdle,
+	/// <summary>
+	/// Prefer removing the oldest fetched items.
+	/// </summary>
 	Oldest,
+	/// <summary>
+	/// Aggressively remove expired items, then any others until the request is satisfied.
+	/// </summary>
 	ASAP,
+	/// <summary>
+	/// Never reap automatically; only expired items are eligible.
+	/// </summary>
 	None
 }

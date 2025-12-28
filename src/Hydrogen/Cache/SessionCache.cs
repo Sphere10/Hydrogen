@@ -11,9 +11,16 @@ using System.Linq;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Cache tuned for session-style lifetimes that expire entries based on last access.
+/// </summary>
 public class SessionCache<K, T> : CacheBase<K, T> {
 	private readonly Scheduler<IJob> _cleaner;
 
+	/// <summary>
+	/// Creates a session cache with the specified idle timeout.
+	/// </summary>
+	/// <param name="sessionTimeoutInterval">Duration of inactivity before a session is removed.</param>
 	public SessionCache(TimeSpan sessionTimeoutInterval)
 		: base(CacheReapPolicy.None, ExpirationPolicy.SinceLastAccessedTime, expirationDuration: sessionTimeoutInterval) {
 		_cleaner = new Scheduler<IJob>(SchedulerPolicy.DisposeWhenFinished | SchedulerPolicy.RemoveJobOnError | SchedulerPolicy.DontThrow);
@@ -33,6 +40,9 @@ public class SessionCache<K, T> : CacheBase<K, T> {
 		base.Get(sessionID); // refresh cache
 	}
 
+	/// <summary>
+	/// Removes sessions that have exceeded the configured timeout.
+	/// </summary>
 	public virtual void Cleanup() {
 		using (base.EnterWriteScope()) {
 			var expired = base.InternalStorage.Where(kvp => IsExpired(kvp.Value)).ToArray();

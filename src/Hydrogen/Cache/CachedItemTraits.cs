@@ -10,10 +10,25 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Flags describing the lifecycle state of a cached entry.
+/// </summary>
 [Flags]
 public enum CachedItemTraits {
+	/// <summary>
+	/// Item is no longer valid and should be refreshed.
+	/// </summary>
 	Invalidated = 1 << 0,
+	/// <summary>
+	/// Item may be removed by reaping.
+	/// </summary>
 	CanPurge = 1 << 1,
+	/// <summary>
+	/// Item has been purged from the cache.
+	/// </summary>
 	Purged = 1 << 2,
+	/// <summary>
+	/// Default trait set for newly added items.
+	/// </summary>
 	Default = CanPurge,
 }

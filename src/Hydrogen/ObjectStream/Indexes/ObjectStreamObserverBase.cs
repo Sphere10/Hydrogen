@@ -10,6 +10,9 @@ using System;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Observes operations performed on an <see cref="ObjectStream"/> and exposes overridable hooks for derived index implementations.
+/// </summary>
 public abstract class ObjectStreamObserverBase  {
 	protected ObjectStream Objects;
 

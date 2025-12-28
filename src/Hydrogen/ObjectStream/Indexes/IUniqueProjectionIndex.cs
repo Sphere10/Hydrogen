@@ -10,6 +10,9 @@ using System.Collections.Generic;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Projection index that enforces uniqueness of projected keys across items.
+/// </summary>
 public interface IUniqueProjectionIndex<TKey> : IClusteredStreamsAttachment {
 
 	IReadOnlyDictionary<TKey, long> Values { get ; }

@@ -13,6 +13,9 @@ using Hydrogen.Mapping;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Utility helpers for constructing projection and checksum indexes over <see cref="ObjectStream"/> instances.
+/// </summary>
 internal static class IndexFactory {
 	
 	#region Prjection Index

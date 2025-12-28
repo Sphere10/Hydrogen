@@ -14,6 +14,9 @@ using System.Linq;
 namespace Hydrogen;
 
 
+/// <summary>
+/// Projection index that groups item positions by a projected key using an <see cref="IndexStorageAttachment{TKey}"/>.
+/// </summary>
 internal sealed class ProjectionIndex<TItem, TProjection> : ProjectionIndexBase<TItem, TProjection, IndexStorageAttachment<TProjection>>, IProjectionIndex<TProjection> {
 
 	private readonly Func<TItem, TProjection> _projection;

@@ -1,152 +1,117 @@
 <p align="center">
-  <img  src="resources/branding/hydrogen-white-bg.gif" alt="Hydrogen logo">
+  <img src="resources/branding/hydrogen-white-bg.gif" alt="Hydrogen logo">
 </p>
 
 # Hydrogen: Comprehensive .NET Application Framework
 
-Copyright © Sphere 10 Software 2018 - Present
+Copyright (c) Sphere 10 Software 2018 - Present
 
-Hydrogen is a mature, comprehensive .NET framework providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, it has evolved into a general-purpose framework offering robust abstractions and utilities for .NET development.
+Hydrogen is a mature .NET framework providing a foundation for building full-stack applications across desktop, mobile, and web platforms. It originated in blockchain systems and has grown into a general-purpose framework with strong primitives for data, networking, cryptography, and UI.
 
-## 🎯 What Hydrogen Provides
+## What Hydrogen provides
+- Core utilities: collections, serialization, streaming, caching, and diagnostics
+- Data access: DB-agnostic abstractions with providers for SQLite, SQL Server, Firebird, and NHibernate
+- Cryptography: hashing, signatures, and specialized algorithms for blockchain use cases
+- Networking: TCP/UDP/RPC utilities and protocol abstractions
+- UI: Windows Forms components plus ASP.NET Core integration
 
-**Core Foundation**
-- **Unified Architecture**: Consistent patterns for application lifecycle, dependency injection, configuration, and component lifecycle across all platforms
-- **Enterprise Data Access**: Abstracted data layer with support for multiple database engines (SQL Server, SQLite, Firebird, NHibernate) and advanced query building
-- **Advanced Cryptography**: Comprehensive cryptographic implementations including post-quantum algorithms, digital signatures, and multiple hashing algorithms
-- **Multi-Protocol Networking**: TCP, UDP, WebSockets, and RPC frameworks for building distributed systems
-- **Rich Serialization**: Flexible binary serialization, JSON support, and streaming implementations
+## Solutions
+- `src/Hydrogen (Win).sln`: Windows and full-featured solution including UI and DApp projects
+- `src/Hydrogen (CrossPlatform).sln`: cross-platform subset without Windows UI projects
 
-**Application Development**
-- **Desktop UI Framework**: Full-featured Windows Forms component library with data binding, validation, and plugin support
-- **Web UI**: Blazor-based component library with wizards, modals, grids, and responsive layouts for modern web applications
-- **Cross-Platform**: Run applications on Windows, macOS, iOS, Android, or .NET Core/5+
-- **Plugin Architecture**: Dynamic plugin loading and lifecycle management for extensible applications
+## Project structure
+- `src/`: libraries and applications
+- `tests/`: unit/integration tests
+- `utils/`: internal tools and test harnesses
+- `recipes/`: sample projects and protocol recipes
+- `resources/`: shared assets (branding, fonts, presentations)
+- `docs/`: architecture and guidelines
 
-**Specialized Features**
-- **Memory Efficiency**: Advanced collections, paged data structures, and streaming for handling large datasets
-- **Graphics & Drawing**: Cross-platform drawing utilities and image manipulation
-- **Performance**: Caching, connection pooling, and optimized algorithms
-- **Testing**: Comprehensive testing framework and utilities for unit and integration testing
+## Core projects
 
-
-
-## 📁 Project Structure
-
-The Hydrogen framework consists of multiple interconnected projects organized by category within `/src`:
-
-### Core Framework & Utilities
+### Core framework and utilities
 
 | Project | Purpose |
 |---------|---------|
-| [**Hydrogen**](src/Hydrogen/README.md) | General-purpose core library with utilities for caching, collections, cryptography, serialization, streaming, and more |
-| [**Hydrogen.Application**](src/Hydrogen.Application/README.md) | Application lifecycle, dependency injection, command-line interface, and presentation framework |
-| [**Hydrogen.Communications**](src/Hydrogen.Communications/README.md) | Multi-protocol networking layer: TCP, UDP, WebSockets, RPC, and pipes |
-| [**Hydrogen.Generators**](src/Hydrogen.Generators/README.md) | C# source generators for compile-time code generation |
-| [**HashLib4CSharp**](src/HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more |
+| [Hydrogen](src/Hydrogen/README.md) | Core utilities: collections, serialization, streams, hashing |
+| [Hydrogen.Application](src/Hydrogen.Application/README.md) | Application lifecycle, DI, settings, CLI support |
+| [Hydrogen.Communications](src/Hydrogen.Communications/README.md) | RPC and protocol abstractions |
+| [Hydrogen.Generators](src/Hydrogen.Generators/README.md) | C# source generators |
+| [HashLib4CSharp](src/HashLib4CSharp/README.md) | Hashing and checksum algorithms |
 
-### Cryptography & Security
-
-| Project | Purpose |
-|---------|---------|
-| [**Hydrogen.CryptoEx**](src/Hydrogen.CryptoEx/README.md) | Extended cryptography: Bitcoin (SECP256k1), elliptic curves, hash functions, post-quantum algorithms |
-| [**Hydrogen.Consensus**](src/Hydrogen.Consensus/README.md) | Blockchain consensus mechanisms and validation rules framework |
-
-### Data Access & Persistence
+### Cryptography and consensus
 
 | Project | Purpose |
 |---------|---------|
-| [**Hydrogen.Data**](src/Hydrogen.Data/README.md) | Data access abstraction layer with ADO.NET enhancements, SQL query building, CSV support |
-| [**Hydrogen.Data.Sqlite**](src/Hydrogen.Data.Sqlite/README.md) | SQLite implementation for embedded databases |
-| [**Hydrogen.Data.Firebird**](src/Hydrogen.Data.Firebird/README.md) | Firebird database implementation |
-| [**Hydrogen.Data.MSSQL**](src/Hydrogen.Data.MSSQL/README.md) | Microsoft SQL Server implementation |
-| [**Hydrogen.Data.NHibernate**](src/Hydrogen.Data.NHibernate/README.md) | NHibernate ORM integration |
+| [Hydrogen.CryptoEx](src/Hydrogen.CryptoEx/README.md) | Extended crypto and blockchain-focused primitives |
+| [Hydrogen.Consensus](src/Hydrogen.Consensus/README.md) | Consensus abstractions and validation rules |
 
-### Desktop & Windows
+### Data access and persistence
 
 | Project | Purpose |
 |---------|---------|
-| [**Hydrogen.Windows**](src/Hydrogen.Windows/README.md) | Windows platform integration: registry, services, event logging |
-| [**Hydrogen.Windows.Forms**](src/Hydrogen.Windows.Forms/README.md) | Windows Forms UI framework and components |
-| [**Hydrogen.Windows.Forms.Sqlite**](src/Hydrogen.Windows.Forms.Sqlite/README.md) | Windows Forms with SQLite data binding |
-| [**Hydrogen.Windows.Forms.Firebird**](src/Hydrogen.Windows.Forms.Firebird/README.md) | Windows Forms with Firebird data binding |
-| [**Hydrogen.Windows.Forms.MSSQL**](src/Hydrogen.Windows.Forms.MSSQL/README.md) | Windows Forms with SQL Server data binding |
-| [**Hydrogen.Windows.LevelDB**](src/Hydrogen.Windows.LevelDB/README.md) | LevelDB integration for fast key-value storage |
+| [Hydrogen.Data](src/Hydrogen.Data/README.md) | Data abstraction and SQL helpers |
+| [Hydrogen.Data.Sqlite](src/Hydrogen.Data.Sqlite/README.md) | SQLite provider |
+| [Hydrogen.Data.Firebird](src/Hydrogen.Data.Firebird/README.md) | Firebird provider |
+| [Hydrogen.Data.MSSQL](src/Hydrogen.Data.MSSQL/README.md) | SQL Server provider |
+| [Hydrogen.Data.NHibernate](src/Hydrogen.Data.NHibernate/README.md) | NHibernate integration |
 
-### Web & Cross-Platform
-
-| Project | Purpose |
-|---------|---------|
-| [**Hydrogen.Web.AspNetCore**](src/Hydrogen.Web.AspNetCore/README.md) | ASP.NET Core integration: middleware, filters, routing, forms |
-| [**Hydrogen.Drawing**](src/Hydrogen.Drawing/README.md) | Cross-platform graphics and drawing utilities |
-| [**Hydrogen.NET**](src/Hydrogen.NET/README.md) | .NET Framework-specific utilities and type introspection |
-| [**Hydrogen.NETCore**](src/Hydrogen.NETCore/README.md) | .NET Core and modern .NET utilities |
-| [**Hydrogen.iOS**](src/Hydrogen.iOS/README.md) | Xamarin.iOS integration for native iOS apps |
-| [**Hydrogen.Android**](src/Hydrogen.Android/README.md) | Xamarin.Android integration for native Android apps |
-| [**Hydrogen.macOS**](src/Hydrogen.macOS/README.md) | Xamarin.macOS integration for native macOS apps |
-
-### Blockchain & DApps
+### Desktop and Windows
 
 | Project | Purpose |
 |---------|---------|
-| [**Hydrogen.DApp.Core**](src/Hydrogen.DApp.Core/README.md) | Core blockchain and DApp framework: blocks, transactions, wallets, plugins, persistence |
-| [**Hydrogen.DApp.Node**](src/Hydrogen.DApp.Node/README.md) | Full-featured blockchain node with terminal UI, consensus, networking, wallet, and JSON APIs |
-| [**Hydrogen.DApp.Host**](src/Hydrogen.DApp.Host/README.md) | Host process for running DApp nodes as services |
+| [Hydrogen.Windows](src/Hydrogen.Windows/README.md) | Windows platform utilities |
+| [Hydrogen.Windows.Forms](src/Hydrogen.Windows.Forms/README.md) | WinForms UI framework |
+| [Hydrogen.Windows.Forms.Sqlite](src/Hydrogen.Windows.Forms.Sqlite/README.md) | WinForms + SQLite binding |
+| [Hydrogen.Windows.Forms.Firebird](src/Hydrogen.Windows.Forms.Firebird/README.md) | WinForms + Firebird binding |
+| [Hydrogen.Windows.Forms.MSSQL](src/Hydrogen.Windows.Forms.MSSQL/README.md) | WinForms + SQL Server binding |
+| [Hydrogen.Windows.LevelDB](src/Hydrogen.Windows.LevelDB/README.md) | LevelDB wrapper for Windows |
 
-## 🧪 Test Projects
-
-The `/tests` directory contains comprehensive test suites for the framework:
-
-| Test Project | Purpose |
-|--------------|---------|
-| **HashLib4CSharp.Tests** | Tests for hashing algorithms |
-| **Hydrogen.Communications.Tests** | Networking and RPC tests |
-| **Hydrogen.CryptoEx.Tests** | Cryptography implementation tests |
-| **Hydrogen.DApp.Core.Tests** | DApp framework tests |
-| **Hydrogen.Data.Tests** | Database access layer tests |
-| **Hydrogen.NET.Tests** | .NET framework utility tests |
-| **Hydrogen.NETCore.Tests** | .NET Core utility tests |
-| **Hydrogen.Tests** | Core framework tests |
-| **Hydrogen.Windows.LevelDB.Tests** | LevelDB integration tests |
-| **Hydrogen.Windows.Tests** | Windows platform tests |
-
-## 🎨 Presentation Layer
-
-The `/blackhole` directory contains the Blazor-based presentation layer and alternative implementations:
+### Web and cross-platform
 
 | Project | Purpose |
 |---------|---------|
-| [**Hydrogen.DApp.Presentation**](blackhole/Hydrogen.DApp.Presentation/README.md) | Blazor component library with wizards, modals, grids, and UI components |
-| [**Hydrogen.DApp.Presentation.Loader**](blackhole/Hydrogen.DApp.Presentation.Loader/README.md) | Blazor WebAssembly host for the presentation layer |
-| [**Hydrogen.DApp.Presentation.WidgetGallery**](blackhole/Hydrogen.DApp.Presentation.WidgetGallery/README.md) | Component showcase and demonstration plugin |
-| [**Hydrogen.DApp.Presentation2**](blackhole/Hydrogen.DApp.Presentation2/README.md) | Alternative presentation implementation with advanced patterns |
-| [**Hydrogen.DApp.Presentation2.Loader**](blackhole/Hydrogen.DApp.Presentation2.Loader/README.md) | WebAssembly host for the alternative presentation |
+| [Hydrogen.Web.AspNetCore](src/Hydrogen.Web.AspNetCore/README.md) | ASP.NET Core integration |
+| [Hydrogen.Drawing](src/Hydrogen.Drawing/README.md) | Drawing helpers |
+| [Hydrogen.NET](src/Hydrogen.NET/README.md) | .NET Framework utilities |
+| [Hydrogen.NETCore](src/Hydrogen.NETCore/README.md) | .NET Core and modern .NET utilities |
+| [Hydrogen.iOS](src/Hydrogen.iOS/README.md) | iOS platform integration |
+| [Hydrogen.Android](src/Hydrogen.Android/README.md) | Android platform integration |
+| [Hydrogen.macOS](src/Hydrogen.macOS/README.md) | macOS platform integration |
 
-## 📚 Documentation Links
+### Blockchain and DApps
 
-### Architecture
+| Project | Purpose |
+|---------|---------|
+| [Hydrogen.DApp.Core](src/Hydrogen.DApp.Core/README.md) | DApp and blockchain core types |
+| [Hydrogen.DApp.Node](src/Hydrogen.DApp.Node/README.md) | Node implementation |
+| [Hydrogen.DApp.Host](src/Hydrogen.DApp.Host/README.md) | Node host process |
 
-1. [What is the Hydrogen Framework?](docs/Architecture/Hydrogen.md)
-2. [Hydrogen Runtime](docs/Architecture/Runtime.md)
-3. [Framework Domains](docs/Architecture/Domains.md)
+## Tests
 
-### Blockchain Technology
+Tests live under `tests/` and mirror the main projects (core, data, crypto, communications, Windows, and DApp components).
 
-4. [Blockchain: Dynamic Merkle Trees](https://sphere10.com/tech/dynamic-merkle-trees)
-5. [Blockchain: Real-Time Targeted Difficulty Adjustment Algorithm](blackhole/docs/Blockchain/rtt-asert.pdf)
-6. [Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)](https://sphere10.com/tech/ams)
-7. [Post-Quantum Cryptography: Winternitz Abstracted Merkle Signatures (WAMS)](https://sphere10.com/tech/wams)
-8. [Post-Quantum Cryptography: Faster and Smaller Winternitz Signatures](https://sphere10.com/tech/wots-sharp)
+## Presentation layer (archived/experimental)
 
-### Guidelines
+Projects under `blackhole/` contain older or experimental presentation layers:
+- `blackhole/Hydrogen.DApp.Presentation`
+- `blackhole/Hydrogen.DApp.Presentation.Loader`
+- `blackhole/Hydrogen.DApp.Presentation.WidgetGallery`
+- `blackhole/Hydrogen.DApp.Presentation2`
+- `blackhole/Hydrogen.DApp.Presentation2.Loader`
 
-9. [What is a 3-tier Architecture?](docs/Guidelines/3-tier-Architecture.md)
-10. [Code-Styling Guidelines](docs/Guidelines/Code-Styling.md)
+## Documentation
 
-## 🔗 Quick Navigation
+Architecture and guidelines live under `docs/`:
+- `docs/Architecture/Hydrogen.md`
+- `docs/Architecture/Runtime.md`
+- `docs/Architecture/Domains.md`
+- `docs/Guidelines/3-tier-Architecture.md`
+- `docs/Guidelines/Code-Styling.md`
 
-- **Getting Started**: See [Hydrogen.DApp.Node](src/Hydrogen.DApp.Node/README.md) to run a blockchain node
-- **Web UI**: See [Hydrogen.DApp.Presentation.Loader](blackhole/Hydrogen.DApp.Presentation.Loader/README.md) for the web interface
-- **Building DApps**: See [Hydrogen.DApp.Core](src/Hydrogen.DApp.Core/README.md) for core DApp development
-- **Database Access**: See [Hydrogen.Data](src/Hydrogen.Data/README.md) for data layer patterns
-- **Networking**: See [Hydrogen.Communications](src/Hydrogen.Communications/README.md) for network protocols
+## Quick navigation
+- Getting started with the node: `src/Hydrogen.DApp.Node/README.md`
+- Core framework: `src/Hydrogen/README.md`
+- Data access: `src/Hydrogen.Data/README.md`
+- Networking/RPC: `src/Hydrogen.Communications/README.md`
+- Windows UI: `src/Hydrogen.Windows.Forms/README.md`

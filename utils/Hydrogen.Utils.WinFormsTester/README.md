@@ -1,1 +1,3 @@
-# Sphere10.Windows.TestUtil
+# Hydrogen.Utils.WinFormsTester
+
+Manual test harness for Hydrogen Windows Forms components.

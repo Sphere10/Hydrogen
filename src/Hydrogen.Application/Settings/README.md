@@ -1,96 +1,87 @@
-﻿# Settings
+# Settings
 
-Settings library allow a simple way for application to make use of user and system configurable settings which can be modified. 
+This library provides a simple way to define and persist user and system settings. Settings can be stored per-user or globally and can optionally be encrypted.
 
-## Declare your settings
+## Declare settings
 
-Settings objects inherit `SettingsObject` and have properties. Default values of properties can be specified by `DefaultValueAttribute` or directly with assignment. To use an "AppSetting" from your `app.config` or `web.config` as a default value for a property, declare an `AppSettingAttribute` over that property with the name of the app setting.
-
-```csharp
-
-	public class DatabaseSettings : SettingsObject {
-
-		[AppSetting("DatabaseServer")]   // this looks up DatabaseServer from app.config or web.config to use as default value 
-		public string Server { get; set; } = "localhost"
-
-		[AppSetting("DatabaseServer")]
-		[DefaultValue("google.com")]						
-		public string OtherServer { get; set; }
-
-		[Encrypted]
-		public string Password { get; set; }
-
-		[AppSetting("DatabaseName")]
-		public string DatabsaeName { get; set; }
-
-	}
-
-	public class ScreenSizeSettings : SettingsObject {
-
-		[DefaultValue(100)]
-		public int Width { get; set; }
-
-		public int Height { get; set; } = 100;
-
-	}
-```
-
-## Load your settings
-
-On first time load, the default values are used. Every other time, they are loaded from saved value. `UserSettings` are visible only to the (roaming) user whereas `GlobalSettings` are visible to all system users. Multiple instances of a settings can be differentiated by a string `ID`.
+Settings objects inherit `SettingsObject` and expose properties. Default values can be specified with `DefaultValueAttribute` or by assigning a value. To use an app setting from `app.config` or `web.config` as a default value, add `AppSettingAttribute` with the key name.
 
 ```csharp
-	var mainScreenSettings = UserSettings.Get<ScreenSizeSettings>("MainScreen");  
-	var aboutScreenSettings = UserSettings.Get<ScreenSizeSettings>("AboutScreen");  
-	var database = GlobalSettings.Get<DatabaseSettings>();
+public class DatabaseSettings : SettingsObject {
+
+    [AppSetting("DatabaseServer")]
+    public string Server { get; set; } = "localhost";
+
+    [AppSetting("DatabaseServer")]
+    [DefaultValue("google.com")]
+    public string OtherServer { get; set; }
+
+    [Encrypted]
+    public string Password { get; set; }
+
+    [AppSetting("DatabaseName")]
+    public string DatabaseName { get; set; }
+}
+
+public class ScreenSizeSettings : SettingsObject {
+
+    [DefaultValue(100)]
+    public int Width { get; set; }
+
+    public int Height { get; set; } = 100;
+}
 ```
 
-## Persist your settings 
+## Load settings
 
-After loading your settings, you can modify them and save them.
+On first load, default values are used. On subsequent loads, values are read from the persisted store. `UserSettings` are visible only to the current user; `GlobalSettings` are shared across all users. Multiple instances of a settings type can be differentiated by an `ID`.
 
 ```csharp
-    screenSettings.Width = 150;
-	screenSettings.Save();
+var mainScreen = UserSettings.Get<ScreenSizeSettings>("MainScreen");
+var aboutScreen = UserSettings.Get<ScreenSizeSettings>("AboutScreen");
+var database = GlobalSettings.Get<DatabaseSettings>();
 ```
 
-Next time you load them (via the same provider you retrieved them from), their updated values will be returned.
+## Persist settings
+
+```csharp
+mainScreen.Width = 150;
+mainScreen.Save();
+```
 
 ## Encryption
 
-In your top-level assembly-info, declare the password your product can use
+Declare an assembly-level secret used to encrypt properties marked with `EncryptedAttribute`.
 
 ```csharp
 [assembly: AssemblyProductSecret("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")]
 ```
 
-This is used to encrypt settings. Only properties marked with "EncryptedAttribute"" will be encrypted.
-
-
-## Implementing your own settings provider
+## Custom settings providers
 
 ```csharp
-	public class MyCustomSettingsProvider : ISettingsProvider {
-
-	 ...
-    }
+public class MyCustomSettingsProvider : ISettingsProvider {
+    // ...
+}
 ```
 
-## Changing default `UserSettings` and `GlobalSettings` providers
+## Changing default providers
 
-Add a ModuleConfiguration to your top-level project and register your provider.
+Register custom providers in a module configuration.
 
 ```csharp
-
 public class ModuleConfiguration : ModuleConfigurationBase {
-		public override void RegisterComponents(ComponentRegistry registry) {
-			registry.RegisterComponentInstance<ISettingsProvider>(new CachedSettingsProvider( new MyCustomSettingsProvider())), "UserSettings") ;
-			registry.RegisterComponentInstance<ISettingsProvider>(new CachedSettingsProvider( new MyCustomSettingsProvider())), "SystemSettings") ;
+    public override void RegisterComponents(ComponentRegistry registry) {
+        registry.RegisterComponentInstance<ISettingsProvider>(
+            new CachedSettingsProvider(new MyCustomSettingsProvider()),
+            "UserSettings");
 
-			// note: use CachedSettingsProvider optimizes frequent settings access, omit if you want your custom provider to control every access
-			// note: ensure that User/System settings are treated differently and never persited in same place
-		}
+        registry.RegisterComponentInstance<ISettingsProvider>(
+            new CachedSettingsProvider(new MyCustomSettingsProvider()),
+            "SystemSettings");
+
+        // Use CachedSettingsProvider to optimize frequent access.
+        // Ensure User/System settings are stored separately.
     }
 }
-
 ```

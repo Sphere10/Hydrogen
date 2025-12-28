@@ -1,3 +1,8 @@
-Steps to install Poppins font:
+# Fonts
 
-Unzip font filesSearch for “Font” in Windows search barClick on Font SettingsDrag fonts to “Add fonts” box shown below
+This folder contains the Poppins font used by Hydrogen branding assets.
+
+## Install on Windows
+1. Unzip the font files.
+2. Open Windows search and type "Font settings".
+3. Drag the font files into the "Add fonts" area.

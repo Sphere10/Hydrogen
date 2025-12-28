@@ -1,1 +1,3 @@
-This file contains powerpoint templates
+# Presentations
+
+PowerPoint templates used for Hydrogen presentations.

@@ -1,1 +1,3 @@
-# Sphere10.Windows.WinForms.ExplorerBarDesigner
+# Hydrogen.Utils.ExplorerBarDesigner
+
+WinForms designer utility for Hydrogen ExplorerBar components.

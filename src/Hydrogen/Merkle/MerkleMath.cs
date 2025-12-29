@@ -18,6 +18,9 @@ using System.Runtime.CompilerServices;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Provides merkle tree math helpers for navigation, proofs, and flat indexing.
+/// </summary>
 public static class MerkleMath {
 
 	private static readonly ulong[] PerfectLeftMostIndices;
@@ -31,12 +34,21 @@ public static class MerkleMath {
 
 	#region Base math
 
+	/// <summary>
+	/// Calculates the merkle tree height required to cover a leaf count.
+	/// </summary>
+	/// <param name="leafCount">The number of leaves.</param>
 	public static int CalculateHeight(long leafCount) {
 		if (leafCount == 0)
 			return 0;
 		return (int)Math.Ceiling(Tools.Maths.EpsilonTrunc(Math.Log(leafCount, 2))) + 1;
 	}
 
+	/// <summary>
+	/// Calculates the number of nodes at a given level for a leaf count.
+	/// </summary>
+	/// <param name="leafCount">The number of leaves.</param>
+	/// <param name="level">The level to evaluate.</param>
 	public static long CalculateLevelLength(long leafCount, int level) {
 		if (level == 0)
 			return leafCount;
@@ -48,8 +60,17 @@ public static class MerkleMath {
 
 	#region Tree Navigation
 
+	/// <summary>
+	/// Returns true when the coordinate denotes a leaf node.
+	/// </summary>
+	/// <param name="node">The coordinate to inspect.</param>
 	public static bool IsLeaf(MerkleCoordinate node) => node.Level == 0;
 
+	/// <summary>
+	/// Computes structural traits for a node within a tree size.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate to evaluate.</param>
 	public static MerkleNodeTraits GetTraits(MerkleSize size, MerkleCoordinate node) {
 		MerkleNodeTraits traits = 0;
 
@@ -92,6 +113,11 @@ public static class MerkleMath {
 		return traits;
 	}
 
+	/// <summary>
+	/// Returns the parent coordinate, or <see cref="MerkleCoordinate.Null"/> for the root.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate.</param>
 	public static MerkleCoordinate GetParent(MerkleSize size, MerkleCoordinate node) {
 		if (node.IsRoot(size)) {
 			return MerkleCoordinate.Null;
@@ -100,9 +126,21 @@ public static class MerkleMath {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	/// <summary>
+	/// Returns the immediate left and right children for a node.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate.</param>
 	public static (MerkleCoordinate Left, MerkleCoordinate Right) GetChildren(MerkleSize size, MerkleCoordinate node)
 		=> GetDescendants(size, node, 1, false);
 
+	/// <summary>
+	/// Returns the descendants at a specified depth below a node.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate.</param>
+	/// <param name="levelsBelow">The number of levels below the node.</param>
+	/// <param name="assumePerfectRightChild">Assume the right child exists in a perfect subtree.</param>
 	public static (MerkleCoordinate Left, MerkleCoordinate Right) GetDescendants(MerkleSize size, MerkleCoordinate node, int levelsBelow = 1, bool assumePerfectRightChild = false) {
 		Guard.Argument(node != MerkleCoordinate.Null, nameof(node), "Undefined");
 		Guard.ArgumentInRange(levelsBelow, 1, int.MaxValue, nameof(levelsBelow));
@@ -124,6 +162,11 @@ public static class MerkleMath {
 		return (left, right);
 	}
 
+	/// <summary>
+	/// Returns the logical parent that consumes the node hash (skipping bubbled nodes).
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate.</param>
 	public static MerkleCoordinate GetLogicalParent(MerkleSize size, MerkleCoordinate node) {
 		// The "logical parent" is the parent node which actually consumes the child hash. In most cases
 		// the "parent" is the "logical parent" except when the node "bubbles up" because it lacks a sibling.
@@ -136,6 +179,11 @@ public static class MerkleMath {
 		return node;
 	}
 
+	/// <summary>
+	/// Returns the logical left child, skipping bubbled nodes.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate.</param>
 	public static MerkleCoordinate GetLogicalLeftChild(MerkleSize size, MerkleCoordinate node) {
 		do {
 			node = GetChildren(size, node).Left;
@@ -143,6 +191,12 @@ public static class MerkleMath {
 		return node;
 	}
 
+	/// <summary>
+	/// Returns the logical sibling coordinate and its logical parent.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate.</param>
+	/// <param name="logicalParent">The logical parent of the node.</param>
 	public static MerkleCoordinate GetLogicalSibling(MerkleSize size, MerkleCoordinate node, out MerkleCoordinate logicalParent) {
 		// The "logical sibling" is the other node that forms the logical parent hash.
 		// If a node has bubbled up, it has no sibling. If a sibling is a bubbled up node, then we
@@ -156,6 +210,11 @@ public static class MerkleMath {
 		return GetLogicalRightChild(size, logicalParent);
 	}
 
+	/// <summary>
+	/// Returns the logical right child, skipping bubbled nodes.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate.</param>
 	public static MerkleCoordinate GetLogicalRightChild(MerkleSize size, MerkleCoordinate node) {
 		node = GetChildren(size, node).Right;
 		if (GetTraits(size, node).HasFlag(MerkleNodeTraits.BubbledUp))
@@ -167,6 +226,11 @@ public static class MerkleMath {
 
 	#region Tree Aggregation
 
+	/// <summary>
+	/// Aggregates sub-root hashes into a merkle root.
+	/// </summary>
+	/// <param name="chf">The hash function to use.</param>
+	/// <param name="subRoots">The sub-root hashes to aggregate.</param>
 	public static byte[] AggregateSubRoots(CHF chf, IEnumerable<byte[]> subRoots) {
 		return Hashers.Aggregate(chf, subRoots.Reverse(), true);
 	}
@@ -174,6 +238,9 @@ public static class MerkleMath {
 	/// <summary>
 	/// Adds a leaf node to a set of sub-roots.
 	/// </summary>
+	/// <param name="chf">The hash function to use.</param>
+	/// <param name="subRoots">The sub-root list to update.</param>
+	/// <param name="leaf">The leaf hash to add.</param>
 	public static void AddLeaf(CHF chf, IList<MerkleSubRoot> subRoots, byte[] leaf) {
 		var newNode = new MerkleSubRoot(0, leaf);
 		while (true) {
@@ -188,6 +255,12 @@ public static class MerkleMath {
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	/// <summary>
+	/// Computes the parent hash for a left/right child pair.
+	/// </summary>
+	/// <param name="chf">The hash function to use.</param>
+	/// <param name="left">The left child hash.</param>
+	/// <param name="right">The right child hash.</param>
 	public static byte[] NodeHash(CHF chf, ReadOnlySpan<byte> left, ReadOnlySpan<byte> right)
 		=> Hashers.JoinHash(chf, left, right);
 
@@ -195,6 +268,10 @@ public static class MerkleMath {
 
 	#region Flat Coordinates
 
+	/// <summary>
+	/// Converts a flat node index into a merkle coordinate.
+	/// </summary>
+	/// <param name="flatIndex">The flat node index.</param>
 	public static MerkleCoordinate FromFlatIndex(ulong flatIndex) {
 		flatIndex++; // algorithm below based on 1-based indexing
 		var rootLevel = Array.BinarySearch(PerfectLeftMostIndices, flatIndex);
@@ -213,6 +290,10 @@ public static class MerkleMath {
 		return MerkleCoordinate.From(rootLevel, index);
 	}
 
+	/// <summary>
+	/// Converts a merkle coordinate into a flat node index.
+	/// </summary>
+	/// <param name="coordinate">The merkle coordinate.</param>
 	public static ulong ToFlatIndex(MerkleCoordinate coordinate) {
 		// Step 1: Find the closest perfect root ancestor
 		var numNodesBefore = (1UL << coordinate.Level + 1) * ((ulong)coordinate.Index + 1) - 1;
@@ -241,6 +322,10 @@ public static class MerkleMath {
 		return flatIX - 1; // decrease by one, since 0-based indexing
 	}
 
+	/// <summary>
+	/// Counts the number of nodes in the flat representation for a leaf count.
+	/// </summary>
+	/// <param name="leafCount">The number of leaves.</param>
 	public static ulong CountFlatNodes(long leafCount) {
 		return (ulong)Pow2.CalculatePow2Partition(leafCount).Sum(x => (1L << x + 1) - 1);
 	}
@@ -248,7 +333,7 @@ public static class MerkleMath {
 	/// <summary>
 	/// Calculate the leaf count from a flat tree having <see cref="flatNodeCount"/> nodes using a Newtonian search.
 	/// </summary>
-	/// <param name="flatNodeCount"></param>
+	/// <param name="flatNodeCount">The total number of flat nodes.</param>
 	/// <returns></returns>
 	/// <exception cref="InternalErrorException"></exception>
 	/// <remarks>Limited to Int.MaxValue flat nodes, needs updating to support Long.MaxValue</remarks>
@@ -274,6 +359,10 @@ public static class MerkleMath {
 
 	#region Tree Iteration
 
+	/// <summary>
+	/// Returns true when the tree size denotes a perfect (full) merkle tree.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
 	public static bool IsPerfectTree(MerkleSize size) {
 		if (size.Height == 0)
 			return false;
@@ -281,15 +370,29 @@ public static class MerkleMath {
 		return size.LeafCount == 1U << size.Height - 1;
 	}
 
+	/// <summary>
+	/// Returns true when the node belongs to a perfect subtree in the given size.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="coordinate">The node coordinate.</param>
 	public static bool IsPerfectNode(MerkleSize size, MerkleCoordinate coordinate) {
 		// A node is perfect if it's perfect right-most leaf descendant exists
 		return (1U << coordinate.Level) * (coordinate.Index + 1) - 1 < size.LeafCount;
 	}
 
+	/// <summary>
+	/// Calculates aggregation nodes for a tree size.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
 	public static IEnumerable<MerkleCoordinate> CalculateAggregationNodes(MerkleSize size) {
 		return CalculateAggregationNodes(size, Pow2.CalculatePow2Partition(size.LeafCount));
 	}
 
+	/// <summary>
+	/// Calculates aggregation nodes given explicit sub-root levels.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="subRootLevels">The sub-root levels to aggregate.</param>
 	public static IEnumerable<MerkleCoordinate> CalculateAggregationNodes(MerkleSize size, IEnumerable<int> subRootLevels) {
 		foreach (var srLevel in subRootLevels) {
 			if (srLevel == size.Height - 1) {
@@ -300,10 +403,18 @@ public static class MerkleMath {
 		}
 	}
 
+	/// <summary>
+	/// Calculates sub-root coordinates for a leaf count.
+	/// </summary>
+	/// <param name="leafCount">The number of leaves.</param>
 	public static IEnumerable<MerkleCoordinate> CalculateSubRoots(long leafCount) {
 		return CalculateSubRoots(Pow2.CalculatePow2Partition(leafCount));
 	}
 
+	/// <summary>
+	/// Calculates sub-root coordinates for explicit sub-root levels.
+	/// </summary>
+	/// <param name="subRootLevels">The sub-root levels.</param>
 	public static IEnumerable<MerkleCoordinate> CalculateSubRoots(IEnumerable<int> subRootLevels) {
 		var totalLeafs = 0U;
 		foreach (var subRootLevel in subRootLevels) {
@@ -313,6 +424,10 @@ public static class MerkleMath {
 		}
 	}
 
+	/// <summary>
+	/// Calculates the right-most perfect sub-root for the given size.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
 	public static MerkleCoordinate CalculateRightSubRoot(MerkleSize size) {
 		// Optimized to avoid calc all sub-roots
 		// Empty tree has no perfect right subtree
@@ -325,17 +440,33 @@ public static class MerkleMath {
 
 	#region Security Proofs
 
+	/// <summary>
+	/// Calculates left/right direction flags for a proof path.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="path">The proof path coordinates.</param>
 	public static IEnumerable<bool> CalculateDirFlags(MerkleSize size, IEnumerable<MerkleCoordinate> path) {
 		var pathArr = path as MerkleCoordinate[] ?? path.ToArray();
 		return pathArr.Select(p => !GetTraits(size, p).HasFlag(MerkleNodeTraits.IsLeftChild));
 	}
 
+	/// <summary>
+	/// Calculates the path from a node to the root.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate.</param>
+	/// <param name="logicalNodesOnly">Whether to skip bubbled nodes.</param>
 	public static IEnumerable<MerkleCoordinate> CalculatePathToRoot(MerkleSize size, MerkleCoordinate node, bool logicalNodesOnly) {
 		do {
 			yield return node;
 		} while ((node = logicalNodesOnly ? GetLogicalParent(size, node) : GetParent(size, node)) != MerkleCoordinate.Null);
 	}
 
+	/// <summary>
+	/// Calculates the proof path needed to prove existence of a node.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="node">The node coordinate.</param>
 	public static IEnumerable<MerkleCoordinate> CalculateExistenceProofPath(MerkleSize size, MerkleCoordinate node) {
 		// First item is skipped (verifier needs this)
 		// return node sibling, then parents sibling, then grandparents sibling, et al to root
@@ -346,6 +477,12 @@ public static class MerkleMath {
 		// Last item, the root node, is skipped (verifier has this)
 	}
 
+	/// <summary>
+	/// Calculates the path for a consistency proof between two leaf counts.
+	/// </summary>
+	/// <param name="m">The prior leaf count.</param>
+	/// <param name="n">The current leaf count.</param>
+	/// <param name="oldRootProofPath">Indexes of proof nodes used to rebuild the old root.</param>
 	public static IEnumerable<MerkleCoordinate> CalculateConsistencyProofPath(long m, long n, out long[] oldRootProofPath) {
 		Guard.Argument(n >= m, nameof(n), $"Must be greater than {nameof(m)}");
 		// When appending to a merkle tree, the append proof contains the minimum hash path
@@ -375,6 +512,11 @@ public static class MerkleMath {
 
 	}
 
+	/// <summary>
+	/// Calculates a proof path for proving that a set of leaf indices is contained.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="orderedLeafsIndices">The ordered leaf indices.</param>
 	public static IEnumerable<MerkleCoordinate> CalculateContainsProofPath(MerkleSize size, IEnumerable<long> orderedLeafsIndices) {
 		var leafs = orderedLeafsIndices.Select(MerkleCoordinate.LeafAt).ToArray();
 		var path = leafs.Aggregate(
@@ -384,6 +526,11 @@ public static class MerkleMath {
 		return path.Except(leafs);
 	}
 
+	/// <summary>
+	/// Calculates a proof path for updating a set of leaf indices.
+	/// </summary>
+	/// <param name="size">The merkle tree size.</param>
+	/// <param name="orderedLeafsIndices">The ordered leaf indices.</param>
 	public static IEnumerable<MerkleCoordinate> CalculateUpdateProofPath(MerkleSize size, IEnumerable<long> orderedLeafsIndices) {
 		var leafs = orderedLeafsIndices.Select(MerkleCoordinate.LeafAt).ToArray();
 		var path = leafs.Aggregate(
@@ -393,30 +540,78 @@ public static class MerkleMath {
 		return path.Union(leafs);
 	}
 
+	/// <summary>
+	/// Generates a proof by reading hashes along a specified path.
+	/// </summary>
+	/// <param name="merkleTree">The merkle tree to read from.</param>
+	/// <param name="path">The proof path coordinates.</param>
+	/// <param name="flags">The left/right direction flags.</param>
 	public static byte[][] GenerateProof(IMerkleTree merkleTree, IEnumerable<MerkleCoordinate> path, out bool[] flags) {
 		var pathArr = path as MerkleCoordinate[] ?? path.ToArray();
 		flags = CalculateDirFlags(merkleTree.Size, pathArr).ToArray();
 		return pathArr.Select(x => merkleTree.GetValue(x).ToArray()).ToArray();
 	}
 
+	/// <summary>
+	/// Generates an existence proof for a node.
+	/// </summary>
+	/// <param name="merkleTree">The merkle tree to read from.</param>
+	/// <param name="node">The node coordinate.</param>
+	/// <param name="flags">The left/right direction flags.</param>
 	public static byte[][] GenerateExistenceProof(IMerkleTree merkleTree, MerkleCoordinate node, out bool[] flags)
 		=> GenerateProof(merkleTree, CalculateExistenceProofPath(merkleTree.Size, node), out flags);
 
+	/// <summary>
+	/// Generates a consistency proof for a prior leaf count.
+	/// </summary>
+	/// <param name="tree">The merkle tree to read from.</param>
+	/// <param name="priorLeafCount">The prior leaf count.</param>
+	/// <param name="flags">The left/right direction flags.</param>
 	public static byte[][] GenerateConsistencyProof(IMerkleTree tree, long priorLeafCount, out bool[] flags)
 		=> GenerateProof(tree, CalculateConsistencyProofPath(priorLeafCount, tree.Size.LeafCount, out _), out flags);
 
+	/// <summary>
+	/// Generates a contains proof for the specified leaf indices.
+	/// </summary>
+	/// <param name="tree">The merkle tree to read from.</param>
+	/// <param name="orderedLeafIndices">The ordered leaf indices.</param>
+	/// <param name="flags">The left/right direction flags.</param>
 	public static byte[][] GenerateContainsProof(IMerkleTree tree, IEnumerable<long> orderedLeafIndices, out bool[] flags)
 		=> GenerateProof(tree, CalculateContainsProofPath(tree.Size, orderedLeafIndices), out flags);
 
+	/// <summary>
+	/// Generates an update proof for the specified leaf indices.
+	/// </summary>
+	/// <param name="tree">The merkle tree to read from.</param>
+	/// <param name="orderedLeafIndices">The ordered leaf indices.</param>
+	/// <param name="flags">The left/right direction flags.</param>
 	public static byte[][] GenerateUpdateProof(IMerkleTree tree, IEnumerable<long> orderedLeafIndices, out bool[] flags)
 		=> GenerateProof(tree, CalculateUpdateProofPath(tree.Size, orderedLeafIndices), out flags);
 
+	/// <summary>
+	/// Generates an append proof from the current tree.
+	/// </summary>
+	/// <param name="tree">The merkle tree to read from.</param>
 	public static byte[][] GenerateAppendProof(IMerkleTree tree)
 		=> GenerateProof(tree, CalculateSubRoots(tree.Size.LeafCount), out _);
 
+	/// <summary>
+	/// Generates a delete proof for a number of tail leaves.
+	/// </summary>
+	/// <param name="tree">The merkle tree to read from.</param>
+	/// <param name="deletedLeafCount">The number of leaves deleted from the tail.</param>
+	/// <param name="flags">The left/right direction flags.</param>
 	public static byte[][] GenerateDeleteProof(IMerkleTree tree, long deletedLeafCount, out bool[] flags)
 		=> GenerateConsistencyProof(tree, tree.Size.LeafCount - deletedLeafCount, out flags);
 
+	/// <summary>
+	/// Verifies a generic proof path given direction flags and an expected root.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="startHash">The starting hash value.</param>
+	/// <param name="proof">The proof hashes.</param>
+	/// <param name="flags">The left/right direction flags.</param>
+	/// <param name="expectedHash">The expected root hash.</param>
 	public static bool VerifyProof(CHF hashAlgorithm, ReadOnlySpan<byte> startHash, IEnumerable<byte[]> proof, IEnumerable<bool> flags, ReadOnlySpan<byte> expectedHash) {
 		Guard.Argument(!startHash.IsEmpty, nameof(startHash), "Invalid value");
 		Guard.ArgumentNotNull(proof, nameof(proof));
@@ -444,9 +639,27 @@ public static class MerkleMath {
 		return result.AsSpan().SequenceEqual(expectedHash);
 	}
 
+	/// <summary>
+	/// Verifies an existence proof for a leaf index.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="root">The expected root hash.</param>
+	/// <param name="treeSize">The merkle tree size.</param>
+	/// <param name="leafIndex">The leaf index.</param>
+	/// <param name="leafHash">The leaf hash.</param>
+	/// <param name="proof">The proof hashes.</param>
 	public static bool VerifyExistenceProof(CHF hashAlgorithm, ReadOnlySpan<byte> root, MerkleSize treeSize, int leafIndex, byte[] leafHash, IEnumerable<byte[]> proof)
 		=> VerifyExistenceProof(hashAlgorithm, root, treeSize, MerkleCoordinate.LeafAt(leafIndex), leafHash, proof);
 
+	/// <summary>
+	/// Verifies an existence proof for a specific coordinate.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="root">The expected root hash.</param>
+	/// <param name="treeSize">The merkle tree size.</param>
+	/// <param name="nodeCoordinate">The node coordinate.</param>
+	/// <param name="nodeHash">The node hash.</param>
+	/// <param name="proof">The proof hashes.</param>
 	public static bool VerifyExistenceProof(CHF hashAlgorithm, ReadOnlySpan<byte> root, MerkleSize treeSize, MerkleCoordinate nodeCoordinate, ReadOnlySpan<byte> nodeHash, IEnumerable<byte[]> proof) {
 		var proofArr = proof as byte[][] ?? proof.ToArray();
 		if (treeSize.LeafCount > 0 && nodeCoordinate.Equals(MerkleCoordinate.Null) && !proofArr.Any())
@@ -456,6 +669,15 @@ public static class MerkleMath {
 		return VerifyProof(hashAlgorithm, nodeHash, proofArr, CalculateDirFlags(treeSize, CalculateExistenceProofPath(treeSize, nodeCoordinate)), root);
 	}
 
+	/// <summary>
+	/// Verifies a consistency proof between old and new roots.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="oldRoot">The old root hash.</param>
+	/// <param name="oldLeafCount">The old leaf count.</param>
+	/// <param name="newRoot">The new root hash.</param>
+	/// <param name="newLeafCount">The new leaf count.</param>
+	/// <param name="proof">The proof hashes.</param>
 	public static bool VerifyConsistencyProof(CHF hashAlgorithm, ReadOnlySpan<byte> oldRoot, int oldLeafCount, ReadOnlySpan<byte> newRoot, int newLeafCount, IEnumerable<byte[]> proof) {
 		var proofPath = CalculateConsistencyProofPath(oldLeafCount, newLeafCount, out var oldRootPathIX).ToArray();
 		var proofArr = proof.ToArray();
@@ -470,12 +692,29 @@ public static class MerkleMath {
 		return true;
 	}
 
+	/// <summary>
+	/// Verifies a contains proof for a contiguous range of leaves.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="root">The expected root hash.</param>
+	/// <param name="treeSize">The merkle tree size.</param>
+	/// <param name="index">The starting leaf index.</param>
+	/// <param name="leafs">The leaf hashes.</param>
+	/// <param name="proof">The proof hashes.</param>
 	public static bool VerifyContainsProof(CHF hashAlgorithm, ReadOnlySpan<byte> root, MerkleSize treeSize, long index, IEnumerable<byte[]> leafs, IEnumerable<byte[]> proof) {
 		Guard.ArgumentNotNull(leafs, nameof(leafs));
 		var leafsArr = leafs as byte[][] ?? leafs.ToArray();
 		return VerifyContainsProof(hashAlgorithm, root, treeSize, Tools.Collection.RangeL(index, leafsArr.Length).Zip(leafsArr, Tuple.Create), proof);
 	}
 
+	/// <summary>
+	/// Verifies a contains proof for an explicit set of leaves.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="root">The expected root hash.</param>
+	/// <param name="treeSize">The merkle tree size.</param>
+	/// <param name="leafs">The leaf indices and hashes.</param>
+	/// <param name="proof">The proof hashes.</param>
 	public static bool VerifyContainsProof(CHF hashAlgorithm, ReadOnlySpan<byte> root, MerkleSize treeSize, IEnumerable<Tuple<long, byte[]>> leafs, IEnumerable<byte[]> proof) {
 		Guard.ArgumentNotNull(proof, nameof(proof));
 		Guard.ArgumentNotNull(leafs, nameof(leafs));
@@ -505,12 +744,31 @@ public static class MerkleMath {
 		return true;
 	}
 
+	/// <summary>
+	/// Verifies an update proof for a contiguous range of updated leaves.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="oldRoot">The old root hash.</param>
+	/// <param name="treeSize">The merkle tree size.</param>
+	/// <param name="newRoot">The new root hash.</param>
+	/// <param name="index">The starting leaf index.</param>
+	/// <param name="updatedLeafs">The updated leaf hashes.</param>
+	/// <param name="proof">The proof hashes.</param>
 	public static bool VerifyUpdateProof(CHF hashAlgorithm, ReadOnlySpan<byte> oldRoot, MerkleSize treeSize, ReadOnlySpan<byte> newRoot, long index, IEnumerable<byte[]> updatedLeafs, IEnumerable<byte[]> proof) {
 		Guard.ArgumentNotNull(updatedLeafs, nameof(updatedLeafs));
 		var updatedLeafsArr = updatedLeafs as byte[][] ?? updatedLeafs.ToArray();
 		return VerifyUpdateProof(hashAlgorithm, oldRoot, treeSize, newRoot, Tools.Collection.RangeL(index, updatedLeafsArr.Length).Zip(updatedLeafsArr), proof);
 	}
 
+	/// <summary>
+	/// Verifies an update proof for an explicit set of updated leaves.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="oldRoot">The old root hash.</param>
+	/// <param name="treeSize">The merkle tree size.</param>
+	/// <param name="newRoot">The new root hash.</param>
+	/// <param name="updatedLeafs">The updated leaf indices and hashes.</param>
+	/// <param name="proof">The proof hashes.</param>
 	public static bool VerifyUpdateProof(CHF hashAlgorithm, ReadOnlySpan<byte> oldRoot, MerkleSize treeSize, ReadOnlySpan<byte> newRoot, IEnumerable<Tuple<long, byte[]>> updatedLeafs, IEnumerable<byte[]> proof) {
 		Guard.ArgumentNotNull(proof, nameof(proof));
 		Guard.ArgumentNotNull(updatedLeafs, nameof(updatedLeafs));
@@ -564,6 +822,15 @@ public static class MerkleMath {
 
 	}
 
+	/// <summary>
+	/// Verifies an append proof for a set of appended leaves.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="oldRoot">The old root hash.</param>
+	/// <param name="newRoot">The new root hash.</param>
+	/// <param name="treeSize">The merkle tree size.</param>
+	/// <param name="leafs">The appended leaf hashes.</param>
+	/// <param name="proof">The proof hashes.</param>
 	public static bool VerifyAppendProof(CHF hashAlgorithm, ReadOnlySpan<byte> oldRoot, ReadOnlySpan<byte> newRoot, MerkleSize treeSize, IEnumerable<byte[]> leafs, IEnumerable<byte[]> proof) {
 		Guard.ArgumentNotNull(leafs, nameof(leafs));
 		Guard.ArgumentNotNull(proof, nameof(proof));
@@ -597,6 +864,15 @@ public static class MerkleMath {
 		return newRoot.SequenceEqual(AggregateSubRoots(hashAlgorithm, subRoots.Select(x => x.Hash)));
 	}
 
+	/// <summary>
+	/// Verifies a delete proof for removing tail leaves.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="oldRoot">The old root hash.</param>
+	/// <param name="leafCount">The original leaf count.</param>
+	/// <param name="newRoot">The new root hash.</param>
+	/// <param name="deletedLeafs">The number of deleted leaves.</param>
+	/// <param name="proof">The proof hashes.</param>
 	public static bool VerifyDeleteProof(CHF hashAlgorithm, ReadOnlySpan<byte> oldRoot, int leafCount, ReadOnlySpan<byte> newRoot, int deletedLeafs, IEnumerable<byte[]> proof) {
 		Guard.Argument(deletedLeafs <= leafCount, nameof(deletedLeafs), $"Cannot delete more than {nameof(leafCount)}");
 		// note: delete is a consistency proof in reverse

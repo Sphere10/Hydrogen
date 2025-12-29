@@ -16,6 +16,9 @@ namespace Hydrogen;
 /// A merkleized object is one that maintains a merkle tree of it's state.
 /// </summary>
 public interface IMerkleObject {
+	/// <summary>
+	/// Gets the merkle tree that represents the object's current state.
+	/// </summary>
 	IMerkleTree MerkleTree { get; }
 
 	// TODO: add proof building scope

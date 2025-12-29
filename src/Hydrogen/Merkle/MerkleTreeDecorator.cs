@@ -19,19 +19,39 @@ namespace Hydrogen;
 /// </summary>
 public abstract class MerkleTreeDecorator<TMerkleTree> : IMerkleTree where TMerkleTree : IMerkleTree {
 
+	/// <summary>
+	/// Initializes the decorator with an inner merkle tree.
+	/// </summary>
+	/// <param name="internalMerkleTree">The inner merkle tree to wrap.</param>
 	protected MerkleTreeDecorator(TMerkleTree internalMerkleTree) {
 		Guard.ArgumentNotNull(internalMerkleTree, nameof(internalMerkleTree));
 		InternalMerkleTree = internalMerkleTree;
 	}
 
+	/// <summary>
+	/// Gets the decorated merkle tree instance.
+	/// </summary>
 	protected TMerkleTree InternalMerkleTree { get; }
 
+	/// <summary>
+	/// Gets the hash algorithm used by the decorated tree.
+	/// </summary>
 	public virtual CHF HashAlgorithm => InternalMerkleTree.HashAlgorithm;
 
+	/// <summary>
+	/// Gets the merkle root of the decorated tree.
+	/// </summary>
 	public virtual byte[] Root => InternalMerkleTree.Root;
 
+	/// <summary>
+	/// Gets the size metadata of the decorated tree.
+	/// </summary>
 	public virtual MerkleSize Size => InternalMerkleTree.Size;
 
+	/// <summary>
+	/// Reads the node hash value at the specified coordinate.
+	/// </summary>
+	/// <param name="coordinate">The coordinate to read.</param>
 	public virtual ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate) => InternalMerkleTree.GetValue(coordinate);
 }
 
@@ -39,6 +59,10 @@ public abstract class MerkleTreeDecorator<TMerkleTree> : IMerkleTree where TMerk
 /// Non-generic convenience decorator base for merkle trees.
 /// </summary>
 public abstract class MerkleTreeDecorator : MerkleTreeDecorator<IMerkleTree> {
+	/// <summary>
+	/// Initializes the decorator with an inner merkle tree.
+	/// </summary>
+	/// <param name="internalMerkleTree">The inner merkle tree to wrap.</param>
 	protected MerkleTreeDecorator(IMerkleTree internalMerkleTree) : base(internalMerkleTree) {
 	}
 }

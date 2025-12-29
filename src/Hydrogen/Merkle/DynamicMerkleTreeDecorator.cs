@@ -16,9 +16,16 @@ namespace Hydrogen;
 /// Base decorator for dynamic merkle trees, forwarding operations to an inner implementation while exposing dynamic leaf access.
 /// </summary>
 public abstract class DynamicMerkleTreeDecorator<TMerkleTree> : MerkleTreeDecorator<TMerkleTree>, IDynamicMerkleTree where TMerkleTree : IDynamicMerkleTree {
+	/// <summary>
+	/// Initializes the decorator with a dynamic merkle tree instance.
+	/// </summary>
+	/// <param name="internalMerkleTree">The inner merkle tree to wrap.</param>
 	protected DynamicMerkleTreeDecorator(TMerkleTree internalMerkleTree)
 		: base(internalMerkleTree) {
 	}
+	/// <summary>
+	/// Gets the leaf collection exposed by the decorated tree.
+	/// </summary>
 	public IExtendedList<byte[]> Leafs => InternalMerkleTree.Leafs;
 }
 
@@ -27,6 +34,10 @@ public abstract class DynamicMerkleTreeDecorator<TMerkleTree> : MerkleTreeDecora
 /// Non-generic convenience wrapper for decorating dynamic merkle trees.
 /// </summary>
 public abstract class DynamicMerkleTreeDecorator : DynamicMerkleTreeDecorator<IDynamicMerkleTree> {
+	/// <summary>
+	/// Initializes the decorator with a dynamic merkle tree instance.
+	/// </summary>
+	/// <param name="internalMerkleTree">The inner merkle tree to wrap.</param>
 	protected DynamicMerkleTreeDecorator(IDynamicMerkleTree internalMerkleTree)
 		: base(internalMerkleTree) {
 	}

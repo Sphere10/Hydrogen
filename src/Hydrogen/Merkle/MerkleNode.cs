@@ -18,14 +18,28 @@ namespace Hydrogen;
 /// Represents a merkle node with its coordinate and hash value.
 /// </summary>
 public record MerkleNode : IEquatable<MerkleNode> {
+	/// <summary>
+	/// Gets the coordinate that identifies this node.
+	/// </summary>
 	public readonly MerkleCoordinate Coordinate;
+	/// <summary>
+	/// Gets the node hash value.
+	/// </summary>
 	public readonly byte[] Hash;
 
+	/// <summary>
+	/// Initializes a merkle node with the provided coordinate and hash.
+	/// </summary>
+	/// <param name="coordinate">The node coordinate.</param>
+	/// <param name="hash">The node hash.</param>
 	public MerkleNode(MerkleCoordinate coordinate, byte[] hash) {
 		Coordinate = coordinate;
 		Hash = hash;
 	}
 
+	/// <summary>
+	/// Returns a hash code for this node.
+	/// </summary>
 	public override int GetHashCode() {
 		unchecked {
 			return Coordinate.GetHashCode() * 397 ^ ByteArrayEqualityComparer.Instance.GetHashCode(Hash);

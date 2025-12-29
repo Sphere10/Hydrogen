@@ -16,8 +16,20 @@ namespace Hydrogen;
 /// Specifies the traversal order when walking a merkle tree.
 /// </summary>
 public enum TreeTraversalType {
+	/// <summary>
+	/// Visit the node before its children.
+	/// </summary>
 	PreOrder,
+	/// <summary>
+	/// Visit the node after its children.
+	/// </summary>
 	PostOrder,
+	/// <summary>
+	/// Visit the node between its left and right children.
+	/// </summary>
 	InOrder,
+	/// <summary>
+	/// Visit nodes level by level from the root.
+	/// </summary>
 	LevelOrder
 }

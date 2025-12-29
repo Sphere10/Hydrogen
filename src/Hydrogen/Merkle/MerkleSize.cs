@@ -16,9 +16,19 @@ namespace Hydrogen;
 /// Captures the leaf count and height for a merkle tree.
 /// </summary>
 public record MerkleSize {
+	/// <summary>
+	/// Gets the number of leaves represented by the tree.
+	/// </summary>
 	public long LeafCount;
+	/// <summary>
+	/// Gets the height of the tree in levels.
+	/// </summary>
 	public int Height;
 
+	/// <summary>
+	/// Builds a merkle size from a leaf count.
+	/// </summary>
+	/// <param name="leafCount">The number of leaves.</param>
 	public static MerkleSize FromLeafCount(long leafCount) {
 		Guard.ArgumentInRange(leafCount, 0, long.MaxValue, nameof(leafCount));
 		return new MerkleSize {
@@ -27,6 +37,9 @@ public record MerkleSize {
 		};
 	}
 
+	/// <summary>
+	/// Returns a concise string representation of the size.
+	/// </summary>
 	public override string ToString() {
 		return $"(H:{Height}, LC:{LeafCount})";
 	}

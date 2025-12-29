@@ -28,10 +28,21 @@ public class LongMerkleTree : IDynamicMerkleTree {
 	private byte[] _root;
 	private bool _dirty;
 
+	/// <summary>
+	/// Initializes an empty long merkle tree with a default leaf list.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="leafs">Optional initial leaves.</param>
 	public LongMerkleTree(CHF hashAlgorithm, IEnumerable<byte[]> leafs = null)
 		: this(hashAlgorithm, new ExtendedList<byte[]>(), leafs) {
 	}
 
+	/// <summary>
+	/// Initializes a long merkle tree over the provided leaf list instance.
+	/// </summary>
+	/// <param name="hashAlgorithm">The hash function to use.</param>
+	/// <param name="leafListInstance">The leaf list instance to wrap.</param>
+	/// <param name="leafs">Optional initial leaves.</param>
 	public LongMerkleTree(CHF hashAlgorithm, IExtendedList<byte[]> leafListInstance, IEnumerable<byte[]> leafs = null) {
 		Guard.ArgumentNotNull(leafListInstance, nameof(leafListInstance));
 		HashAlgorithm = hashAlgorithm;
@@ -49,8 +60,14 @@ public class LongMerkleTree : IDynamicMerkleTree {
 		CalculateTree();
 	}
 
+	/// <summary>
+	/// Gets the hash algorithm used for the tree.
+	/// </summary>
 	public CHF HashAlgorithm { get; }
 
+	/// <summary>
+	/// Gets the merkle root, recalculating if leaf data changed.
+	/// </summary>
 	public byte[] Root {
 		get {
 			if (_dirty)
@@ -59,6 +76,9 @@ public class LongMerkleTree : IDynamicMerkleTree {
 		}
 	}
 
+	/// <summary>
+	/// Gets the size metadata, recalculating if leaf data changed.
+	/// </summary>
 	public MerkleSize Size {
 		get {
 			if (_dirty)
@@ -67,6 +87,9 @@ public class LongMerkleTree : IDynamicMerkleTree {
 		}
 	}
 
+	/// <summary>
+	/// Enumerates the sub-root nodes that are retained in memory.
+	/// </summary>
 	public IEnumerable<MerkleNode> SubRoots {
 		get {
 			if (_dirty)
@@ -75,8 +98,15 @@ public class LongMerkleTree : IDynamicMerkleTree {
 		}
 	}
 
+	/// <summary>
+	/// Gets the observable list of leaf hashes.
+	/// </summary>
 	public IExtendedList<byte[]> Leafs => _observableLeafs;
 
+	/// <summary>
+	/// Reads the hash value at the specified coordinate, computing it on demand.
+	/// </summary>
+	/// <param name="coordinate">The coordinate to read.</param>
 	public ReadOnlySpan<byte> GetValue(MerkleCoordinate coordinate) {
 		if (_dirty)
 			CalculateTree();

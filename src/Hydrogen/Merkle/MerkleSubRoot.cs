@@ -16,9 +16,20 @@ namespace Hydrogen;
 /// Represents a sub-root hash at a given height within a merkle tree.
 /// </summary>
 public record MerkleSubRoot {
+	/// <summary>
+	/// Gets the height of the subtree represented by this sub-root.
+	/// </summary>
 	public readonly int Height;
+	/// <summary>
+	/// Gets the hash of the sub-root.
+	/// </summary>
 	public readonly byte[] Hash;
 
+	/// <summary>
+	/// Initializes a sub-root from a height and hash.
+	/// </summary>
+	/// <param name="height">The subtree height.</param>
+	/// <param name="hash">The sub-root hash.</param>
 	public MerkleSubRoot(int height, byte[] hash) {
 		Height = height;
 		Hash = hash;

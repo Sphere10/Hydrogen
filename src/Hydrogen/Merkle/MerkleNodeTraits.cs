@@ -19,13 +19,40 @@ namespace Hydrogen;
 /// </summary>
 [Flags]
 public enum MerkleNodeTraits : ushort {
+	/// <summary>
+	/// Node is the root of the tree.
+	/// </summary>
 	Root = 1 << 0,
+	/// <summary>
+	/// Node is a leaf.
+	/// </summary>
 	Leaf = 1 << 1,
+	/// <summary>
+	/// Node belongs to a perfect subtree.
+	/// </summary>
 	Perfect = 1 << 2,
+	/// <summary>
+	/// Node is a left child.
+	/// </summary>
 	IsLeftChild = 1 << 3,
+	/// <summary>
+	/// Node is a right child.
+	/// </summary>
 	IsRightChild = 1 << 4,
+	/// <summary>
+	/// Node value is bubbled up from its left child.
+	/// </summary>
 	BubblesUp = 1 << 5,
+	/// <summary>
+	/// Node has a left child.
+	/// </summary>
 	HasLeftChild = 1 << 6,
+	/// <summary>
+	/// Node has a right child.
+	/// </summary>
 	HasRightChild = 1 << 7,
+	/// <summary>
+	/// Node is the result of a bubble-up operation.
+	/// </summary>
 	BubbledUp = 1 << 8,
 }

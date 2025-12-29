@@ -13,6 +13,13 @@ using System.Threading;
 
 namespace Hydrogen;
 
+/// <summary>
+/// Thread-safe producer/consumer queue with capacity tracking.
+/// </summary>
+/// <typeparam name="T">Item type.</typeparam>
+/// <remarks>
+/// See tests/Hydrogen.Tests/Collections/Queue/ProducerConsumerQueueTest.cs for usage patterns.
+/// </remarks>
 public class ProducerConsumerQueue<T> : SyncDisposable {
 	private readonly object _threadLock;
 	private readonly Func<T, long> _sizeEstimator;
@@ -24,12 +31,27 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 	private bool _finishedConsuming;
 	private readonly ProducerConsumerLock _sharedAccess;
 
+	/// <summary>
+	/// Initializes the queue with unit item sizes.
+	/// </summary>
+	/// <param name="maxCapacity">The maximum capacity.</param>
 	public ProducerConsumerQueue(long maxCapacity) : this(UnitSizeEstimator, maxCapacity) {
 	}
 
+	/// <summary>
+	/// Initializes the queue with a size estimator and capacity.
+	/// </summary>
+	/// <param name="sizeEstimator">The size estimator for items.</param>
+	/// <param name="maxCapacity">The maximum capacity.</param>
 	public ProducerConsumerQueue(Func<T, long> sizeEstimator, long maxCapacity) : this(sizeEstimator, maxCapacity, (maxCapacity / 10).ClipTo(1, maxCapacity)) {
 	}
 
+	/// <summary>
+	/// Initializes the queue with a size estimator, capacity, and max batch size.
+	/// </summary>
+	/// <param name="sizeEstimator">The size estimator for items.</param>
+	/// <param name="maxCapacity">The maximum capacity.</param>
+	/// <param name="maxPutSize">The maximum batch size accepted by <see cref="PutMany"/>.</param>
 	public ProducerConsumerQueue(Func<T, long> sizeEstimator, long maxCapacity, long maxPutSize) {
 		if (maxPutSize < 1) throw new ArgumentOutOfRangeException(nameof(maxPutSize), maxPutSize, "Must be greater than 1 and less than maxCapacity");
 		if (maxPutSize > maxCapacity) throw new ArgumentOutOfRangeException(nameof(maxPutSize), maxPutSize, "Must be greater than 1 and less than maxCapacity");
@@ -44,6 +66,9 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		_sharedAccess = new ProducerConsumerLock(_threadLock);
 	}
 
+	/// <summary>
+	/// Indicates whether producers have signaled completion.
+	/// </summary>
 	public virtual bool HasFinishedProducing {
 		get {
 			lock (_threadLock)
@@ -51,6 +76,9 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Indicates whether consumers have signaled completion.
+	/// </summary>
 	public virtual bool HasFinishedConsuming {
 		get {
 			lock (_threadLock)
@@ -59,7 +87,7 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 	}
 
 	/// <summary>
-	/// If the queue has items ready for consumption
+	/// True when the queue can be consumed (items exist or production not finished).
 	/// </summary>
 	public virtual bool IsConsumable {
 		get {
@@ -69,6 +97,9 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Gets the number of queued items.
+	/// </summary>
 	public virtual int Count {
 		get {
 			lock (_threadLock)
@@ -76,6 +107,9 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Gets the maximum total capacity for queued items.
+	/// </summary>
 	public virtual long MaxCapacity {
 		get {
 			lock (_threadLock)
@@ -83,8 +117,14 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Gets the maximum batch size accepted by <see cref="PutMany"/>.
+	/// </summary>
 	public virtual long MaxPutSize => _maxPutSize;
 
+	/// <summary>
+	/// Gets the current capacity used by queued items.
+	/// </summary>
 	public virtual long CurrentSize {
 		get {
 			lock (_threadLock)
@@ -92,6 +132,9 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Gets the remaining capacity as a fraction of the maximum.
+	/// </summary>
 	public virtual double AvailableCapacity {
 		get {
 			lock (_threadLock)
@@ -99,6 +142,10 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Enqueues items in batches, blocking until capacity is available.
+	/// </summary>
+	/// <param name="items">The items to enqueue.</param>
 	public virtual void PutMany(IEnumerable<T> items) {
 		Guard.ArgumentNotNull(items, nameof(items));
 		items
@@ -122,6 +169,9 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Takes a single item, or default if none available and production is finished.
+	/// </summary>
 	public virtual T Take() {
 		var results = TakeMany(1);
 		if (results.Length == 0)
@@ -129,6 +179,10 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		return results[0];
 	}
 
+	/// <summary>
+	/// Takes up to a maximum number of items.
+	/// </summary>
+	/// <param name="maxItems">The maximum number of items to take.</param>
 	public virtual T[] TakeMany(int maxItems) {
 		if (maxItems < 0) throw new ArgumentOutOfRangeException(nameof(maxItems));
 		if (_finishedConsuming) throw new InvalidOperationException("ProducerConsumerQueue is closed for consumption");
@@ -148,6 +202,10 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Takes items up to a maximum total size.
+	/// </summary>
+	/// <param name="maxSize">The maximum total size to take.</param>
 	public virtual T[] TakeBySize(int maxSize) {
 		if (maxSize < 0) throw new ArgumentOutOfRangeException(nameof(maxSize));
 		if (_finishedConsuming) throw new InvalidOperationException("ProducerConsumerQueue is closed for consumption");
@@ -178,6 +236,9 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 
 	}
 
+	/// <summary>
+	/// Takes all currently queued items.
+	/// </summary>
 	public virtual T[] TakeAll() {
 		Guard.Against(_finishedConsuming, "ProducerConsumerQueue is closed for consumption");
 
@@ -195,12 +256,18 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		}
 	}
 
+	/// <summary>
+	/// Signals that producers are finished.
+	/// </summary>
 	public virtual void FinishedProducing() {
 		//lock (_threadLock)
 		_finishedProducing = true;
 		_sharedAccess.Pulse();
 	}
 
+	/// <summary>
+	/// Signals that consumers are finished.
+	/// </summary>
 	public virtual void FinishedConsuming() {
 		//lock(_threadLock) 
 		_finishedConsuming = true;
@@ -212,6 +279,9 @@ public class ProducerConsumerQueue<T> : SyncDisposable {
 		return 1;
 	}
 
+	/// <summary>
+	/// Releases managed resources and marks the queue as finished.
+	/// </summary>
 	protected override void FreeManagedResources() {
 		lock (_threadLock) {
 			_sharedAccess.Dispose();

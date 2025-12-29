@@ -1,6 +1,6 @@
-# Hydrogen
+# 🧪 Hydrogen
 
-## Project Overview
+## 📋 Project Overview
 
 Hydrogen is a comprehensive .NET utility library that provides low-level building blocks and advanced data structures for high-performance, data-intensive applications. It extends the capabilities of the standard .NET library with specialized collections, cryptographic primitives, stream abstractions, serialization frameworks, and transactional data structures. The library is designed for scenarios requiring fine-grained control over memory layout, persistence strategies, and computational efficiency—particularly in domains like blockchain infrastructure, distributed systems, embedded databases, and high-throughput data processing.
 
@@ -9,10 +9,10 @@ What distinguishes Hydrogen from general-purpose utility libraries is its focus 
 **Quick Orientation**
 - **Language**: C# targeting .NET 8+
 - **Primary Value**: Well-tested, composable primitives (collections, serialization, streams, crypto)
-- **Source-of-Truth**: Unit tests in `tests/*` demonstrate real-world patterns
+- **Source-of-Truth**: Unit tests in [tests/](../../tests/) demonstrate real-world patterns
 - **Architecture**: Modular design with clean separation of concerns
 
-## Design Philosophy
+## 🎨 Design Philosophy
 
 ### Core Principles
 
@@ -26,13 +26,13 @@ What distinguishes Hydrogen from general-purpose utility libraries is its focus 
 
 **Correctness**: Transaction-aware data structures emphasize ACID semantics where applicable. Merkle tree implementations prioritize cryptographic correctness. Thread-safety guarantees are explicit and documented.
 
-### Non-Goals
+### ❌ Non-Goals
 
 - **High-level Application Frameworks**: Hydrogen does not provide MVC frameworks, dependency injection containers, or application scaffolding.
 - **Platform Abstractions**: The library does not abstract away platform-specific APIs beyond what .NET Standard requires.
 - **Opinionated Workflows**: While the library enables patterns like repositories and transactional scopes, it does not enforce specific architectural patterns.
 
-## Domains Covered
+## 🗂️ Domains Covered
 
 ### Collections
 
@@ -46,7 +46,7 @@ Hydrogen provides an extensive suite of collection types that extend beyond the 
 - **Synchronized Collections**: Thread-safe variants like `SynchronizedExtendedList<T>`, `SynchronizedDictionary<TKey, TValue>`, and `ProducerConsumerQueue<T>` for concurrent scenarios.
 - **Specialized Data Structures**: Bloom filters, binary heaps, circular lists, bounded lists, and bidirectional dictionaries address specific algorithmic needs.
 
-### Clustered Streams
+### 🔗 Clustered Streams
 
 The `ClusteredStreams` subsystem provides a sophisticated mechanism for managing multiple logical streams within a single underlying stream. This enables:
 
@@ -57,7 +57,7 @@ The `ClusteredStreams` subsystem provides a sophisticated mechanism for managing
 
 This architecture underpins the library's stream-mapped collections and object spaces, providing a flexible foundation for custom persistence schemes.
 
-### Object Spaces
+### 🌌 Object Spaces
 
 Object spaces abstract the storage and retrieval of typed objects across multiple "dimensions" (logical tables). Key capabilities include:
 
@@ -68,7 +68,7 @@ Object spaces abstract the storage and retrieval of typed objects across multipl
 
 Object spaces are suitable for lightweight embedded databases, event stores, and other scenarios requiring structured persistence without a full database engine.
 
-### Merkle Trees
+### 🌳 Merkle Trees
 
 Hydrogen includes multiple merkle-tree implementations optimized for different use cases:
 
@@ -79,7 +79,7 @@ Hydrogen includes multiple merkle-tree implementations optimized for different u
 
 These implementations integrate with collections, enabling `IMerkleList<T>`, `IMerkleDictionary<TKey, TValue>`, and `IMerkleSet<T>` variants that maintain cryptographic integrity proofs alongside their data.
 
-### Cryptography
+### 🔐 Cryptography
 
 The library provides cryptographic primitives and utilities:
 
@@ -89,7 +89,7 @@ The library provides cryptographic primitives and utilities:
 - **Verifiable Random Functions (VRF)**: Primitives for generating cryptographically verifiable random outputs.
 - **Data Protection**: Secure memory handling and encryption utilities for sensitive data.
 
-### Serialization
+### 📦 Serialization
 
 Hydrogen's serialization framework is designed for efficiency, control, and extensibility:
 
@@ -101,7 +101,7 @@ Hydrogen's serialization framework is designed for efficiency, control, and exte
 
 The framework integrates deeply with the library's collections and storage primitives, ensuring that persistence strategies are explicit and customizable.
 
-### Transactions
+### ⚙️ Transactions
 
 The transactional subsystem provides ACID guarantees for in-memory and file-backed data structures:
 
@@ -112,7 +112,7 @@ The transactional subsystem provides ACID guarantees for in-memory and file-back
 
 These primitives enable building robust, crash-recoverable data stores without relying on external database engines.
 
-### Caching
+### 💾 Caching
 
 The caching subsystem offers flexible, policy-driven caching mechanisms:
 
@@ -121,7 +121,7 @@ The caching subsystem offers flexible, policy-driven caching mechanisms:
 - **Session Caches**: Expire entries based on last-access time, suitable for session-style semantics.
 - **Reaping Policies**: Both isolated and pooled reaper implementations manage capacity constraints across single or multiple cache instances.
 
-### Protocol and Communication
+### 📡 Protocol and Communication
 
 The protocol subsystem facilitates structured, bidirectional communication between peers:
 
@@ -131,7 +131,7 @@ The protocol subsystem facilitates structured, bidirectional communication betwe
 
 This framework is suitable for building custom RPC mechanisms, control protocols, or peer-to-peer communication layers.
 
-### Streams and I/O
+### 📲 Streams and I/O
 
 Hydrogen extends .NET's stream abstractions with specialized implementations:
 
@@ -141,7 +141,7 @@ Hydrogen extends .NET's stream abstractions with specialized implementations:
 - **Transactional Streams**: Wrap streams with commit/rollback semantics.
 - **Decorator Streams**: Read-only, write-only, non-closing, and profiling stream wrappers.
 
-### Logging
+### 📝 Logging
 
 A flexible, composable logging framework:
 
@@ -150,7 +150,7 @@ A flexible, composable logging framework:
 - **Sinks**: Built-in loggers for console, debug output, files, and custom delegates.
 - **Multicast Logging**: Route log messages to multiple sinks simultaneously.
 
-### Threading and Concurrency
+### 🔄 Threading and Concurrency
 
 Utilities for managing concurrency and synchronization:
 
@@ -159,7 +159,7 @@ Utilities for managing concurrency and synchronization:
 - **Critical Sections**: `Critical<T>` and `CriticalObject` encapsulate objects with lock-based access.
 - **Producer-Consumer Queue**: `ProducerConsumerQueue<T>` provides bounded/unbounded thread-safe queuing with async support.
 
-### Scheduling
+### ⏰ Scheduling
 
 A job scheduling framework with support for various triggers:
 
@@ -167,7 +167,7 @@ A job scheduling framework with support for various triggers:
 - **Schedules**: Interval-based, day-of-week, and day-of-month schedules trigger job execution.
 - **Policies**: Control job behavior on failure, completion, and rescheduling.
 
-### Extensions & Utilities
+### 🛠️ Extensions & Utilities
 
 **50+ Extension Methods** covering:
 - `StringExtensions`: Truncation, case handling, validation, parsing, formatting
@@ -177,7 +177,7 @@ A job scheduling framework with support for various triggers:
 - `TypeExtensions`: Reflection helpers, type resolution
 - And many more...
 
-## Key Concepts
+## 💡 Key Concepts
 
 ### Extended Lists
 
@@ -224,7 +224,7 @@ Many components follow the decorator pattern, allowing behavior to be layered:
 
 Adapters convert between related interfaces (e.g., `IList<T>` to `IExtendedList<T>`) to integrate external code with Hydrogen's abstractions.
 
-## Typical Use Cases
+## 🎯 Typical Use Cases
 
 ### Well-Suited Scenarios
 
@@ -236,14 +236,14 @@ Adapters convert between related interfaces (e.g., `IList<T>` to `IExtendedList<
 - **Protocol Implementations**: Structured communication frameworks for RPC, control protocols, or peer-to-peer messaging.
 - **LevelDB Integration**: Native Windows LevelDB wrapper for high-performance key-value storage.
 
-### Less-Suited Scenarios
+### 📊 Less-Suited Scenarios
 
 - **Simple CRUD Applications**: If standard Entity Framework or Dapper suffice, Hydrogen's low-level primitives may introduce unnecessary complexity.
 - **Web APIs with Standard ORMs**: The library does not integrate with ASP.NET or Entity Framework out-of-the-box.
 - **UI-Centric Applications**: Hydrogen focuses on data structures and persistence, not UI frameworks or bindings.
 - **Rapid Prototyping**: The library's emphasis on explicitness and control trades off against rapid development convenience.
 
-## Architecture Overview
+## 🏗️ Architecture Overview
 
 Hydrogen's architecture is organized into largely independent subsystems that compose through well-defined interfaces:
 
@@ -261,7 +261,7 @@ Hydrogen's architecture is organized into largely independent subsystems that co
 
 Data typically flows from application code through collections or object spaces, which delegate to object streams for persistence. Object streams use clustered streams for storage and serializers for encoding. Transactional scopes coordinate mutations, and merkle trees provide integrity proofs where enabled.
 
-### Configuration
+### ⚡ Configuration
 
 Default settings can be customized via `HydrogenDefaults`:
 
@@ -281,7 +281,7 @@ public static class HydrogenDefaults
 }
 ```
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Installation
 
@@ -293,7 +293,7 @@ dotnet add package Hydrogen
 
 Or reference the compiled assembly directly in your project.
 
-### Basic Examples
+### 💻 Basic Examples
 
 **Working with Result Types:**
 
@@ -529,7 +529,7 @@ using (var it = db.CreateIterator()) {
 }
 ```
 
-## Extensibility & Customization
+## 🔧 Extensibility & Customization
 
 ### Implementing Custom Serializers
 
@@ -626,7 +626,7 @@ public class LoggingList<T> : ExtendedListDecorator<T> {
 }
 ```
 
-## Threading / Performance / Safety Notes
+## ⚠️ Threading / Performance / Safety Notes
 
 ### Thread Safety
 
@@ -649,7 +649,7 @@ public class LoggingList<T> : ExtendedListDecorator<T> {
 - **Serialization Context**: Contexts are NOT thread-safe. Use separate contexts per thread or synchronize access.
 - **Disposal**: Disposable resources (streams, transactions, scopes) must be disposed to release locks and persist changes. Use `using` statements.
 
-## Status & Maturity
+## ✅ Status & Maturity
 
 Hydrogen is a mature library that has evolved over multiple years. Core subsystems (collections, serialization, transactions, merkle trees) are stable and production-tested. Some components (post-quantum cryptography, protocol orchestration) may be less battle-tested and should be evaluated carefully for production use.
 
@@ -659,12 +659,12 @@ Hydrogen is a mature library that has evolved over multiple years. Core subsyste
 - **Backward Compatibility**: The library does not guarantee API stability across major versions. Serialization formats may evolve, requiring migration strategies for persistent data.
 - **Platform Support**: Windows, Linux, macOS, iOS (via Xamarin/MAUI), Android (via Xamarin/MAUI)
 
-### Experimental Components
+### 🧪 Experimental Components
 
 - Post-quantum signature schemes (W-OTS, AMS) are reference implementations. Audit and validate before use in production cryptographic systems.
 - Some advanced merkle-tree variants and indexing strategies are optimized for specific use cases and may have edge-case limitations.
 
-### Platform-Specific Packages
+### 📦 Platform-Specific Packages
 
 - `Hydrogen.Windows` - Windows-specific utilities
 - `Hydrogen.Windows.Forms` - WinForms integration
@@ -674,22 +674,22 @@ Hydrogen is a mature library that has evolved over multiple years. Core subsyste
 - `Hydrogen.Web.AspNetCore` - ASP.NET Core integration
 - `Hydrogen.CryptoEx` - Extended cryptography (ECDSA, ECIES, etc.)
 
-## Where to Look Next
+## 🔍 Where to Look Next
 
 ### Tests & Code Locations
 
 The unit tests serve as comprehensive examples of real-world usage patterns:
 
-- **Serialization**: `tests/Hydrogen.Tests/Serialization/*` (SerializerFactoryTests, PolymorphicSerializerTests)
-- **VarInt**: `tests/Hydrogen.Tests/Values/VarIntTests.cs`
-- **Clustered/Stream-Mapped**: `tests/Hydrogen.Tests/ClusteredStreams/*` and `tests/Hydrogen.Tests/Collections/StreamMapped/*`
-- **Transactional Collections**: `tests/Hydrogen.Tests/Collections/Transactional/*`
-- **Producer/Consumer**: `tests/Hydrogen.Tests/Collections/ProducerConsumerQueueTest.cs`
-- **LevelDB Integration**: `tests/Hydrogen.Windows.LevelDB.Tests/LevelDBTests.cs`
-- **Extended Lists**: `tests/Hydrogen.Tests/Collections/Lists/ExtendedListTests.cs`
-- **Result<T>**: `tests/Hydrogen.Tests/Misc/ResultTests.cs`
+- **Serialization**: [tests/Hydrogen.Tests/Serialization/](../../tests/Hydrogen.Tests/) (SerializerFactoryTests, PolymorphicSerializerTests)
+- **VarInt**: [tests/Hydrogen.Tests/Values/VarIntTests.cs](../../tests/Hydrogen.Tests/Values/VarIntTests.cs)
+- **Clustered/Stream-Mapped**: [tests/Hydrogen.Tests/ClusteredStreams/](../../tests/Hydrogen.Tests/ClusteredStreams/) and [tests/Hydrogen.Tests/Collections/StreamMapped/](../../tests/Hydrogen.Tests/Collections/StreamMapped/)
+- **Transactional Collections**: [tests/Hydrogen.Tests/Collections/Transactional/](../../tests/Hydrogen.Tests/Collections/Transactional/)
+- **Producer/Consumer**: [tests/Hydrogen.Tests/Collections/ProducerConsumerQueueTest.cs](../../tests/Hydrogen.Tests/Collections/ProducerConsumerQueueTest.cs)
+- **LevelDB Integration**: [tests/Hydrogen.Windows.LevelDB.Tests/LevelDBTests.cs](../../tests/Hydrogen.Windows.LevelDB.Tests/LevelDBTests.cs)
+- **Extended Lists**: [tests/Hydrogen.Tests/Collections/Lists/ExtendedListTests.cs](../../tests/Hydrogen.Tests/Collections/Lists/ExtendedListTests.cs)
+- **Result<T>**: [tests/Hydrogen.Tests/Misc/ResultTests.cs](../../tests/Hydrogen.Tests/Misc/ResultTests.cs)
 
-## Dependencies
+## 📚 Dependencies
 
 - **.NET 8.0** or higher (primary target)
 - **No external dependencies** for core functionality
@@ -697,21 +697,21 @@ The unit tests serve as comprehensive examples of real-world usage patterns:
 - **Optional**: Newtonsoft.Json for JSON support
 - **Optional**: Microsoft.Extensions.DependencyInjection for DI integration
 
-## License
+## ⚖️ License
 
 Distributed under the **MIT NON-AI License**.
 
 This license encourages ethical AI development and prevents use in certain AI/ML contexts without explicit permission. See the LICENSE file for full details.
 
-More information: [https://sphere10.com/legal/NON-AI-MIT](https://sphere10.com/legal/NON-AI-MIT)
+More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-AI-MIT)
 
-## Resources
+## 📖 Resources
 
 - **GitHub**: [Sphere10/Hydrogen](https://github.com/Sphere10/Hydrogen)
 - **Website**: [sphere10.com](https://sphere10.com)
 - **Company**: Sphere 10 Software Pty Ltd
 
-## Author
+## 👤 Author
 
 **Herman Schoenfeld** - Lead Developer
 

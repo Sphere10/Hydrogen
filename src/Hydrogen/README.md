@@ -663,7 +663,7 @@ byte[] fileHash = Tools.Hashing.SHA256File("path/to/file.bin");
 var hashes = Tools.Hashing.ComputeMultipleHashes(data, CHF.SHA2_256, CHF.SHA3_256);
 ```
 
-**String Extensions (50+ helpers):**
+### 📝 String Extensions (50+ helpers)
 
 ```csharp
 using Hydrogen;
@@ -938,37 +938,65 @@ Hydrogen is a mature library that has evolved over multiple years. Core subsyste
 
 ## 🔍 Where to Look Next
 
-### Comprehensive Test Suite
+### 📚 Core Domains Reference
 
-The library includes extensive unit tests that serve as the primary reference for real-world usage patterns and best practices. Tests are organized by subsystem:
+Hydrogen covers multiple interconnected domains. Start by exploring the test suites for hands-on examples:
 
-**Core Data Structures & Collections:**
-- [Serialization/](../../tests/Hydrogen.Tests/Serialization/) — Serializers, polymorphism, reference handling, versioning strategies
+**Collections & Data Structures:**
 - [Collections/](../../tests/Hydrogen.Tests/Collections/) — Extended lists, stream-mapped, recyclable, paged, observable, and synchronized variants
 - [Merkle/](../../tests/Hydrogen.Tests/Merkle/) — All merkle-tree implementations and integrity proofs
 - [ClusteredStreams/](../../tests/Hydrogen.Tests/ClusteredStreams/) — Multi-stream storage, attachments, dynamic allocation
 
-**Advanced Features:**
-- [Scopes/](../../tests/Hydrogen.Tests/Scopes/) — Transactional boundaries, commit/rollback, isolation
-- [ObjectSpaces/](../../tests/Hydrogen.Tests/ObjectSpaces/) — Typed dimensions, indexing, integrity
-- [Cache/](../../tests/Hydrogen.Tests/Cache/) — Action caches, reaping policies, session semantics
-- [Repository/](../../tests/Hydrogen.Tests/Repository/) — Repository pattern implementations
+**Persistence & Storage:**
+- [Serialization/](../../tests/Hydrogen.Tests/Serialization/) — Serializers, polymorphism, reference handling, versioning strategies
+- [ObjectSpaces/](../../tests/Hydrogen.Tests/ObjectSpaces/) — Typed dimensions, indexing, integrity proofs
+- [Scopes/](../../tests/Hydrogen.Tests/Scopes/) — Transactional boundaries, commit/rollback, isolation levels
+
+**Cryptography & Security:**
+- [Crypto/](../../tests/Hydrogen.Tests/Crypto/) — Hashing, digital signatures, key derivation, VRF, post-quantum algorithms
+- [Encoding/](../../tests/Hydrogen.Tests/Encoding/) — VarInt, CVarInt, compact integer encoding
+
+**Streams & I/O:**
+- [Streams/](../../tests/Hydrogen.Tests/Streams/) — Stream decorators, bounded, fragmented, extended memory variants
+- [Memory/](../../tests/Hydrogen.Tests/Memory/) — Buffer operations, allocation strategies, memory-mapped files
 
 **Utilities & Extensions:**
-- [Encoding/](../../tests/Hydrogen.Tests/Encoding/) — VarInt, CVarInt, compact integer encoding
-- [Crypto/](../../tests/Hydrogen.Tests/Crypto/) — Hashing, digital signatures, key derivation
-- [Streams/](../../tests/Hydrogen.Tests/Streams/) — Stream decorators, bounded, fragmented, extended memory variants
-- [Threading/](../../tests/Hydrogen.Tests/Threading/) — Synchronization primitives, producer-consumer patterns
 - [Text/](../../tests/Hydrogen.Tests/Text/) — String extensions, formatting, validation, case operations
-- [Memory/](../../tests/Hydrogen.Tests/Memory/) — Buffer operations, allocation strategies
+- [Threading/](../../tests/Hydrogen.Tests/Threading/) — Synchronization primitives, producer-consumer patterns
+- [Cache/](../../tests/Hydrogen.Tests/Cache/) — Action caches, reaping policies, session management
+- [Repository/](../../tests/Hydrogen.Tests/Repository/) — Repository pattern implementations
 
-**Platform-Specific:**
+### 🔗 Related Projects
+
+Hydrogen integrates with several complementary libraries and platforms:
+
+- **Hydrogen.Communications** — Multi-protocol networking framework with RPC, TCP, UDP, WebSockets support
+- **Hydrogen.Windows** — Windows-specific utilities: registry access, service management, event logging, security operations
+- **Hydrogen.Windows.Forms** — WinForms component integration and UI patterns
+- **Hydrogen.Windows.LevelDB** — High-performance native LevelDB wrapper for key-value storage
+- **Hydrogen.Application** — Cross-platform application lifecycle management, dependency injection, configuration
+- **Hydrogen.Application.Settings** — Persistent settings management and application preferences
+- **Hydrogen.Data** — Database abstraction layer supporting SQL Server, SQLite, Firebird
+- **Hydrogen.Data.NHibernate** — NHibernate integration for ORM scenarios
+- **Hydrogen.Web.AspNetCore** — ASP.NET Core extensions and middleware
+- **Hydrogen.CryptoEx** — Extended cryptography: ECDSA, ECIES, Schnorr signatures, additional hash functions
+- **Hydrogen.Consensus** — Blockchain consensus mechanisms and protocols
+- **Hydrogen.Drawing** — Graphics and drawing utilities for desktop applications
+- **Hydrogen.NUnit** — NUnit testing utilities and assertions
+- **Hydrogen.NET** — Abstractions for .NET platform features
+- **Hydrogen.NETCore** — .NET Core-specific implementations
+- **Hydrogen.Android** — Android platform integration
+- **Hydrogen.iOS** — iOS platform integration
+- **Hydrogen.macOS** — macOS platform integration
+
+**Test Suites for Related Projects:**
 - [Hydrogen.Windows.Tests/](../../tests/Hydrogen.Windows.Tests/) — Windows-specific utilities and integrations
-- [Hydrogen.Windows.LevelDB.Tests/](../../tests/Hydrogen.Windows.LevelDB.Tests/) — Native LevelDB wrapper
-- [Hydrogen.Communications.Tests/](../../tests/Hydrogen.Communications.Tests/) — Protocol layer and messaging
-- [Hydrogen.Data.Tests/](../../tests/Hydrogen.Data.Tests/) — Firebird, MSSQL, NHibernate integrations
+- [Hydrogen.Windows.LevelDB.Tests/](../../tests/Hydrogen.Windows.LevelDB.Tests/) — Native LevelDB wrapper tests
+- [Hydrogen.Communications.Tests/](../../tests/Hydrogen.Communications.Tests/) — Protocol layer and messaging tests
+- [Hydrogen.Data.Tests/](../../tests/Hydrogen.Data.Tests/) — Database abstraction layer tests
+- [Hydrogen.CryptoEx.Tests/](../../tests/Hydrogen.CryptoEx.Tests/) — Extended cryptography tests
 
-Start with the subsystem test folder matching your area of interest to see concrete examples of how to use each component.
+Start with the domain test folder matching your area of interest to see concrete examples of how to use each component.
 
 ## 📚 Dependencies
 

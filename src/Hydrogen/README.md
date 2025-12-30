@@ -9,6 +9,29 @@
 
 ---
 
+## 📋 Project Overview
+
+Hydrogen is a **low-level, high-performance .NET utility library** providing composable data structures and persistence primitives. It excels at scenarios requiring fine-grained control over memory, serialization, and transactional semantics—think blockchain systems, embedded databases, high-volume analytics, and custom storage layers.
+
+Unlike general-purpose libraries, Hydrogen doesn't provide application frameworks or abstractions. Instead, it offers:
+
+- **50+ collection types** (extended lists, stream-mapped, paged, recyclable, merkle-aware)
+- **Advanced serialization framework** (polymorphism, references, versioning, constant-size encoding)
+- **Transactional ACID primitives** (scopes, streams, collections with commit/rollback)
+- **Merkle-tree implementations** (flat, simple, long, partial) for integrity proofs
+- **Cryptographic utilities** (hashing, signatures, key derivation, VRF, post-quantum schemes)
+- **Clustered streams** (multi-stream storage, dynamic allocation, attachments)
+- **Thread-safe concurrent collections** and producer-consumer patterns
+- **50+ string, enumerable, task, stream, and type extension methods**
+
+**Key Attributes**
+- **Language**: C# targeting .NET 8+ (with .NET Standard 2.0 compatibility where applicable)
+- **Dependencies**: Zero external dependencies for core functionality (optional: BouncyCastle, Newtonsoft.Json)
+- **Platform Support**: Windows, Linux, macOS, iOS, Android
+- **Philosophy**: Composable, explicit, performance-conscious, extensible, correct
+- **Tests**: [Comprehensive test suite](../../tests/Hydrogen.Tests/) with 25+ subsystems and 2000+ tests
+- **Maturity**: Production-ready (v2.0.2) with battle-tested core subsystems
+
 ## 🚀 Quick Navigation
 
 ### Core Hydrogen Library Domains
@@ -140,29 +163,6 @@
 - [HashLib4CSharp.Tests](../../tests/HashLib4CSharp.Tests/) – Cryptographic hash tests
 
 ---
-
-## 📋 Project Overview
-
-Hydrogen is a **low-level, high-performance .NET utility library** providing composable data structures and persistence primitives. It excels at scenarios requiring fine-grained control over memory, serialization, and transactional semantics—think blockchain systems, embedded databases, high-volume analytics, and custom storage layers.
-
-Unlike general-purpose libraries, Hydrogen doesn't provide application frameworks or abstractions. Instead, it offers:
-
-- **50+ collection types** (extended lists, stream-mapped, paged, recyclable, merkle-aware)
-- **Advanced serialization framework** (polymorphism, references, versioning, constant-size encoding)
-- **Transactional ACID primitives** (scopes, streams, collections with commit/rollback)
-- **Merkle-tree implementations** (flat, simple, long, partial) for integrity proofs
-- **Cryptographic utilities** (hashing, signatures, key derivation, VRF, post-quantum schemes)
-- **Clustered streams** (multi-stream storage, dynamic allocation, attachments)
-- **Thread-safe concurrent collections** and producer-consumer patterns
-- **50+ string, enumerable, task, stream, and type extension methods**
-
-**Key Attributes**
-- **Language**: C# targeting .NET 8+ (with .NET Standard 2.0 compatibility where applicable)
-- **Dependencies**: Zero external dependencies for core functionality (optional: BouncyCastle, Newtonsoft.Json)
-- **Platform Support**: Windows, Linux, macOS, iOS, Android
-- **Philosophy**: Composable, explicit, performance-conscious, extensible, correct
-- **Tests**: [Comprehensive test suite](../../tests/Hydrogen.Tests/) with 25+ subsystems and 2000+ tests
-- **Maturity**: Production-ready (v2.0.2) with battle-tested core subsystems
 
 ## 🎨 Design Philosophy
 
@@ -319,7 +319,273 @@ A job scheduling framework with support for various triggers:
 - **Schedules**: Interval-based, day-of-week, and day-of-month schedules trigger job execution.
 - **Policies**: Control job behavior on failure, completion, and rescheduling.
 
-### 🛠️ Extensions & Utilities
+### � Text Extensions & String Utilities
+
+Comprehensive string manipulation and validation helpers:
+
+- **Case Conversion**: Convert between camelCase, PascalCase, snake_case, kebab-case, and UPPERCASE_SNAKE_CASE.
+- **Truncation & Padding**: Pad strings to exact lengths or truncate with ellipsis.
+- **Validation**: Check for numeric, alphabetic, alphanumeric, hexadecimal, and custom patterns.
+- **Parsing**: Safe parsing with tuple results, parse integers, GUIDs, decimals, and custom types.
+- **Whitespace Operations**: Split on whitespace, trim variants, normalize line endings.
+- **String Replacement**: Pattern-based and regex replacements with proper escaping.
+
+### 🔤 Encoding Utilities
+
+Efficient, space-optimizing encoding schemes:
+
+- **Variable-Length Integer Encoding (VarInt)**: Compress small integers into fewer bytes, with sign-aware variants.
+- **Compact Variable-Length (CVarInt)**: Further optimize encoding for extremely small or sparse datasets.
+- **Binary Encoding**: Efficient methods for encoding multiple values into contiguous buffers.
+- **Bidirectional Encoding**: Reversible encoding schemes that preserve ordering properties for indexed storage.
+
+### 🧠 Memory Management
+
+Utilities for controlling and optimizing memory usage:
+
+- **Buffer Abstractions**: `IBuffer` represents a sequence of bytes that can be memory-resident or memory-mapped.
+- **Memory Pools**: Reusable memory pools to reduce allocation pressure in high-throughput scenarios.
+- **Buffer Decorators**: Add synchronization, capacity tracking, or transaction support to buffers.
+- **Byte Array Utilities**: Comparison, concatenation, and transformation helpers for byte arrays.
+
+### 🔍 Object Mapping & Transformation
+
+Map and transform objects between representations:
+
+- **Property Mapping**: Copy values between objects with matching or custom property mappings.
+- **Conversion Chains**: Compose multiple converters to transform between unrelated types.
+- **Specialized Mappers**: Collections, dictionary, and array mapping with configurable merge strategies.
+
+### 🎲 Type Conversion & Parsing
+
+Flexible conversion utilities for type coercion:
+
+- **Bidirectional Conversion**: Convert between any two types using registered converters.
+- **Numeric Conversions**: Safe conversions between integer types with overflow checking.
+- **Enum Conversions**: String to/from enum with case-insensitive options.
+- **Collection Conversions**: Convert between array, list, set, and dictionary representations.
+- **Custom Converters**: Register converters for application-specific types.
+
+### 📐 Mathematical Utilities
+
+Low-level math helpers and calculations:
+
+- **Bit Manipulation**: Bit-counting, set/clear operations, endian conversions.
+- **GCD and LCM**: Greatest common divisor and least common multiple calculations.
+- **Prime Number Operations**: Primality testing and prime enumeration.
+- **Modular Arithmetic**: Modular exponentiation and inversion.
+- **Rounding**: Floor, ceiling, and banker's rounding for financial calculations.
+
+### 📅 Value Types & Structures
+
+Utilities for working with value types and immutable structures:
+
+- **Date/Time Wrappers**: Normalized date/time representations for storage.
+- **Numeric Types**: Custom numeric wrappers for specialized domains (e.g., hash values, checksums).
+- **Struct Utilities**: Struct cloning, comparison, and hashing helpers.
+
+### 🏗️ Comparison & Equality
+
+Build custom comparison and equality implementations:
+
+- **Comparer Factories**: Create `IComparer<T>` instances with fluent composition (field-by-field, descending, custom).
+- **Equality Comparers**: Implement `IEqualityComparer<T>` for custom equality logic.
+- **Structural Comparison**: Compare complex objects field-by-field with customizable rules.
+- **Tolerance-Based Comparison**: Compare floating-point values with configurable epsilon.
+
+### 🔎 Introspection & Reflection
+
+Reflection utilities and type analysis:
+
+- **Type Discovery**: Find derived types, implementations of interfaces, and generic arguments.
+- **Property/Field Analysis**: Discover properties, fields, and their attributes with caching.
+- **Method Resolution**: Find methods by name, signature, and attributes.
+- **Attribute Retrieval**: Efficiently retrieve custom attributes from types, methods, and properties.
+- **Generic Type Analysis**: Decompose and analyze generic type definitions and arguments.
+
+### 📦 Type Utilities
+
+Helpers for type checks and resolution:
+
+- **Type Verification**: Check if a type is numeric, nullable, enumerable, etc.
+- **Type Classification**: Categorize types (value, reference, generic, etc.).
+- **Type Conversion Checks**: Verify if one type can be converted to another.
+- **Default Value Generation**: Create default instances for arbitrary types.
+
+### 🏷️ Attributes & Metadata
+
+Custom attributes for annotating types and members:
+
+- **Serialization Attributes**: Mark fields/properties for serialization with options.
+- **Validation Attributes**: Declarative validation rules (required, length, range).
+- **Mapping Attributes**: Customize property mapping behavior.
+- **Custom Attributes**: Base classes for creating domain-specific attributes.
+
+### 📋 Framework Abstractions
+
+Core abstractions for building extensible frameworks:
+
+- **Loadable**: Abstract base for objects with load/reload semantics.
+- **Persistable**: Abstract base for objects that need to save/restore state.
+- **Saveable**: Simplified save pattern for simpler scenarios.
+- **Disposables**: Helpers for implementing safe disposal patterns.
+- **Environment**: Abstract environment information (OS, runtime, configuration).
+
+### 🔌 Extension Methods on Core Types
+
+Fluent extensions for .NET types:
+
+- **Enumerable Extensions**: `Batch`, `Chunk`, `Distinct`, `GroupBy` variants with custom comparers.
+- **Dictionary Extensions**: `TryAdd`, `AddOrUpdate`, `GetOrAdd` with custom logic.
+- **Task Extensions**: Timeout, retry, async coordination helpers.
+- **Functional Extensions**: `Map`, `FlatMap`, `Filter` for more expressive LINQ alternatives.
+
+### 🌍 Data Source Abstractions
+
+Abstractions for querying data from various sources:
+
+- **IDataSource**: Generic interface for querying objects from a source (database, file, API).
+- **Caching Data Sources**: Wrap data sources with caching layers.
+- **Composed Data Sources**: Combine multiple sources with fallback semantics.
+- **Filtering Data Sources**: Add filtering and projection to any data source.
+
+### 🔌 Peripherals & Hardware Access
+
+Utilities for hardware and peripheral interaction:
+
+- **Device Detection**: Discover and enumerate hardware peripherals.
+- **Serial Communication**: Serial port abstractions for embedded systems.
+- **GPIO Abstractions**: General-purpose I/O operations (where applicable).
+
+### 🌐 Network Utilities
+
+Low-level network helpers:
+
+- **Address Resolution**: DNS and IP address utilities.
+- **Port Scanning**: Network connectivity testing.
+- **Socket Wrappers**: Extended socket abstractions with timeout support.
+
+### 🎯 Environment & System Information
+
+Query system and runtime information:
+
+- **Runtime Detection**: Detect .NET version, platform, architecture.
+- **Resource Availability**: Check available memory, processor count, disk space.
+- **Configuration**: Access environment variables, system settings.
+- **Process Information**: Query process details, threading, memory usage.
+
+### ⚙️ Miscellaneous Utilities
+
+Catch-all category for specialized helpers:
+
+- **Range Calculations**: Compute overlaps, unions, and intersections of value ranges.
+- **Enum Utilities**: Enum iteration, flag manipulation, parsing.
+- **Bitfield Helpers**: Work with bitfields and bit arrays.
+- **Weak References**: Managed weak reference pools to track objects without preventing GC.
+
+### 📦 Object Utilities
+
+Helpers for object manipulation and introspection:
+
+- **Cloning**: Deep and shallow cloning with customizable strategies.
+- **Comparison**: Object equality and comparison without reflection overhead (when possible).
+- **Hashing**: Consistent hashing for distributed scenarios.
+
+### 🎛️ Filtering Abstractions
+
+Generic filtering framework:
+
+- **Predicates**: Composable `IFilter<T>` implementations for filtering collections.
+- **Composite Filters**: Combine filters with AND, OR, and NOT logic.
+- **Range Filters**: Filter by numeric or comparable ranges.
+
+### 📊 Functional Programming Utilities
+
+Support for functional programming patterns:
+
+- **Monads**: Maybe/Option and Result types for error handling.
+- **Function Composition**: Compose functions with automatic currying.
+- **Lazy Evaluation**: Lazy sequences and deferred computation.
+- **Partial Application**: Bind arguments to create specialized functions.
+
+### ♻️ Disposable Pattern Helpers
+
+Simplify implementing proper disposal:
+
+- **Base Classes**: `DisposableBase` and `DisposableObject` handle disposal protocol.
+- **Safe Finalization**: Finalization helpers to ensure cleanup occurs.
+- **Resource Guards**: RAII-style resource management patterns.
+
+### 🔗 Event Handling Utilities
+
+Framework for event routing and aggregation:
+
+- **Event Aggregators**: Pub/sub patterns for decoupled event routing.
+- **Event Priorities**: Route events in priority order.
+- **Event Filtering**: Conditionally route events based on predicates.
+
+### ⚠️ Exception Handling
+
+Utilities for robust error handling:
+
+- **Exception Wrapping**: Preserve stack traces while wrapping exceptions.
+- **Retry Policies**: Exponential backoff, jitter, and custom retry strategies.
+- **Exception Aggregation**: Collect multiple exceptions and report together.
+- **Error Context**: Attach context information to exceptions for debugging.
+
+### 📖 Loadable Resources
+
+Framework for loading and caching resources:
+
+- **Resource Loaders**: Abstract protocol for loading resources (files, embedded, remote).
+- **Caching Loaders**: Cache loaded resources with expiration policies.
+- **Lazy Loading**: Load resources on-demand with automatic caching.
+
+### 📝 Logging Framework
+
+Already covered above in detail.
+
+### 💾 Persistable Objects
+
+Framework for objects that maintain persistent state:
+
+- **State Snapshots**: Capture object state for persistence.
+- **Transactional Persistence**: Integrate with transactional scopes.
+- **Version Tracking**: Track object versions across saves.
+
+### 🔧 Save/Load Patterns
+
+Simplified persistence for straightforward scenarios:
+
+- **Serialization Delegates**: Custom load/save functions per type.
+- **Stream-Based Saving**: Write objects to streams with format flexibility.
+- **File-Based Persistence**: High-level API for file-based saves.
+
+### 📏 Sizing Utilities
+
+Calculate sizes and offsets:
+
+- **Byte Size Calculation**: Determine how many bytes a serialized object requires.
+- **Alignment Calculation**: Compute aligned offsets for memory layout optimization.
+- **Capacity Planning**: Estimate total storage needed for collections.
+
+### 🎯 Span & Memory Utilities
+
+Efficient working with `Span<T>` and `Memory<T>`:
+
+- **Span Slicing**: Safe slicing with bounds checking.
+- **Memory Pooling**: Rent and return `Memory<T>` from pools.
+- **Span Conversion**: Convert between `Span`, `Memory`, and arrays safely.
+
+### 📝 TextWriter Abstractions
+
+Extensions and helpers for `TextWriter`:
+
+- **Formatted Output**: Structured output writers (JSON, XML, CSV).
+- **Indented Writers**: Automatic indentation for hierarchical data.
+- **Buffered Writers**: Batch write operations for efficiency.
+
+### �🛠️ Extensions & Utilities
 
 **50+ Extension Methods** covering:
 - `StringExtensions`: Truncation, case handling, validation, parsing, formatting

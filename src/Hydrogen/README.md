@@ -2,6 +2,145 @@
 
 # 🧪 Hydrogen
 
+**Lead Developer**: Herman Schoenfeld  
+**Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software  
+**License**: MIT NON-AI  
+**Status**: Production-Ready (v2.0.2)
+
+---
+
+## 🚀 Quick Navigation
+
+### Core Hydrogen Library Domains
+
+**Data Structures & Collections**
+- 📦 [Collections/](Collections/) – Extended lists, stream-mapped, recyclable, paged, observable, synchronized variants
+- 🌳 [Merkle/](Merkle/) – Merkle-tree implementations: flat, simple, long, partial
+- 🔗 [ClusteredStreams/](ClusteredStreams/) – Multi-stream storage, attachments, dynamic allocation
+
+**Persistence & Serialization**
+- 💾 [Serialization/](Serialization/) – Item serializers, polymorphism, references, versioning
+- 📊 [ObjectSpaces/](ObjectSpaces/) – Typed dimensions, indexing, integrity proofs, transactions
+- 🔄 [ObjectStream/](ObjectStream/) – Stream-backed object storage with indexes
+
+**Transactions & Scoping**
+- 🎯 [Scopes/](Scopes/) – Transactional boundaries, commit/rollback, isolation levels
+- 💳 [Transactions/](Transactions/) – Transaction management and coordination
+
+**Cryptography & Security**
+- 🔐 [Crypto/](Crypto/) – Hashing, signatures, key derivation, VRF algorithms
+- 🔑 [Protocol/](Protocol/) – Protocol abstractions and messaging
+
+**Streams & I/O**
+- 📝 [Streams/](Streams/) – Stream decorators, bounded, fragmented, extended memory
+- 📄 [IO/](IO/) – File I/O operations and utilities
+
+**Utilities & Extensions**
+- ✂️ [Text/](Text/) – String extensions, formatting, case operations, validation
+- 🔤 [Encoding/](Encoding/) – VarInt, CVarInt, compact integer encoding
+- 🧠 [Memory/](Memory/) – Buffer operations, memory allocation, management
+- ⚡ [Threading/](Threading/) – Synchronization, producer-consumer patterns
+- 💾 [Cache/](Cache/) – Action caches, reaping policies, session management
+- 🗄️ [Repository/](Repository/) – Repository pattern implementations
+- 🔍 [Mapping/](Mapping/) – Object mapping and transformation
+- 🎲 [Conversion/](Conversion/) – Type conversions and parsing
+- 📐 [Maths/](Maths/) – Mathematical utilities
+- 📅 [Values/](Values/) – Value types and structures
+- 🏗️ [Comparers/](Comparers/) – Comparison and equality implementations
+
+**Type System & Reflection**
+- 🔎 [Introspection/](Introspection/) – Reflection and type analysis
+- 📦 [Types/](Types/) – Type utilities and checks
+- 🏷️ [Attributes/](Attributes/) – Custom attributes
+- 📋 [Framework/](Framework/) – Framework abstractions
+- 🔌 [Extensions/](Extensions/) – Framework extension methods
+
+**Data & Resources**
+- 🌍 [DataSource/](DataSource/) – Data source abstractions
+- 🔌 [Peripherals/](Peripherals/) – Hardware peripherals access
+- 🌐 [Network/](Network/) – Network utilities
+- 🎯 [Environment/](Environment/) – Environment and system information
+- ⚙️ [Misc/](Misc/) – Miscellaneous utilities
+- 📦 [Objects/](Objects/) – Object utilities
+- 🎛️ [Filter/](Filter/) – Filtering abstractions
+- 📊 [Functional/](Functional/) – Functional programming utilities
+- ♻️ [Disposables/](Disposables/) – Disposable pattern utilities
+- 🔗 [Events/](Events/) – Event handling utilities
+- ⚠️ [Exceptions/](Exceptions/) – Exception handling
+- 📖 [Loadable/](Loadable/) – Loadable resource abstractions
+- 📝 [Logging/](Logging/) – Logging utilities
+- 💾 [Persistable/](Persistable/) – Persistence abstractions
+- 🔧 [Saveable/](Saveable/) – Save/load patterns
+- ⏰ [Scheduler/](Scheduler/) – Task scheduling
+- 📏 [Sizing/](Sizing/) – Size calculations and measurements
+- 🎯 [Spans/](Spans/) – Span and memory utilities
+- 📝 [TextWriters/](TextWriters/) – Text writing abstractions
+
+### Related Projects
+
+**Data Access & Persistence**
+- [Hydrogen.Data](../Hydrogen.Data/) – Database abstraction layer (SQL Server, SQLite, Firebird)
+- [Hydrogen.Data.Sqlite](../Hydrogen.Data.Sqlite/) – SQLite-specific integration
+- [Hydrogen.Data.MSSQL](../Hydrogen.Data.MSSQL/) – SQL Server integration
+- [Hydrogen.Data.Firebird](../Hydrogen.Data.Firebird/) – Firebird integration
+- [Hydrogen.Data.NHibernate](../Hydrogen.Data.NHibernate/) – NHibernate ORM integration
+- [Hydrogen.Windows.LevelDB](../Hydrogen.Windows.LevelDB/) – High-performance embedded key-value store
+
+**Networking & Communications**
+- [Hydrogen.Communications](../Hydrogen.Communications/) – Multi-protocol networking (RPC, TCP, UDP, WebSockets)
+- [Hydrogen.Web.AspNetCore](../Hydrogen.Web.AspNetCore/) – ASP.NET Core integration and middleware
+
+**Cryptography & Consensus**
+- [Hydrogen.CryptoEx](../Hydrogen.CryptoEx/) – Extended cryptography (ECDSA, ECIES, Schnorr, post-quantum)
+- [Hydrogen.Consensus](../Hydrogen.Consensus/) – Blockchain consensus mechanisms
+
+**Desktop & Platform Integration**
+- [Hydrogen.Windows](../Hydrogen.Windows/) – Windows utilities (registry, services, events, security)
+- [Hydrogen.Windows.Forms](../Hydrogen.Windows.Forms/) – WinForms component integration
+- [Hydrogen.Windows.Forms.Sqlite](../Hydrogen.Windows.Forms.Sqlite/) – SQLite integration for WinForms
+- [Hydrogen.Windows.Forms.MSSQL](../Hydrogen.Windows.Forms.MSSQL/) – SQL Server integration for WinForms
+- [Hydrogen.Windows.Forms.Firebird](../Hydrogen.Windows.Forms.Firebird/) – Firebird integration for WinForms
+- [Hydrogen.Drawing](../Hydrogen.Drawing/) – Graphics and drawing utilities
+
+**Application Framework**
+- [Hydrogen.Application](../Hydrogen.Application/) – Lifecycle management, DI, configuration
+- [Hydrogen.Application.Settings](../Hydrogen.Application.Settings/) – Persistent settings management
+
+**Testing & Quality**
+- [Hydrogen.NUnit](../Hydrogen.NUnit/) – NUnit testing utilities
+- [Hydrogen.NUnit.DB](../Hydrogen.NUnit.DB/) – Database testing utilities
+
+**Cross-Platform & Generators**
+- [Hydrogen.NET](../Hydrogen.NET/) – .NET platform abstractions
+- [Hydrogen.NETCore](../Hydrogen.NETCore/) – .NET Core-specific implementations
+- [Hydrogen.Android](../Hydrogen.Android/) – Android platform integration
+- [Hydrogen.iOS](../Hydrogen.iOS/) – iOS platform integration
+- [Hydrogen.macOS](../Hydrogen.macOS/) – macOS platform integration
+- [Hydrogen.Generators](../Hydrogen.Generators/) – Code generation utilities
+
+**Blockchain & DApps**
+- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core/) – Decentralized app core functionality
+- [Hydrogen.DApp.Host](../Hydrogen.DApp.Host/) – DApp hosting infrastructure
+- [Hydrogen.DApp.Node](../Hydrogen.DApp.Node/) – DApp node implementation
+
+### Test Suites
+
+**Core Library Tests**
+- [Hydrogen.Tests](../../tests/Hydrogen.Tests/) – Comprehensive test suite for all Hydrogen domains
+
+**Related Project Tests**
+- [Hydrogen.Communications.Tests](../../tests/Hydrogen.Communications.Tests/) – Networking and protocol tests
+- [Hydrogen.CryptoEx.Tests](../../tests/Hydrogen.CryptoEx.Tests/) – Extended cryptography tests
+- [Hydrogen.Data.Tests](../../tests/Hydrogen.Data.Tests/) – Database integration tests
+- [Hydrogen.Windows.Tests](../../tests/Hydrogen.Windows.Tests/) – Windows utilities tests
+- [Hydrogen.Windows.LevelDB.Tests](../../tests/Hydrogen.Windows.LevelDB.Tests/) – LevelDB integration tests
+- [Hydrogen.DApp.Core.Tests](../../tests/Hydrogen.DApp.Core.Tests/) – DApp core tests
+- [Hydrogen.NET.Tests](../../tests/Hydrogen.NET.Tests/) – .NET platform tests
+- [Hydrogen.NETCore.Tests](../../tests/Hydrogen.NETCore.Tests/) – .NET Core tests
+- [HashLib4CSharp.Tests](../../tests/HashLib4CSharp.Tests/) – Cryptographic hash tests
+
+---
+
 ## 📋 Project Overview
 
 Hydrogen is a **low-level, high-performance .NET utility library** providing composable data structures and persistence primitives. It excels at scenarios requiring fine-grained control over memory, serialization, and transactional semantics—think blockchain systems, embedded databases, high-volume analytics, and custom storage layers.
@@ -936,69 +1075,7 @@ Hydrogen is a mature library that has evolved over multiple years. Core subsyste
 - `Hydrogen.Web.AspNetCore` - ASP.NET Core integration
 - `Hydrogen.CryptoEx` - Extended cryptography (ECDSA, ECIES, etc.)
 
-## 🔍 Where to Look Next
-
-### 📚 Core Domains Reference
-
-Hydrogen covers multiple interconnected domains. Start by exploring the test suites for hands-on examples:
-
-**Collections & Data Structures:**
-- [Collections/](../../tests/Hydrogen.Tests/Collections/) — Extended lists, stream-mapped, recyclable, paged, observable, and synchronized variants
-- [Merkle/](../../tests/Hydrogen.Tests/Merkle/) — All merkle-tree implementations and integrity proofs
-- [ClusteredStreams/](../../tests/Hydrogen.Tests/ClusteredStreams/) — Multi-stream storage, attachments, dynamic allocation
-
-**Persistence & Storage:**
-- [Serialization/](../../tests/Hydrogen.Tests/Serialization/) — Serializers, polymorphism, reference handling, versioning strategies
-- [ObjectSpaces/](../../tests/Hydrogen.Tests/ObjectSpaces/) — Typed dimensions, indexing, integrity proofs
-- [Scopes/](../../tests/Hydrogen.Tests/Scopes/) — Transactional boundaries, commit/rollback, isolation levels
-
-**Cryptography & Security:**
-- [Crypto/](../../tests/Hydrogen.Tests/Crypto/) — Hashing, digital signatures, key derivation, VRF, post-quantum algorithms
-- [Encoding/](../../tests/Hydrogen.Tests/Encoding/) — VarInt, CVarInt, compact integer encoding
-
-**Streams & I/O:**
-- [Streams/](../../tests/Hydrogen.Tests/Streams/) — Stream decorators, bounded, fragmented, extended memory variants
-- [Memory/](../../tests/Hydrogen.Tests/Memory/) — Buffer operations, allocation strategies, memory-mapped files
-
-**Utilities & Extensions:**
-- [Text/](../../tests/Hydrogen.Tests/Text/) — String extensions, formatting, validation, case operations
-- [Threading/](../../tests/Hydrogen.Tests/Threading/) — Synchronization primitives, producer-consumer patterns
-- [Cache/](../../tests/Hydrogen.Tests/Cache/) — Action caches, reaping policies, session management
-- [Repository/](../../tests/Hydrogen.Tests/Repository/) — Repository pattern implementations
-
-### 🔗 Related Projects
-
-Hydrogen integrates with several complementary libraries and platforms:
-
-- **Hydrogen.Communications** — Multi-protocol networking framework with RPC, TCP, UDP, WebSockets support
-- **Hydrogen.Windows** — Windows-specific utilities: registry access, service management, event logging, security operations
-- **Hydrogen.Windows.Forms** — WinForms component integration and UI patterns
-- **Hydrogen.Windows.LevelDB** — High-performance native LevelDB wrapper for key-value storage
-- **Hydrogen.Application** — Cross-platform application lifecycle management, dependency injection, configuration
-- **Hydrogen.Application.Settings** — Persistent settings management and application preferences
-- **Hydrogen.Data** — Database abstraction layer supporting SQL Server, SQLite, Firebird
-- **Hydrogen.Data.NHibernate** — NHibernate integration for ORM scenarios
-- **Hydrogen.Web.AspNetCore** — ASP.NET Core extensions and middleware
-- **Hydrogen.CryptoEx** — Extended cryptography: ECDSA, ECIES, Schnorr signatures, additional hash functions
-- **Hydrogen.Consensus** — Blockchain consensus mechanisms and protocols
-- **Hydrogen.Drawing** — Graphics and drawing utilities for desktop applications
-- **Hydrogen.NUnit** — NUnit testing utilities and assertions
-- **Hydrogen.NET** — Abstractions for .NET platform features
-- **Hydrogen.NETCore** — .NET Core-specific implementations
-- **Hydrogen.Android** — Android platform integration
-- **Hydrogen.iOS** — iOS platform integration
-- **Hydrogen.macOS** — macOS platform integration
-
-**Test Suites for Related Projects:**
-- [Hydrogen.Windows.Tests/](../../tests/Hydrogen.Windows.Tests/) — Windows-specific utilities and integrations
-- [Hydrogen.Windows.LevelDB.Tests/](../../tests/Hydrogen.Windows.LevelDB.Tests/) — Native LevelDB wrapper tests
-- [Hydrogen.Communications.Tests/](../../tests/Hydrogen.Communications.Tests/) — Protocol layer and messaging tests
-- [Hydrogen.Data.Tests/](../../tests/Hydrogen.Data.Tests/) — Database abstraction layer tests
-- [Hydrogen.CryptoEx.Tests/](../../tests/Hydrogen.CryptoEx.Tests/) — Extended cryptography tests
-
-Start with the domain test folder matching your area of interest to see concrete examples of how to use each component.
-
-## 📚 Dependencies
+##  Dependencies
 
 - **.NET 8.0** or higher (primary target)
 - **No external dependencies** for core functionality

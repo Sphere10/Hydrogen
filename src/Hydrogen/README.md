@@ -2,7 +2,7 @@
 
 # 🧪 Hydrogen
 
-**Lead Developer**: Herman Schoenfeld  
+**Developer**: Herman Schoenfeld  
 **Copyright**: © 2018-Present Herman Schoenfeld & Sphere 10 Software  
 **License**: MIT NON-AI  
 **Status**: Production-Ready (v2.0.2)
@@ -679,26 +679,6 @@ Hydrogen's architecture is organized into largely independent subsystems that co
 
 Data typically flows from application code through collections or object spaces, which delegate to object streams for persistence. Object streams use clustered streams for storage and serializers for encoding. Transactional scopes coordinate mutations, and merkle trees provide integrity proofs where enabled.
 
-### ⚡ Configuration
-
-Default settings can be customized via `HydrogenDefaults`:
-
-```csharp
-public static class HydrogenDefaults 
-{
-    // Streams
-    public const int DefaultBufferOperationBlockSize = 32768;
-    
-    // Clustering
-    public const int ClusterSize = 4096; // 4KB
-    
-    // Hashing
-    public const CHF HashFunction = CHF.SHA2_256;
-    
-    // And more...
-}
-```
-
 ## 🚀 Getting Started
 
 ### Installation
@@ -724,136 +704,367 @@ Or reference compiled assemblies directly in your project.
 
 ```csharp
 using Hydrogen;
+using System.IO;
 
-// Extended list with range operations
-var list = new ExtendedList<int> { 1, 2, 3 };
-list.InsertRange(1, new[] { 10, 20 });  // Batch insert at index 1
-Console.WriteLine(string.Join(", ", list));  // 1, 10, 20, 2, 3
+// BinarySerializer: Efficient binary serialization
+var serializer = new BinarySerializer<string>();
+var stream = new MemoryStream();
+var context = new SerializationContext();
+serializer.Serialize(context, "Hello World", stream);
 
-// Stream-backed list (persists to disk)
-var fileStream = new FileStream("data.bin", FileMode.Create, FileAccess.ReadWrite);
-var streamList = new StreamMappedList<string>(fileStream, ItemSerializer.Default<string>());
-streamList.Add("Hello");
-streamList.Save();
+// StreamMappedList: Disk-backed collection (no memory limit)
+using var fileStream = new FileStream("data.bin", FileMode.Create, FileAccess.ReadWrite);
+var list = new StreamMappedList<string>(fileStream, new StringSerializer(Encoding.UTF8));
+list.Add("Persisted Item 1");
+list.Add("Persisted Item 2");
+list.Save();
 
-// Transactional dictionary
-var txDict = new TransactionalDictionary<string, int>();
-using (var scope = txDict.BeginScope()) {
-    using (var txn = scope.BeginTransaction()) {
-        txDict["key"] = 42;
-        txn.Commit();  // Persists atomically
-    }
-}
+// FlatMerkleTree: Cryptographic proof of integrity
+var tree = new FlatMerkleTree(CHF.SHA2_256);
+tree.Leafs.AddRange(Encoding.UTF8.GetBytes("Block 1"), Encoding.UTF8.GetBytes("Block 2"));
+var root = tree.Root;  // Root hash proves all items
+
+// Synchronized collections: Thread-safe variants
+var syncList = new SynchronizedExtendedList<int>();
+syncList.Add(42);  // Automatically locked during mutation
 ```
 
-### 💻 Collections Examples
+### 💻 Core Examples
 
-**Extended Lists with Range Operations:**
-
-```csharp
-using Hydrogen;
-
-// In-memory extended list with batch operations
-var list = new ExtendedList<int>();
-list.InsertRange(0, new[] { 1, 2, 3 });     // Batch insert
-list.UpdateRange(1, new[] { 20, 30 });      // Batch update
-var chunk = list.ReadRange(0, 2);           // Batch read
-list.RemoveRange(1, 2);                     // Batch remove
-
-// Thread-safe variant
-var syncList = new SynchronizedExtendedList<string>();
-syncList.Add("Safe");
-syncList.Add("from");
-syncList.Add("multiple");
-syncList.Add("threads");
-```
-
-**Paged Collections (Memory or File-Backed):**
-
-```csharp
-// Paged list with 4 in-memory pages, 256 items per page
-// Spills to disk automatically as needed
-var pagedList = new MemoryPagedList<MyObject>(
-    pageCount: 4,
-    itemsPerPage: 256,
-    itemSerializer: ItemSerializer.Default<MyObject>()
-);
-
-// Or file-paged variant for explicit disk storage
-var filePagedList = new FilePagedList<MyObject>(
-    stream,
-    pageSize: 4096,
-    itemSerializer: ItemSerializer.Default<MyObject>()
-);
-```
-
-**Error Handling with Result<T>:**
-
-```csharp
-// Success case
-var success = Result<int>.From(42);
-if (success) {
-    var value = (int)success;  // Implicit cast
-    Console.WriteLine($"Success: {value}");
-}
-
-// Error case
-var error = Result<int>.Error("Operation failed", "Context details");
-if (!error) {
-    foreach (var msg in error.Errors) Console.WriteLine(msg);
-}
-
-// Serializable
-var json = Tools.Json.WriteToString(success);
-var restored = Tools.Json.ReadFromString<Result<int>>(json);
-```
-**Producer-Consumer Queue (Async Concurrent Pattern):**
-
-```csharp
-using var queue = new ProducerConsumerQueue<DataItem>(capacity: 1000);
-
-// Producer task (async)
-_ = Task.Run(async () => {
-    for (int i = 0; i < 10_000; i++) {
-        await queue.PutAsync(new DataItem { Id = i, Data = /* ... */ });
-    }
-    queue.CompleteAdding();  // Signal no more items
-});
-
-// Consumer task (async) — TakeManyAsync yields batches for efficiency
-await foreach (var batch in queue.TakeManyAsync(batchSize: 100)) {
-    await ProcessBatch(batch);
-}
-```
-
-### 💾 Persistence Examples
-
-**Stream-Mapped Collections (Disk-Backed):**
+**BinarySerializer: Efficient Binary Serialization**
 
 ```csharp
 using Hydrogen;
 using System.IO;
 
-// List that persists to file, exceeding available memory
-var fileStream = new FileStream("inventory.dat", FileMode.Create, FileAccess.ReadWrite);
+// Serialize primitive types
+var binarySerializer = new BinarySerializer<int>();
+var stream = new MemoryStream();
+var context = new SerializationContext();
+
+// Write an integer
+binarySerializer.Serialize(context, 42, stream);
+
+// Read it back
+stream.Position = 0;
+var value = binarySerializer.Deserialize(context, stream);
+Console.WriteLine(value);  // 42
+
+// For custom objects, use ItemSerializer
+class Product {
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+
+var productStream = new MemoryStream();
+var prodContext = new SerializationContext();
+var productBytes = new Product { Id = 1, Name = "Widget" };
+
+// BinarySerializer compresses data efficiently
+// Best used with constant-size serializers for indexed access
+var constSizeSerializer = new BinarySerializer<int>();
+var offsets = new List<long>();
+for (int i = 0; i < 1000; i++) {
+    offsets.Add(productStream.Position);
+    constSizeSerializer.Serialize(prodContext, i, productStream);
+}
+// Now you can seek directly to any index without scanning
+productStream.Seek(offsets[500], SeekOrigin.Begin);
+```
+
+**StreamMappedList: Disk-Backed Collections**
+
+```csharp
+using Hydrogen;
+using System.IO;
+
+// Create a collection that persists to disk
+using var fileStream = new FileStream("inventory.dat", FileMode.Create, FileAccess.ReadWrite);
+
+// StreamMappedList supports massive collections (limited only by disk space)
 var inventory = new StreamMappedList<Product>(
     fileStream,
-    ItemSerializer.Default<Product>(),
+    new CustomProductSerializer(),  // Your serializer
     autoLoad: false
 );
 
-inventory.Add(new Product { Id = 1, Name = "Widget" });
-inventory.Add(new Product { Id = 2, Name = "Gadget" });
-inventory.Save();  // Flush to disk
+// Add items (written to disk immediately)
+inventory.Add(new Product { Id = 1, Name = "Widget", Price = 9.99m });
+inventory.Add(new Product { Id = 2, Name = "Gadget", Price = 19.99m });
+inventory.Add(new Product { Id = 3, Name = "Doohickey", Price = 14.99m });
 
-// Later, reload from disk
-fileStream.Seek(0, SeekOrigin.Begin);
-var reloaded = new StreamMappedList<Product>(fileStream, ItemSerializer.Default<Product>(), autoLoad: true);
-Console.WriteLine(reloaded[0].Name);  // "Widget"
+// Efficient batch operations
+inventory.AddRange(new[] {
+    new Product { Id = 4, Name = "Thingamajig", Price = 24.99m },
+    new Product { Id = 5, Name = "Whatsit", Price = 12.99m }
+});
+
+// Save index to disk
+inventory.Save();
+
+// Later, reload from disk (only index is loaded into memory)
+using var reloadStream = new FileStream("inventory.dat", FileMode.Open, FileAccess.Read);
+var reloaded = new StreamMappedList<Product>(reloadStream, new CustomProductSerializer(), autoLoad: true);
+
+// Access items (loaded from disk as needed)
+var firstItem = reloaded[0];  // Reads from disk
+var batch = reloaded.ReadRange(1, 3);  // Batch read is more efficient
+
+// StreamMappedList with checksums for integrity
+using var checkedStream = new FileStream("checked.dat", FileMode.Create, FileAccess.ReadWrite);
+var checkedList = new StreamMappedList<string>(
+    checkedStream,
+    new StringSerializer(Encoding.UTF8),
+    itemChecksummer: new ObjectHashCodeChecksummer<string>(),
+    reservedStreams: 1,
+    policy: ClusteredStreamsPolicy.Default
+);
+checkedList.Add("Important data");
+checkedList.Save();
+// Checksums verify data wasn't corrupted on disk
 ```
 
-**Transactional Collections (ACID Semantics):**
+**StreamPagedList: Memory-Paged Disk Collections**
 
+```csharp
+using Hydrogen;
+using System.IO;
+
+// StreamPagedList loads pages into memory as needed (more efficient for sequential access)
+using var pagedStream = new FileStream("pages.dat", FileMode.Create, FileAccess.ReadWrite);
+
+var pagedList = new StreamPagedList<string>(
+    new StringSerializer(Encoding.UTF8),
+    pagedStream,
+    pageSize: 4096  // 4KB pages, tuned for your access patterns
+);
+
+// Add thousands of items
+for (int i = 0; i < 100_000; i++) {
+    pagedList.Add($"Item {i}");
+}
+
+// Sequential access is fast (page already in memory)
+for (int i = 0; i < 10; i++) {
+    Console.WriteLine(pagedList[i]);
+}
+
+// Random access loads the needed page
+var item50000 = pagedList[50000];
+
+// For constant-size items, use constant-size serializer for direct indexing
+var constSizeList = new StreamPagedList<string>(
+    new StringSerializer(Encoding.UTF8).AsConstantSize(50),  // Fixed 50-byte strings
+    pagedStream,
+    pageSize: 4096
+);
+// Now can directly calculate position: position = itemIndex * itemSize
+// Without scanning through variable-length items
+```
+
+**FlatMerkleTree: Cryptographic Integrity Proofs**
+
+```csharp
+using Hydrogen;
+using System.Security.Cryptography;
+
+// Create a flat merkle tree (all nodes in memory, optimal for proof generation)
+var tree = new FlatMerkleTree(CHF.SHA2_256);
+
+// Add data (hashed immediately)
+var data = new[] {
+    Encoding.UTF8.GetBytes("Transaction 1"),
+    Encoding.UTF8.GetBytes("Transaction 2"),
+    Encoding.UTF8.GetBytes("Transaction 3"),
+    Encoding.UTF8.GetBytes("Transaction 4")
+};
+tree.Leafs.AddRange(data);
+
+// Get root hash (proof that all items are included)
+var rootHash = tree.Root;
+Console.WriteLine($"Root: {Convert.ToHexString(rootHash)}");
+
+// Generate proof for a specific item (prove item 2 is in tree)
+var proof = tree.GenerateProof(2);  // Generates merkle path
+var leaf = tree.Leafs[2];
+
+// Verify the proof (can be done independently)
+bool verified = MerkleTreeUtilities.VerifyProof(
+    leaf,
+    proof,
+    rootHash,
+    CHF.SHA2_256
+);
+
+// FlatMerkleTree is ideal for:
+// - Blockchain blocks (fixed number of transactions)
+// - Smaller merkle trees where full tree fits in memory
+// - Frequent proof generation
+
+// Compare with LongMerkleTree for massive datasets
+var longTree = new LongMerkleTree(CHF.SHA2_256);
+// LongMerkleTree only keeps sub-root hashes in memory
+// Can handle millions of items with minimal memory overhead
+// But proof generation requires computing intermediate hashes
+```
+
+**LongMerkleTree: Memory-Efficient Merkle Trees**
+
+```csharp
+using Hydrogen;
+
+// LongMerkleTree: For massive datasets (millions of items)
+// Only stores sub-root hashes, not all nodes
+var tree = new LongMerkleTree(CHF.SHA2_256);
+
+// Append items efficiently
+for (int i = 0; i < 1_000_000; i++) {
+    var data = Encoding.UTF8.GetBytes($"Item {i}");
+    tree.Leafs.AddRange(data);
+}
+
+// Root hash proves integrity of all million items
+var root = tree.Root;
+
+// Generate proof for an item
+var proof = tree.GenerateProof(500_000);
+
+// Verify proof (works same as FlatMerkleTree)
+var leaf = tree.Leafs[500_000];
+bool verified = MerkleTreeUtilities.VerifyProof(
+    leaf,
+    proof,
+    root,
+    CHF.SHA2_256
+);
+
+// LongMerkleTree advantages:
+// - O(1) memory for append operations
+// - Can handle unlimited items
+// - Perfect for blockchain, event logs, append-only stores
+
+// Size information
+var size = tree.Size;
+Console.WriteLine($"Leaf count: {size.LeafCount}");
+Console.WriteLine($"Tree depth: {size.Depth}");
+```
+
+**Synchronized Collections: Thread-Safe Wrappers**
+
+```csharp
+using Hydrogen;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+// SynchronizedExtendedList: Thread-safe variant of ExtendedList
+var syncList = new SynchronizedExtendedList<int>();
+
+// Safe for concurrent access from multiple threads
+var tasks = new List<Task>();
+for (int t = 0; t < 10; t++) {
+    tasks.Add(Task.Run(() => {
+        for (int i = 0; i < 1000; i++) {
+            syncList.Add(i);  // Automatically locked
+        }
+    }));
+}
+Task.WaitAll(tasks.ToArray());
+Console.WriteLine($"Total items: {syncList.Count}");  // 10,000 safely
+
+// SynchronizedDictionary: Thread-safe key-value pairs
+var syncDict = new SynchronizedDictionary<string, Account>();
+
+var producer = Task.Run(() => {
+    for (int i = 0; i < 100; i++) {
+        syncDict[$"account_{i}"] = new Account { Id = i, Balance = 100m };
+    }
+});
+
+var consumer = Task.Run(() => {
+    System.Threading.Thread.Sleep(50);  // Let producer add some
+    foreach (var key in syncDict.Keys) {
+        var account = syncDict[key];
+        Console.WriteLine($"{key}: {account.Balance}");
+    }
+});
+
+Task.WaitAll(producer, consumer);
+
+// SynchronizedRepository: Cached, thread-safe data access
+var syncRepo = new SynchronizedRepository<int, Product>(
+    loadFunc: id => FetchProductFromDatabase(id)
+);
+
+// Thread-safe get (with automatic caching)
+var product1 = syncRepo.Get(1);
+var product2 = syncRepo.Get(2);
+
+// Multiple threads can safely access the cache
+var readTasks = Enumerable.Range(0, 100)
+    .Select(i => Task.Run(() => syncRepo.Get(i % 10)))
+    .ToArray();
+Task.WaitAll(readTasks);
+
+// Synchronized collection types available:
+// - SynchronizedExtendedList<T>
+// - SynchronizedDictionary<TKey, TValue>
+// - SynchronizedSet<T>
+// - SynchronizedQueue<T>
+// - SynchronizedHeap<T>
+// All use internal locking for thread safety
+
+class Account {
+    public int Id { get; set; }
+    public decimal Balance { get; set; }
+}
+
+class Product {
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+}
+
+Product FetchProductFromDatabase(int id) {
+    return new Product { Id = id, Name = $"Product {id}", Price = 9.99m };
+}
+
+class CustomProductSerializer : IItemSerializer<Product> {
+    public void Serialize(ISerializationContext context, Product item, Stream stream) {
+        // Custom serialization logic
+    }
+
+    public Product Deserialize(ISerializationContext context, Stream stream) {
+        // Custom deserialization logic
+        return new Product();
+    }
+}
+```
+
+## 💾 Persistence & Transactions
+
+**Advanced StreamMappedList Usage:**
+
+The StreamMappedList shown above demonstrates the core disk-backed storage pattern. For additional persistence options:
+
+- Use `itemChecksummer` to verify data integrity (detects corruption)
+- Use `reservedStreams` to attach additional metadata streams
+- Configure `ClusteredStreamsPolicy` to control cluster allocation
+
+**Transactional Scopes:**
+
+```csharp
+// Transactional boundaries for ACID operations
+var dict = new TransactionalDictionary<string, Account>();
+
+using (var scope = dict.BeginScope()) {
+    using (var txn = scope.BeginTransaction()) {
+        dict["acc1"] = new Account { Balance = 1000 };
+        dict["acc2"] = new Account { Balance = 500 };
+        // Auto-rollback if exception occurs
+        txn.Commit();  // Explicit commit for atomicity
+    }
+}
+```
 ```csharp
 // Transactional dictionary backed by file
 var persistedDict = new TransactionalDictionary<string, Account>();
@@ -876,7 +1087,9 @@ using (var scope2 = persistedDict.BeginScope()) {
 }
 ```
 
-### 🌳 Merkle Tree Examples
+### 📦 Advanced Serialization Patterns
+
+The serialization system supports reference-tracked graphs, polymorphic types, and custom decorators. See the **Core Examples** section above for BinarySerializer patterns. Refer to `IItemSerializer<T>` interface and `SerializerFactory` for custom implementations.
 
 **Merkle List with Integrity Proofs:**
 
@@ -1060,7 +1273,7 @@ byte[] fileHash = Tools.Hashing.SHA256File("path/to/file.bin");
 
 // Compute multiple simultaneously
 var hashes = Tools.Hashing.ComputeMultipleHashes(data, CHF.SHA2_256, CHF.SHA3_256);
-```
+
 // Hash files
 byte[] fileHash = Tools.Hashing.SHA256File("path/to/file.bin");
 
@@ -1137,9 +1350,6 @@ using (var iterator = db.CreateIterator()) {
         Console.WriteLine($"{k} = {v}");
         iterator.Next();
     }
-}
-```
-
 }
 ```
 
@@ -1365,7 +1575,7 @@ More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-A
 
 ## 👤 Author
 
-**Herman Schoenfeld** - Lead Developer
+**Herman Schoenfeld** - Software Engineer
 
 ---
 

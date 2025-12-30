@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "Hydrogen.DApp.Host": {
-      "commandName": "Project",
-      "commandLineArgs": "--development",
-      "nativeDebugging": true
-    }
-  }
-}

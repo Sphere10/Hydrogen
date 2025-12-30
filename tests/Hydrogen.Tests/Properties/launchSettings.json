@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "Hydrogen.Tests": {
-      "commandName": "Project",
-      "commandLineArgs": "/include:RPC"
-    }
-  }
-}

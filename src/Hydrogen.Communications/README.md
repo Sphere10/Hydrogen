@@ -1,23 +1,23 @@
-# Hydrogen.Communications
+# 📡 Hydrogen.Communications
 
-Network communication framework for .NET 8.0+ with support for RPC (Remote Procedure Call) APIs, protocol abstraction, and distributed system communication patterns.
+**Multi-protocol networking framework for .NET 8.0+** with support for RPC (Remote Procedure Call) APIs, protocol abstraction, and distributed system communication patterns.
 
-**Developed by [Sphere 10 Software](https://sphere10.com)**
+*Developed by [Sphere 10 Software](https://sphere10.com)*
 
-## 📋 Key Features
+## 🚀 Key Features
 
-### RPC (Remote Procedure Call) Framework
+### 🔄 RPC (Remote Procedure Call) Framework
 - **Attribute-Based Service Definition**: Use `[RpcAPIService]` and `[RpcAPIMethod]` attributes to expose methods remotely
 - **Type-Safe Communication**: Strongly-typed parameters and return values
 - **JSON Serialization**: Automatic JSON serialization of complex types
 - **Custom Parameter Names**: Use `[RpcAPIArgument]` to specify explicit parameter names for JSON requests
 
-### Protocol Abstraction
+### 🟠 Protocol Abstraction
 - **Protocol Agnostic**: Support for multiple transport protocols
 - **Network Communication**: Built on top of standard .NET networking
 - **Message Serialization**: Flexible serialization for RPC messages
 
-### Advanced Type Support
+### 💫 Advanced Type Support
 - **Complex Objects**: Serialize/deserialize custom objects as RPC parameters
 - **Arrays & Collections**: Support for arrays, dictionaries, and generic collections
 - **Enums**: Both string and numeric enum serialization
@@ -25,14 +25,14 @@ Network communication framework for .NET 8.0+ with support for RPC (Remote Proce
 
 ## 🚀 Quick Start
 
-### Installation
+### 📦 Installation
 
 Add via NuGet:
 ```bash
 dotnet add package Hydrogen.Communications
 ```
 
-### Defining RPC Services
+### 🕣 Defining RPC Services
 
 ```csharp
 using Hydrogen;

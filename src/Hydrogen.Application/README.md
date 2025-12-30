@@ -1,21 +1,12 @@
-# Hydrogen.Application
+# 💫 Hydrogen.Application
 
-A framework library that provides comprehensive application lifecycle, command-line interface, presentation, and dependency injection support for Hydrogen-based applications.
+**Application framework** providing comprehensive lifecycle management, dependency injection, CLI parsing, and foundation for building full-featured Hydrogen-based applications.
 
 ## 📋 Overview
 
-`Hydrogen.Application` is the foundation for building applications on top of the Hydrogen framework. It provides abstractions and utilities for:
+`Hydrogen.Application` is the foundation for building applications on top of the Hydrogen framework. It provides abstractions and utilities for application startup, configuration, services, and lifecycle hooks.
 
-- **Application Lifecycle**: Manage application initialization, configuration, and shutdown
-- **Dependency Injection (IoC)**: Integrated service collection and resolution
-- **Command-Line Interface**: Parse and handle command-line arguments
-- **DRM & Product Management**: License validation and product identification
-- **REST API Support**: REST endpoint and HTTP handler utilities
-- **Presentation Layer Foundation**: Base classes for UI components and view models
-- **Settings Management**: Configuration and settings persistence
-- **Logging Infrastructure**: Integrated logging utilities
-
-## 🏗️ Architecture
+## 💉 Architecture
 
 The library is organized into several key modules:
 
@@ -30,12 +21,12 @@ The library is organized into several key modules:
 
 ## 🚀 Key Features
 
-- Extensible application lifecycle management
-- Seamless integration with Microsoft.Extensions.DependencyInjection
-- Modular configuration system
-- REST API support utilities
-- Product licensing and identification
-- Presentation layer abstraction for both desktop and web UIs
+- ⚡ Extensible application lifecycle management
+- 🔗 Seamless integration with Microsoft.Extensions.DependencyInjection
+- 📄 Modular configuration system
+- 👍 REST API support utilities
+- 🔐 Product licensing and identification
+- 🎨 Presentation layer abstraction for desktop and web UIs
 
 ## 🔧 Usage
 

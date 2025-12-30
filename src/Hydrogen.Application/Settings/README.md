@@ -1,10 +1,10 @@
-﻿# Settings
+﻿# ⚙️ Settings
 
-Settings library allow a simple way for application to make use of user and system configurable settings which can be modified. 
+**Settings management library** providing simple, type-safe, encrypted configuration storage for application and user settings.
 
-## Declare your settings
+## 💫 Declare your settings
 
-Settings objects inherit `SettingsObject` and have properties. Default values of properties can be specified by `DefaultValueAttribute` or directly with assignment. To use an "AppSetting" from your `app.config` or `web.config` as a default value for a property, declare an `AppSettingAttribute` over that property with the name of the app setting.
+Settings objects inherit `SettingsObject` and have properties. Default values can be specified by `DefaultValueAttribute` or directly with assignment. Use `AppSettingAttribute` to link to `app.config` or `web.config`:
 
 ```csharp
 
@@ -35,9 +35,9 @@ Settings objects inherit `SettingsObject` and have properties. Default values of
 	}
 ```
 
-## Load your settings
+## 📄 Load your settings
 
-On first time load, the default values are used. Every other time, they are loaded from saved value. `UserSettings` are visible only to the (roaming) user whereas `GlobalSettings` are visible to all system users. Multiple instances of a settings can be differentiated by a string `ID`.
+On first load, default values are used. On subsequent loads, persisted values are retrieved. `UserSettings` are per-user; `GlobalSettings` are system-wide. Multiple instances can be differentiated by string `ID`:
 
 ```csharp
 	var mainScreenSettings = UserSettings.Get<ScreenSizeSettings>("MainScreen");  
@@ -45,9 +45,9 @@ On first time load, the default values are used. Every other time, they are load
 	var database = GlobalSettings.Get<DatabaseSettings>();
 ```
 
-## Persist your settings 
+## 📑 Persist your settings
 
-After loading your settings, you can modify them and save them.
+Modify settings and save them back to persistent storage:
 
 ```csharp
     screenSettings.Width = 150;
@@ -56,9 +56,9 @@ After loading your settings, you can modify them and save them.
 
 Next time you load them (via the same provider you retrieved them from), their updated values will be returned.
 
-## Encryption
+## 🔐 Encryption
 
-In your top-level assembly-info, declare the password your product can use
+Declare the product secret in your top-level assembly-info to enable encryption:
 
 ```csharp
 [assembly: AssemblyProductSecret("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")]
@@ -67,7 +67,7 @@ In your top-level assembly-info, declare the password your product can use
 This is used to encrypt settings. Only properties marked with "EncryptedAttribute"" will be encrypted.
 
 
-## Implementing your own settings provider
+## 🔧 Implementing your own settings provider
 
 ```csharp
 	public class MyCustomSettingsProvider : ISettingsProvider {
@@ -76,9 +76,9 @@ This is used to encrypt settings. Only properties marked with "EncryptedAttribut
     }
 ```
 
-## Changing default `UserSettings` and `GlobalSettings` providers
+## ⚡ Changing default `UserSettings` and `GlobalSettings` providers
 
-Add a ModuleConfiguration to your top-level project and register your provider.
+Add a `ModuleConfiguration` to register custom providers:
 
 ```csharp
 

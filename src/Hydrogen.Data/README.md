@@ -1,6 +1,6 @@
-# Hydrogen.Data
+# 💾 Hydrogen.Data
 
-Comprehensive data access and database abstraction layer providing ADO.NET enhancements, schema support, SQL query building, and CSV support.
+**Comprehensive data access and database abstraction layer** providing ADO.NET enhancements, schema support, fluent SQL query building, and CSV support.
 
 ## 📋 Overview
 

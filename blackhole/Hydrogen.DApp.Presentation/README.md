@@ -1,6 +1,6 @@
-# Hydrogen.DApp.Presentation
+# 🎨 Hydrogen.DApp.Presentation
 
-Blazor-based presentation layer providing reusable UI components for building responsive web interfaces for blockchain DApps.
+**Blazor component library** providing rich, reusable UI components for building responsive web interfaces for blockchain DApps.
 
 ## 📋 Overview
 
@@ -61,7 +61,7 @@ await ViewService.DialogAsync(content, "Dialog Title");
 - **Microsoft.AspNetCore.Components**: Blazor component framework
 - **Microsoft.JSInterop**: JavaScript interop for interactive features
 
-## 📄 Related Projects
+## � Related Projects
 
 - [Hydrogen.DApp.Presentation.Loader](./Hydrogen.DApp.Presentation.Loader) - WebAssembly host for this library
 - [Hydrogen.DApp.Presentation2](./Hydrogen.DApp.Presentation2) - Alternative presentation implementation

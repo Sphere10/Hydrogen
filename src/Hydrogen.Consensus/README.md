@@ -1,6 +1,6 @@
-# Hydrogen.Consensus
+# ⛓️ Hydrogen.Consensus
 
-Consensus mechanism framework for blockchain systems, providing pluggable consensus implementations and validation rules.
+**Blockchain consensus mechanism framework** providing pluggable consensus implementations and validation rules for distributed ledger systems.
 
 ## 📋 Overview
 

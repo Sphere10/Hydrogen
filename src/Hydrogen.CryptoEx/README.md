@@ -1,6 +1,6 @@
-# Hydrogen.CryptoEx
+# 🔐 Hydrogen.CryptoEx
 
-Extended cryptography library providing specialized cryptographic implementations for blockchain applications, including post-quantum cryptography support and multi-signature schemes.
+**Extended cryptography library** providing specialized cryptographic implementations for blockchain applications, including post-quantum cryptography, ECDSA, and advanced signature schemes.
 
 ## 📋 Overview
 

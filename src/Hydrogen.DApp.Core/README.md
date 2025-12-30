@@ -1,6 +1,6 @@
-# Hydrogen.DApp.Core
+# ⛓️ Hydrogen.DApp.Core
 
-Core blockchain and distributed application framework providing fundamental types, patterns, and infrastructure for building blockchain-based DApps.
+**Core blockchain and distributed application framework** providing fundamental types, patterns, and infrastructure for building blockchain-based DApps with plugin support.
 
 ## 📋 Overview
 

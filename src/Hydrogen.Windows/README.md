@@ -1,10 +1,10 @@
-# Hydrogen.Windows
+# 🪟 Hydrogen.Windows
 
-Windows-specific utilities and platform integration layer for Hydrogen applications, providing access to Windows APIs and features.
+**Windows platform integration layer** providing secure, type-safe access to Windows-specific APIs and features for Hydrogen applications.
 
 ## 📋 Overview
 
-`Hydrogen.Windows` provides Windows-specific implementations and utilities for Hydrogen applications, including registry access, Windows services, event logging, security management, and other platform-specific features.
+`Hydrogen.Windows` provides Windows-specific implementations for registry access, Windows services, event logging, security management, and platform integration.
 
 ## 🏗️ Architecture
 
@@ -31,7 +31,7 @@ The library includes several key modules:
 
 ## 🔧 Usage
 
-### Working with NT Objects
+### 👨 Working with NT Objects
 
 Access Windows NT security information:
 
@@ -54,7 +54,7 @@ var remoteObj = new NTRemoteObject(
 );
 ```
 
-### Dangling Objects (Unresolved References)
+### 🔍 Dangling Objects (Unresolved References)
 
 Work with security objects that don't yet have a resolved SID (e.g., deleted users):
 
@@ -75,7 +75,7 @@ var danglingBySID = new NTDanglingObject(
 );
 ```
 
-### Local User Management
+### 👤 Local User Management
 
 Create, read, and update local Windows users:
 
@@ -116,7 +116,7 @@ var groups = adminUser.Groups;  // Returns list of group memberships
 var isMember = adminsGroup.Members.Contains(adminUser);
 ```
 
-### Working with Groups
+### 👥 Working with Groups
 
 Manage group membership and properties:
 
@@ -164,9 +164,9 @@ var comment = adminsGroup.Comment;
 - Creating/modifying users requires elevation
 - Writing to Event Log may require elevation depending on event source
 
-## 📄 Related Projects
+## � Related Projects
 
 - [Hydrogen.Windows.Forms](../Hydrogen.Windows.Forms) - Windows Forms UI framework
-- [Hydrogen.Windows.LevelDB](../Hydrogen.Windows.LevelDB) - Windows LevelDB integration
+- [Hydrogen.Windows.LevelDB](../Hydrogen.Windows.LevelDB) - LevelDB integration
 - [Hydrogen.NET](../Hydrogen.NET) - .NET framework utilities
 

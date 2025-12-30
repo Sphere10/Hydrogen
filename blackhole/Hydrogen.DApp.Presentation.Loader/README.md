@@ -1,6 +1,6 @@
-# Hydrogen.DApp.Presentation.Loader
+# 🌐 Hydrogen.DApp.Presentation.Loader
 
-Blazor WebAssembly host application for running Hydrogen DApp presentations in the browser, providing the runtime and configuration for the presentation layer.
+**Blazor WebAssembly host application** for running Hydrogen DApp presentations in the browser with full service configuration and plugin support.
 
 ## 📋 Overview
 

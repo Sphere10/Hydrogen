@@ -1,6 +1,6 @@
-# Hydrogen.Windows.LevelDB
+# 💾 Hydrogen.Windows.LevelDB
 
-LevelDB integration for Windows applications, providing fast key-value storage for blockchain data and application state.
+**LevelDB integration for Windows** providing high-performance embedded key-value storage for blockchain data, indices, and persistent caches.
 
 ## 📋 Overview
 

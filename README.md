@@ -2,11 +2,11 @@
   <img  src="resources/branding/hydrogen-white-bg.gif" alt="Hydrogen logo">
 </p>
 
-# Hydrogen: Comprehensive .NET Application Framework
+# 🧪 Hydrogen: Comprehensive .NET Application Framework
 
 Copyright © Sphere 10 Software 2018 - Present
 
-Hydrogen is a mature, comprehensive .NET framework providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, it has evolved into a general-purpose framework offering robust abstractions and utilities for .NET development.
+**A mature, production-ready .NET framework** providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, Hydrogen has evolved into a comprehensive general-purpose framework offering robust abstractions, advanced data structures, cryptographic primitives, and utilities for high-performance .NET development.
 
 ## 🎯 What Hydrogen Provides
 
@@ -31,11 +31,11 @@ Hydrogen is a mature, comprehensive .NET framework providing a complete foundati
 
 
 
-## 📁 Project Structure
+## � Project Structure
 
-The Hydrogen framework consists of multiple interconnected projects organized by category within `/src`:
+The Hydrogen framework consists of **45+ projects** organized by category within `src/`, `tests/`, and `utils/`:
 
-### Core Framework & Utilities
+### 🔧 Core Framework & Utilities
 
 | Project | Purpose |
 |---------|---------|
@@ -45,14 +45,14 @@ The Hydrogen framework consists of multiple interconnected projects organized by
 | [**Hydrogen.Generators**](src/Hydrogen.Generators/README.md) | C# source generators for compile-time code generation |
 | [**HashLib4CSharp**](src/HashLib4CSharp/README.md) | Hashing library with support for MD5, SHA, BLAKE2, CRC, checksums, and more |
 
-### Cryptography & Security
+### 🔐 Cryptography & Security
 
 | Project | Purpose |
 |---------|---------|
 | [**Hydrogen.CryptoEx**](src/Hydrogen.CryptoEx/README.md) | Extended cryptography: Bitcoin (SECP256k1), elliptic curves, hash functions, post-quantum algorithms |
 | [**Hydrogen.Consensus**](src/Hydrogen.Consensus/README.md) | Blockchain consensus mechanisms and validation rules framework |
 
-### Data Access & Persistence
+### 💾 Data Access & Persistence
 
 | Project | Purpose |
 |---------|---------|
@@ -62,7 +62,7 @@ The Hydrogen framework consists of multiple interconnected projects organized by
 | [**Hydrogen.Data.MSSQL**](src/Hydrogen.Data.MSSQL/README.md) | Microsoft SQL Server implementation |
 | [**Hydrogen.Data.NHibernate**](src/Hydrogen.Data.NHibernate/README.md) | NHibernate ORM integration |
 
-### Desktop & Windows
+### 🖥️ Desktop & Windows
 
 | Project | Purpose |
 |---------|---------|
@@ -73,7 +73,7 @@ The Hydrogen framework consists of multiple interconnected projects organized by
 | [**Hydrogen.Windows.Forms.MSSQL**](src/Hydrogen.Windows.Forms.MSSQL/README.md) | Windows Forms with SQL Server data binding |
 | [**Hydrogen.Windows.LevelDB**](src/Hydrogen.Windows.LevelDB/README.md) | LevelDB integration for fast key-value storage |
 
-### Web & Cross-Platform
+### 🌐 Web & Cross-Platform
 
 | Project | Purpose |
 |---------|---------|
@@ -85,7 +85,7 @@ The Hydrogen framework consists of multiple interconnected projects organized by
 | [**Hydrogen.Android**](src/Hydrogen.Android/README.md) | Xamarin.Android integration for native Android apps |
 | [**Hydrogen.macOS**](src/Hydrogen.macOS/README.md) | Xamarin.macOS integration for native macOS apps |
 
-### Blockchain & DApps
+### ⛓️ Blockchain & DApps
 
 | Project | Purpose |
 |---------|---------|
@@ -93,9 +93,10 @@ The Hydrogen framework consists of multiple interconnected projects organized by
 | [**Hydrogen.DApp.Node**](src/Hydrogen.DApp.Node/README.md) | Full-featured blockchain node with terminal UI, consensus, networking, wallet, and JSON APIs |
 | [**Hydrogen.DApp.Host**](src/Hydrogen.DApp.Host/README.md) | Host process for running DApp nodes as services |
 
-## 🧪 Test Projects
+## ✅ Test Projects
 
-The `/tests` directory contains comprehensive test suites for the framework:
+The `tests/` directory contains **2000+ comprehensive tests** covering all framework subsystems:
+
 
 | Test Project | Purpose |
 |--------------|---------|
@@ -110,9 +111,9 @@ The `/tests` directory contains comprehensive test suites for the framework:
 | **Hydrogen.Windows.LevelDB.Tests** | LevelDB integration tests |
 | **Hydrogen.Windows.Tests** | Windows platform tests |
 
-## 🎨 Presentation Layer
+## 🎨 Presentation & UI Layer
 
-The `/blackhole` directory contains the Blazor-based presentation layer and alternative implementations:
+The `blackhole/` directory contains the Blazor-based presentation layer and alternative implementations:
 
 | Project | Purpose |
 |---------|---------|
@@ -122,15 +123,15 @@ The `/blackhole` directory contains the Blazor-based presentation layer and alte
 | [**Hydrogen.DApp.Presentation2**](blackhole/Hydrogen.DApp.Presentation2/README.md) | Alternative presentation implementation with advanced patterns |
 | [**Hydrogen.DApp.Presentation2.Loader**](blackhole/Hydrogen.DApp.Presentation2.Loader/README.md) | WebAssembly host for the alternative presentation |
 
-## 📚 Documentation Links
+## � Documentation & Learning
 
-### Architecture
+### 🏗️ Architecture
 
 1. [What is the Hydrogen Framework?](docs/Architecture/Hydrogen.md)
 2. [Hydrogen Runtime](docs/Architecture/Runtime.md)
 3. [Framework Domains](docs/Architecture/Domains.md)
 
-### Blockchain Technology
+### ⛓️ Blockchain Technology
 
 4. [Blockchain: Dynamic Merkle Trees](https://sphere10.com/tech/dynamic-merkle-trees)
 5. [Blockchain: Real-Time Targeted Difficulty Adjustment Algorithm](blackhole/docs/Blockchain/rtt-asert.pdf)
@@ -138,12 +139,12 @@ The `/blackhole` directory contains the Blazor-based presentation layer and alte
 7. [Post-Quantum Cryptography: Winternitz Abstracted Merkle Signatures (WAMS)](https://sphere10.com/tech/wams)
 8. [Post-Quantum Cryptography: Faster and Smaller Winternitz Signatures](https://sphere10.com/tech/wots-sharp)
 
-### Guidelines
+### 📋 Guidelines
 
 9. [What is a 3-tier Architecture?](docs/Guidelines/3-tier-Architecture.md)
 10. [Code-Styling Guidelines](docs/Guidelines/Code-Styling.md)
 
-## 🔗 Quick Navigation
+## � Quick Navigation & Resources
 
 - **Getting Started**: See [Hydrogen.DApp.Node](src/Hydrogen.DApp.Node/README.md) to run a blockchain node
 - **Web UI**: See [Hydrogen.DApp.Presentation.Loader](blackhole/Hydrogen.DApp.Presentation.Loader/README.md) for the web interface

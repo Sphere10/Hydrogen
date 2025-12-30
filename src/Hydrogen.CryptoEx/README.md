@@ -2,142 +2,286 @@
 
 # 🔐 Hydrogen.CryptoEx
 
-**Extended cryptography library** providing specialized cryptographic implementations for blockchain applications, including post-quantum cryptography, ECDSA, and advanced signature schemes.
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-## 📋 Overview
+**Extended cryptography library** providing specialized implementations for blockchain applications including post-quantum signature schemes, ECDSA, key derivation, and verifiable randomness (VRF).
 
-`Hydrogen.CryptoEx` extends the core cryptographic capabilities of Hydrogen with blockchain-specific and post-quantum cryptographic algorithms. It provides implementations for digital signature schemes, key derivation, and advanced cryptographic primitives used in distributed systems.
+Hydrogen.CryptoEx extends [Hydrogen](../Hydrogen)'s core cryptography with advanced primitives used in distributed systems and blockchain protocols, supporting **post-quantum resistance, multiple elliptic curves, and advanced digital signatures**.
 
-## 🏗️ Architecture
+## ⚡ 10-Second Example
 
-The library is organized by cryptographic scheme families:
+```csharp
+using Hydrogen.CryptoEx;
+using Hydrogen.CryptoEx.EC;
+using System.Text;
 
-- **Bitcoin**: Bitcoin-specific cryptographic operations (SECP256k1)
-- **EC (Elliptic Curve)**: General elliptic curve cryptography
-- **CHF (Cryptographic Hash Functions)**: Advanced hashing algorithms
-- **HF (Hash Functions)**: Standard hash function implementations
-- **PascalCoin**: PascalCoin-specific cryptographic schemes
-- **IES (Integrated Encryption Schemes)**: Encryption utilities
-- **Misc**: Additional cryptographic utilities
+// ECDSA signing with Bitcoin curve
+var signer = new ECDSA(ECDSAKeyType.SECP256K1);
+var privateKey = signer.GeneratePrivateKey();  // Generates random key
+var publicKey = signer.DerivePublicKey(privateKey);
 
-## 🚀 Key Features
+// Sign a message
+var message = Encoding.ASCII.GetBytes("Hello Blockchain");
+var signature = signer.Sign(privateKey, message);
 
-- **Post-Quantum Cryptography**: Support for quantum-resistant algorithms
-- **Multiple Signature Schemes**: ECDSA, Winternitz, and other digital signatures
-- **Blockchain Integration**: Bitcoin and PascalCoin algorithm support
-- **Key Derivation**: Advanced key derivation functions
-- **Hashing Variants**: Multiple hash function implementations
-- **Hardware Acceleration**: Support for optimized cryptographic operations
+// Verify signature
+bool isValid = signer.Verify(signature, message, publicKey);  // true
 
-## 🔧 Usage
+// ECIES encryption (public key encryption)
+var encrypted = signer.IES.Encrypt(message, publicKey);
+if (signer.IES.TryDecrypt(encrypted, out var decrypted, privateKey)) {
+    Console.WriteLine(Encoding.ASCII.GetString(decrypted.ToArray()));  // "Hello Blockchain"
+}
+```
 
-### ECDSA Digital Signatures
+## 🏗️ Core Concepts
 
-Generate keys, sign messages, and verify signatures with ECDSA:
+**Digital Signatures**: Sign with private key, verify with public key. ECDSA and post-quantum schemes available.
+
+**Public-Key Encryption (ECIES)**: Encrypt with public key, decrypt with private key for confidential data exchange.
+
+**Verifiable Random Functions (VRF)**: Deterministic random output with cryptographic proofs—used for leader election and consensus.
+
+**Multiple Signature Schemes**: ECDSA (SECP256k1, SECP384R1, SECP521R1, SECT283K1), Winternitz One-Time Signatures (W-OTS), and quantum-resistant schemes (W-AMS).
+
+**Key Derivation**: Deterministic key generation from seeds for reproducible key management.
+
+## 🔧 Core Examples
+
+### ECDSA Signatures with Deterministic Keys
 
 ```csharp
 using Hydrogen.CryptoEx.EC;
 using System.Text;
 
-// Create ECDSA instance with SECP256K1 (Bitcoin curve)
+// Initialize with Bitcoin curve (SECP256k1)
 var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
 
-// Generate a private key from a deterministic seed
-var secret = new byte[] { 0, 1, 2, 3, 4 };
-var privateKey = ecdsa.GeneratePrivateKey(secret);
-
-// Derive the corresponding public key
+// Deterministic key generation from seed (reproducible)
+var seed = new byte[] { 0, 1, 2, 3, 4 };
+var privateKey = ecdsa.GeneratePrivateKey(seed);
 var publicKey = ecdsa.DerivePublicKey(privateKey);
 
-// Sign a message
+// Sign message
 var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
 var signature = ecdsa.Sign(privateKey, message);
 
-// Verify the signature
-bool isValid = ecdsa.Verify(signature, message, publicKey); // true
+// Verify signature
+bool isValid = ecdsa.Verify(signature, message, publicKey);  // true
+
+// Note: Same seed always produces same privateKey and signature for testing
 ```
 
-### Supported Elliptic Curves
-
-All curves are supported with the same interface:
+### Random Key Generation
 
 ```csharp
-var ecdsa256 = new ECDSA(ECDSAKeyType.SECP256K1);      // 256-bit (Bitcoin)
-var ecdsa384 = new ECDSA(ECDSAKeyType.SECP384R1);      // 384-bit
-var ecdsa521 = new ECDSA(ECDSAKeyType.SECP521R1);      // 521-bit
-var ecdsa283 = new ECDSA(ECDSAKeyType.SECT283K1);      // 283-bit (Binary curve)
+var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
+
+// Random key generation (non-deterministic)
+var privateKey = ecdsa.GeneratePrivateKey();  // Generates random bytes
+var publicKey = ecdsa.DerivePublicKey(privateKey);
+
+// Each call produces different keys
+var anotherPrivateKey = ecdsa.GeneratePrivateKey();
+Console.WriteLine(privateKey.SequenceEqual(anotherPrivateKey));  // false
 ```
 
-### ECIES Asymmetric Encryption
-
-Encrypt data with a public key and decrypt with the corresponding private key:
+### ECIES: Public-Key Encryption
 
 ```csharp
 using Hydrogen.CryptoEx.EC;
 using System.Text;
 
-var ecdsa = new ECDSA(ECDSAKeyType.SECP256K1);
+var ecdsa = new ECDSA(ECDSAKeyType.SECP384R1);
 
 // Generate keypair
 var privateKey = ecdsa.GeneratePrivateKey();
 var publicKey = ecdsa.DerivePublicKey(privateKey);
 
-// Encrypt message with public key
-var message = Encoding.ASCII.GetBytes("The quick brown fox jumps over the lazy dog");
-var encryptedData = ecdsa.IES.Encrypt(message, publicKey);
+// Encrypt with public key
+var plaintext = Encoding.ASCII.GetBytes("Confidential data");
+var ciphertext = ecdsa.IES.Encrypt(plaintext, publicKey);
 
 // Decrypt with private key
-if (ecdsa.IES.TryDecrypt(encryptedData, out var decryptedData, privateKey)) {
-	// Decrypted data matches original message
-	bool success = message.SequenceEqual(decryptedData.ToArray()); // true
+if (ecdsa.IES.TryDecrypt(ciphertext, out var decrypted, privateKey)) {
+    string result = Encoding.ASCII.GetString(decrypted.ToArray());
+    Console.WriteLine(result);  // "Confidential data"
 }
+
+// Each encryption is different (randomized) even for same message
+var ciphertext2 = ecdsa.IES.Encrypt(plaintext, publicKey);
+Console.WriteLine(ciphertext.SequenceEqual(ciphertext2));  // false
 ```
 
-### Multiple Encryption Attempts
-
-For testing randomized encryption (each encryption produces different ciphertext):
+### Multiple Elliptic Curves
 
 ```csharp
-var ecdsa = new ECDSA(ECDSAKeyType.SECP384R1);
-var privateKey = ecdsa.GeneratePrivateKey();
-var publicKey = ecdsa.DerivePublicKey(privateKey);
+using Hydrogen.CryptoEx.EC;
 
-var message = Encoding.ASCII.GetBytes(RandomString(100));
+// All curves support same interface
+var secp256k1 = new ECDSA(ECDSAKeyType.SECP256K1);    // 256-bit (Bitcoin)
+var secp384r1 = new ECDSA(ECDSAKeyType.SECP384R1);    // 384-bit
+var secp521r1 = new ECDSA(ECDSAKeyType.SECP521R1);    // 521-bit
+var sect283k1 = new ECDSA(ECDSAKeyType.SECT283K1);    // 283-bit (Binary)
 
-// Encrypt multiple times
-for (int i = 0; i < 1000; i++) {
-	var encrypted = ecdsa.IES.Encrypt(message, publicKey);
+// Higher bit-length = more security but slower operations
+var message = Encoding.ASCII.GetBytes("Test");
+
+var key256 = secp256k1.GeneratePrivateKey();
+var sig256 = secp256k1.Sign(key256, message);  // ~256-bit security
+
+var key384 = secp384r1.GeneratePrivateKey();
+var sig384 = secp384r1.Sign(key384, message);  // ~384-bit security
+```
+
+### Verifiable Random Functions (VRF)
+
+```csharp
+using Hydrogen.CryptoEx;
+using Hydrogen.CryptoEx.EC;
+
+// VRF creates deterministic but unpredictable outputs with proofs
+var vrf = VRF.CreateCryptographicVRF(
+    CHF.SHA2_256,  // Hash function
+    DSS.ECDSA_SECP256k1);  // Signature scheme
+
+// Generate keypair
+var privateKey = Signers.GeneratePrivateKey(DSS.ECDSA_SECP256k1);
+var nonce = 0UL;
+var publicKey = Signers.DerivePublicKey(DSS.ECDSA_SECP256k1, privateKey, nonce);
+
+// Generate VRF output with proof
+var seed = new byte[] { 1, 2, 3, 4 };
+var output = vrf.Run(seed, privateKey, nonce, out var proof);
+
+// Verify VRF output independently
+bool isProofValid = vrf.TryVerify(seed, output, proof, publicKey);  // true
+
+// Output is deterministic for same seed
+var output2 = vrf.Run(seed, privateKey, nonce, out var proof2);
+Console.WriteLine(output.SequenceEqual(output2));  // true
+
+// Use case: Leader election in consensus - prove randomly selected leader without manipulation
+```
+
+### Digital Signature Schemes (DSS)
+
+```csharp
+using Hydrogen.CryptoEx;
+using System.Text;
+
+// Available schemes with different security properties
+var schemes = new[] {
+    DSS.ECDSA_SECP256k1,      // Traditional: 256-bit ECC
+    DSS.ECDSA_SECP384R1,      // Traditional: 384-bit ECC
+    DSS.ECDSA_SECP521R1,      // Traditional: 521-bit ECC
+    DSS.ECDSA_SECT283K1,      // Traditional: 283-bit Binary curve
+    DSS.PQC_WAMS,             // Post-quantum: Winternitz AMS
+    DSS.PQC_WAMSSharp         // Post-quantum: Sharp variant
+};
+
+var message = Encoding.ASCII.GetBytes("Important message");
+
+foreach (var dss in schemes) {
+    var privateKey = Signers.GeneratePrivateKey(dss);
+    var publicKey = Signers.DerivePublicKey(dss, privateKey, 0UL);
     
-	// Each encryption produces different ciphertext due to ECIES randomization
-	if (ecdsa.IES.TryDecrypt(encrypted, out var decrypted, privateKey)) {
-		// Verify decryption matches original
-		bool match = message.SequenceEqual(decrypted.ToArray());
-	}
+    var signature = Signers.Sign(dss, privateKey, message);
+    bool isValid = Signers.Verify(dss, publicKey, message, signature);
+    
+    Console.WriteLine($"{dss}: {isValid}");  // All true
 }
 ```
+
+## 📦 Cryptographic Primitives
+
+### Supported Elliptic Curves (ECDSA)
+
+| Curve | Bits | Type | Use Case |
+|-------|------|------|----------|
+| SECP256K1 | 256 | Prime | Bitcoin, Ethereum, blockchain |
+| SECP384R1 | 384 | Prime | Higher security threshold |
+| SECP521R1 | 521 | Prime | Maximum traditional security |
+| SECT283K1 | 283 | Binary | Specialized/legacy |
+
+### Supported Hash Functions
+
+- **SHA-2 Family**: SHA256, SHA512
+- **SHA-3 Family**: SHA3-256, SHA3-512
+- **BLAKE2**: BLAKE2b-256, BLAKE2b-512
+- **Specialized**: RIPEMD160, MurmurHash3
+
+### Supported Signature Schemes
+
+**Traditional (Vulnerable to Quantum)**:
+- ECDSA with multiple curves
+- One-time signatures (W-OTS)
+
+**Post-Quantum Resistant**:
+- Winternitz AMS (W-AMS) - quantum-resistant alternatives
+- W-AMS-Sharp - optimized variant
+
+## 🔧 Advanced Usage
+
+### Bitcoin & Blockchain Algorithms
+
+Bitcoin-specific cryptography is available through `DSS.ECDSA_SECP256k1` with specialized tools in the `Bitcoin/` namespace for compatibility and integration.
+
+## ⚠️ Security Considerations
+
+- **Private Keys**: Must be kept secret. Never log, transmit unencrypted, or store in plain text.
+- **Seed-Based Keys**: Use cryptographically secure RNG for seeds in production.
+- **Post-Quantum Migration**: Current ECDSA is vulnerable to quantum computing. Use W-AMS family for long-term security.
+- **Signature Verification**: Always verify signatures independently before trusting data.
+- **ECIES Randomization**: Do NOT assume encrypted data is identical for same plaintext/key pair.
+- **Hash Collisions**: Use SHA-3 or BLAKE2 for cryptographic binding; MurmurHash only for non-security use.
+
+## 🔌 Architecture Layers
+
+- **EC (Elliptic Curve)**: `ECDSA` class for signature and encryption operations
+- **Bitcoin**: Bitcoin-specific algorithms and compatibility
+- **CHF (Cryptographic Hash Functions)**: Advanced hash implementations
+- **VRF**: Verifiable random functions for consensus and selection
+- **Signers**: Unified interface for all signature schemes (ECDSA, W-OTS, W-AMS)
+- **IES**: Integrated encryption scheme (ECIES) for public-key encryption
+- **PascalCoin**: PascalCoin-specific cryptographic operations
+
+## ✅ Status & Maturity
+
+- **ECDSA & Hash Functions**: Production-tested, stable
+- **Post-Quantum Schemes (W-AMS)**: Reference implementations; audit before production cryptographic use
+- **.NET Target**: .NET 8.0+ (primary), .NET Standard 2.0 for some components
+- **Thread Safety**: Hash functions and signature verification are thread-safe; key generation typically single-threaded per instance
+- **Performance**: ECDSA faster than post-quantum schemes; post-quantum trades speed for quantum resistance
+
+## 📖 Related Projects
+
+- [Hydrogen](../Hydrogen) - Core framework with basic cryptography
+- [Hydrogen.Consensus](../Hydrogen.Consensus) - Consensus mechanisms using VRF and signatures
+- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - Blockchain DApp core with cryptographic security
+- [Hydrogen.Communications](../Hydrogen.Communications) - Network protocols with cryptographic authentication
+
+## 🏆 Advanced Topics
+
+See **Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)** documentation for theoretical foundation of W-AMS scheme and proof of quantum resistance.
 
 ## 📦 Dependencies
 
 - **Hydrogen**: Core framework
-- **BouncyCastle.Cryptography**: Cryptographic primitives
-- Platform-specific cryptography libraries
+- **BouncyCastle.Cryptography**: Cryptographic primitives (EC, ECDSA, Hashing)
+- **.NET 8.0+**: Modern cryptography APIs
 
-## 📖 Documentation
+## ⚖️ License
 
-See [Post-Quantum Cryptography: Abstract Merkle Signatures (AMS)](https://sphere10.com/tech/ams) for advanced signature scheme documentation.
+Distributed under the **MIT NON-AI License**.
 
-## 🧮 Key Concepts
+See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-AI-MIT)
 
-- **Private Key**: Used for signing and decryption - must be kept secret
-- **Public Key**: Derived from private key, used for verification and encryption - can be shared
-- **ECDSA**: Elliptic Curve Digital Signature Algorithm - signs messages with private key, verifies with public key
-- **ECIES**: Elliptic Curve Integrated Encryption Scheme - encrypts with public key, decrypts with private key
-- **Deterministic Generation**: Providing a seed produces the same keypair every time (useful for testing)
-- **Non-Deterministic Encryption**: ECIES adds randomness, so each encryption of the same message produces different ciphertext
+## 👤 Author
 
-## 📄 Related Projects
+**Herman Schoenfeld** - Software Engineer
 
-- [Hydrogen](../Hydrogen) - Core framework
-- [Hydrogen.Consensus](../Hydrogen.Consensus) - Consensus mechanisms using cryptography
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - DApp blockchain core
+---
+
+**Version**: 2.0+
 

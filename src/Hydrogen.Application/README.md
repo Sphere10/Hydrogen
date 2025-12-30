@@ -2,57 +2,319 @@
 
 # 💫 Hydrogen.Application
 
-**Application framework** providing comprehensive lifecycle management, dependency injection, CLI parsing, and foundation for building full-featured Hydrogen-based applications.
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
 
-## 📋 Overview
+**Application framework and lifecycle management** providing dependency injection integration, settings management, command-line argument parsing, and foundation for building full-featured Hydrogen-based applications.
 
-`Hydrogen.Application` is the foundation for building applications on top of the Hydrogen framework. It provides abstractions and utilities for application startup, configuration, services, and lifecycle hooks.
+Hydrogen.Application enables **rapid application development** with built-in **service configuration, CLI argument parsing, settings persistence, and application lifecycle hooks** integrated with Microsoft.Extensions.DependencyInjection.
 
-## 💉 Architecture
-
-The library is organized into several key modules:
-
-- **Core**: Core framework components
-- **Lifecycle**: Application initialization and shutdown hooks
-- **IoC**: Dependency injection configuration and extensions
-- **CommandLine**: Command-line argument parsing and handling
-- **Product**: Product identification and DRM support
-- **Rest**: REST API helpers and utilities
-- **Settings**: Configuration and settings management
-- **Presentation**: UI base classes and view model infrastructure
-
-## 🚀 Key Features
-
-- ⚡ Extensible application lifecycle management
-- 🔗 Seamless integration with Microsoft.Extensions.DependencyInjection
-- 📄 Modular configuration system
-- 👍 REST API support utilities
-- 🔐 Product licensing and identification
-- 🎨 Presentation layer abstraction for desktop and web UIs
-
-## 🔧 Usage
-
-This library is typically used as a foundation for other Hydrogen-based applications:
+## ⚡ 10-Second Example
 
 ```csharp
-// In your application startup
+using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
+
+// Build application with framework
+var app = HydrogenApp.CreateBuilder()
+    .ConfigureServices(services => {
+        services.AddSingleton<IRepository, DatabaseRepository>();
+        services.AddSingleton<ILogger, ConsoleLogger>();
+    })
+    .Build();
+
+// Access configured services
+var repo = app.ServiceProvider.GetRequiredService<IRepository>();
+var logger = app.ServiceProvider.GetRequiredService<ILogger>();
+
+logger.Info("Application started");
+repo.SaveData("important", data);
+
+// Application runs until disposal
+app.Run();
+```
+
+## 🏗️ Core Concepts
+
+**Application Builder Pattern**: Fluent builder API for configuring services, settings, and lifecycle hooks.
+
+**Dependency Injection**: Full integration with Microsoft.Extensions.DependencyInjection for service composition.
+
+**Settings Management**: Type-safe application settings with persistence and validation.
+
+**Lifecycle Hooks**: Startup, configuration, and shutdown extensions for custom initialization.
+
+**Command-Line Parsing**: Attribute-based CLI argument parsing with validation and help generation.
+
+**Product Management**: Product identification, versioning, and licensing support.
+
+## � Core Examples
+
+### Basic Application Setup
+
+```csharp
+using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
+
+// Create application with service configuration
+var app = HydrogenApp.CreateBuilder()
+    .AddLogging()  // Add console logging
+    .ConfigureServices(services => {
+        // Register custom services
+        services.AddSingleton<IUserRepository, UserRepository>();
+        services.AddSingleton<IEmailService, SmtpEmailService>();
+        services.AddSingleton<IDataProcessor, DataProcessor>();
+    })
+    .Build();
+
+// Get configured service
+var userRepo = app.ServiceProvider.GetRequiredService<IUserRepository>();
+var users = userRepo.GetAllUsers();
+
+Console.WriteLine($"Loaded {users.Count} users");
+```
+
+### Settings Management
+
+```csharp
+using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
+
+// Define typed settings
+public class AppSettings {
+    public string DatabaseConnection { get; set; }
+    public int MaxConnections { get; set; }
+    public bool EnableLogging { get; set; }
+    public List<string> AllowedOrigins { get; set; }
+}
+
+var app = HydrogenApp.CreateBuilder()
+    .ConfigureSettings<AppSettings>(settings => {
+        settings.DatabaseConnection = "Server=localhost;Database=mydb";
+        settings.MaxConnections = 100;
+        settings.EnableLogging = true;
+        settings.AllowedOrigins = new[] { "http://localhost:3000", "https://myapp.com" }.ToList();
+    })
+    .ConfigureServices((services, settings) => {
+        // Use settings in service configuration
+        services.AddSingleton(new DatabaseConnection(settings.DatabaseConnection, settings.MaxConnections));
+    })
+    .Build();
+
+// Access settings anywhere via DI
+var appSettings = app.ServiceProvider.GetRequiredService<AppSettings>();
+Console.WriteLine($"Database: {appSettings.DatabaseConnection}");
+Console.WriteLine($"Max connections: {appSettings.MaxConnections}");
+```
+
+### Lifecycle Hooks
+
+```csharp
+using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
+
+var app = HydrogenApp.CreateBuilder()
+    .ConfigureServices(services => {
+        services.AddSingleton<IInitializer, DatabaseInitializer>();
+    })
+    .OnStarting(async (app, cancellation) => {
+        Console.WriteLine("Application starting...");
+        
+        // Initialize database
+        var initializer = app.ServiceProvider.GetRequiredService<IInitializer>();
+        await initializer.InitializeAsync(cancellation);
+        
+        Console.WriteLine("Application initialized");
+    })
+    .OnStopping(async (app, cancellation) => {
+        Console.WriteLine("Application stopping...");
+        
+        // Cleanup resources
+        var connection = app.ServiceProvider.GetRequiredService<IDbConnection>();
+        connection?.Close();
+        
+        Console.WriteLine("Application stopped");
+    })
+    .Build();
+
+// Run application until cancellation
+await app.RunAsync();
+```
+
+### Command-Line Argument Parsing
+
+```csharp
 using Hydrogen.Application;
 
-var framework = HydrogenFramework.Create(new HydrogenFrameworkOptions {
-    // Configuration options
-});
+// Define CLI arguments with attributes
+[CommandLineOptions]
+public class AppOptions {
+    [CommandLineArgument("--database", "-d")]
+    public string DatabasePath { get; set; } = "data.db";
+    
+    [CommandLineArgument("--verbose", "-v")]
+    public bool Verbose { get; set; } = false;
+    
+    [CommandLineArgument("--threads", "-t")]
+    public int ThreadCount { get; set; } = Environment.ProcessorCount;
+    
+    [CommandLineArgument("--config", "-c", Required = true)]
+    public string ConfigFile { get; set; }
+}
 
-// Services are automatically configured for dependency injection
+// Parse command-line arguments
+var args = new[] { "--database", "custom.db", "--verbose", "--config", "app.json" };
+var options = CommandLineParser.Parse<AppOptions>(args);
+
+Console.WriteLine($"Database: {options.DatabasePath}");    // custom.db
+Console.WriteLine($"Verbose: {options.Verbose}");          // true
+Console.WriteLine($"Threads: {options.ThreadCount}");      // logical CPU count
+Console.WriteLine($"Config: {options.ConfigFile}");        // app.json
+
+// Get help message
+string help = CommandLineParser.GetHelpText<AppOptions>();
+Console.WriteLine(help);
 ```
+
+### Service Factories & Scoping
+
+```csharp
+using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
+
+// Create scoped services for request-like patterns
+var app = HydrogenApp.CreateBuilder()
+    .ConfigureServices(services => {
+        // Singleton: one instance for entire application
+        services.AddSingleton<IConfigurationService, ConfigurationService>();
+        
+        // Transient: new instance every time requested
+        services.AddTransient<IRequestHandler, RequestHandler>();
+        
+        // Scoped: one instance per scope (e.g., per request)
+        services.AddScoped<IDbContext, DbContext>();
+    })
+    .Build();
+
+// Use services with scoping
+using (var scope = app.ServiceProvider.CreateScope()) {
+    var dbContext = scope.ServiceProvider.GetRequiredService<IDbContext>();
+    var handler = scope.ServiceProvider.GetRequiredService<IRequestHandler>();
+    
+    handler.Process(dbContext);
+}  // IDbContext disposed here
+```
+
+### REST API Integration
+
+```csharp
+using Hydrogen.Application;
+using Microsoft.Extensions.DependencyInjection;
+
+public interface IUserService {
+    Task<User> GetUserAsync(int id);
+    Task CreateUserAsync(User user);
+}
+
+public class UserService : IUserService {
+    private readonly IUserRepository _repo;
+    
+    public UserService(IUserRepository repo) => _repo = repo;
+    
+    public async Task<User> GetUserAsync(int id) => await _repo.GetAsync(id);
+    public async Task CreateUserAsync(User user) => await _repo.SaveAsync(user);
+}
+
+// Build application with REST support
+var app = HydrogenApp.CreateBuilder()
+    .ConfigureServices(services => {
+        services.AddSingleton<IUserRepository, UserRepository>();
+        services.AddSingleton<IUserService, UserService>();
+        services.AddRestApi();  // Configure REST helpers
+    })
+    .Build();
+
+// Use service through REST framework (in ASP.NET Core or similar)
+var userService = app.ServiceProvider.GetRequiredService<IUserService>();
+var user = await userService.GetUserAsync(42);
+```
+
+## 🎯 Module Organization
+
+- **Core**: `HydrogenApp`, `HydrogenAppBuilder` - Application creation and configuration
+- **Lifecycle**: Startup/shutdown hooks with async cancellation support
+- **IoC/DI**: Integration with `Microsoft.Extensions.DependencyInjection`
+- **CommandLine**: `CommandLineParser`, `CommandLineArgument` attributes for CLI parsing
+- **Settings**: Typed settings classes with validation and persistence
+- **Product**: `ProductInfo`, versioning, and license management
+- **Presentation**: Base classes for MVVM, view models, and UI bindings
+- **Rest**: Helper utilities for REST API development
+
+## 🔧 Application Builder Pattern
+
+The builder pattern provides fluent configuration:
+
+```csharp
+HydrogenApp.CreateBuilder()
+    .AddLogging()
+    .AddSettings<AppSettings>()
+    .ConfigureServices(services => {/* ... */})
+    .OnStarting(async (app, ct) => {/* ... */})
+    .OnInitialized(async (app, ct) => {/* ... */})
+    .OnStopping(async (app, ct) => {/* ... */})
+    .Build()
+    .Run();
+```
+
+## 🌐 Dependency Injection Container
+
+Full Microsoft.Extensions.DependencyInjection support:
+
+- **Singleton**: Application-wide single instance (configuration, loggers)
+- **Transient**: New instance per request (handlers, processors)
+- **Scoped**: Instance per logical scope (request, transaction)
+- **Factory**: Custom factory methods for complex object creation
+
+## ⚠️ Design Patterns
+
+- **Composition Root**: All service configuration in one place at startup
+- **Dependency Inversion**: Depend on abstractions, not implementations
+- **Service Locator**: Get services from `ServiceProvider` when needed
+- **Middleware Pattern**: Apply transformations/cross-cutting concerns
+- **Settings by Convention**: Type-safe settings with strong validation
+
+## 📖 Related Projects
+
+- [Hydrogen](../Hydrogen) - Core framework
+- [Hydrogen.Web.AspNetCore](../Hydrogen.Web.AspNetCore) - ASP.NET Core integration
+- [Hydrogen.Communications](../Hydrogen.Communications) - RPC services with DI
+- [Hydrogen.DApp.Host](../Hydrogen.DApp.Host) - DApp host using this framework
+- [Hydrogen.DApp.Node](../Hydrogen.DApp.Node) - Blockchain node application
+
+## ✅ Status & Maturity
+
+- **Core Framework**: Production-tested, stable
+- **DI Integration**: Full support for Microsoft.Extensions.DependencyInjection
+- **.NET Target**: .NET 8.0+ (primary)
+- **Thread Safety**: Application-wide; services should handle their own thread safety
+- **Async Support**: Full async/await support throughout lifecycle hooks
 
 ## 📦 Dependencies
 
-- **Hydrogen**: Core utilities and extensions
-- **Microsoft.Extensions.DependencyInjection**: Modern dependency injection
+- **Hydrogen**: Core framework
+- **Microsoft.Extensions.DependencyInjection**: Service composition
 - **System.Configuration.ConfigurationManager**: Configuration support
+- **System.Reflection**: Service discovery and attribute processing
 
-## 📄 Related Projects
+## ⚖️ License
 
-- [Hydrogen](../Hydrogen) - Core framework library
-- [Hydrogen.DApp.Core](../Hydrogen.DApp.Core) - DApp-specific core functionality
-- [Hydrogen.Web.AspNetCore](../Hydrogen.Web.AspNetCore) - ASP.NET Core integration
+Distributed under the **MIT NON-AI License**.
+
+See the LICENSE file for full details. More information: [Sphere10 NON-AI-MIT License](https://sphere10.com/legal/NON-AI-MIT)
+
+## 👤 Author
+
+**Herman Schoenfeld** - Software Engineer
+
+---
+
+**Version**: 2.0+

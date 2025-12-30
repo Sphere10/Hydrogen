@@ -489,8 +489,6 @@ await Notifications.ShowError("Error", ex.ToString());
 - [DApp Development Guide](../DApp-Development-Guide.md)
 - [Hydrogen Requirements](Hydrogen-Requirements.md)
 - [Architecture Guidelines](../Guidelines/3-tier-Architecture.md)
-- [Blazor Documentation](https://docs.microsoft.com/en-us/aspnet/core/blazor/)
-- [Bootstrap CSS Framework](https://getbootstrap.com/)
 
 ---
 

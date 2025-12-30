@@ -942,7 +942,6 @@ public void SyncBlockchain() {
 - [Hydrogen.DApp.Core README](../src/Hydrogen.DApp.Core/README.md)
 - [Hydrogen.DApp.Node README](../src/Hydrogen.DApp.Node/README.md)
 - [Consensus Documentation](Architecture/Runtime.md)
-- [What is Blockchain](Education/What-is-Blockchain.md)
 - [Code Styling Guidelines](Guidelines/Code-Styling.md)
 
 ---

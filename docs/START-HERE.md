@@ -33,7 +33,6 @@ This is your starting point for understanding the Hydrogen framework, its archit
 | **Using Collections & Data** | [Hydrogen.Data README](../src/Hydrogen.Data/README.md) |
 | **Cryptography & Security** | [Hydrogen.CryptoEx README](../src/Hydrogen.CryptoEx/README.md) |
 | **Networking & RPC** | [Hydrogen.Communications README](../src/Hydrogen.Communications/README.md) |
-| **Distributed Systems** | [Helium Framework Documentation](Helium/README.md) |
 | **General Utilities** | [Hydrogen Core README](../src/Hydrogen/README.md) |
 
 ### 📂 Documentation Structure

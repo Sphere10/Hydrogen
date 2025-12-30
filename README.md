@@ -1,10 +1,12 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 <p align="center">
   <img  src="resources/branding/hydrogen-white-bg.gif" alt="Hydrogen logo">
 </p>
 
 # 🧪 Hydrogen: Comprehensive .NET Application Framework
 
-Copyright © Sphere 10 Software 2018 - Present
+Copyright © Herman Schoenfeld, Sphere 10 Software 2018 - Present
 
 **A mature, production-ready .NET framework** providing a complete foundation for building full-stack applications across desktop, mobile, and web platforms. Originally designed for blockchain systems, Hydrogen has evolved into a comprehensive general-purpose framework offering robust abstractions, advanced data structures, cryptographic primitives, and utilities for high-performance .NET development.
 

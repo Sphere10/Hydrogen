@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # 🪟 Hydrogen.Windows
 
 **Windows platform integration layer** providing secure, type-safe access to Windows-specific APIs and features for Hydrogen applications.

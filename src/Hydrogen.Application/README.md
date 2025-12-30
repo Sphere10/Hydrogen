@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # 💫 Hydrogen.Application
 
 **Application framework** providing comprehensive lifecycle management, dependency injection, CLI parsing, and foundation for building full-featured Hydrogen-based applications.

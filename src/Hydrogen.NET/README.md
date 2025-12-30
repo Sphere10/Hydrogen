@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # Hydrogen.NET
 
 .NET Framework and CLR-specific utilities providing compatibility, type introspection, and framework utilities for .NET applications.

@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # Hydrogen.DApp.Host
 
 Host process for running Hydrogen DApp nodes as standalone services, managing the lifecycle and providing entry points for node execution.

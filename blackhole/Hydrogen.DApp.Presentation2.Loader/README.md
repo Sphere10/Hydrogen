@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # Hydrogen.DApp.Presentation2.Loader
 
 WebAssembly host for the alternative Hydrogen DApp presentation layer, providing an alternative web application shell for running advanced presentation implementations.

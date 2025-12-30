@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # Hydrogen.DApp.Presentation.WidgetGallery
 
 Component showcase and plugin demonstrating reusable Blazor widgets and UI patterns for Hydrogen DApps.

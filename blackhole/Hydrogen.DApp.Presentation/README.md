@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # 🎨 Hydrogen.DApp.Presentation
 
 **Blazor component library** providing rich, reusable UI components for building responsive web interfaces for blockchain DApps.

@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # Hydrogen.Generators
 
 Source code generators for Hydrogen applications, providing compile-time code generation for common patterns and boilerplate reduction.

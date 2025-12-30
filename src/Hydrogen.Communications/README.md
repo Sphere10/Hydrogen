@@ -1,8 +1,10 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # 📡 Hydrogen.Communications
 
 **Multi-protocol networking framework for .NET 8.0+** with support for RPC (Remote Procedure Call) APIs, protocol abstraction, and distributed system communication patterns.
 
-*Developed by [Sphere 10 Software](https://sphere10.com)*
+*Developed by Herman Schoenfeld, [Sphere 10 Software](https://sphere10.com)*
 
 ## 🚀 Key Features
 

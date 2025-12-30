@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # ⛓️ Hydrogen.DApp.Core
 
 **Core blockchain and distributed application framework** providing fundamental types, patterns, and infrastructure for building blockchain-based DApps with plugin support.

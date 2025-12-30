@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # 🔐 Hydrogen.CryptoEx
 
 **Extended cryptography library** providing specialized cryptographic implementations for blockchain applications, including post-quantum cryptography, ECDSA, and advanced signature schemes.

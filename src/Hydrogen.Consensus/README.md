@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # ⛓️ Hydrogen.Consensus
 
 **Blockchain consensus mechanism framework** providing pluggable consensus implementations and validation rules for distributed ledger systems.

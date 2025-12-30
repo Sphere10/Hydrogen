@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # 💾 Hydrogen.Windows.LevelDB
 
 **LevelDB integration for Windows** providing high-performance embedded key-value storage for blockchain data, indices, and persistent caches.

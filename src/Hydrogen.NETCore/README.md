@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2018-Present Herman Schoenfeld & Sphere 10 Software. All rights reserved. Author: Herman Schoenfeld (sphere10.com) -->
+
 # Hydrogen.NETCore
 
 .NET Core and modern .NET runtime-specific utilities, providing compatibility and features for .NET 5+ applications.

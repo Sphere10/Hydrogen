@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- Shared version and metadata across all projects -->
+  <PropertyGroup>
+    <Company>Sphere 10 Software</Company>
+    <Authors>Herman Schoenfeld</Authors>
+    <Copyright>Sphere 10 Software Pty Ltd</Copyright>
+    <RepositoryUrl>https://github.com/Sphere10/Hydrogen</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/Sphere10/Hydrogen</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    
+    <!-- Version Management -->
+    <Version>2.0.3</Version>
+    <VersionPrefix>2.0.3</VersionPrefix>
+    
+    <!-- Build Configuration -->
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    
+    <!-- NuGet Packaging -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    
+    <!-- Development vs Production References -->
+    <!-- Set to false in CI/CD release builds to use NuGet references -->
+    <UseLocalProjects Condition="'$(UseLocalProjects)' == ''">true</UseLocalProjects>
+  </PropertyGroup>
+
+  <!-- Package metadata defaults -->
+  <PropertyGroup>
+    <PackageTags>blockchain;cryptography;framework;collections;dapp</PackageTags>
+    <Description Condition="'$(Description)' == ''">Hydrogen Framework</Description>
+  </PropertyGroup>
+
+  <!-- Output paths -->
+  <PropertyGroup>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+</Project>

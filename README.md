@@ -4,7 +4,7 @@ This repository has **moved**. Please use the new official location for the late
 
 ### 📍 New Repository
 
-**[https://github.com/HermanSchoenfeld/Hydrogen](https://github.com/HermanSchoenfeld/Hydrogen)**
+**[https://github.com/HermanSchoenfeld/Sphere10.Framework](https://github.com/HermanSchoenfeld/Sphere10.Framework)**
 
 ---
 
@@ -13,7 +13,7 @@ This repository has **moved**. Please use the new official location for the late
 To update your local environment to point to the new location, execute the following command:
 
 ```bash
-git remote set-url origin https://github.com/HermanSchoenfeld/Hydrogen.git
+git remote set-url origin https://github.com/HermanSchoenfeld/Sphere10.Framework.git
 
 ```
 
